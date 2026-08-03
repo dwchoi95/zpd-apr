@@ -5,6 +5,9 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{xspace}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{flafter}
 
 \setcopyright{none}
 \settopmatter{printacmref=true,printfolios=true}
@@ -68,17 +71,59 @@ This paper makes the following contributions:
 \section{Background and Related Work}
 \label{sec:related}
 
-\subsection{Repair for Programming Assignments}
+\subsection{Structure- and Reference-Based Educational Repair}
 
-Early educational APR systems exploit the redundancy of student solutions. CLARA clusters correct programs and searches for transformations from a buggy program to a nearby cluster representative~\cite{gulwani2018automated}. SARFGEN aligns student and reference programs before generating repairs~\cite{wang2018search}, while Refactory uses refactoring-aware structural alignment~\cite{hu2020re}. Subsequent work extends repair and feedback generation to multiple functions, assignment-aware neural models, and diversified feedback~\cite{yi2017feasibility,heo2023referent,choi2021automated,choi2025automated}.
+Educational APR differs from repair of production defects in both its available evidence and its intended consumer. A programming assignment commonly has many submissions for the same specification, a test suite maintained by an online judge, and one or more known correct solutions. At the same time, a repair should ideally preserve the learner's recognizable strategy rather than merely replace it with any program that passes. This combination motivated systems that use the population of peer solutions as a problem-specific repair space.
 
-LLM-based systems reduce dependence on hand-engineered transformations. RING studies multilingual repair as code generation~\cite{joshi2023repair}; PyDex and related work use language models and retrieved demonstrations for student programs~\cite{zhang2024pydex,zhang2022repairing,phung2023generating}. CREF performs conversational repair~\cite{yang2024cref}, FastFixer fine-tunes a repair model~\cite{liu2024fastfixer}, and peer-aided repair retrieves other students' programs~\cite{zhao2024peer}. Test diagnostics and counterexamples can further constrain generation~\cite{ye2022selfapr,orvalho2025counterexample}. LSGen combines repair-pair retrieval with iterative edit-driven generation~\cite{dai2026learner}. These methods condition on a current program, references, or diagnostics. \tool instead mines multiple improvement targets from the target student's trajectory, then evaluates whether retaining the trajectory at inference time adds value.
+CLARA clusters correct programs, aligns a buggy program with a representative of a nearby cluster, and extracts transformations that move the buggy program toward that representative~\cite{gulwani2018automated}. SARFGEN similarly searches, aligns, and repairs, using reference programs to support data-driven feedback generation~\cite{wang2018search}. Refactory adds refactoring-aware structural normalization before alignment so that syntactic variation does not obscure comparable program structure~\cite{hu2020re}. These approaches exploit strong assignment-specific evidence and can generate localized changes when the student's strategy matches a known cluster. Their applicability nevertheless depends on a sufficiently rich set of same-problem correct programs and on an alignment representation that captures the relevant variation.
 
-\subsection{Adaptive Feedback and Submission Histories}
+Educational repair has also been studied as a general feedback-generation problem. Work on automated feedback for multi-function programs, assignment-conditioned neural feedback, and diversified repairs expands the target beyond a single aligned correction~\cite{yi2017feasibility,heo2023referent,choi2021automated,choi2025automated}. This line of work establishes two design principles that we retain. First, repair quality is not exhausted by pass/fail correctness: the relationship between the original and repaired program matters. Second, different students or program states may warrant different valid repairs even under one specification. \tool operationalizes these principles through multiple trajectory-derived targets and reports AST edit distance alongside execution metrics.
 
-Automated feedback for programming exercises spans correctness reports, hints, explanations, and repairs~\cite{keuning2018systematic,narciss2008feedback}. Intelligent tutoring research has long examined scaffolding, help seeking, and the challenge of keeping support within a productive range~\cite{aleven2000limitations,murray2002toward,chounta2017grey}. Next-step hints and feedback ladders similarly offer graduated assistance rather than only final answers~\cite{price2017isnap,roest2024next,xiao2024exploring,heickal2024generating}.
+Our comparison with LSGen represents the strongest reference-rich setting in this study. LSGen filters historical repair pairs, retrieves examples by edit information, generates a candidate, and can retrieve again using the resulting state~\cite{dai2026learner}. It therefore has access to information unavailable for a genuinely new problem: correct programs written for the same specification. We preserve this advantage in the Seen evaluation rather than weakening the retrieval database to make the learned method appear stronger. Conversely, we omit LSGen on problem-held-out Unseen tasks because populating its database with same-problem correct programs would violate the holdout definition. The resulting comparison distinguishes two deployment regimes: repair with a mature assignment repository and repair when only the new problem statement, tests, and learned model are available.
 
-Submission histories are also used for student modeling, including knowledge tracing and context-aware variants~\cite{corbett1994knowledge,piech2015deep,ghosh2020context}. Our goal differs: we neither estimate latent student ability nor predict future correctness. We use observed code states as automatic evidence of reachable changes. This operationalization avoids manual student-level labels, but it does not by itself validate that a generated patch is pedagogically optimal. Section~\ref{sec:threats} makes this boundary explicit.
+\subsection{Neural and Large-Language-Model Repair}
+
+Neural repair treats correction as conditional code generation and reduces dependence on a fixed library of transformations. RING demonstrates that multilingual program repair can be approached as generation by a large language model~\cite{joshi2023repair}. PyDex and its precursor study introductory Python repair with language models and retrieved demonstrations~\cite{zhang2024pydex,zhang2022repairing}. High-precision syntax feedback further shows that generation can be constrained toward a narrowly identified defect rather than an unconstrained rewrite~\cite{phung2023generating}. These methods make repair available for programs that do not align cleanly with a reference cluster, but model generation introduces new questions about correctness, patch scope, and the evidence supplied in the prompt.
+
+Recent educational systems address these questions in several ways. CREF organizes repair as a conversation in which diagnostics from an earlier attempt can inform a later attempt~\cite{yang2024cref}. FastFixer fine-tunes a repair model for efficiency and effectiveness on programming assignments~\cite{liu2024fastfixer}. Peer-aided repair retrieves other students' programs to augment an LLM on more advanced assignments~\cite{zhao2024peer}. SelfAPR uses test-execution diagnostics as self-supervised repair signals~\cite{ye2022selfapr}, while counterexample-guided repair combines zero-shot generation with fault localization and MaxSAT reasoning~\cite{orvalho2025counterexample}. Across these systems, execution feedback, retrieval, and fine-tuning are complementary sources of repair evidence rather than mutually exclusive alternatives.
+
+\tool combines fine-tuning and execution feedback, but its unit of supervision differs. It does not synthesize corruptions, assign a single accepted answer to the whole corpus, or require manually authored transition labels. Instead, it treats the sequence of authentic submissions as a partially ordered source of targets. A transition can express local test progress, a coarser verdict improvement, or arrival at the final answer. The three policies are trained separately so that these target regimes can be evaluated independently and composed at inference time.
+
+\subsection{Execution Feedback and Iterative Repair}
+
+An LLM's first candidate need not be accepted, and a failed candidate still contains information. Test execution provides an external signal that is independent of the model's own confidence. Existing iterative approaches use failing tests, diagnostics, conversation state, or retrieved examples to guide another attempt~\cite{ye2022selfapr,yang2024cref,orvalho2025counterexample,dai2026learner}. The main design choice is what to do with a failed candidate. Feeding every candidate back verbatim can amplify a regression or consume context with redundant code. Discarding all failed candidates, however, loses evidence about which tests changed and whether the attempt moved in the right direction.
+
+Our sequence separates candidate generation from candidate acceptance. Each stage is executed under the same runner. An accepted candidate terminates the sequence. A failed but improving candidate can become useful context for the next policy; a no-op or regression contributes only its execution outcome. After the final stage, an explicit selector compares every generated program with the unchanged current program. This fallback turns non-regression into a system invariant: generation is allowed to fail, but failure need not force the system to return a worse program. The design resembles a repair portfolio, with the additional constraint that its members share a base model and differ only in trajectory-mined supervision.
+
+\subsection{Adaptive Feedback, ZPD, and Submission Histories}
+
+Automated feedback for programming exercises spans correctness reports, next-step hints, explanations, and complete repairs~\cite{keuning2018systematic,narciss2008feedback}. The appropriate granularity is consequential. A complete answer maximizes immediate information but may bypass the student's reasoning; a very small hint can preserve agency but may be insufficient. Intelligent tutoring research therefore examines scaffolding, help seeking, and maintaining assistance within a productive range~\cite{aleven2000limitations,murray2002toward,chounta2017grey}. Systems such as iSnap and more recent LLM-based hint generators likewise explore next-step or multi-level assistance rather than a single undifferentiated answer~\cite{price2017isnap,roest2024next,xiao2024exploring,heickal2024generating}.
+
+The Zone of Proximal Development motivates support aimed between what a learner can do independently and what becomes attainable with help~\cite{cole1978mind,murray2002toward,chounta2017grey}. Computational work has attempted to model or maintain such a region, but a code trajectory does not directly reveal a learner's latent competence, comprehension, or need. We therefore use a deliberately weaker operational claim. A later, improved submission is evidence that the student actually reached that program state in the recorded interaction. It is a defensible automatic target for repair training, but not proof that presenting the same change to another learner is optimal scaffolding.
+
+Submission histories have also been used for student modeling. Knowledge tracing estimates evolving mastery from sequences of learner interactions, and attentive variants condition these estimates on contextual information~\cite{corbett1994knowledge,piech2015deep,ghosh2020context}. \tool neither predicts latent knowledge nor forecasts the next response. It consumes source-code states and execution outcomes to construct repair pairs. This distinction matters because a successful program transition can be mined without assigning a psychological label to the student. It also limits our conclusion: the study evaluates programs, not learning.
+
+\subsection{Positioning of This Work}
+
+Table~\ref{tab:related-position} summarizes the evidence sources emphasized by representative approaches. The intentionally coarse categories locate our contribution at the intersection of authentic trajectory supervision, adapter specialization, and execution-guided composition; they do not imply that prior approaches lack other metadata or diagnostics.
+
+\begin{table}[t]
+\caption{High-level positioning of educational repair approaches. ``Same-problem refs.'' denotes a database of solutions or repair pairs for the target assignment; ``trajectory supervision'' denotes training targets mined from ordered submissions by the same user.}
+\label{tab:related-position}
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Approach family & Refs. & Exec. & Traj. & Stages \\
+\midrule
+Structural alignment~\cite{gulwani2018automated,wang2018search,hu2020re} & Yes & Opt. & No & No \\
+LLM generation~\cite{joshi2023repair,zhang2024pydex,liu2024fastfixer} & Opt. & Opt. & No & No \\
+Iterative repair~\cite{yang2024cref,orvalho2025counterexample} & Opt. & Yes & No & Yes \\
+LSGen~\cite{dai2026learner} & Yes & Yes & No & Yes \\
+\tool & No & Yes & Yes & Yes \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Problem Formulation}
 \label{sec:formulation}
@@ -101,9 +146,19 @@ We call a later state \emph{reachable} when it occurs in the same student's obse
   \label{fig:overview}
 \end{figure}
 
+\subsection{Design Requirements}
+
+The method is organized around four requirements derived from the deployment setting. \emph{Automatic supervision} requires every target to be recoverable from submissions, verdicts, and tests, without a teacher labeling which edit is pedagogically appropriate. \emph{Target diversity} requires the training construction to expose both intermediate improvements and complete solutions; otherwise, one model objective must conflate conservative and answer-level repair. \emph{Executable validation} requires generated programs to be judged by the same external runner rather than by model confidence or textual similarity. Finally, \emph{non-regression} requires the system to retain the current program whenever no generated candidate improves its executed behavior.
+
+These requirements lead to a separation between offline and online decisions. Offline, one trajectory can yield multiple supervised examples under different policies. Online, each policy proposes at most one candidate, but execution decides whether the candidate should terminate the sequence, inform the next stage, or be ignored by the final selector. This separation is important: the label rules define what a model learns, whereas the selector defines what the deployed system is permitted to return. A noisy training transition can influence generation without automatically overriding a better current program.
+
 \subsection{Trajectory Construction}
 
 We group submissions by problem and student, sort them by timestamp, and terminate at the first \texttt{Accepted} submission. We normalize indentation, remove comments and blank lines, and remove consecutive submissions that are identical after normalization. Until adapter-specific filtering, we preserve complete source code, original verdict, order, and all observed history. We impose no maximum history length or transition count. We also re-execute every submission on the available tests and cache per-test outcomes for deterministic reuse in dataset construction and evaluation.
+
+Termination at the first acceptance prevents a solved problem from contributing post-solution experimentation as if it were part of the repair path. Consecutive duplicate removal avoids overweighting resubmissions that differ only in comments or formatting. We do not deduplicate non-consecutive states because returning to an earlier program is itself part of the observed trajectory and may separate two distinct attempts. Normalization is used only for duplicate detection; the model input and target preserve complete normalized source rather than an edit script.
+
+The execution cache binds an outcome to the tuple of problem, normalized code, test-suite identity, timeout, and memory limit. This key prevents reuse across incompatible execution settings. Failed runner invocations are represented explicitly and receive the most severe internal outcome; they are not silently treated as wrong answers. Adapter construction reads only completed cache entries, making the same per-test evidence available to dataset creation, stage feedback, and evaluation.
 
 \subsection{Adapter-Specific Supervision}
 \label{sec:supervision}
@@ -132,9 +187,56 @@ Starting with \(R=[s_1]\), we scan the trajectory and append \(s_t\) only when i
 
 The datasets are constructed independently and may overlap. A strict transition is also a progress transition, and final accepted transitions can occur in both. The objectives nevertheless differ: \answer learns direct completion from one failed program, whereas \strict and \progress learn transitions from retained prefixes.
 
+Algorithm~\ref{alg:construct} gives the common retained-prefix construction. The predicate \textsc{Keep} is the only difference between \strict and \progress. Comparing a candidate with the last retained state, rather than the immediately previous raw submission, makes the retained sequence monotonic under the selected rule. Importantly, the algorithm emits every retained prefix. A trajectory with \(m\) retained states yields \(m-1\) training examples, so early transitions are not discarded in favor of only the final prefix.
+
+\begin{algorithm}[t]
+\caption{Retained-prefix supervision for \strict and \progress}
+\label{alg:construct}
+\begin{algorithmic}[1]
+\Require Trajectory \(\tau=[s_1,\ldots,s_n]\), policy \(a\in\{\mathrm{strict},\mathrm{prog}\}\)
+\Ensure Supervised examples \(D_a\)
+\State \(R\gets[s_1]\); \(D_a\gets[]\)
+\For{\(t\gets2\) to \(n\)}
+  \State \(r\gets R[-1]\)
+  \State \(q\gets \mathrm{sev}(v_t)<\mathrm{sev}(v_r)\)
+  \If{\(a=\mathrm{prog}\)}
+    \State \(q\gets q\lor(v_t=v_r\land\mathrm{TCProg}(r,t))\)
+  \EndIf
+  \If{\(q\)}
+    \State append \((R,c_t)\) to \(D_a\); append \(s_t\) to \(R\)
+  \EndIf
+\EndFor
+\State \Return \(D_a\)
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Illustrative Trajectory}
+
+Consider an illustrative trajectory with verdicts
+\[
+[\texttt{RE},\texttt{WA},\texttt{WA},\texttt{WA},\texttt{AC}]
+\]
+and three-test outcome vectors
+\[
+[(\texttt{RE},\texttt{RE},\texttt{RE}),
+ (\texttt{AC},\texttt{WA},\texttt{WA}),
+ (\texttt{AC},\texttt{AC},\texttt{WA}),
+ (\texttt{AC},\texttt{WA},\texttt{WA}),
+ (\texttt{AC},\texttt{AC},\texttt{AC})].
+\]
+The example is synthetic and serves only to clarify the rules. \strict retains \(S_1,S_2,S_5\): the transition from runtime error to wrong answer improves verdict severity, the two later wrong-answer states do not, and acceptance improves again. It emits \(([S_1],c_2)\) and \(([S_1,S_2],c_5)\).
+
+\progress additionally retains \(S_3\), because one test changes from wrong answer to accepted while no test regresses relative to \(S_2\). It rejects \(S_4\): relative to the last retained state \(S_3\), the second test regresses from accepted to wrong answer. The retained sequence is therefore \(S_1,S_2,S_3,S_5\), yielding three prefix-target examples. \answer ignores these intermediate relations and emits four independent pairs \(([S_1],c_5),\ldots,([S_4],c_5)\). This example exposes three consequences of the design. Progress is monotonic with respect to observed per-test outcomes, Strict can skip locally useful same-verdict edits, and Answer can learn from a failed state even when that state would be removed by both retained scans.
+
+The construction does not assume that the student's next raw submission is a desirable target. A later submission can revert a passing test, introduce a compilation error, or repeat an earlier program. Such states remain part of the authentic record but do not become \progress or \strict targets unless they satisfy the corresponding comparison. Conversely, a non-adjacent later state may become the target when intervening submissions fail the rule. The objective is thus filtered transition learning, not next-submission imitation.
+
 \subsection{Prompt and Adapter Training}
 
 All adapters use the same prompt. The system message contains the problem statement and resource limits. Each retained submission is represented by its complete code and online verdict; cached per-test outcomes and an AST/line edit summary are included when available. The final user message is the current program and the assistant target is one complete Python program. The prompt never names an adapter role, so specialization can arise only from supervision.
+
+The serialized prompt has three layers. The problem layer fixes the natural-language specification and resource limits for every example of a problem. The history layer presents retained submissions chronologically and identifies their observed verdicts; when more than one submission is present, structural and line-level summaries describe the intervening change without replacing either full program. The query layer repeats the current state and requests exactly one complete Python program. We avoid a role instruction such as ``make a small change'' or ``provide the answer,'' because that wording would confound supervision with prompt engineering in the adapter comparison.
+
+Only assistant target tokens contribute to the loss. This mask prevents long statements or histories from dominating the objective merely because they contain more tokens. Whole-program targets also avoid a separate patch-application failure mode: every decoded candidate can be written to a file and executed directly. The cost is that even a one-line semantic change requires generating the complete program, which motivates greedy decoding and early stopping in the online sequence.
 
 For adapter \(a\in\{\mathrm{prog},\mathrm{strict},\mathrm{ans}\}\), let \(\mathcal{D}_a\) be its dataset, \(x_i\) the prompt, and \(y_i\) the target tokens. We minimize the target-only supervised fine-tuning objective
 \begin{equation}
@@ -151,6 +253,8 @@ where \(\theta\) is the frozen base model and \(\phi_a\) is an adapter's QLoRA p
 
 At inference time, we execute the observed submissions to populate consistent feedback and then invoke \progress, \strict, and \answer in that order. Each adapter generates one complete program. A candidate that passes every test is returned immediately. Otherwise, its verdict, pass rate, per-test outcomes, and improvement status are appended to the next-stage prompt. For a no-op or regression, only the execution result is passed forward, avoiding reinforcement of the candidate code.
 
+The order is fixed before evaluation. \progress is first because its training targets admit fine-grained, non-regressive test improvements; \strict follows with a coarser verdict-improvement objective; \answer is last because its direct accepted targets permit the broadest change. This ordering is a design prior rather than a claim that one adapter is intrinsically easier. RQ3 evaluates the adapters independently, and RQ4 tests whether their fixed composition adds value beyond each member.
+
 If all candidates fail, the selector includes the current program \(c_i\) as a fallback:
 \begin{equation}
 \mathcal{C}=\{c_i,c^{\mathrm{prog}},c^{\mathrm{strict}},c^{\mathrm{ans}}\}.
@@ -162,6 +266,35 @@ c^*=\underset{c\in\mathcal{C}}{\arg\max}
 \label{eq:selection}
 \end{equation}
 The selector first maximizes executed correctness and then minimizes change. If no candidate improves on \(c_i\), the unchanged fallback has TED zero and the system abstains.
+
+Algorithm~\ref{alg:repair} makes the information flow explicit. The working context is not identical to the original student trajectory after the first stage: it may contain generated execution feedback. However, generated code is included only when it improves the current pass rate. This rule avoids presenting a regressive program to the next adapter as if it were a student-authored advance. Every generated candidate remains in the selector pool, where executed correctness dominates edit distance.
+
+\begin{algorithm}[t]
+\caption{Execution-guided sequential repair}
+\label{alg:repair}
+\begin{algorithmic}[1]
+\Require Problem \(p\), current code \(c_i\), observed context \(h\)
+\State \(C\gets[c_i]\); \(q_0\gets\mathrm{Pass}(c_i)\); \(H\gets h\)
+\For{\(a\) in \([\mathrm{Progress},\mathrm{Strict},\mathrm{Answer}]\)}
+  \State \(c^a\gets\mathrm{Generate}(a,p,H)\)
+  \State \(z^a\gets\mathrm{Execute}(p,c^a)\); append \(c^a\) to \(C\)
+  \If{\(\mathrm{Pass}(c^a)=1\)}
+    \State \Return \(c^a\)
+  \ElsIf{\(\mathrm{Pass}(c^a)>q_0\)}
+    \State append \((c^a,z^a)\) to \(H\)
+  \Else
+    \State append \(z^a\) to \(H\)
+  \EndIf
+\EndFor
+\State \Return \(\arg\max_{c\in C}(\mathrm{Pass}(c),-\mathrm{ted}(c_i,c))\)
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Properties and Computational Cost}
+
+Two properties follow directly from the construction. First, the retained sequences for \strict and \progress are monotonic under their own predicates. This does not imply monotonic source-code similarity: a student can make a large rewrite while improving one verdict. Second, final selection is non-regressive on the observed test suite because \(c_i\in\mathcal C\) and pass rate is the primary key. If every candidate has a lower pass rate, \(c_i\) wins; if candidates tie its pass rate, its zero self-distance wins the secondary key unless a generated program is structurally identical.
+
+For a raw trajectory of length \(n\) and \(T\) tests, dataset construction performs a single retained scan once cached outcomes exist. Comparing outcome vectors costs \(O(T)\), giving \(O(nT)\) time and \(O(n)\) retained-state storage per trajectory, excluding program text. Answer construction is \(O(n)\). At inference, generation dominates cost. The system performs between one and three generations and executions, with exactly three only when neither early stage produces an accepted program. The cache can eliminate repeated execution for identical candidates but does not change the worst-case generation count.
 
 \section{Experimental Design}
 \label{sec:experiment}
@@ -282,6 +415,28 @@ Split & Method & PR & RR & IR & ATT & \(\mathrm{TED}_{B\to F}\) & \(\mathrm{TED}
 \end{tabular}
 \end{table}
 
+The aggregate rates conceal how often two methods repair the same inputs. Table~\ref{tab:paired-outcomes} reconstructs the paired outcome counts used by the McNemar comparisons. Against Zero-shot on Seen data, the two methods jointly repair 263 inputs, but \tool repairs 301 additional inputs that Zero-shot misses; the reverse occurs for 43. Thus, the system-level gain is not merely a small set of exchanged successes. Against LSGen, the overlap is much larger: both repair 494 inputs. LSGen nevertheless repairs 306 inputs that \tool misses, while the learned system uniquely repairs 70. This pattern explains why LSGen has higher RR while neither method's success set strictly contains the other.
+
+\begin{table}[t]
+\caption{Paired complete-repair outcomes. ``Only \tool'' and ``only comparator'' are the discordant pairs used by McNemar tests. Counts are derived from the same instances as Table~\ref{tab:main-results}.}
+\label{tab:paired-outcomes}
+\centering
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Split & Comparator & Both & Only \tool & Only comparator & Neither \\
+\midrule
+Seen & Zero-shot & 263 & 301 & 43 & 390 \\
+Seen & LSGen & 494 & 70 & 306 & 127 \\
+Unseen & Zero-shot & 138 & 42 & 17 & 53 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+PR and IR add information beyond complete repair. On Seen data, the 25.9-point RR gain over Zero-shot is accompanied by an 8.6-point PR gain and a 20.9-point IR gain. The smaller PR difference is expected because PR gives partial credit to failed programs that pass some tests. In other words, Zero-shot often produces behavior that is partly correct without reaching acceptance, whereas \tool converts more of those opportunities into full repairs. The selector's unchanged fallback also affects IR: an abstention is not an improvement, but it avoids counting a regression as progress.
+
+Patch distance separates effectiveness from replacement. \tool's mean current-to-fix TED is 27.7\% lower than Zero-shot's and 77.7\% lower than LSGen's among the respective successful sets. These unpaired percentage summaries should not be interpreted as statistical comparisons because each mean is computed on a different success subset; the paired bootstrap results reported above are the primary evidence. Both paired comparisons point in the same direction, showing that the conclusion is not only an artifact of which instances each method repairs.
+
 \paragraph{Answer to RQ1.}
 \tool substantially outperforms a trajectory-prompted zero-shot model and produces smaller successful patches. Same-problem retrieval remains much stronger in repair coverage, so \tool is complementary to, rather than a replacement for, a correct-solution database.
 
@@ -313,6 +468,12 @@ Split & Adapter & Input & \(N\) & PR & RR & IR & \(\mathrm{TED}_{F\to T}\) \\
 \end{tabular}
 \end{table}
 
+The ablation is paired at three levels. Within each row pair, the training example identities and target programs are identical. The same adapter architecture and hyperparameters are used, and evaluation compares the two models on the same inputs. The only intended change is whether submissions before the current program are serialized in the prompt. This design prevents a larger Full dataset or a different target distribution from masquerading as a history effect.
+
+The direction changes across all four conditions. Full loses 0.7 RR points for Seen \strict and 0.4 for Seen \progress; it loses 2.8 points for Unseen \strict but gains 1.6 for Unseen \progress. The absolute differences are small relative to the variation in baseline difficulty between Seen and Unseen rows, and no corrected comparison is significant. TED does not rescue a consistent history claim: the history-conditioned model is closer to its target in two conditions and farther in two. Thus, neither execution success nor imitation of the recorded target supplies a stable directional result.
+
+This null result is informative because the zero-shot and full-system prompts still contain trajectory context. RQ1 asks whether the complete learned and sequential method is useful in that operating configuration. RQ2 asks the narrower causal question of whether retaining earlier submissions improves an otherwise matched adapter. The first answer can be positive while the second is negative. Keeping these estimands separate prevents the complete system's improvement from being attributed to a component that the controlled ablation does not support.
+
 \paragraph{Answer to RQ2.}
 Providing full submission history does not consistently improve repair over current code alone. RQ1 therefore cannot be interpreted as evidence for a causal history-conditioning effect; it measures the complete learned and sequential system.
 
@@ -335,6 +496,12 @@ Adapter & PR & RR & IR & \(\mathrm{TED}_{B\to F}\) & \(\mathrm{TED}_{F\to O}\) \
 \end{tabular}
 \end{table}
 
+The individual results reveal two distinct notions of specialization. \emph{Coverage specialization} is weak between \progress and \strict: their RR differs by only 0.3 points, and the corrected paired comparison is not significant. \emph{Patch-scope specialization} is clearer. Strict increases current-to-fix TED from 15.85 to 17.45, and Answer increases it to 20.22. Relative to Progress, Answer's successful patches are 27.6\% larger by mean TED while repairing 5.3 percentage points more inputs. The supervision rules therefore order modification size more clearly than they order complete-repair coverage.
+
+Distance to the recorded accepted oracle follows the same pattern. Progress has the lowest mean \(\mathrm{TED}_{F\to O}\) at 15.89, Strict reaches 18.38, and Answer reaches 20.61. This does not mean that Progress copies the oracle: its targets can be intermediate non-accepted programs, and the metric is computed only when its generated candidate is accepted. Rather, on the subset it repairs, Progress tends to reach an accepted program through a smaller structural move from both the current state and the recorded oracle. Answer covers more cases at the cost of broader edits.
+
+These averages also caution against interpreting adapter names as guaranteed behaviors on every input. An Answer candidate can be small, and a Progress candidate can rewrite a program. The rules shape training distributions, not hard constraints at decoding time. Hard non-regression and minimum-edit preferences enter only through execution and final selection.
+
 \paragraph{Answer to RQ3.}
 The supervision rules induce different repair-size behavior: direct answer supervision produces the broadest and most successful individual adapter, while progress supervision produces the smallest successful patches. Verdict-only \strict is not clearly separated from \progress in repair coverage.
 
@@ -343,6 +510,27 @@ The supervision rules induce different repair-size behavior: direct answer super
 Sequential repair reaches 56.6\% RR, 6.5 points above the strongest individual adapter, \answer. Sequential alone repairs 119 cases and \answer alone repairs 54 (Holm-adjusted \(p=8.57\times10^{-7}\)). Its advantage over \progress and \strict is also significant (adjusted \(p=1.64\times10^{-22}\) and \(1.87\times10^{-21}\)).
 
 Early stopping limits cost. Of 997 inputs, 439 stop after \progress and another 66 after \strict. The system generates 2.05 candidates on average instead of always generating three. ATT is 12.16 seconds, only 2.17 seconds above the fastest individual adapter. The final selector returns a \progress candidate for 484 instances, \strict for 88, \answer for 72, and the unchanged fallback for 353.
+
+Table~\ref{tab:stage-flow} expands this control flow. Every input reaches Progress. The 439 accepted Progress candidates terminate immediately, so 558 inputs reach Strict. Strict accepts 66 more, leaving 492 inputs for Answer. The resulting number of generations is \(997+558+492=2{,}047\), or 2.05 per input. Always invoking all adapters would require 2,991 generations; early stopping therefore avoids 944 generations, 31.6\% of the fixed three-stage budget.
+
+\begin{table}[t]
+\caption{RQ4 stage flow and final selector provenance on 997 Seen inputs. ``Reached'' counts generated candidates; ``accepted here'' counts early stops. Selector provenance includes early stops and final selection.}
+\label{tab:stage-flow}
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+Stage / source & Reached & Accepted here & Returned by system \\
+\midrule
+\progress & 997 & 439 & 484 \\
+\strict & 558 & 66 & 88 \\
+\answer & 492 & -- & 72 \\
+Unchanged fallback & -- & -- & 353 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The returned-source counts differ from the early-stop counts because selection can recover a non-accepted earlier candidate after all stages fail. Progress is returned 484 times, 45 more than its immediate acceptances, and Strict is returned 88 times, 22 more than its immediate acceptances. Answer is returned 72 times after the final comparison. The unchanged program is returned for 353 inputs, making abstention a substantial part of system behavior rather than a corner case. Of these fallback returns, the table alone does not distinguish ties from cases where every candidate regressed, so we do not assign a more specific failure interpretation.
 
 \begin{table}[t]
 \caption{RQ4 sequential escalation on 997 Seen instances. ``Candidates'' is the mean number generated.}
@@ -367,8 +555,18 @@ Execution-guided escalation improves both complete repair and partial improvemen
 
 On 250 Unseen instances, \tool obtains 83.0\% PR, 72.0\% RR, and 76.8\% IR, versus 75.3\%, 62.0\%, and 68.8\% for Zero-shot. \tool alone repairs 42 cases and Zero-shot alone repairs 17 (McNemar \(p=0.00155\)). The PR difference is 7.65 points (95\% bootstrap CI [3.59, 11.93]). \tool also reduces mean successful-patch TED from 17.46 to 11.66. Among joint repairs, its patch is 6.33 TED units smaller on average (95\% CI [3.31, 9.77]).
 
+The Unseen contingency in Table~\ref{tab:paired-outcomes} shows 138 joint repairs, 42 unique \tool repairs, 17 unique Zero-shot repairs, and 53 failures by both. The 10-point RR advantage is therefore supported by more than twice as many favorable as unfavorable discordant pairs. At the same time, 17 Zero-shot-only successes show that fine-tuning and sequential selection do not dominate the base model on every held-out problem. A portfolio that could recognize these complementary successes without test leakage remains a possible extension.
+
+The absolute Unseen RR is higher for both systems than their Seen RR. This cannot be read as a conventional train--test generalization comparison because the groups were created by problem trajectory count, not randomized by difficulty. The Unseen group contains lower-resource problems and a different mixture of statements, tests, and current-program states. The defensible comparison is within Unseen: both methods face the same 250 instances, and \tool retains a paired advantage without same-problem adapter training.
+
 \paragraph{Answer to RQ5.}
 \tool's advantage over Zero-shot persists on problems completely excluded from adapter training. Because the Unseen group deliberately contains lower-resource problems, its higher absolute RR must not be interpreted as evidence that unseen problems are easier or that familiarity harms repair.
+
+\subsection{Cross-RQ Synthesis}
+
+The five questions support a layered account of the system. RQ1 establishes that the complete method improves substantially over a trajectory-prompted base model, while also documenting a coverage deficit relative to same-problem retrieval. RQ2 removes a tempting explanation for that gain: earlier submissions in the prompt do not provide a consistent benefit under matched training targets. RQ3 shows that changing the trajectory-derived target rule changes patch scope more reliably than repair coverage. RQ4 then demonstrates that execution-guided composition recovers additional repairs beyond the strongest individual adapter. RQ5 shows that the learned system's advantage over Zero-shot persists when problem identities are held out.
+
+Taken together, the results locate the strongest evidence in two components. First, authentic trajectories are useful as an offline source of diverse repair transitions. Second, executed outcomes are useful as an online control signal for escalation, early stopping, and abstention. The evidence is weaker for the intended ordering between Progress and Strict because their individual coverage is nearly identical, and it is negative for a general full-history advantage. This decomposition is more precise than describing the whole observed gain as ``trajectory conditioning.''
 
 \section{Discussion}
 \label{sec:discussion}
@@ -382,8 +580,6 @@ Several mechanisms may explain the null history result. Long histories can dilut
 \subsection{Coverage Versus Patch Size}
 
 LSGen's 80.2\% RR demonstrates the value of same-problem correct programs. Its successful patches are, however, more than four times as distant from the buggy program as \tool's by mean AST TED. This difference should not be interpreted as automatic pedagogical superiority: small patches can preserve a student's structure, but TED does not measure explanation quality or learning. The result establishes a software-change tradeoff. Retrieval maximizes coverage when a same-problem database exists; learned adapters generate more conservative repairs and remain applicable when the problem is held out.
-
-The adapters also reveal that broader target supervision increases both coverage and modification size. \answer is the strongest individual adapter, while \progress produces the smallest successful changes. \strict adds little separation beyond \progress, suggesting that coarse verdict severity is an insufficient intermediate objective. Future variants could learn from quantitative pass-rate deltas, fault-localization signals, or edit locality rather than a hand-ordered verdict scale.
 
 \subsection{Implications for Educational Use}
 
@@ -417,7 +613,7 @@ The study analyzes a publicly released code dataset and performs no intervention
 
 We presented \tool, an execution-guided APR framework trained from authentic student submission trajectories. Three automatic supervision rules expose monotonic test progress, verdict improvement, and final accepted solutions. Sequential composition raises Seen repair rate from 50.1\% for the strongest individual adapter to 56.6\%, while early stopping limits generation to 2.05 candidates on average. The complete system outperforms a trajectory-prompted zero-shot model on Seen and problem-held-out Unseen data and produces smaller successful patches, although same-problem retrieval achieves higher coverage.
 
-The current evidence also sets an important boundary. Full trajectory prefixes do not consistently outperform current code alone. Thus, the results support trajectory-\emph{mined} supervision and execution-guided escalation, not a causal benefit from history conditioning. Future work should identify when history is informative, test counterfactual histories for identical current code, evaluate clustered uncertainty across problems, and study whether the resulting patches improve human learning.
+Full trajectories do not consistently outperform current code alone. The results therefore support trajectory-\emph{mined} supervision and execution-guided escalation, not causal benefits from history conditioning.
 
 \section{Data Availability}
 \label{sec:data-availability}
