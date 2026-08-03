@@ -7,7 +7,7 @@ ZPDPatch는 학생의 submission trajectory에서 자연스럽게 이어지는 n
 ```text
 run.py          single command-line entrypoint
 src/            application source code
-paper/          AAAI manuscript and figures
+paper/          FSE 2027 Research Track manuscript and figures
 requirements.txt
 ```
 
