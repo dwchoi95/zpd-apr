@@ -342,11 +342,20 @@ def main() -> None:
         default=None,
         help="Cached execution evidence used to enrich every historical submission",
     )
-    sequential.add_argument(
-        "--no-stage-feedback",
+    feedback = sequential.add_mutually_exclusive_group()
+    feedback.add_argument(
+        "--stage-feedback",
+        dest="stage_feedback",
         action="store_true",
-        help="Give every adapter the original trajectory without prior candidate outcomes",
+        help="Append earlier generated outcomes to later adapter prompts (ablation)",
     )
+    feedback.add_argument(
+        "--no-stage-feedback",
+        dest="stage_feedback",
+        action="store_false",
+        help="Give every adapter the same observed trajectory (default)",
+    )
+    sequential.set_defaults(stage_feedback=False)
     sequential.add_argument("--no-resume", action="store_true")
 
     ordered_evaluate = commands.add_parser(
@@ -731,7 +740,7 @@ def main() -> None:
             workers=args.workers,
             case_workers=args.case_workers,
             timeout_sec=args.timeout_sec,
-            stage_feedback=not args.no_stage_feedback,
+            stage_feedback=args.stage_feedback,
             outcome_cache_path=args.outcome_cache,
             resume=not args.no_resume,
         )

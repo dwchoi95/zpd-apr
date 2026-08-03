@@ -145,7 +145,7 @@ def run_sequential_repairs(
     workers: int = 8,
     case_workers: int = 1,
     timeout_sec: float = 2.5,
-    stage_feedback: bool = True,
+    stage_feedback: bool = False,
     outcome_cache_path: Path | None = None,
     resume: bool = True,
 ) -> SequentialRepairSummary:

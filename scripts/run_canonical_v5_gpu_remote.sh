@@ -104,7 +104,8 @@ run_sequential() {
     --workers 24 \
     --case-workers 1 \
     --timeout-sec 2.5 \
-    --outcome-cache "${MERGED_CACHE}"
+    --outcome-cache "${MERGED_CACHE}" \
+    --stage-feedback
   test "$(wc -l < "${output}")" -eq "${expected}"
   test -s "${output%.jsonl}.summary.json"
 }
