@@ -1,0 +1,221 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="610" viewBox="0 0 1800 610">
+  <defs>
+    <style>
+      .panel { stroke: #252a31; stroke-width: 2.4; rx: 14; }
+      .title { font: 700 26px Arial, sans-serif; fill: #171a1f; }
+      .head { font: 700 21px Arial, sans-serif; fill: #20242a; }
+      .body { font: 18px Arial, sans-serif; fill: #343a43; }
+      .small { font: 16px Arial, sans-serif; fill: #414852; }
+      .code { font: italic 20px Georgia, serif; fill: #252a31; }
+      .line { stroke: #4c535d; stroke-width: 2; fill: none; }
+      .softline { stroke: #aab0b7; stroke-width: 1.5; fill: none; }
+      .arrow { stroke: #343a43; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #68717c; stroke-width: 2; stroke-dasharray: 7 7; fill: none; }
+      .icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .green-text { color: #2f8a4e; fill: #2f8a4e; }
+      .blue-text { color: #2d73c8; fill: #2d73c8; }
+      .orange-text { color: #d77b17; fill: #d77b17; }
+      .purple-text { color: #7652b5; fill: #7652b5; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#343a43"/>
+    </marker>
+
+    <symbol id="icon-user" viewBox="0 0 24 24">
+      <circle class="icon" cx="12" cy="8" r="4"/>
+      <path class="icon" d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/>
+    </symbol>
+    <symbol id="icon-code-file" viewBox="0 0 24 24">
+      <path class="icon" d="M5 2h9l5 5v15H5z"/>
+      <path class="icon" d="M14 2v6h5"/>
+      <path class="icon" d="m10 12-2 2 2 2M14 12l2 2-2 2"/>
+    </symbol>
+    <symbol id="icon-context" viewBox="0 0 24 24">
+      <path class="icon" d="M4 3h16v18H4z"/>
+      <path class="icon" d="M8 8h8M8 12h8M8 16h5"/>
+    </symbol>
+    <symbol id="icon-trend" viewBox="0 0 24 24">
+      <path class="icon" d="M3 18 9 12l4 4 8-9"/>
+      <path class="icon" d="M16 7h5v5"/>
+    </symbol>
+    <symbol id="icon-filter" viewBox="0 0 24 24">
+      <path class="icon" d="M3 5h18l-7 8v6l-4 2v-8z"/>
+    </symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24">
+      <circle class="icon" cx="12" cy="12" r="9"/>
+      <path class="icon" d="m8 12 3 3 6-7"/>
+    </symbol>
+    <symbol id="icon-x" viewBox="0 0 24 24">
+      <circle class="icon" cx="12" cy="12" r="9"/>
+      <path class="icon" d="m9 9 6 6M15 9l-6 6"/>
+    </symbol>
+    <symbol id="icon-dataset" viewBox="0 0 24 24">
+      <ellipse class="icon" cx="12" cy="5" rx="8" ry="3"/>
+      <path class="icon" d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/>
+      <path class="icon" d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>
+    </symbol>
+    <symbol id="icon-chip" viewBox="0 0 24 24">
+      <rect class="icon" x="6" y="6" width="12" height="12" rx="2"/>
+      <path class="icon" d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>
+      <path class="icon" d="m10 10-2 2 2 2M14 10l2 2-2 2"/>
+    </symbol>
+    <symbol id="icon-adapter" viewBox="0 0 24 24">
+      <path class="icon" d="M8 3v5M16 3v5M6 8h12v4a6 6 0 0 1-12 0z"/>
+      <path class="icon" d="M12 18v4"/>
+    </symbol>
+    <symbol id="icon-terminal" viewBox="0 0 24 24">
+      <rect class="icon" x="3" y="4" width="18" height="16" rx="2"/>
+      <path class="icon" d="m7 9 3 3-3 3M13 15h4"/>
+    </symbol>
+    <symbol id="icon-sliders" viewBox="0 0 24 24">
+      <path class="icon" d="M4 7h10M18 7h2M4 17h2M10 17h10"/>
+      <circle class="icon" cx="16" cy="7" r="2"/>
+      <circle class="icon" cx="8" cy="17" r="2"/>
+    </symbol>
+  </defs>
+
+  <!-- (a) Trajectory construction -->
+  <rect class="panel" x="8" y="8" width="412" height="594" fill="#f3f5f4"/>
+  <text class="title" x="30" y="49">(a) Trajectory Construction</text>
+  <use href="#icon-user" x="34" y="72" width="34" height="34" style="color:#343a43"/>
+  <text class="head" x="78" y="98">student u, problem p</text>
+
+  <use href="#icon-code-file" x="47" y="135" width="56" height="56" style="color:#343a43"/>
+  <use href="#icon-code-file" x="157" y="135" width="56" height="56" style="color:#343a43"/>
+  <use href="#icon-code-file" x="317" y="135" width="56" height="56" style="color:#343a43"/>
+  <text class="code" x="64" y="215">s1</text>
+  <text class="code" x="174" y="215">s2</text>
+  <text class="code" x="333" y="215">sn</text>
+  <path class="arrow" d="M108 163 L149 163"/>
+  <path class="arrow" d="M218 163 L307 163"/>
+  <text class="head" x="254" y="150">...</text>
+  <use href="#icon-x" x="48" y="225" width="24" height="24" style="color:#d77b17"/>
+  <text class="small" x="77" y="243">WA</text>
+  <use href="#icon-x" x="158" y="225" width="24" height="24" style="color:#d77b17"/>
+  <text class="small" x="187" y="243">WA</text>
+  <use href="#icon-check" x="318" y="225" width="24" height="24" style="color:#2f8a4e"/>
+  <text class="small" x="347" y="243">AC</text>
+
+  <path class="softline" d="M30 275 L398 275"/>
+  <use href="#icon-code-file" x="39" y="306" width="42" height="42" style="color:#2d73c8"/>
+  <text class="head" x="94" y="331">trajectory prefix</text>
+  <text class="code" x="94" y="367">tau_i = [s1, ..., si]</text>
+  <text class="body" x="94" y="402">full code + verdict sequence</text>
+  <use href="#icon-context" x="39" y="450" width="42" height="42" style="color:#7652b5"/>
+  <text class="head" x="94" y="475">problem context</text>
+  <text class="body" x="94" y="510">description + constraints</text>
+  <path class="dash" d="M75 250 L75 300M185 250 L185 300M345 250 L345 300"/>
+
+  <!-- (b) Adapter-specific supervision -->
+  <rect class="panel" x="432" y="8" width="440" height="594" fill="#f7f4ef"/>
+  <text class="title" x="454" y="49">(b) Adapter-Specific Data</text>
+
+  <circle cx="500" cy="135" r="35" fill="#e6f5e9"/>
+  <use href="#icon-trend" x="477" y="112" width="46" height="46" style="color:#2f8a4e"/>
+  <text class="head" x="554" y="124">Progress</text>
+  <text class="body" x="554" y="157">compare with last retained</text>
+  <text class="body" x="554" y="185">strict or TC Pareto progress</text>
+  <path class="softline" d="M464 215 L840 215"/>
+
+  <circle cx="500" cy="286" r="35" fill="#e8f1ff"/>
+  <use href="#icon-filter" x="477" y="263" width="46" height="46" style="color:#2d73c8"/>
+  <text class="head" x="554" y="275">Strict</text>
+  <text class="body" x="554" y="308">compare with last retained</text>
+  <text class="body" x="554" y="336">strict verdict progress</text>
+  <path class="softline" d="M464 366 L840 366"/>
+
+  <circle cx="500" cy="437" r="35" fill="#fff0df"/>
+  <use href="#icon-check" x="477" y="414" width="46" height="46" style="color:#d77b17"/>
+  <text class="head" x="554" y="426">Answer</text>
+  <text class="body" x="554" y="459">each failed submission</text>
+  <text class="body" x="554" y="487">to final Accepted code</text>
+
+  <path class="arrow" d="M652 510 L652 548"/>
+  <use href="#icon-dataset" x="548" y="545" width="38" height="38" style="color:#4c535d"/>
+  <text class="small" x="597" y="570">adapter-specific SFT pairs</text>
+
+  <!-- (c) Independent adapters -->
+  <rect class="panel" x="884" y="8" width="418" height="594" fill="#f7f2ec"/>
+  <text class="title" x="906" y="49" style="font-size:23px">(c) Independent QLoRA Adapters</text>
+
+  <use href="#icon-context" x="930" y="88" width="48" height="48" style="color:#4c535d"/>
+  <text class="head" x="994" y="110">shared Prompt D</text>
+  <text class="body" x="994" y="139">context + trajectory</text>
+  <path class="arrow" d="M1093 154 L1093 201"/>
+
+  <circle cx="1093" cy="247" r="48" fill="#f0eafd"/>
+  <use href="#icon-chip" x="1063" y="217" width="60" height="60" style="color:#7652b5"/>
+  <text class="head" x="1041" y="318">Code LLM</text>
+  <text class="small" x="1018" y="344">shared frozen model</text>
+
+  <path class="arrow" d="M1093 356 L1093 387"/>
+  <path class="line" d="M965 387 L1223 387"/>
+  <path class="line" d="M965 387 L965 411M1093 387 L1093 411M1223 387 L1223 411"/>
+
+  <circle cx="965" cy="447" r="34" fill="#e6f5e9"/>
+  <use href="#icon-adapter" x="942" y="424" width="46" height="46" style="color:#2f8a4e"/>
+  <circle cx="1093" cy="447" r="34" fill="#e8f1ff"/>
+  <use href="#icon-adapter" x="1070" y="424" width="46" height="46" style="color:#2d73c8"/>
+  <circle cx="1223" cy="447" r="34" fill="#fff0df"/>
+  <use href="#icon-adapter" x="1200" y="424" width="46" height="46" style="color:#d77b17"/>
+  <text class="head" x="923" y="505">Progress</text>
+  <text class="head" x="1061" y="505">Strict</text>
+  <text class="head" x="1187" y="505">Answer</text>
+
+  <use href="#icon-code-file" x="946" y="526" width="38" height="38" style="color:#2f8a4e"/>
+  <use href="#icon-code-file" x="1074" y="526" width="38" height="38" style="color:#2d73c8"/>
+  <use href="#icon-code-file" x="1204" y="526" width="38" height="38" style="color:#d77b17"/>
+  <text class="small" x="966" y="585" text-anchor="middle">full code</text>
+  <text class="small" x="1094" y="585" text-anchor="middle">full code</text>
+  <text class="small" x="1224" y="585" text-anchor="middle">full code</text>
+
+  <!-- (d) Sequential repair -->
+  <rect class="panel" x="1314" y="8" width="478" height="594" fill="#eef4fb"/>
+  <text class="title" x="1336" y="49">(d) Sequential Repair and Selection</text>
+
+  <circle cx="1391" cy="126" r="31" fill="#e6f5e9"/>
+  <use href="#icon-trend" x="1370" y="105" width="42" height="42" style="color:#2f8a4e"/>
+  <text class="head" x="1348" y="177">Progress</text>
+  <path class="arrow" d="M1423 126 L1490 126"/>
+  <use href="#icon-terminal" x="1493" y="101" width="50" height="50" style="color:#343a43"/>
+  <text class="small" x="1491" y="177">run tests</text>
+  <path class="arrow" d="M1547 126 L1620 126"/>
+  <use href="#icon-check" x="1625" y="101" width="50" height="50" style="color:#2f8a4e"/>
+  <text class="head" x="1684" y="135">AC?</text>
+  <text class="small green-text" x="1633" y="177">yes: stop</text>
+
+  <path class="dash" d="M1715 145 L1715 236"/>
+  <text class="small" x="1726" y="213">no</text>
+
+  <circle cx="1391" cy="280" r="31" fill="#e8f1ff"/>
+  <use href="#icon-filter" x="1370" y="259" width="42" height="42" style="color:#2d73c8"/>
+  <text class="head" x="1365" y="331">Strict</text>
+  <path class="arrow" d="M1423 280 L1490 280"/>
+  <use href="#icon-terminal" x="1493" y="255" width="50" height="50" style="color:#343a43"/>
+  <text class="small" x="1491" y="331">run tests</text>
+  <path class="arrow" d="M1547 280 L1620 280"/>
+  <use href="#icon-check" x="1625" y="255" width="50" height="50" style="color:#2f8a4e"/>
+  <text class="head" x="1684" y="289">AC?</text>
+  <text class="small green-text" x="1633" y="331">yes: stop</text>
+
+  <path class="dash" d="M1715 299 L1715 390"/>
+  <text class="small" x="1726" y="367">no</text>
+
+  <circle cx="1391" cy="434" r="31" fill="#fff0df"/>
+  <use href="#icon-check" x="1370" y="413" width="42" height="42" style="color:#d77b17"/>
+  <text class="head" x="1354" y="485">Answer</text>
+  <path class="arrow" d="M1423 434 L1490 434"/>
+  <use href="#icon-terminal" x="1493" y="409" width="50" height="50" style="color:#343a43"/>
+  <text class="small" x="1491" y="485">run tests</text>
+  <path class="arrow" d="M1547 434 L1620 434"/>
+  <use href="#icon-check" x="1625" y="409" width="50" height="50" style="color:#2f8a4e"/>
+  <text class="head" x="1684" y="443">AC?</text>
+  <text class="small green-text" x="1633" y="485">yes: stop</text>
+
+  <path class="dash" d="M1715 453 L1715 520"/>
+  <text class="small" x="1726" y="509">no</text>
+  <rect x="1351" y="520" width="409" height="62" rx="10" fill="#f0eafd" stroke="#7652b5" stroke-width="2"/>
+  <use href="#icon-sliders" x="1370" y="532" width="38" height="38" style="color:#7652b5"/>
+  <text class="head" x="1421" y="548">Select candidate or current code</text>
+  <text class="small" x="1421" y="572">highest pass rate, then smallest TED</text>
+</svg>

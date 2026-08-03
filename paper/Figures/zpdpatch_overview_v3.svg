@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="620" viewBox="0 0 1800 620">
+  <defs>
+    <style>
+      .panel { stroke: #252a31; stroke-width: 2.5; rx: 14; }
+      .box { fill: #ffffff; stroke: #3f4752; stroke-width: 2; rx: 10; }
+      .title { font: 700 27px Arial, sans-serif; fill: #171a1f; }
+      .head { font: 700 22px Arial, sans-serif; fill: #20242a; }
+      .body { font: 18px Arial, sans-serif; fill: #343a43; }
+      .small { font: 16px Arial, sans-serif; fill: #414852; }
+      .code { font: italic 20px Georgia, serif; fill: #252a31; }
+      .arrow { stroke: #343a43; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .dash { stroke: #68717c; stroke-width: 2; stroke-dasharray: 7 7; fill: none; }
+      .green { fill: #e6f5e9; stroke: #2f8a4e; }
+      .blue { fill: #e8f1ff; stroke: #2d73c8; }
+      .orange { fill: #fff0df; stroke: #d77b17; }
+      .purple { fill: #f0eafd; stroke: #7652b5; }
+      .gray { fill: #f3f5f4; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto">
+      <polygon points="0 0, 9 3.5, 0 7" fill="#343a43"/>
+    </marker>
+  </defs>
+
+  <rect class="panel gray" x="8" y="8" width="412" height="604"/>
+  <text class="title" x="30" y="50">(a) Trajectory Construction</text>
+  <text class="head" x="36" y="97">student u, problem p</text>
+  <rect class="box" x="30" y="120" width="368" height="136"/>
+  <circle cx="77" cy="173" r="25" fill="#ffffff" stroke="#333941" stroke-width="2"/>
+  <circle cx="187" cy="173" r="25" fill="#ffffff" stroke="#333941" stroke-width="2"/>
+  <circle cx="345" cy="173" r="25" fill="#ffffff" stroke="#333941" stroke-width="2"/>
+  <text class="code" x="64" y="180">s1</text>
+  <text class="code" x="174" y="180">s2</text>
+  <text class="code" x="330" y="180">sn</text>
+  <path class="arrow" d="M103 173 L154 173"/>
+  <path class="arrow" d="M213 173 L312 173"/>
+  <text class="head" x="254" y="158">...</text>
+  <rect x="49" y="211" width="56" height="30" rx="6" fill="#fff0df" stroke="#d77b17" stroke-width="2"/>
+  <rect x="159" y="211" width="56" height="30" rx="6" fill="#fff0df" stroke="#d77b17" stroke-width="2"/>
+  <rect x="317" y="211" width="56" height="30" rx="6" fill="#e6f5e9" stroke="#2f8a4e" stroke-width="2"/>
+  <text class="small" x="62" y="232">WA</text>
+  <text class="small" x="172" y="232">WA</text>
+  <text class="small" x="330" y="232">AC</text>
+  <path class="dash" d="M77 256 L77 316"/>
+  <path class="dash" d="M187 256 L187 316"/>
+  <path class="dash" d="M345 256 L345 316"/>
+  <rect class="box" x="30" y="316" width="368" height="245"/>
+  <text class="head" x="50" y="353">trajectory prefix</text>
+  <text class="code" x="50" y="394">tau_i = [s1, ..., si]</text>
+  <text class="body" x="50" y="432">full code + verdict sequence</text>
+  <text class="head" x="50" y="478">problem context</text>
+  <text class="body" x="50" y="516">description + constraints</text>
+
+  <rect class="panel" x="432" y="8" width="440" height="604" fill="#f7f4ef"/>
+  <text class="title" x="454" y="50">(b) Transition Specialization</text>
+  <rect class="box green" x="456" y="86" width="392" height="132"/>
+  <text class="head" x="478" y="122">Progress</text>
+  <text class="body" x="478" y="157">strict verdict improvement</text>
+  <text class="body" x="478" y="188">or additional passed tests</text>
+  <rect class="box blue" x="456" y="242" width="392" height="132"/>
+  <text class="head" x="478" y="278">Strict</text>
+  <text class="body" x="478" y="313">strict severity improvement</text>
+  <text class="body" x="478" y="344">strict-improving history</text>
+  <rect class="box orange" x="456" y="398" width="392" height="132"/>
+  <text class="head" x="478" y="434">Answer</text>
+  <text class="body" x="478" y="469">final trajectory prefix</text>
+  <text class="body" x="478" y="500">Accepted program target</text>
+  <path class="arrow" d="M652 530 L652 577"/>
+  <text class="small" x="546" y="595">full-code SFT targets</text>
+
+  <rect class="panel" x="884" y="8" width="418" height="604" fill="#f7f2ec"/>
+  <text class="title" x="906" y="50" style="font-size:23px">(c) Independent QLoRA Adapters</text>
+  <rect class="box" x="910" y="86" width="366" height="112"/>
+  <text class="head" x="936" y="125">shared Prompt D</text>
+  <text class="body" x="936" y="160">problem context + trajectory</text>
+  <path class="arrow" d="M1093 198 L1093 242"/>
+  <rect class="box purple" x="962" y="242" width="262" height="80"/>
+  <text class="head" x="992" y="278">Code LLM</text>
+  <text class="body" x="992" y="305">shared frozen base model</text>
+  <path class="arrow" d="M1093 322 L1093 359"/>
+  <rect class="box green" x="910" y="360" width="110" height="112"/>
+  <rect class="box blue" x="1040" y="360" width="110" height="112"/>
+  <rect class="box orange" x="1170" y="360" width="106" height="112"/>
+  <text class="head" x="923" y="402">Prog.</text>
+  <text class="small" x="925" y="436">adapter</text>
+  <text class="head" x="1058" y="402">Strict</text>
+  <text class="small" x="1055" y="436">adapter</text>
+  <text class="head" x="1181" y="402">Answer</text>
+  <text class="small" x="1184" y="436">adapter</text>
+  <path class="arrow" d="M965 472 L965 535"/>
+  <path class="arrow" d="M1095 472 L1095 535"/>
+  <path class="arrow" d="M1223 472 L1223 535"/>
+  <text class="small" x="915" y="566">one full Python program per adapter</text>
+
+  <rect class="panel" x="1314" y="8" width="478" height="604" fill="#eef4fb"/>
+  <text class="title" x="1336" y="50">(d) Sequential Repair and Selection</text>
+  <rect class="box green" x="1352" y="84" width="126" height="72"/>
+  <text class="head" x="1370" y="128">Progress</text>
+  <path class="arrow" d="M1478 120 L1518 120"/>
+  <rect class="box" x="1518" y="84" width="104" height="72"/>
+  <text class="head" x="1533" y="113">Run</text>
+  <text class="small" x="1538" y="140">tests</text>
+  <path class="arrow" d="M1622 120 L1662 120"/>
+  <rect class="box" x="1662" y="84" width="98" height="72"/>
+  <text class="head" x="1684" y="128">AC?</text>
+  <text class="small" x="1669" y="181">yes: stop</text>
+
+  <path class="arrow" d="M1711 156 L1711 220"/>
+  <text class="small" x="1723" y="199">no</text>
+  <rect class="box blue" x="1352" y="220" width="126" height="72"/>
+  <text class="head" x="1379" y="264">Strict</text>
+  <path class="arrow" d="M1478 256 L1518 256"/>
+  <rect class="box" x="1518" y="220" width="104" height="72"/>
+  <text class="head" x="1533" y="249">Run</text>
+  <text class="small" x="1538" y="276">tests</text>
+  <path class="arrow" d="M1622 256 L1662 256"/>
+  <rect class="box" x="1662" y="220" width="98" height="72"/>
+  <text class="head" x="1684" y="264">AC?</text>
+  <text class="small" x="1669" y="317">yes: stop</text>
+
+  <path class="arrow" d="M1711 292 L1711 356"/>
+  <text class="small" x="1723" y="335">no</text>
+  <rect class="box orange" x="1352" y="356" width="126" height="72"/>
+  <text class="head" x="1371" y="400">Answer</text>
+  <path class="arrow" d="M1478 392 L1518 392"/>
+  <rect class="box" x="1518" y="356" width="104" height="72"/>
+  <text class="head" x="1533" y="385">Run</text>
+  <text class="small" x="1538" y="412">tests</text>
+  <path class="arrow" d="M1622 392 L1662 392"/>
+  <rect class="box" x="1662" y="356" width="98" height="72"/>
+  <text class="head" x="1684" y="400">AC?</text>
+  <text class="small" x="1669" y="453">yes: stop</text>
+
+  <path class="arrow" d="M1711 428 L1711 482"/>
+  <text class="small" x="1723" y="471">no</text>
+  <rect class="box purple" x="1370" y="482" width="390" height="96"/>
+  <text class="head" x="1394" y="520">Select candidate or current code</text>
+  <text class="body" x="1394" y="553">highest pass rate, then smallest TED</text>
+</svg>

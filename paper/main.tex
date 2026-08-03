@@ -1,0 +1,386 @@
+\documentclass[letterpaper]{article} % DO NOT CHANGE THIS
+\usepackage[submission]{aaai2027}  % DO NOT CHANGE THIS
+\usepackage{kotex}
+\usepackage[hyphens]{url}  % DO NOT CHANGE THIS
+\usepackage{graphicx} % DO NOT CHANGE THIS
+\urlstyle{rm} % DO NOT CHANGE THIS
+\def\UrlFont{\rm}  % DO NOT CHANGE THIS
+\usepackage{natbib}  % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\usepackage{caption} % DO NOT CHANGE THIS AND DO NOT ADD ANY OPTIONS TO IT
+\frenchspacing  % DO NOT CHANGE THIS
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{placeins}
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\setcounter{secnumdepth}{0}
+
+\title{ZPD-Guided Program Repair from Student Submission Trajectories}
+\author{Anonymous Submission}
+\affiliations{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Large language model (LLM)의 발전으로 Automated Program Repair (APR)은 학생의 buggy program에 맞는 patch를 자동으로 생성할 수 있게 되었다. 그러나 current buggy program만으로는 같은 코드에 도달하기까지 학생이 수행한 modifications와 그에 따라 달라지는 적절한 repair 범위를 알기 어렵다. 본 연구는 학생의 submission trajectory에서 자연스럽게 이어지는 patch를 생성하는 ZPD-guided program repair task와 이를 위한 ZPDPatch를 제안한다. ZPDPatch는 실제 submission trajectories에서 서로 다른 개선 목표를 가진 repair transitions를 추출하고, 하나의 code LLM에 Progress, Strict, Answer QLoRA adapters를 독립적으로 학습한다. 추론에서는 세 adapters를 순차적으로 호출하고 candidate fixed program을 실행하여, \texttt{Accepted}에 도달하면 즉시 종료하며 그렇지 않으면 실행 개선과 modification size를 함께 고려해 patch를 선택한다. Project CodeNet 평가에서 ZPDPatch는 Seen과 Unseen problems에서 Zero-shot보다 각각 25.9와 10.0 percentage points 높은 Repair Rate를 보였고 더 작은 patches를 생성했으나, Seen에서 retrieval-based LSGen의 Repair Rate에는 미치지 못했다. 또한 full trajectory ablation은 current code only보다 일관된 우위를 보이지 않아, 성능 향상의 주된 근거가 trajectory history 자체보다는 adapter supervision과 sequential escalation에 있음을 확인했다.
+% Advances in large language models (LLMs) have enabled Automated Program Repair (APR) to generate patches for a student's buggy program. However, the current buggy program alone does not reveal the modifications that led to it or the repair scope appropriate for that trajectory. We formulate ZPD-guided program repair as generating a patch that naturally follows the student's submission trajectory and propose ZPDPatch. ZPDPatch mines repair transitions with distinct improvement targets from authentic submission trajectories and independently trains Progress, Strict, and Answer QLoRA adapters over one code LLM. At inference time, it invokes the adapters sequentially and executes each candidate fixed program, stopping immediately upon Accepted and otherwise selecting a patch by execution improvement and modification size. We evaluate ZPDPatch against a zero-shot LLM and retrieval-based APR on Project CodeNet under problem-familiarity settings, and analyze the contribution of each adapter and their sequential composition.
+\end{abstract}
+
+\section{Introduction}
+
+프로그래밍 교육에서 피드백은 학생이 결함을 인식하고 스스로 해결 전략을 조정하는 핵심 과정이다. 학생은 코드를 작성하고 제출하며, 자동 채점 시스템이 제공하는 실행 결과를 바탕으로 다시 코드를 수정한다. 온라인 저지와 autograder는 이러한 반복 과정을 즉각적으로 지원함으로써 교육의 확장성을 크게 높였지만, 학생에게 제공되는 정보는 여전히 제한적이다. 예를 들어 \texttt{Wrong Answer}, \texttt{Runtime Error}, \texttt{Time Limit Exceeded}와 같은 verdict는 제출 코드의 실패 여부를 알려줄 뿐, 동일한 실패 결과 안에서 학생의 수정이 실제로 개선되고 있는지, 같은 결함이 반복되고 있는지, 또는 현재 코드 흐름을 유지한 채 다음 modification step으로 나아갈 수 있는지는 구분하지 못한다. 결과적으로 학생은 같은 verdict를 여러 번 보면서도 자신의 코드에서 이어갈 수 있는 다음 modification step을 판단하기 어렵다. 또한, 학생마다 작성한 프로그램의 구조와 접근 방식이 다르기 때문에, 강사가 이를 모두 확인하고 일일이 개인화된 피드백을 제공하기란 어렵다.
+% Feedback is central to how students recognize faults and adjust their problem-solving strategies in programming education. Students repeatedly write, submit, and revise code in response to execution feedback from automated graders. Online judges and autograders make this iterative process scalable, but the information they provide remains limited. Verdicts such as \texttt{Wrong Answer}, \texttt{Runtime Error}, and \texttt{Time Limit Exceeded} indicate failure without distinguishing whether a modification represents progress, repeats an existing fault, or provides a viable next step within the student's current approach. A student may therefore receive the same verdict repeatedly without knowing which modification can productively follow from the current program. Instructors, meanwhile, cannot manually provide individualized feedback for every distinct program structure and fault pattern at scale.
+
+Automated Program Repair (APR)는 buggy program의 결함을 수정하기 위한 patch를 자동으로 생성하는 technique이다. 학생마다 제출 코드의 구조와 결함 양상이 다르기 때문에, 이러한 patch는 각 학생 코드에 맞춘 실행 가능한 modifications이자 즉각적인 피드백으로 활용된다. CLARA는 다수의 reference programs를 클러스터링하고, 학생 코드가 가까운 reference program으로 이동할 수 있도록 프로그램 변환을 찾는다~\citep{gulwani2018automated}. SARFGEN은 학생 코드와 reference program 사이의 search-align-repair 절차를 통해 candidate patches를 생성한다~\citep{wang2018search}. Refactory는 두 프로그램 사이의 구조적 차이를 refactoring 관점에서 정렬한다~\citep{hu2020re}. 최근에는 LLM 기반 patch generation, counterexample-guided repair, edit-driven retrieval enhancement를 통해 candidate patches를 생성하고 개선한다~\citep{zhang2022repairing,orvalho2025counterexample,dai2026learner}. 자동으로 생성된 patch는 강사의 피드백 부담을 줄이고, 학생이 자신의 buggy program과 fixed program을 비교하여 결함과 modifications를 학습할 기회를 제공한다.
+% Automated Program Repair (APR) is a technique for automatically generating patches for faults in a buggy program. Since student programs differ in structure and fault pattern, such patches can serve as executable, individualized modifications and immediate feedback. CLARA clusters reference programs and finds transformations toward a nearby reference program~\citep{gulwani2018automated}. SARFGEN generates candidate patches through a search-align-repair procedure between a student program and a reference program~\citep{wang2018search}. Refactory aligns structural differences between the two programs through refactoring~\citep{hu2020re}. Recent work uses LLM-based patch generation, counterexample-guided repair, and edit-driven retrieval enhancement to generate and improve candidate patches~\citep{zhang2022repairing,orvalho2025counterexample,dai2026learner}. Automatically generated patches can reduce instructors' feedback burden and allow students to learn faults and modifications by comparing buggy and fixed programs.
+
+Zone of Proximal Development (ZPD)\footnote{\url{https://en.wikipedia.org/wiki/Zone_of_proximal_development}}는 학생이 도움 없이 수행할 수 있는 zone과 도움을 받더라도 아직 수행할 수 없는 zone 사이의, 적절한 도움을 받으면 도달할 수 있는 zone을 의미한다~\citep{cole1978mind}. 프로그래밍 과제의 피드백도 단순히 correct patch를 제공하는 것보다 현재 학생의 ZPD를 고려한 patch가 더 적절할 수 있다. 예를 들어 같은 buggy program이더라도 여러 번의 제출 끝에 그 상태에 도달한 학생에게는 남은 결함을 한 번에 해결하는 correct patch보다, 약간의 도움을 통해 다음 단계에서 수행할 수 있는 patch가 더 적절할 수 있다. 반면 한 번의 제출만에 같은 상태에 도달한 학생에게는 correct patch가 이해 가능한 비교 대상이 될 수 있다. 따라서 patch의 적절성은 current code snapshot만으로 결정되지 않으며, 반복된 결함, 최근 modifications, verdict 변화와 같은 submission trajectory를 함께 고려해야 한다.
+% The Zone of Proximal Development (ZPD)\footnote{\url{https://en.wikipedia.org/wiki/Zone_of_proximal_development}} is the region between what a learner can perform independently and what remains unattainable even with assistance, where appropriate support enables progress~\citep{cole1978mind}. Feedback for programming assignments may therefore be more appropriate when it considers the student's ZPD rather than simply providing a correct patch. For two students with the same buggy program, one who reached it after many submissions may benefit from a patch that supports a manageable next step, while one who reached it immediately may be able to use a correct patch as an understandable comparison. Patch appropriateness cannot therefore be determined from the current code snapshot alone; it should also consider repeated faults, recent modifications, and verdict changes in the submission trajectory.
+
+In this paper, 우리는 current buggy program만으로는 학생마다 달라지는 적절한 repair 범위를 결정하기 어렵다는 문제를 해결하기 위해 ZPDPatch를 제안한다. 먼저 실제 student submission histories를 trajectories로 구성하고, verdict와 testcase outcome의 변화에 따라 Progress, Strict, Answer라는 세 repair transition 집합을 만든다. 다음으로 동일한 code LLM 위에 세 QLoRA adapters를 독립적으로 fine-tuning하여, 각각 부분적인 실행 개선, 명확한 verdict 개선, correct program 도달을 학습하게 한다. 추론에서는 adapters를 Progress, Strict, Answer 순으로 호출하며, 각 candidate fixed program을 실행한 뒤 \texttt{Accepted}이면 즉시 반환한다. 세 후보가 모두 실패하면 pass rate가 가장 높은 후보를 선택하고, 동률에서는 current buggy program과의 Tree Edit Distance (TED)가 가장 작은 후보를 선택한다. 이 구조는 하나의 correct patch를 모든 학생에게 바로 제공하는 대신, 학생의 trajectory와 현재 repair 가능성에 맞춰 도움의 범위를 점진적으로 확장한다.
+% In this paper, we propose ZPDPatch to address the difficulty of determining an appropriate repair scope from the current buggy program alone. We first organize authentic student submission histories into trajectories and construct three repair-transition sets, Progress, Strict, and Answer, according to changes in verdict and test-case outcomes. We then independently fine-tune three QLoRA adapters over the same code LLM to learn partial execution improvement, strict verdict improvement, and arrival at a correct program, respectively. At inference time, ZPDPatch invokes the adapters in the order Progress, Strict, and Answer, executes each candidate fixed program, and returns immediately upon Accepted. If all candidates fail, it selects the one with the highest pass rate and breaks ties by the smallest Tree Edit Distance (TED) from the current buggy program. Rather than immediately giving every student one correct patch, this design progressively broadens the scope of support according to the student's trajectory and current repairability.
+
+본 논문의 기여는 다음과 같다.
+% Our contributions are as follows:
+\begin{itemize}
+    \item ZPDPatch operationalizes ZPD-guided APR by using the target student's own submission trajectory as the repair condition.
+    \item We build a trajectory-conditioned repair framework that combines Progress, Strict, and Answer adapters for distinct repair scopes with execution-guided sequential escalation.
+    \item We compare ZPDPatch with a zero-shot LLM and retrieval-based APR on seen and unseen problems under the same three-generation budget, evaluating pass rate, repair rate, improvement rate, repair time, and patch distance.
+\end{itemize}
+
+\section{Related Work}
+
+Programming assignments를 위한 초기 APR systems는 reference programs를 clustering하거나 student code를 reference programs와 alignment하여 buggy programs를 repair한다~\citep{gulwani2018automated,wang2018search,hu2020re,yi2017feasibility}. 여기서 reference programs는 일반적으로 같은 programming assignment에 대한 peer students의 correct programs를 의미한다. 이후 연구는 assignment-aware neural feedback, multiple-function programs, diversified feedback generation으로 범위를 확장했다~\citep{heo2023referent,choi2021automated,choi2025automated}. 최근에는 LLM을 program repair engine으로 사용하는 연구가 증가하고 있다. RING은 multilingual LLM-based program repair를 연구하고~\citep{joshi2023repair}, PyDex와 PyFiXV는 LLM과 retrieved examples를 사용한다~\citep{zhang2024pydex,phung2023generating}. CREF는 multi-turn conversational repair를 사용하고~\citep{yang2024cref}, FastFixer는 모델을 fine-tuning하며~\citep{liu2024fastfixer}, PAR은 peer students의 reference programs를 검색한다~\citep{zhao2024peer}. Counterexample-guided repair는 zero-shot LLM과 MaxSAT-based Fault Localization을 결합하고~\citep{orvalho2025counterexample}, LSGen은 submission 및 evaluation data를 활용한 iterative retrieval로 fixed programs를 생성한다~\citep{dai2026learner}. 이들 접근은 주로 current buggy program, retrieved examples, 또는 auxiliary diagnostic information을 조건으로 사용한다.
+% Early APR systems for programming assignments repair buggy programs by clustering reference programs or aligning student code with reference programs~\citep{gulwani2018automated,wang2018search,hu2020re,yi2017feasibility}. Here, reference programs usually denote peer students' correct programs for the same assignment. Later systems extend to assignment-aware neural feedback, multiple-function programs, and diversified feedback generation~\citep{heo2023referent,choi2021automated,choi2025automated}. Recent work increasingly uses LLMs as program repair engines. RING studies multilingual LLM-based repair~\citep{joshi2023repair}; PyDex and PyFiXV use LLMs and retrieved examples~\citep{zhang2024pydex,phung2023generating}; CREF uses multi-turn conversational repair~\citep{yang2024cref}; FastFixer fine-tunes repair models~\citep{liu2024fastfixer}; and PAR retrieves reference programs from peer students~\citep{zhao2024peer}. Counterexample-guided repair combines a zero-shot LLM with MaxSAT-based fault localization~\citep{orvalho2025counterexample}, while LSGen generates fixed programs through iterative retrieval over submission and evaluation data~\citep{dai2026learner}. These approaches primarily condition repair on the current buggy program, retrieved examples, or auxiliary diagnostic information.
+
+Educational feedback은 학습자가 도움을 받아 productive하게 수행할 수 있는 범위와도 맞아야 한다. 선행 연구는 programming exercises의 feedback 유형을 정리하고~\citep{keuning2018systematic}, intelligent tutoring systems에서 adaptive scaffolding과 help-seeking behavior를 연구했다~\citep{aleven2000limitations}. Adaptive instructional systems에서는 학습 활동을 productive range 안에 유지하기 위해 ZPD를 computationally modeling했다~\citep{murray2002toward,chounta2017grey}. Programming education의 next-step hints와 hint ladders는 단계적인 guidance를 제공한다~\citep{price2017isnap,roest2024next,xiao2024exploring,heickal2024generating}. To the best of our knowledge, ZPDPatch는 target student 자신의 submission trajectory를 직접 사용해 buggy program을 repair하는 최초의 APR tool이다.
+% Educational feedback should also match what a learner can productively perform with support. Prior work categorizes feedback for programming exercises~\citep{keuning2018systematic}, while intelligent tutoring systems study adaptive scaffolding and help-seeking behavior~\citep{aleven2000limitations}. Adaptive instructional systems computationally model ZPD to keep learning activities in a productive range~\citep{murray2002toward,chounta2017grey}. Next-step hints and hint ladders provide graduated guidance in programming education~\citep{price2017isnap,roest2024next,xiao2024exploring,heickal2024generating}. To the best of our knowledge, ZPDPatch is the first APR tool to directly use the target student's own submission trajectory to repair a buggy program.
+
+\section{Preliminaries}
+
+문제 \(p\)에 대한 한 학생의 \(i\)번째 submission을 \(s_i=(c_i,v_i)\)로 나타낸다. \(c_i\)는 full source code이고 \(v_i\)는 online judge verdict이다. 시간순으로 정렬되고 첫 \texttt{Accepted} submission에서 끝나는 \(\tau=[s_1,s_2,\ldots,s_n]\)을 submission trajectory라 한다. 문제 설명과 실행 제약을 \(d_p\), 공개 testcases를 \(\mathcal{E}_p\)라 한다. \(c_i\)를 \(\mathcal{E}_p\)에서 재실행해 얻은 testcase별 verdict vector는 \(o_i=(o_i(e))_{e\in\mathcal{E}_p}\)로 나타낸다.
+% Let the \(i\)-th submission by one student for problem \(p\) be \(s_i=(c_i,v_i)\), where \(c_i\) is the full source code and \(v_i\) is the online-judge verdict. A chronologically ordered sequence \(\tau=[s_1,s_2,\ldots,s_n]\) ending at the first \texttt{Accepted} submission is a submission trajectory. Let \(d_p\) denote the problem description and execution constraints, and let \(\mathcal{E}_p\) be the public test cases. We write the per-test verdict vector obtained by re-executing \(c_i\) on \(\mathcal{E}_p\) as \(o_i=(o_i(e))_{e\in\mathcal{E}_p}\).
+
+ZPDPatch의 한 repair example은 observed submissions의 sequence \(h\), target full code \(y\), 그리고 problem context \(d_p\)로 구성된다. \(h\)와 \(y\)는 반드시 원 trajectory에서 인접할 필요가 없으며, adapter별 규칙이 trajectory에서 어떤 submissions를 유지하고 어느 code를 target으로 삼을지 결정한다. 모델은 \(x=(d_p,h)\)를 입력받아 complete program \(\hat c\)를 생성한다.
+% A ZPDPatch repair example consists of a sequence of observed submissions \(h\), a target full program \(y\), and problem context \(d_p\). The history and target need not be adjacent in the original trajectory; an adapter-specific rule determines which submissions are retained and which code becomes the target. Given \(x=(d_p,h)\), the model generates a complete program \(\hat c\).
+
+같은 current code라도 그 이전에 반복된 오류, 시도한 modifications, 그리고 개선 경로가 다르면 적절한 patch가 달라질 수 있다. 본 연구는 ZPD를 학생이 관찰된 trajectory에서 실제로 도달한 더 나은 상태로 operationalize한다. 즉 recorded next submission 자체를 모사하기보다, trajectory가 보여 주는 reachable improvement를 supervision으로 사용하여 current solution strategy를 이어 가는 patch를 학습한다.
+% Even for the same current code, an appropriate patch can differ according to prior repeated errors, attempted modifications, and the improvement path. We operationalize ZPD as a better state that the learner demonstrably reached in the observed trajectory. Rather than imitating the recorded next submission itself, we use reachable improvements evidenced by the trajectory as supervision for patches that continue the current solution strategy.
+
+\section{ZPDPatch: ZPD-Guided Program Repair}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/zpdpatch_overview_v4.png}
+    \caption{ZPDPatch overview. (a) 학생별 submission trajectory와 problem context를 구성한다. (b) adapter별 규칙으로 trajectory를 변환하고 supervision pairs를 만든다. (c) 동일한 code LLM 위에 세 QLoRA adapters를 독립적으로 학습한다. (d) adapters를 순차적으로 호출하고 실행 결과로 조기 종료하거나 후보를 선택한다.}
+%     \caption{Overview of ZPDPatch. (a) It constructs student-specific submission trajectories and problem context. (b) Adapter-specific rules transform each trajectory and construct supervision pairs. (c) It independently trains three QLoRA adapters over the same code LLM. (d) It invokes the adapters sequentially and uses execution outcomes for early stopping or candidate selection.}
+    \label{fig:zpdpatch-overview}
+\end{figure*}
+
+Figure~\ref{fig:zpdpatch-overview}와 같이 ZPDPatch는 trajectory construction, adapter-specific supervision, independent adapter training, sequential repair의 네 단계로 구성된다. 세 adapters는 동일한 prompt와 base LLM을 공유하지만 서로 다른 규칙으로 구성된 datasets를 학습한다. 따라서 Progress, Strict, Answer라는 명칭은 prompt에 주어지는 역할 instruction이 아니라 training supervision의 차이를 나타낸다.
+% As shown in Figure~\ref{fig:zpdpatch-overview}, ZPDPatch consists of trajectory construction, adapter-specific supervision, independent adapter training, and sequential repair. The three adapters share the same prompt and base LLM but learn datasets constructed by different rules. The names Progress, Strict, and Answer therefore denote differences in training supervision rather than role instructions in the prompt.
+
+\subsubsection{Trajectory Construction}
+Submissions를 문제와 학생별로 묶어 시간순으로 정렬하고 첫 \texttt{Accepted} submission에서 trajectory를 종료한다. 각 code는 comments와 blank lines를 제거하고 indentation을 통일하며, 정규화 후 연속해서 동일한 submissions는 제거한다. 이 단계에서는 history 길이나 transition 수를 제한하지 않는다. 각 adapter의 규칙을 적용할 때까지 full code, online verdict, submission order를 모두 보존하며, Progress를 위해 모든 public testcases의 재실행 결과를 cache한다.
+% We group submissions by problem and student, order them chronologically, and terminate each trajectory at its first \texttt{Accepted} submission. We remove comments and blank lines, normalize indentation, and delete consecutive submissions that become identical after normalization. This stage imposes no limit on history length or transition count. Until applying an adapter-specific rule, we retain full code, online verdict, and submission order, and cache re-execution outcomes for every public test case for Progress.
+
+\subsubsection{Adapter-Specific Supervision}
+Verdict severity를 \(\mathrm{sev}(\texttt{AC})=0\), \(\mathrm{sev}(\texttt{WA})=1\), \(\mathrm{sev}(\texttt{TLE/MLE})=2\), \(\mathrm{sev}(\texttt{RE})=3\), \(\mathrm{sev}(\texttt{CE})=4\), 기타 internal error를 5로 둔다. 같은 non-empty testcase keys에서 모든 \(e\)에 대해 \(\mathrm{sev}(o_t(e))\leq\mathrm{sev}(o_r(e))\)이면 \(o_t\preceq_{\mathrm{sev}}o_r\)로 쓴다. Testcase-level progress는 한 testcase도 악화되지 않고 적어도 하나가 엄격히 개선되는 Pareto condition이다.
+% We define verdict severity as \(\mathrm{sev}(\texttt{AC})=0\), \(\mathrm{sev}(\texttt{WA})=1\), \(\mathrm{sev}(\texttt{TLE/MLE})=2\), \(\mathrm{sev}(\texttt{RE})=3\), \(\mathrm{sev}(\texttt{CE})=4\), and 5 for other internal errors. Over the same non-empty test-case keys, we write \(o_t\preceq_{\mathrm{sev}}o_r\) when \(\mathrm{sev}(o_t(e))\leq\mathrm{sev}(o_r(e))\) for every \(e\). Test-case-level progress is the Pareto condition that no case becomes worse and at least one case strictly improves.
+
+\[
+\mathrm{TCProg}(r,t)=
+\mathbf{1}\!\left[o_t\preceq_{\mathrm{sev}}o_r
+\land o_t\neq o_r\right].
+\]
+
+\textbf{Answer Adapter.} Final submission \(s_n\)이 \texttt{Accepted}이면, 그 앞의 모든 Non-AC submission을 각각 단독 input으로 사용하고 \(c_n\)을 공통 target으로 둔다. 즉 \(\tau=[S_1,\ldots,S_9]\)이면 \(( [S_1],c_9),\ldots,([S_8],c_9)\)를 만든다. Answer는 trajectory를 자른 마지막 prefix 하나가 아니라, 각 실패 submission과 final answer 사이의 1:1 mapping을 학습한다.
+% \textbf{Answer Adapter.} If the final submission \(s_n\) is \texttt{Accepted}, every preceding Non-AC submission is independently used as a single-submission input with \(c_n\) as the common target. Thus, for \(\tau=[S_1,\ldots,S_9]\), we construct \(( [S_1],c_9),\ldots,([S_8],c_9)\). Answer learns a one-to-one mapping between each failed submission and the final answer, rather than only one truncated final prefix.
+
+\textbf{Strict Adapter.} \(R=[s_1]\)로 시작하고 original trajectory를 순서대로 scan한다. Candidate \(s_t\)는 마지막 retained submission \(s_r=R[-1]\)보다 online verdict severity가 엄격히 낮을 때, 즉 \(\mathrm{sev}(v_t)<\mathrm{sev}(v_r)\)일 때만 \(R\)에 추가한다. \(R=[r_1,\ldots,r_m]\)을 얻으면 모든 \(k=2,\ldots,m\)에 대해 \(([r_1,\ldots,r_{k-1}],c_{r_k})\)를 학습 example로 만든다. 따라서 비교 기준은 직전 original submission이 아니라 마지막 retained submission이다.
+% \textbf{Strict Adapter.} Starting with \(R=[s_1]\), we scan the original trajectory in order. A candidate \(s_t\) is appended only if its online-verdict severity is strictly lower than that of the last retained submission \(s_r=R[-1]\), i.e., \(\mathrm{sev}(v_t)<\mathrm{sev}(v_r)\). Given \(R=[r_1,\ldots,r_m]\), we construct \(([r_1,\ldots,r_{k-1}],c_{r_k})\) for every \(k=2,\ldots,m\). The comparison is therefore against the last retained submission, not the immediately preceding original submission.
+
+\textbf{Progress Adapter.} Strict와 같은 retained scan을 사용하되, \(s_t\)를 (1) online verdict가 엄격히 개선되거나, (2) original online verdict가 \(v_t=v_r\)로 같고 \(\mathrm{TCProg}(r,t)=1\)일 때 유지한다. Retained trajectory에서 만드는 모든 prefix--target examples의 형식도 Strict와 같다. Progress는 online judge의 coarse verdict가 같더라도 testcase별 실행 결과가 단조롭게 개선된 실제 intermediate step을 추가로 학습한다.
+% \textbf{Progress Adapter.} Progress uses the same retained scan as Strict, but keeps \(s_t\) when either (1) its online verdict strictly improves or (2) the original online verdict is identical, \(v_t=v_r\), and \(\mathrm{TCProg}(r,t)=1\). It constructs the same prefix--target examples from the retained trajectory as Strict. Progress additionally learns actual intermediate steps whose per-test outcomes improve monotonically even when the coarse online-judge verdict remains unchanged.
+
+세 datasets는 독립적으로 구성되며 서로 배타적일 필요가 없다. Strict examples는 Progress에도 포함될 수 있고 final \texttt{Accepted} transition도 두 datasets에 포함된다. 그러나 Answer의 pair construction과 Strict/Progress의 retained-prefix construction은 서로 다른 supervision objective를 형성한다.
+% The three datasets are constructed independently and need not be disjoint. Strict examples can also occur in Progress, and the final \texttt{Accepted} transition can appear in both. Nevertheless, Answer's pair construction and Strict/Progress's retained-prefix construction define distinct supervision objectives.
+
+\subsubsection{Trajectory-Conditioned Adapter Training}
+세 adapters는 동일한 Prompt D를 사용한다. System message에는 problem description과 time/memory constraints를 제공하고, history의 각 retained submission은 full code와 online verdict를 포함하는 별도 user message로 표현한다. Cache가 존재하면 testcase별 execution feedback을 추가하고, 연속 submissions 사이의 AST/line edit summary도 함께 제공한다. 마지막 user message가 current buggy program이며 assistant target은 하나의 complete Python program이다. Prompt에는 adapter 역할을 명시하지 않으므로 specialization은 오직 dataset construction에서 발생한다.
+% All three adapters use the same Prompt D. The system message provides the problem description and time/memory constraints, and every retained history submission is represented as a separate user message containing its full code and online verdict. When cached outcomes are available, we add per-test execution feedback and an AST/line edit summary between consecutive submissions. The final user message is the current buggy program, and the assistant target is one complete Python program. The prompt does not state an adapter role; specialization arises solely from dataset construction.
+
+Problem context와 trajectory prefix를 \(x_i=(d_p,\tau_j^{(i)})\), target code token sequence를 \(y_i\)라 할 때, 각 adapter \(a\in\{\mathrm{prog},\mathrm{strict},\mathrm{ans}\}\)는 자신의 dataset \(\mathcal{D}_a\)에서 standard supervised fine-tuning (SFT) objective를 최소화한다.
+% Let \(x_i=(d_p,\tau_j^{(i)})\) be the problem context and trajectory prefix, and \(y_i\) the target-code token sequence. Each adapter \(a\in\{\mathrm{prog},\mathrm{strict},\mathrm{ans}\}\) minimizes the standard supervised fine-tuning (SFT) objective over its own dataset \(\mathcal{D}_a\).
+
+\[
+\mathcal{L}_a=
+-\frac{1}{|\mathcal{D}_a|}
+\sum_{(x_i,y_i)\in\mathcal{D}_a}
+\frac{1}{|y_i|}
+\sum_{k=1}^{|y_i|}
+\log P_{\theta,\phi_a}(y_{i,k}\mid y_{i,<k},x_i),
+\]
+
+여기서 \(\theta\)는 공유하는 frozen base LLM이고 \(\phi_a\)는 adapter별 QLoRA parameters이다. Loss는 assistant target tokens에만 적용하고 prompt tokens는 masking한다. 세 adapters는 하나의 multi-head model로 공동 학습되지 않으며 동일한 base LLM 위에 별도 checkpoints로 저장된다.
+% Here, \(\theta\) is the shared frozen base LLM and \(\phi_a\) denotes adapter-specific QLoRA parameters. The loss is applied only to assistant target tokens, with prompt tokens masked. The adapters are not jointly trained as a multi-head model; they are stored as separate checkpoints over the same base LLM.
+
+\subsubsection{Sequential Repair and Selection}
+추론 시 current program과 trajectory의 모든 submissions를 먼저 public testcases에서 실행하여 Prompt D의 execution feedback을 완성한다. 세 adapters는 동일한 original trajectory prefix를 기반으로 Progress, Strict, Answer 순서로 각각 하나의 full-code candidate를 생성한다. Candidate가 \texttt{AC}이면 즉시 반환한다. 실패하면 verdict, pass rate, testcase별 outcomes, current program 대비 개선 여부를 다음 단계 prompt에 추가하여 같은 실패를 반복하지 않도록 한다. No-op 또는 regression candidate는 code를 재제시하지 않고 실행 결과만 전달한다.
+% At inference time, we first execute the current program and all trajectory submissions on the public test cases to complete Prompt D's execution feedback. Based on the same original trajectory prefix, the three adapters generate one full-code candidate in Progress, Strict, and Answer order. A candidate is immediately returned if it is \texttt{AC}. Otherwise, its verdict, pass rate, per-test outcomes, and improvement status relative to the current program are appended to the next-stage prompt to avoid repeating the same failure. For a no-op or regression, only its execution result, not its code, is supplied.
+
+세 candidates가 모두 실패하면 current buggy program \(c_i\)를 fallback으로 포함한 집합 \(\mathcal{C}=\{c_i,c^{\mathrm{prog}},c^{\mathrm{strict}},c^{\mathrm{ans}}\}\)에서 최종 program을 선택한다. \(\mathrm{Pass}(c)=|Q(c)|/|\mathcal{E}_p|\)이고 \(\mathrm{ted}\)가 AST Tree Edit Distance일 때 선택 규칙은 다음과 같다.
+% If all three candidates fail, the final program is selected from \(\mathcal{C}=\{c_i,c^{\mathrm{prog}},c^{\mathrm{strict}},c^{\mathrm{ans}}\}\), which includes the current buggy program as a fallback. Let \(\mathrm{Pass}(c)=|Q(c)|/|\mathcal{E}_p|\) and let \(\mathrm{ted}\) be AST Tree Edit Distance. The selection rule is:
+
+\[
+c^*=\underset{c\in\mathcal{C}}{\arg\max}\;
+\left(\mathrm{Pass}(c),-\mathrm{ted}(c_i,c)\right).
+\]
+
+따라서 selector는 먼저 가장 많은 testcases를 통과한 program을 고르고, 동률에서는 학생의 current code를 가장 적게 바꾸는 program을 선택한다. Current code보다 개선되지 않은 candidate만 존재하면 TED가 0인 current code가 선택되어 system이 abstain한다.
+% The selector first chooses the program that passes the most test cases and then, on ties, the program that changes the student's current code least. If no candidate improves over the current code, the current code has TED zero and is selected, causing the system to abstain.
+
+\section{Experimental}
+
+\subsubsection{Research Questions}
+평가는 다음 다섯 research questions를 다룬다.
+% We study the following five research questions.
+\begin{itemize}
+    \item \textbf{RQ1: Repair Effectiveness.} ZPDPatch는 baselines보다 buggy programs를 얼마나 효과적으로 repair하는가?
+%     \item \textbf{RQ1: Repair Effectiveness.} How effectively can ZPDPatch repair buggy programs compared with baselines?
+    \item \textbf{RQ2: Trajectory Conditioning.} Submission trajectory conditioning은 program repair에 어떤 영향을 미치는가?
+%     \item \textbf{RQ2: Trajectory Conditioning.} How does submission trajectory conditioning affect program repair?
+    \item \textbf{RQ3: Adapter Specialization.} Progress, Strict, Answer adapters는 repair behavior에서 어떻게 다른가?
+%     \item \textbf{RQ3: Adapter Specialization.} How do the Progress, Strict, and Answer adapters differ in repair behavior?
+    \item \textbf{RQ4: Sequential Escalation.} Sequential escalation은 repair effectiveness와 efficiency에 어떤 영향을 미치는가?
+%     \item \textbf{RQ4: Sequential Escalation.} How does sequential escalation affect repair effectiveness and efficiency?
+    \item \textbf{RQ5: Problem Generalization.} ZPDPatch는 unseen problems에 얼마나 잘 generalize하는가?
+%     \item \textbf{RQ5: Problem Generalization.} How well does ZPDPatch generalize to unseen problems?
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.3pt}
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+Group & Role & Prob. & Tests & Traj. & Sub. & Prefix & Users \\
+\midrule
+\multirow{3}{*}{Seen}
+& Train / LSGen DB & \multirow{3}{*}{492} & \multirow{3}{*}{9,446} & 14,638 & 58,872 & 44,234 & 4,072 \\
+& Valid & & & 1,830 & 7,283 & 5,453 & 1,283 \\
+& Test & & & 1,830 & 7,068 & 5,238 & 1,291 \\
+\midrule
+Unseen
+& Test & 54 & 642 & 260 & 965 & 705 & 237 \\
+\bottomrule
+\end{tabular}
+\caption{4,096-token whole-trajectory filter 이후 volume-ordered 90:10 problem split의 dataset 통계. Seen의 Prob.와 Tests는 세 trajectory splits가 공유하는 전체 problem group을 나타낸다. Prefix는 adapter별 filtering 전 생성 가능한 raw prefixes 수이며, users는 Seen splits 사이에서 중복될 수 있다.}
+% \caption{Dataset statistics for the volume-ordered 90:10 problem split after the 4,096-token whole-trajectory filter. Prob. and Tests for Seen describe the full problem group shared by its three trajectory splits. Prefix is the number of raw prefixes available before adapter-specific filtering, and users may overlap across the Seen splits.}
+\label{tab:dataset-statistics}
+\end{table}
+\FloatBarrier
+
+\subsubsection{Dataset Construction and Split}
+Project CodeNet~\citep{puri2021project}의 Python800 benchmark에 포함된 problems를 기준으로 Python submissions, problem descriptions, metadata, testcases를 결합한다. 연속된 normalized-code duplicates를 제거하고, 첫 \texttt{Accepted} 이전에 하나 이상의 Non-Accepted submission이 있으며 전체 trajectory가 최소 세 submissions를 포함하는 경우만 유지한다. 첫 \texttt{Accepted} 이후 submissions는 제거하고, 마지막 Accepted code가 Python800 benchmark에서 검증된 correct program인 trajectories만 남긴다. 또한 최소 세 problems에 나타나는 users와 최소 두 trajectories를 가진 problems만 사용한다. 이 refined corpus는 546 problems, 21,454 trajectories, 99,432 submissions, 10,088 testcases로 구성된다.
+% We combine Python submissions, problem descriptions, metadata, and test cases for problems in the Project CodeNet Python800 benchmark~\citep{puri2021project}. We remove consecutive normalized-code duplicates and retain only trajectories that contain at least one Non-Accepted submission before the first \texttt{Accepted} and at least three submissions in total. We remove submissions after the first \texttt{Accepted} and keep only trajectories whose final Accepted code is verified by the Python800 benchmark. We further retain users appearing in at least three problems and problems containing at least two trajectories. This refined corpus contains 546 problems, 21,454 trajectories, 99,432 submissions, and 10,088 test cases.
+
+Split 전에 Qwen tokenizer와 Prompt D로 Answer, Strict, Progress envelope, final evaluation에서 가능한 모든 prompt--target configuration의 total tokens를 측정한다. Progress envelope는 실제 testcase outcomes와 무관하게 verdict가 같은 candidate를 모두 유지할 수 있다고 가정하는 conservative upper bound이다. 어느 configuration에서든 prompt와 target의 합이 4,096 tokens를 초과하면 해당 example의 끝부분을 자르지 않고 trajectory 전체를 제외한다. 이 규칙으로 2,896 trajectories를 제외하고 18,558 trajectories를 분할한다. 따라서 남은 data에는 별도의 \texttt{max\_history}, 최대 transition 수, code/testcase truncation을 적용하지 않는다.
+% Before splitting, we use the Qwen tokenizer and Prompt D to measure total prompt--target tokens for every possible Answer, Strict, Progress-envelope, and final-evaluation configuration. The Progress envelope is a conservative upper bound that assumes every candidate with an identical verdict could be retained, independent of its actual test outcomes. If any configuration exceeds 4,096 total tokens, we exclude the entire trajectory instead of truncating an example tail. This removes 2,896 trajectories and leaves 18,558 for splitting. The remaining data use no separate \texttt{max\_history}, maximum transition count, or code/test-case truncation.
+
+Table~\ref{tab:dataset-statistics}과 같이 problems를 적격 trajectory 수의 내림차순으로 정렬하고 상위 90\%인 492 problems를 Seen, 나머지 54 problems를 Unseen으로 배정한다. 이는 충분한 trajectories가 있는 problems로 모델과 retrieval database를 학습하면서, 학습에서 완전히 제외된 low-resource problems에서 generalization을 평가하기 위한 설정이다. Seen의 각 problem에서 Train, Valid, Test에 최소 한 trajectory씩 보존한 뒤 전체 trajectories를 deterministic 80:10:10으로 나눈다. Unseen의 260 trajectories는 분할하거나 학습에 노출하지 않고 모두 Test에 사용한다.
+% As shown in Table~\ref{tab:dataset-statistics}, we sort problems by eligible trajectory count and assign the top 90\%, comprising 492 problems, to Seen and the remaining 54 to Unseen. This permits training the model and retrieval database on problems with sufficient trajectories while evaluating generalization on low-resource problems completely excluded from training. Within each Seen problem, we reserve at least one trajectory for each of Train, Valid, and Test and then deterministically split all trajectories 80:10:10. We keep all 260 Unseen trajectories for Test without exposing them during training.
+
+Seen Train은 ZPDPatch fine-tuning과 LSGen의 same-problem retrieval database에 사용하고, Seen Valid는 model 및 prompt configuration을 결정하는 데 사용한다. RQ1은 Seen Test에서 ZPDPatch, Zero-shot, LSGen을 비교한다. RQ5는 Unseen Test에서 ZPDPatch와 Zero-shot을 비교한다. LSGen은 query problem의 peer correct programs를 요구하므로, same-problem data를 노출하면 problem-held-out 조건이 깨지는 Unseen Test에는 적용하지 않는다.
+% Seen Train is used for ZPDPatch fine-tuning and as LSGen's same-problem retrieval database, while Seen Valid is used to select the model and prompt configuration. RQ1 compares ZPDPatch, Zero-shot, and LSGen on Seen Test. RQ5 compares ZPDPatch and Zero-shot on Unseen Test. We do not apply LSGen to Unseen Test because it requires peer correct programs from the query problem, whose exposure would violate the problem-held-out condition.
+
+Training examples는 Seen Train trajectories에 Answer, Strict, Progress의 adapter-specific construction을 각각 적용하여 만든다. Seen Valid도 동일한 규칙으로 독립적으로 변환하며 training에 포함하지 않는다. Final evaluation에서는 \([s_1,\ldots,s_{n-1}]\)을 observed trajectory, \(s_{n-1}\)을 current buggy submission, 마지막 \texttt{Accepted} code \(c_n\)을 공통 oracle \(c^+\)로 둔다. Public testcases에서 current program은 Non-AC이고 oracle은 AC인 trajectories만 포함하여 모든 approaches가 같은 repair instances와 correctness oracle을 사용하게 한다.
+% Training examples are obtained by independently applying the Answer, Strict, and Progress constructions to Seen Train trajectories. Seen Valid is transformed by the same rules and is never included in training. For final evaluation, \([s_1,\ldots,s_{n-1}]\) is the observed trajectory, \(s_{n-1}\) is the current buggy submission, and the final \texttt{Accepted} code \(c_n\) is the common oracle \(c^+\). We retain only trajectories for which public re-execution yields Non-AC for the current program and AC for the oracle, giving all approaches the same repair instances and correctness oracle.
+
+\subsubsection{Baselines}
+\textbf{Zero-shot}은 ZPDPatch와 같은 Qwen base model과 Prompt D를 사용하지만 fine-tuning하지 않는다. 첫 candidate가 실패하면 candidate verdict와 통과 testcase 수를 conversation에 추가하여 최대 세 번 repair한다. 따라서 trajectory prompt 자체의 효과와 adapter training의 추가 효과를 구분한다.
+% \textbf{Zero-shot} uses the same Qwen base model and Prompt D as ZPDPatch without fine-tuning. If a candidate fails, its verdict and number of passed test cases are appended to the conversation for up to three repair attempts. This separates the effect of the trajectory prompt itself from the additional effect of adapter training.
+
+\textbf{LSGen}~\citep{dai2026learner}은 공개 artifact의 repair-pair filtering, edit-vector retrieval, diff-guided generation, iterative re-retrieval을 동일 dataset과 local judge에 연결한다. Seen Test의 각 query와 같은 problem의 Seen Train trajectories에서 buggy/correct pairs를 구성하고 top-5 pairs를 검색하며 최대 세 iterations를 수행한다. Public artifact가 dataset, API, judge paths를 고정하므로 infrastructure만 공통 runner로 교체하고 핵심 retrieval 및 generation 절차는 유지한다. LSGen은 target student's trajectory를 사용하지 않는다.
+% \textbf{LSGen}~\citep{dai2026learner} connects the public artifact's repair-pair filtering, edit-vector retrieval, diff-guided generation, and iterative re-retrieval to the same dataset and local judge. For each Seen Test query, it constructs buggy/correct pairs from Seen Train trajectories of the same problem, retrieves the top five pairs, and performs up to three iterations. Because the public artifact hardcodes dataset, API, and judge paths, we replace only the infrastructure with the common runner while retaining its core retrieval and generation procedure. LSGen does not use the target student's trajectory.
+
+세 approaches는 같은 base LLM, testcases, timeout, 최대 세 번의 candidate generation budget을 사용한다. 모든 generated patches는 공통 JSONL format으로 저장하며 patch index, source, full code, verdict, pass rate, testcase별 outcomes, generation 및 execution time을 기록한다.
+% All three approaches use the same base LLM, test cases, timeout, and budget of at most three candidate generations. Every generated patch is stored in a common JSONL format with patch index, source, full code, verdict, pass rate, per-test outcomes, and generation and execution time.
+
+\subsubsection{Implementation Details}
+Qwen2.5-Coder-7B-Instruct~\citep{hui2024qwen2}를 base model로 사용하고 canonical-v5 Seen Train에서 세 4-bit QLoRA~\citep{dettmers2023qlora} adapters를 각각 1 epoch 학습한다. Base weights는 NF4 double quantization으로 고정하고 BF16 computation을 사용한다. LoRA는 \(q,k,v,o\) attention projections와 gate/up/down MLP projections에 적용하며 rank 16, scaling factor 32, dropout 0.05로 설정한다.
+% We use Qwen2.5-Coder-7B-Instruct~\citep{hui2024qwen2} as the base model and independently train three 4-bit QLoRA~\citep{dettmers2023qlora} adapters for one epoch on canonical-v5 Seen Train. Base weights are frozen with NF4 double quantization and BF16 computation. We apply LoRA to the \(q,k,v,o\) attention projections and gate/up/down MLP projections with rank 16, scaling factor 32, and dropout 0.05.
+
+Optimization은 paged AdamW 8-bit, learning rate \(2\times10^{-4}\), cosine schedule, warmup ratio 0.03을 사용한다. Gradient checkpointing과 length-grouped batching을 활성화하고, micro-batch size 2와 gradient accumulation 8로 effective batch size 16을 유지하며 seed는 2027이다. Validation은 epoch 끝에 한 번 수행하고 가장 낮은 validation loss의 checkpoint를 사용한다. Generation은 batch size 1의 greedy decoding이며 고정 output-token 상한 대신 input 뒤에 남은 model context 전체를 사용한다. 모든 학습과 generation은 NVIDIA RTX 5090 한 장에서 수행한다.
+% Optimization uses paged 8-bit AdamW, a learning rate of \(2\times10^{-4}\), a cosine schedule, and a 0.03 warmup ratio. We enable gradient checkpointing and length-grouped batching, use micro-batch size 2 with eight accumulation steps for an effective batch size of 16, and set seed 2027. Validation is run once at the end of the epoch, and the checkpoint with the lowest validation loss is loaded. Generation uses batch-size-one greedy decoding and all model context remaining after the input instead of a fixed output-token cap. Training and generation run on one NVIDIA RTX 5090.
+
+모든 original submissions와 generated candidates는 같은 Python runner로 전체 public testcases에서 실행한다. Runner는 testcase당 2.5초 timeout과 2GB memory limit을 적용하고 testcase별 verdict와 pass rate를 cache한다. 이 cache는 Progress dataset construction, sequential stage feedback, candidate selection, 최종 evaluation에서 동일하게 재사용한다.
+% We execute every original submission and generated candidate on all public test cases with the same Python runner. The runner enforces a 2.5-second timeout and a 2GB memory limit per test case and caches per-test verdicts and pass rates. The same cache is reused for Progress dataset construction, sequential stage feedback, candidate selection, and final evaluation.
+
+\subsubsection{Ablation Protocols}
+RQ2에서는 Strict와 Progress의 adapter-specific rules로 Seen과 Unseen Test examples를 구성한다. Full Trajectory는 retained prefix 전체를 사용하고, Current Code Only는 동일한 examples, targets, hyperparameters로 adapters를 다시 학습하되 current submission 이전 history를 제거한다. Current Code Only의 position은 \(S_1\)로 재설정하여 original index가 trajectory 길이를 누출하지 않게 한다. Answer는 원래부터 각 example이 한 submission만 입력하므로 이 ablation에서 제외한다.
+% For RQ2, we construct Seen and Unseen Test examples using the adapter-specific Strict and Progress rules. Full Trajectory uses the complete retained prefix, whereas Current Code Only retrains the adapters with identical examples, targets, and hyperparameters after removing all history before the current submission. We reset its position to \(S_1\) so that the original index does not leak trajectory length. Answer is excluded from this ablation because each of its examples already contains only one input submission.
+
+RQ3에서는 동일한 final-evaluation trajectories에서 Progress, Strict, Answer를 각각 단독으로 한 번 실행하여 완전 repair, 부분 개선, modification size의 차이를 비교한다. RQ4에서는 이 세 단독 실행과 Progress--Strict--Answer 순의 stage feedback, AC early stopping, fallback selector를 모두 적용하는 full Sequential을 비교한다. RQ5는 RQ1과 같은 full Sequential configuration을 problem-held-out Unseen Test에 그대로 적용한다.
+% For RQ3, we run Progress, Strict, and Answer once in isolation on the same final-evaluation trajectories and compare complete repairs, partial improvements, and modification size. RQ4 compares these single-adapter runs with full Sequential, including Progress--Strict--Answer stage feedback, AC early stopping, and fallback selection. RQ5 applies the same full Sequential configuration as RQ1 to the problem-held-out Unseen Test without modification.
+
+\subsubsection{Evaluation Metrics}
+평가 sample 수를 \(M\), \(m\)번째 buggy program과 fixed program을 \(c_m\)과 \(\hat{c}_m\)이라 하자. \(\mathrm{Pass}(c)\)는 program \(c\)가 해당 problem의 testcases 중 통과한 비율이다. 모든 rate는 sample별 score \(z_m\in[0,1]\)의 평균으로 정의한다.
+% Let \(M\) be the number of evaluation samples, and let \(c_m\) and \(\hat{c}_m\) be the \(m\)-th buggy and fixed programs. \(\mathrm{Pass}(c)\) is the fraction of the problem's test cases passed by program \(c\). Every rate is defined as the mean of per-sample scores \(z_m\in[0,1]\).
+
+\[
+\mathrm{Rate}(z)=\frac{1}{M}\sum_{m=1}^{M}z_m.
+\]
+
+Pass Rate (PR)는 \(z_m=\mathrm{Pass}(\hat{c}_m)\), Repair Rate (RR)는 \(z_m=\mathbf{1}[\mathrm{Pass}(\hat{c}_m)=1]\), Improvement Rate (IR)는 \(z_m=\mathbf{1}[\mathrm{Pass}(\hat{c}_m)>\mathrm{Pass}(c_m)]\)으로 계산한다. PR은 fixed program이 통과한 testcase 비율, RR은 모든 testcases를 통과한 fixed program의 비율, IR은 buggy program보다 더 많은 testcases를 통과한 fixed program의 비율을 나타낸다.
+% Pass Rate (PR) uses \(z_m=\mathrm{Pass}(\hat{c}_m)\), Repair Rate (RR) uses \(z_m=\mathbf{1}[\mathrm{Pass}(\hat{c}_m)=1]\), and Improvement Rate (IR) uses \(z_m=\mathbf{1}[\mathrm{Pass}(\hat{c}_m)>\mathrm{Pass}(c_m)]\). PR measures test-case coverage, RR the fraction of fully repaired programs, and IR the fraction of fixed programs that pass more test cases than their buggy programs.
+
+Average Time Taken (ATT)는 approach별로 한 problem의 전체 buggy programs를 repair하기 직전부터 candidate generation, execution, selection이 모두 끝날 때까지 wall-clock time \(\Delta t_p\)를 측정한 뒤 전체 buggy program 수로 나눈다. 모든 approaches가 공유하는 buggy/oracle execution cache 구축, model loading, training, LSGen retrieval database의 construction은 offline preparation으로 제외한다.
+% Average Time Taken (ATT) measures wall-clock time \(\Delta t_p\) from immediately before repairing all buggy programs of one problem until candidate generation, execution, and selection are complete, summed across problems and divided by the total number of buggy programs. We exclude construction of the shared buggy/oracle execution cache, model loading, training, and construction of the LSGen retrieval database as offline preparation.
+
+TED는 repair에 성공한 programs 중 Python AST parsing이 가능한 집합 \(\mathcal{R}\)에서만 계산한다. \(\mathrm{TED}_{B\rightarrow F}\)는 buggy program에서 fixed program까지의 modification size이고, \(\mathrm{TED}_{F\rightarrow O}\)는 fixed program과 recorded oracle \(c_m^+\)의 구조적 차이이다.
+% TED is computed only on successfully repaired programs whose Python ASTs can be parsed, denoted by \(\mathcal{R}\). \(\mathrm{TED}_{B\rightarrow F}\) measures modification size from buggy to fixed program, while \(\mathrm{TED}_{F\rightarrow O}\) measures structural distance between the fixed program and recorded oracle \(c_m^+\).
+
+RQ2의 \(\mathrm{TED}_{F\rightarrow T}\)는 repair에 성공하고 AST parsing이 가능한 samples에서 generated program과 adapter-specific construction이 선택한 recorded target \(c_m^T\) 사이의 평균 TED이다. Full Trajectory와 Current Code Only는 example과 target이 동일하므로 이 값은 history conditioning이 recorded reachable improvement에 얼마나 가까운 correct patch를 유도하는지 비교한다.
+% For RQ2, \(\mathrm{TED}_{F\rightarrow T}\) is the mean TED between a generated program and the recorded target \(c_m^T\) selected by adapter-specific construction, computed when both programs can be parsed as ASTs. Full Trajectory and Current Code Only share identical examples and targets, so this metric compares how history conditioning steers patches toward the recorded reachable improvement.
+
+RR과 IR에는 Wilson 95\% confidence interval을 보고한다. 같은 buggy programs에 대한 approaches의 RR 차이는 exact McNemar test로 검정한다. PR과 TED는 paired samples에서 10,000회 bootstrap confidence interval을 계산한다.
+% We report Wilson 95\% confidence intervals for RR and IR. Differences in RR between approaches on the same buggy programs are tested with the exact McNemar test. We compute 10,000-sample bootstrap confidence intervals for PR and TED over paired samples.
+
+\subsection{Results}
+
+\subsubsection{RQ1: Repair Effectiveness.}
+
+\begin{center}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+Approach & PR & RR & IR & ATT &
+\(\mathrm{TED}_{B\rightarrow F}\) & \(\mathrm{TED}_{F\rightarrow O}\) \\
+\midrule
+\multicolumn{7}{l}{\textbf{Seen}} \\
+Zero-shot & 76.3 & 30.7 & 43.7 & 12.87 & 27.25 & 27.67 \\
+LSGen & 88.0 & 80.2 & 82.4 & 13.00 & 88.27 & 83.23 \\
+ZPDPatch & 84.9 & 56.6 & 64.6 & 12.16 & 19.71 & 21.89 \\
+\midrule
+\multicolumn{7}{l}{\textbf{Unseen}} \\
+Zero-shot & 75.3 & 62.0 & 68.8 & 3.89 & 17.46 & 15.80 \\
+ZPDPatch & 83.0 & 72.0 & 76.8 & 6.17 & 11.66 & 12.54 \\
+\bottomrule
+\end{tabular}
+\captionof{table}{RQ1의 Seen 결과와 RQ5의 Unseen 결과. TED는 repair에 성공하고 AST parsing이 가능한 samples에서만 계산한다.}
+% \captionof{table}{Seen results for RQ1 and Unseen results for RQ5. TED is computed only for successfully repaired samples with parseable ASTs.}
+\label{tab:repair-results}
+\end{center}
+
+Seen problems에서 Zero-shot은 PR 76.3\%, RR 30.7\%, IR 43.7\%를 기록한 반면, ZPDPatch는 각각 84.9\%, 56.6\%, 64.6\%를 기록했다. RR과 IR의 Wilson 95\% CI는 Zero-shot에서 [27.9, 33.6]와 [40.7, 46.8], ZPDPatch에서 [53.5, 59.6]과 [61.6, 67.5]였다. 동일한 997 samples 중 ZPDPatch만 repair한 경우는 301개, Zero-shot만 repair한 경우는 43개였으며, exact McNemar test에서 차이가 유의했다(\(p=8.20\times10^{-49}\)). ZPDPatch의 PR도 8.57 percentage points 높았다(95\% bootstrap CI [6.99, 10.22]). 따라서 adapter training과 sequential execution을 결합한 ZPDPatch는 같은 base LLM의 trajectory-prompted Zero-shot보다 완전 repair와 부분 개선을 모두 증가시켰다.
+% On Seen problems, Zero-shot achieved 76.3\% PR, 30.7\% RR, and 43.7\% IR, whereas ZPDPatch achieved 84.9\%, 56.6\%, and 64.6\%, respectively. ZPDPatch alone repaired 301 of the 997 samples, while Zero-shot alone repaired 43 (exact McNemar \(p=8.20\times10^{-49}\)). ZPDPatch also improved PR by 8.57 percentage points (95\% bootstrap CI [6.99, 10.22]).
+
+LSGen은 PR 88.0\%, RR 80.2\%, IR 82.4\%로 가장 높은 execution correctness를 보였다. ZPDPatch와의 paired comparison에서는 LSGen만 repair한 경우가 306개, ZPDPatch만 repair한 경우가 70개였고, RR 차이는 유의했다(\(p=2.70\times10^{-36}\)). ZPDPatch의 PR은 LSGen보다 3.14 percentage points 낮았다(95\% CI [\(-5.14\), \(-1.08\)]). 반면 ZPDPatch의 \(\mathrm{TED}_{B\rightarrow F}\)는 19.71로 Zero-shot의 27.25와 LSGen의 88.27보다 작았다. 두 방법이 모두 repair한 samples에서도 ZPDPatch의 TED는 Zero-shot보다 평균 8.07 낮았고(95\% CI [\(-12.14\), \(-4.53\)]), LSGen보다 43.41 낮았다(95\% CI [\(-48.94\), \(-38.20\)]). ZPDPatch의 ATT는 12.16초로 세 approaches 중 가장 짧았다. 이 결과는 same-problem retrieval이 correct patch coverage에 강한 반면, ZPDPatch는 더 작은 modification으로 상당수의 programs를 repair함을 보여준다.
+% LSGen achieved the highest execution correctness, with 88.0\% PR, 80.2\% RR, and 82.4\% IR. ZPDPatch had lower coverage but substantially smaller repair patches and the lowest ATT among the three approaches.
+
+\noindent\textbf{Answer to RQ1.} ZPDPatch는 Zero-shot보다 더 많은 buggy programs를 repair하고 개선하면서 더 작은 patch를 생성했지만, LSGen보다 correct patch coverage는 낮았다. 즉, ZPDPatch는 solution retrieval을 대체하기보다 retrieval database 없이 작은 repair를 생성하는 complementary approach이다.
+% \noindent\textbf{Answer to RQ1.} ZPDPatch repaired and improved more buggy programs than Zero-shot while reducing modification size, but its correct-patch coverage remained below LSGen. Its benefit therefore lies not in replacing solution retrieval, but in generating smaller repairs that remain closer to the target student's trajectory.
+
+\subsubsection{RQ2: Trajectory Conditioning.}
+
+\begin{center}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{1.8pt}
+\begin{tabular}{lllrrrr}
+\toprule
+Split & Adapter & Input & PR & RR & IR & \(\mathrm{TED}_{F\rightarrow T}\) \\
+\midrule
+\multirow{4}{*}{Seen}
+& Strict & Current & 56.8 & 31.2 & 54.6 & 40.23 \\
+& Strict & Full & 57.5 & 30.5 & 53.3 & 41.05 \\
+& Progress & Current & 58.4 & 26.3 & 49.7 & 36.23 \\
+& Progress & Full & 57.4 & 25.9 & 49.1 & 33.15 \\
+\midrule
+\multirow{4}{*}{Unseen}
+& Strict & Current & 66.7 & 56.2 & 71.4 & 20.20 \\
+& Strict & Full & 65.4 & 53.4 & 70.8 & 19.27 \\
+& Progress & Current & 65.7 & 52.1 & 66.4 & 17.63 \\
+& Progress & Full & 66.5 & 53.7 & 68.3 & 18.16 \\
+\bottomrule
+\end{tabular}
+\captionof{table}{RQ2 trajectory conditioning 결과. Seen Strict/Progress의 \(N\)은 2,151/2,674, Unseen은 322/378이다.}
+% \captionof{table}{RQ2 trajectory-conditioning results. Seen Strict/Progress contain 2,151/2,674 samples and Unseen contain 322/378.}
+\label{tab:trajectory-conditioning}
+\end{center}
+
+Full Trajectory는 Current Code Only와 비교해 Seen Strict에서 PR만 0.7 points 높았고 RR과 IR은 각각 0.7과 1.3 points 낮았다. Seen Progress에서도 PR, RR, IR이 각각 1.0, 0.4, 0.6 points 낮았다. Unseen에서는 Strict의 세 execution metrics가 낮아진 반면 Progress는 각각 0.8, 1.6, 1.9 points 높아져 방향이 다시 엇갈렸다. 네 adapter--split 비교의 RR 차이는 모두 exact McNemar test에서 유의하지 않았다(\(p\geq0.078\)). Target TED도 Full Trajectory가 Seen Progress와 Unseen Strict에서는 작았지만 나머지 두 조건에서는 컸다.
+% Full Trajectory did not consistently outperform Current Code Only. The direction of PR, RR, IR, and target TED varied by adapter and split, and none of the four paired RR differences was significant (exact McNemar \(p\geq0.078\)).
+
+\noindent\textbf{Answer to RQ2.} 현재 실험에서는 submission history를 추가하는 것만으로 repair 성능이 일관되게 향상되지 않았다. 따라서 RQ1의 개선을 trajectory history 자체의 인과 효과로 해석할 수 없으며, adapter-specific supervision과 sequential escalation을 포함한 전체 구성의 효과로 한정해야 한다.
+
+\subsubsection{RQ3: Adapter Specialization.}
+
+\begin{center}
+\centering
+\scriptsize
+\begin{tabular}{lrrrrr}
+\toprule
+Adapter & PR & RR & IR & \(\mathrm{TED}_{B\rightarrow F}\) & \(\mathrm{TED}_{F\rightarrow O}\) \\
+\midrule
+Progress & 73.4 & 44.8 & 52.0 & 15.85 & 15.89 \\
+Strict & 74.8 & 44.5 & 51.2 & 17.45 & 18.38 \\
+Answer & 77.5 & 50.1 & 57.5 & 20.22 & 20.61 \\
+\bottomrule
+\end{tabular}
+\captionof{table}{RQ3 adapter specialization 결과(Seen, \(N=997\)).}
+% \captionof{table}{RQ3 adapter-specialization results on Seen (\(N=997\)).}
+\label{tab:adapter-ablation}
+\end{center}
+
+Answer는 가장 높은 PR, RR, IR을 기록했지만 \(\mathrm{TED}_{B\rightarrow F}\)도 20.22로 가장 컸다. 반대로 Progress는 RR이 44.8\%로 낮았으나 TED가 15.85로 가장 작아, 더 제한적인 modification을 생성하는 경향을 보였다. Progress와 Strict의 RR 차이는 유의하지 않았지만(\(p=0.857\)), Answer의 RR은 Progress와 Strict보다 각각 5.2와 5.5 points 높았다(각각 \(p=3.11\times10^{-4}\), \(p=6.40\times10^{-5}\)).
+
+\noindent\textbf{Answer to RQ3.} Adapter supervision은 repair scope의 차이로 나타났다. Answer는 더 많은 programs를 완전히 repair하는 대신 큰 patch를 생성했고, Progress는 가장 작은 patch를 생성했다. 다만 Strict는 Progress와 뚜렷하게 구분되는 repair rate를 보이지 않았다.
+
+\subsubsection{RQ4: Sequential Escalation.}
+
+\begin{center}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{lrrrrr}
+\toprule
+Configuration & PR & RR & IR & ATT & \#Patch \\
+\midrule
+Progress & 73.4 & 44.8 & 52.0 & 10.91 & 1.00 \\
+Strict & 74.8 & 44.5 & 51.2 & 10.95 & 1.00 \\
+Answer & 77.5 & 50.1 & 57.5 & 9.99 & 1.00 \\
+Sequential & 84.9 & 56.6 & 64.6 & 12.16 & 2.05 \\
+\bottomrule
+\end{tabular}
+\captionof{table}{RQ4 sequential escalation 결과.}
+% \captionof{table}{RQ4 sequential-escalation results.}
+\label{tab:sequential-ablation}
+\end{center}
+
+Sequential은 가장 강한 single adapter인 Answer보다 PR 7.4 points, RR 6.5 points, IR 7.1 points 높았다. 동일 samples에서 Sequential만 repair한 경우는 119개, Answer만 repair한 경우는 54개였다(\(p=8.57\times10^{-7}\)). Progress와 Strict에 대해서도 Sequential의 RR 우위가 유의했다(각각 \(p=5.46\times10^{-23}\), \(p=9.36\times10^{-22}\)). AC early stopping으로 997 samples 중 439개가 Progress에서, 추가 66개가 Strict에서 종료되어 평균 generation 수는 최대 3회보다 작은 2.05회였고, ATT 증가는 Answer 대비 2.17초에 그쳤다.
+
+\noindent\textbf{Answer to RQ4.} Execution-guided sequential escalation은 single adapters보다 더 많은 programs를 repair하고 개선했다. Early stopping은 평균 generation 수를 2.05회로 줄여, 세 adapters를 항상 모두 실행하지 않고도 coverage를 높였다.
+
+\subsubsection{RQ5: Problem Generalization}
+Unseen 250 samples에서 ZPDPatch는 PR 83.0\%, RR 72.0\%, IR 76.8\%를 기록해 Zero-shot의 75.3\%, 62.0\%, 68.8\%를 모두 앞섰다. ZPDPatch만 repair한 경우는 42개, Zero-shot만 repair한 경우는 17개였으며 RR 차이는 유의했다(\(p=0.00155\)). PR 차이는 7.65 percentage points였다(95\% bootstrap CI [3.59, 11.93]). 동시에 ZPDPatch의 \(\mathrm{TED}_{B\rightarrow F}\)는 11.66으로 Zero-shot의 17.46보다 작았다. 두 방법이 모두 repair한 parseable samples에서도 ZPDPatch의 TED가 평균 6.33 작았다(95\% CI [\(-9.77\), \(-3.31\)]).
+% On 250 Unseen samples, ZPDPatch outperformed Zero-shot in PR, RR, and IR, while producing smaller repair patches. The paired RR difference was significant (exact McNemar \(p=0.00155\)).
+
+\noindent\textbf{Answer to RQ5.} ZPDPatch의 Zero-shot 대비 이점은 학습에서 완전히 제외된 problems에서도 유지되었다. 다만 Unseen은 low-resource problems로 구성되므로 Seen과 Unseen의 절대 성능 차이를 problem familiarity의 효과로 직접 해석하지 않는다.
+
+\section{Conclusion}
+본 연구는 current buggy program과 그 코드에 도달한 submission trajectory를 조건으로 patch를 생성하는 ZPDPatch를 제안했다. Seen 평가에서 ZPDPatch는 Zero-shot보다 RR을 25.9 percentage points 높이고 더 작은 patch를 생성했으며, 이 이점은 Unseen problems에서도 유지되었다. Progress, Strict, Answer의 순차 실행은 가장 강한 single adapter보다 RR을 6.5 points 높였고, early stopping으로 평균 2.05회만 생성했다. 반면 Current Code Only ablation에서 Full Trajectory의 일관된 우위는 관찰되지 않았다. 따라서 현재 증거는 adapter-specific reachable-improvement supervision과 execution-guided escalation의 효과를 지지하지만, submission history 자체가 성능 향상의 원인이라는 주장은 지지하지 않는다. 향후에는 history가 실제로 유용한 trajectory 조건을 식별하고, 동일 current code에 서로 다른 histories를 결합한 controlled evaluation으로 trajectory conditioning의 인과 효과를 검증해야 한다.
+% ZPDPatch outperformed Zero-shot and produced smaller patches on both Seen and Unseen problems, while sequential escalation improved over every single adapter. However, Full Trajectory did not consistently outperform Current Code Only. The evidence therefore supports adapter-specific supervision and execution-guided escalation, but not a causal performance benefit from submission history itself.
+
+\bibliography{references}
+
+\end{document}
