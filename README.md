@@ -200,11 +200,10 @@ python run.py train-qlora outputs/datasets/train-answer.jsonl \
 ```
 
 추론은 Progress, Strict, Answer 순으로 후보 패치를 하나씩 생성하고 실행하며, AC에
-도달하면 뒤 adapter를 호출하지 않는다. Strict와 Answer에는 원본 trajectory뿐 아니라
-앞 단계의 후보 중 pass rate가 가장 높은 하나의 실행 결과를 추가로 제공한다. no-op 또는
-회귀 후보는 전체 코드를 반복하지 않고 verdict와 TC 결과만 전달한다. 세 후보가 모두
-실패하면 current program을 fallback으로 포함해 pass rate가 가장 높고, 그중 Tree Edit
-Distance가 가장 작은 후보를 선택한다.
+도달하면 뒤 adapter를 호출하지 않는다. 기본 설정에서 세 adapter는 모두 동일한 원본
+trajectory에 조건부 독립인 후보를 생성하며, 앞 단계의 생성 코드나 실행 결과를 다음
+prompt에 넣지 않는다. 세 후보가 모두 실패하면 current program을 fallback으로 포함해
+pass rate가 가장 높고, 그중 Tree Edit Distance가 가장 작은 후보를 선택한다.
 
 ```bash
 python run.py repair-sequential outputs/datasets/test.jsonl \
@@ -233,9 +232,12 @@ python run.py evaluate-ordered outputs/datasets/test.jsonl \
   --workers 1
 ```
 
-`--no-stage-feedback`을 지정하면 모든 adapter가 원본 trajectory만 받아 순차 실행
-피드백의 효과를 분리해 평가할 수 있다. stage-feedback 사용 여부와 adapter별 생성·조기
-종료 수는 evaluation summary에 기록한다.
+독립-policy 방식이 기본값이며 `--no-stage-feedback`으로 명시할 수도 있다.
+`--stage-feedback`은 앞 candidate와 실행 결과를 다음 adapter prompt에 추가하는
+Generated Feedback ablation이다. 사용 여부와 adapter별 생성·조기 종료 수는 evaluation
+summary에 기록한다. RR/PR/IR만 비교하는 반복-generation 대조군은 `--skip-ted`로
+효과성에 영향을 주지 않는 실패-candidate tie의 AST TED 계산을 생략할 수 있으며,
+이 설정도 `compute_tree_edit_distance`로 summary에 기록된다.
 
 RQ1은 Zero-shot, LSGen, ZPDPatch를 모두 최대 세 번의 patch 생성 기회를 갖도록
 실행한다. 각 JSONL 행의 `patches`에는 `patch_index` 1--3, 생성 source, 전체 코드,

@@ -24,6 +24,7 @@ class SequentialRepairSummary:
     base_model: str
     adapter_paths: dict[str, str]
     stage_feedback: bool
+    compute_tree_edit_distance: bool
     examples: int
     problems: int
     stage_generated_counts: dict[str, int]
@@ -146,6 +147,7 @@ def run_sequential_repairs(
     case_workers: int = 1,
     timeout_sec: float = 2.5,
     stage_feedback: bool = False,
+    compute_tree_edit_distance: bool = True,
     outcome_cache_path: Path | None = None,
     resume: bool = True,
 ) -> SequentialRepairSummary:
@@ -218,6 +220,16 @@ def run_sequential_repairs(
         timing_path,
         resume=resume,
     )
+    if not compute_tree_edit_distance and results:
+        for result in results:
+            result["ted_buggy_fixed"] = None
+            result["ted_fixed_oracle"] = None
+            result["tree_edit_distance"] = None
+            for collection in ("patches", "candidate_outcomes"):
+                for candidate in result.get(collection, []):
+                    candidate["tree_edit_distance"] = None
+                    candidate["ted_fixed_oracle"] = None
+        _write_jsonl(output_path, results)
     stage_generated_counts = {name: 0 for name in adapter_names}
     early_stop_counts = {name: 0 for name in adapter_names}
     for result in results:
@@ -319,6 +331,7 @@ def run_sequential_repairs(
                         states[example_id],
                         method=method,
                         prompt_style=prompt_style,
+                        compute_tree_edit_distance=compute_tree_edit_distance,
                     ),
                     sorted(records_by_id),
                 )
@@ -360,6 +373,7 @@ def run_sequential_repairs(
         base_model=base_model,
         adapters=resolved_adapters,
         stage_feedback=stage_feedback,
+        compute_tree_edit_distance=compute_tree_edit_distance,
         stage_generated_counts=stage_generated_counts,
         early_stop_counts=early_stop_counts,
         problem_timings=problem_timings,
@@ -904,6 +918,7 @@ def evaluate_ordered_generations(
             for source, path in generation_paths
         ],
         stage_feedback=False,
+        compute_tree_edit_distance=True,
         stage_generated_counts=stage_generated_counts,
         early_stop_counts=early_stop_counts,
         problem_timings=sequential_problem_timings,
@@ -1302,6 +1317,7 @@ def _select_final_result(
     *,
     method: str,
     prompt_style: str,
+    compute_tree_edit_distance: bool = True,
 ) -> dict[str, Any]:
     candidates = state["candidates"]
     early_stop_stage = state["early_stop_stage"]
@@ -1332,6 +1348,8 @@ def _select_final_result(
             selected = current_fallback
         elif len(tied) == 1:
             selected = tied[0]
+        elif not compute_tree_edit_distance:
+            selected = tied[0]
         else:
             for candidate in tied:
                 if candidate.get("tree_edit_distance") is None:
@@ -1355,7 +1373,7 @@ def _select_final_result(
     repaired = changed and fixed_pass_rate == 1.0
     ted_buggy_fixed = None
     ted_fixed_oracle = None
-    if repaired:
+    if repaired and compute_tree_edit_distance:
         ted_buggy_fixed = selected.get("tree_edit_distance")
         if ted_buggy_fixed is None:
             ted_buggy_fixed = tree_edit_distance(current_code, fixed_code)
@@ -1405,6 +1423,7 @@ def _build_summary(
     base_model: str,
     adapters: list[tuple[str, Path]],
     stage_feedback: bool,
+    compute_tree_edit_distance: bool,
     stage_generated_counts: dict[str, int],
     early_stop_counts: dict[str, int],
     problem_timings: list[dict[str, Any]],
@@ -1435,6 +1454,7 @@ def _build_summary(
         base_model=base_model,
         adapter_paths={name: str(path) for name, path in adapters},
         stage_feedback=stage_feedback,
+        compute_tree_edit_distance=compute_tree_edit_distance,
         examples=len(results),
         problems=len(problem_timings),
         stage_generated_counts=stage_generated_counts,

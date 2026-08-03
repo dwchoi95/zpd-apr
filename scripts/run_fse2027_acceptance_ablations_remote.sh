@@ -85,7 +85,8 @@ run_answer_repeated() {
     --case-workers 1 \
     --timeout-sec 2.5 \
     --outcome-cache "${OUTCOME_CACHE}" \
-    --stage-feedback
+    --stage-feedback \
+    --skip-ted
   complete "${output}" "${expected}"
 }
 

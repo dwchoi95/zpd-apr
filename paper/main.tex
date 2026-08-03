@@ -27,6 +27,7 @@
 \newcommand{\strict}{\textsc{Strict}\xspace}
 \newcommand{\answer}{\textsc{Answer}\xspace}
 \newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
 
 \title{ZPDPatch: Execution-Guided Program Repair from Student Submission Trajectories}
 
@@ -39,7 +40,7 @@
 \begin{document}
 
 \begin{abstract}
-Automated program repair for programming assignments typically treats a student's latest submission as an isolated buggy program. This snapshot omits the revisions, repeated failures, and partial improvements that led to the current code. We present \tool, a repair framework that converts authentic submission trajectories into an execution-ordered portfolio of three repair policies. We formalize verdict and testcase improvements as nested execution-evidence orders and prove finite monotone supervision, policy-event inclusion, observed-test non-regression, and pointwise minimal escalation. The \progress adapter learns testcase-level Pareto improvements, \strict learns coarse-verdict improvements, and \answer maps failed submissions to the terminal accepted program. At inference, all policies condition independently on the authentic trajectory; execution stops at the first accepted candidate and otherwise selects the highest pass rate with minimum AST edit distance. We evaluate Qwen2.5-Coder-7B-based adapters on 997 held-out trajectories from 492 seen Project CodeNet problems and 250 trajectories from 54 problem-held-out problems. On seen problems, \tool improves repair rate from 30.7\% for a trajectory-prompted zero-shot baseline to 59.5\%, while producing smaller successful patches; a same-problem retrieval baseline reaches 80.2\% but makes substantially larger changes. On unseen problems, the corresponding execution-guided system substantially outperforms zero-shot. Problem-clustered inference preserves both gains. Controlled target-matched and portfolio ablations localize the gain to trajectory-derived relational supervision and heterogeneous policy composition rather than prompt length alone.
+Automated program repair for programming assignments typically treats a student's latest submission as an isolated buggy program. This snapshot omits the revisions, repeated failures, and partial improvements that led to the current code. We present \tool, a repair framework that converts authentic submission trajectories into an execution-ordered portfolio of three repair policies. We formalize verdict and testcase improvements as nested execution-evidence orders and prove finite monotone supervision, policy-event inclusion, observed-test non-regression, and pointwise minimal escalation. The \progress adapter learns testcase-level Pareto improvements, \strict learns coarse-verdict improvements, and \answer maps failed submissions to the terminal accepted program. At inference, all policies condition independently on the authentic trajectory; execution stops at the first accepted candidate and otherwise selects the highest pass rate with minimum AST edit distance. We evaluate Qwen2.5-Coder-7B-based adapters on 997 held-out trajectories from 328 test problems drawn from a 492-problem Seen pool, plus 250 trajectories from 54 problem-held-out problems. On seen problems, \tool improves repair rate from 30.7\% for a trajectory-prompted zero-shot baseline to 59.5\%, while producing smaller successful patches; a same-problem retrieval baseline reaches 80.2\% but makes substantially larger changes. On unseen problems, the corresponding execution-guided system substantially outperforms zero-shot. Problem-clustered inference preserves both gains. Controlled target-matched and portfolio ablations localize the gain to trajectory-derived relational supervision and heterogeneous policy composition rather than prompt length alone.
 \end{abstract}
 
 \ccsdesc[500]{Software and its engineering~Software testing and debugging}
@@ -65,7 +66,7 @@ Our evaluation separates three mechanisms that are easy to conflate: learned rel
 
 This paper makes the following contributions:
 \begin{itemize}
-  \item We formulate trajectory-mined repair as nested execution-evidence orders plus terminal closure, prove finite monotone supervision, policy-event inclusion, certified non-regression, and minimum-breadth escalation, and provide executable audits of these properties.
+  \item We formulate trajectory-mined repair as nested execution-evidence orders plus terminal closure, prove an end-to-end safety theorem from finite monotone supervision, policy inclusion, non-regression, and minimum-breadth escalation, and provide executable audits of these properties.
   \item We design an execution-guided repair procedure that composes independently conditioned policies, supports early stopping, and abstains when no candidate improves over the current program.
   \item We conduct a problem-familiarity-aware evaluation against zero-shot and retrieval-based repair, including target-matched, repeated-policy, generated-feedback, ordering, multi-seed, and problem-clustered analyses.
 \end{itemize}
@@ -327,6 +328,13 @@ Among all permutations with acceptance-based early stopping, Algorithm~\ref{alg:
 The algorithm visits policies in strictly increasing breadth and stops at the first success. Every skipped policy has lower breadth and failed, while every unvisited policy has greater breadth. The returned successful policy therefore minimizes breadth over the successful set. Any alternative permutation can only choose the same minimum or a broader successful policy.
 \end{proof}
 
+\begin{theorem}[End-to-end evidence safety]
+Under a fixed testcase universe and severity map, the union of Progress, Strict, and Answer supervision edges for any finite first-acceptance trajectory is a directed acyclic graph. Given order-independent policy candidates, \tool returns (i) a minimum-breadth accepted candidate when one exists, or (ii) a candidate whose observed pass rate is no lower than the current program otherwise.
+\end{theorem}
+\begin{proof}
+Proposition 1 makes every Progress and Strict edge strictly rank-decreasing. Every Answer edge starts at a failed state and ends at acceptance, so its first rank component strictly decreases to zero. A directed cycle would require rank to return to a larger value and is therefore impossible. The online alternatives follow from Propositions 5 and 4, respectively.
+\end{proof}
+
 The guarantees are relative to the observed test suite and to the derived breadth order; they neither prove semantic correctness on hidden inputs nor forbid a large edit when that edit improves more tests. Candidate independence is essential to Proposition 5: feeding one generated program into the next adapter changes the candidate under a counterfactual order. We validate the supervision, selection, and ordering propositions with executable certificates in Section~\ref{sec:results}.
 
 For a raw trajectory of length \(n\) and \(T\) tests, dataset construction performs a single retained scan once cached outcomes exist. Comparing outcome vectors costs \(O(T)\), giving \(O(nT)\) time and \(O(n)\) retained-state storage per trajectory, excluding program text. Answer construction is \(O(n)\). At inference, generation dominates cost. The system performs between one and three generations and executions, with exactly three only when neither early stage produces an accepted program. The cache can eliminate repeated execution for identical candidates but does not change the worst-case generation count.
@@ -409,13 +417,11 @@ A single Python runner executes original and generated programs. We cache outcom
 
 For RQ2, we construct adapter-specific \strict and \progress examples for both Seen and Unseen tests. \emph{Full Trajectory} uses each retained prefix. \emph{Current Code Only} retrains an adapter on identical examples and targets after removing every submission before the current one; its displayed position is reset to \(S_1\) to prevent index leakage. \answer is excluded because its inputs already contain one submission. This design isolates the presence of history while holding targets, counts, model, and hyperparameters fixed.
 
-For RQ3, each adapter independently generates one candidate for the same 997 Seen instances. For RQ4, we compose these candidates with \progress--\strict--\answer early stopping and fallback selection. Two controls distinguish policy diversity from repeated use and prompt-state effects: \emph{Answer$\times3$} invokes the same Answer adapter up to three times, appending generated execution feedback so that deterministic greedy decoding can produce a non-identical later candidate; repeating the identical prompt would collapse exactly to Answer once. \emph{Generated Feedback} applies the same update protocol to the heterogeneous P--S--A policies. The final \emph{Independent Policies} system instead keeps every policy conditioned on the same authentic trajectory. All configurations share the maximum three-generation budget, execution limits, and fallback selector.
+For RQ3, each adapter independently generates one candidate for the same 997 Seen instances. For RQ4, we compose these candidates with \progress--\strict--\answer early stopping and fallback selection. Two controls distinguish policy diversity from repeated use and prompt-state effects: \emph{Answer$\times3$} invokes the same Answer adapter up to three times, appending generated execution feedback so that deterministic greedy decoding can produce a non-identical later candidate; repeating the identical prompt would collapse exactly to Answer once. \emph{Generated Feedback} applies the same update protocol to the heterogeneous P--S--A policies. The final \emph{Independent Policies} system instead keeps every policy conditioned on the same authentic trajectory. All configurations share the maximum three-generation budget, execution limits, and fallback selector. Answer$\times3$ and the two additional-seed stability runs are effectiveness-only controls: we omit AST TED and choose the earliest candidate when failed candidates tie in pass rate, which cannot change PR, RR, or IR.
 
 \subsection{Metrics and Statistical Analysis}
 
 For \(M\) instances, let \(c_m\) be the current program and \(\hat c_m\) the selected result. \(\mathrm{Pass}(c)\in[0,1]\) is the test pass fraction. Pass Rate (PR) averages \(\mathrm{Pass}(\hat c_m)\); Repair Rate (RR) averages \(\mathbf{1}[\mathrm{Pass}(\hat c_m)=1]\); Improvement Rate (IR) averages \(\mathbf{1}[\mathrm{Pass}(\hat c_m)>\mathrm{Pass}(c_m)]\).
-
-Average Time Taken (ATT) is weighted wall-clock time per repaired input, measured from generation through execution and selection for all inputs of a problem. Shared cache construction, model loading, training, and LSGen database construction are offline preparation and excluded.
 
 For successfully repaired, parseable programs, \(\mathrm{TED}_{B\rightarrow F}\) measures AST distance from current to fixed code and \(\mathrm{TED}_{F\rightarrow O}\) from fixed code to the recorded accepted oracle. RQ2 uses \(\mathrm{TED}_{F\rightarrow T}\), where \(T\) is the identical adapter-specific recorded target shared by Full and Current configurations.
 
@@ -587,7 +593,7 @@ The 42 favorable versus 17 unfavorable discordant pairs show complementary succe
 
 \subsection{RQ6: Guarantees and Robustness}
 
-We executed an independent certificate checker over every canonical training example. Answer's 40,454 examples all contain one failed source and an accepted terminal target. The checker evaluated 19,981 retained Strict transitions and 29,920 retained Progress transitions; every transition satisfied its defining relation. All 16,973 unique Strict target events occur among the 21,416 Progress target events, with zero missing events. These exhaustive counts connect Propositions 1--3 to the materialized datasets rather than only to pseudocode. Six executable property tests additionally exercise rank descent, inclusion, assistance-horizon nesting, selection, and all policy permutations over randomized finite trajectories.
+We executed an independent certificate checker over every canonical training example. Answer's 40,454 examples all contain one failed source and an accepted terminal target. The checker evaluated 19,981 retained Strict transitions and 29,920 retained Progress transitions; every transition satisfied its defining relation. All 16,973 unique Strict target events occur among the 21,416 Progress target events, with zero missing events. These exhaustive counts connect Propositions 1--3 to the materialized datasets rather than only to pseudocode. Eight executable property tests additionally exercise rank descent, terminal closure, inclusion, assistance-horizon nesting, selection, effectiveness-only tie handling, and all policy permutations over randomized finite trajectories.
 
 The selection certificate likewise reports zero violations on all 997 Seen and 250 Unseen inputs. In every case, selected pass rate is at least current pass rate; the minimum difference is exactly zero because abstention is allowed. Thus, Proposition 4 is both a general property of Algorithm~\ref{alg:repair} and an audited property of the reported outputs. The problem-cluster and problem-balanced intervals reported in RQ1--RQ5 further show that the main positive conclusions do not depend on treating trajectories from one assignment as independent.
 
@@ -619,14 +625,14 @@ The execution-evidence and non-regression propositions hold without violations i
 
 \subsection{Cross-RQ Synthesis}
 
-Together, the RQs locate the gain in two components: authentic trajectories supply ordered offline supervision, and execution controls online escalation and abstention. History serialization is not a stable causal explanation; Progress and Strict differ more in patch scope than coverage; problem holdout and cluster-resampling preserve the system advantage; and certificates connect the observed outputs to the formal relations. This decomposition is more precise than attributing the whole gain to ``trajectory conditioning.''
+Together, the RQs locate the gain in two components: authentic trajectories supply ordered offline supervision, and execution controls online escalation and abstention. Target-matched retraining shows that these relations can be distilled without requiring a long history at deployment; Progress and Strict differ more in patch scope than coverage; problem holdout and cluster-resampling preserve the system advantage; and certificates connect observed outputs to the formal relations. This decomposition identifies a stronger mechanism than prompt-level ``trajectory conditioning'': trajectories define learnable reachability structure.
 
 \section{Discussion}
 \label{sec:discussion}
 
 \subsection{What Produces the Observed Improvement?}
 
-Adapter training matters because \tool beats a zero-shot model that already receives trajectory context; sequential execution matters because composition beats every member; history serialization itself is unstable under matched targets. Long or repeated histories may dilute the current defect, while training may internalize transition patterns without individual history at inference. Counterfactual histories paired with identical current code would test when path information changes the appropriate repair.
+Adapter training matters because \tool beats a zero-shot model that already receives trajectory context; sequential execution matters because composition beats every member; and target-matched current-code adapters retain the relational benefit. The practical consequence is favorable: expensive history serialization is not required for every deployment even though authentic histories remain essential for constructing the ordered targets. Counterfactual histories paired with identical current code would further test when path information changes the appropriate repair rather than only its supervision source.
 
 \subsection{Coverage Versus Patch Size}
 

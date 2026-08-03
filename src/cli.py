@@ -356,6 +356,11 @@ def main() -> None:
         help="Give every adapter the same observed trajectory (default)",
     )
     sequential.set_defaults(stage_feedback=False)
+    sequential.add_argument(
+        "--skip-ted",
+        action="store_true",
+        help="Skip AST edit distance for effectiveness-only ablations",
+    )
     sequential.add_argument("--no-resume", action="store_true")
 
     ordered_evaluate = commands.add_parser(
@@ -741,6 +746,7 @@ def main() -> None:
             case_workers=args.case_workers,
             timeout_sec=args.timeout_sec,
             stage_feedback=args.stage_feedback,
+            compute_tree_edit_distance=not args.skip_ted,
             outcome_cache_path=args.outcome_cache,
             resume=not args.no_resume,
         )

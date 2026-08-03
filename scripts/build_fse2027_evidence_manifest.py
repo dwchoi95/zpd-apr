@@ -69,6 +69,9 @@ def selected_files(run_root: Path, checkpoint_roots: list[Path]) -> list[tuple[P
             found.append((path, checkpoint_root))
         for path in checkpoint_root.glob("**/adapter_config.json"):
             found.append((path, checkpoint_root))
+        for path in checkpoint_root.glob("**/adapter_model.safetensors"):
+            if not path.parent.name.startswith("checkpoint-"):
+                found.append((path, checkpoint_root))
     unique = {(str(path), str(root)): (path, root) for path, root in found}
     return sorted(unique.values(), key=lambda item: (str(item[1]), str(item[0])))
 

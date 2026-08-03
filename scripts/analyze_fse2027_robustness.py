@@ -111,6 +111,16 @@ def summarize_method(rows: list[Row]) -> dict[str, Any]:
     by_problem: dict[str, list[Row]] = defaultdict(list)
     for row in rows:
         by_problem[str(row["problem_id"])].append(row)
+    buggy_fixed_ted = [
+        float(row["ted_buggy_fixed"])
+        for row in rows
+        if bool(row["repaired"]) and row.get("ted_buggy_fixed") is not None
+    ]
+    fixed_oracle_ted = [
+        float(row["ted_fixed_oracle"])
+        for row in rows
+        if bool(row["repaired"]) and row.get("ted_fixed_oracle") is not None
+    ]
     return {
         "examples": len(rows),
         "problems": len(by_problem),
@@ -122,6 +132,14 @@ def summarize_method(rows: list[Row]) -> dict[str, Any]:
             for group in by_problem.values()
         )
         / len(by_problem),
+        "mean_ted_buggy_fixed_on_repaired": (
+            sum(buggy_fixed_ted) / len(buggy_fixed_ted) if buggy_fixed_ted else None
+        ),
+        "parseable_repaired_for_buggy_fixed_ted": len(buggy_fixed_ted),
+        "mean_ted_fixed_oracle_on_repaired": (
+            sum(fixed_oracle_ted) / len(fixed_oracle_ted) if fixed_oracle_ted else None
+        ),
+        "parseable_repaired_for_fixed_oracle_ted": len(fixed_oracle_ted),
     }
 
 
@@ -176,6 +194,18 @@ def paired_suite_rows(
             for item in shared
         ),
     }
+    discordant = rr_contingency["left_only"] + rr_contingency["right_only"]
+    smaller = min(rr_contingency["left_only"], rr_contingency["right_only"])
+    exact_mcnemar_p = (
+        min(
+            1.0,
+            2.0
+            * sum(math.comb(discordant, index) for index in range(smaller + 1))
+            / (2**discordant),
+        )
+        if discordant
+        else 1.0
+    )
     joint_ted = [
         (
             float(left_by_id[item]["ted_buggy_fixed"]),
@@ -206,6 +236,7 @@ def paired_suite_rows(
         "left_summary": summarize_method(left),
         "right_summary": summarize_method(right),
         "rr_contingency": rr_contingency,
+        "exact_mcnemar_two_sided_p": exact_mcnemar_p,
         "paired_ted": ted_difference,
         "paired": [
             paired_cluster_analysis(
@@ -242,16 +273,20 @@ def replay_orders(root: Path) -> dict[str, Any]:
         breadth: list[int] = []
         selected_counts = {name: 0 for name in names}
         selected_counts["current-fallback"] = 0
+        reached_counts = {name: 0 for name in names}
+        accepted_counts = {name: 0 for name in names}
         for example_id in ids:
             selected: Row | None = None
             invoked: list[tuple[str, Row]] = []
             for call_index, name in enumerate(order, start=1):
                 calls += 1
+                reached_counts[name] += 1
                 row = rows[name][example_id]
                 invoked.append((name, row))
                 generation_time_sum += float(row.get("generation_time_sec", 0.0))
                 if bool(row["repaired"]):
                     repaired += 1
+                    accepted_counts[name] += 1
                     selected = row
                     selected_counts[name] += 1
                     breadth.append(policies[name])
@@ -301,6 +336,8 @@ def replay_orders(root: Path) -> dict[str, Any]:
                 "mean_ted_on_parseable_repairs": sum(teds) / len(teds),
                 "mean_oracle_ted_on_repairs": sum(oracle_teds) / len(oracle_teds),
                 "selected_source_counts": selected_counts,
+                "reached_counts": reached_counts,
+                "accepted_counts": accepted_counts,
             }
         )
     return {"examples": len(ids), "static_candidate_order_replay": results}
@@ -554,7 +591,11 @@ def main() -> None:
         "portfolio_order": replay_orders(root),
         "selector_certificate": {
             "seen": verify_selected_rows(no_feedback),
-            "unseen": verify_selector(root / "zpdpatch-unseen-test.evaluation.jsonl"),
+            "unseen": verify_selector(
+                unseen_no_feedback
+                if complete_eval(unseen_no_feedback, 250)
+                else root / "zpdpatch-unseen-test.evaluation.jsonl"
+            ),
         },
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

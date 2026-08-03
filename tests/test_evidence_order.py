@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from itertools import permutations
+from unittest.mock import patch
 
 from src.repair.evidence_order import (
     ExecutionEvidence,
@@ -13,6 +14,7 @@ from src.repair.evidence_order import (
     retained_indices,
     strict_improvement,
 )
+from src.repair.sequential import _select_final_result
 
 
 VERDICTS = (
@@ -122,3 +124,63 @@ def test_assistance_horizons_are_nested_before_terminal_acceptance() -> None:
             strict = first_improvement_index(trajectory, start, policy="strict")
             assert progress is not None and strict is not None
             assert progress <= strict <= len(trajectory) - 1
+
+
+def test_terminal_answer_edges_decrease_rank() -> None:
+    rng = random.Random(2027)
+    accepted = evidence("Accepted", ("AC",) * 5)
+    for _ in range(10_000):
+        failed = evidence(
+            rng.choice(VERDICTS[1:]),
+            tuple(rng.choice(VERDICTS) for _ in range(5)),
+        )
+        assert evidence_rank(accepted) < evidence_rank(failed)
+
+
+def test_effectiveness_only_selection_skips_ted_without_changing_pass_rate() -> None:
+    def candidate(source: str, code: str, patch_index: int | None) -> dict[str, object]:
+        return {
+            "source": source,
+            "generated_code": code,
+            "raw_generation": code,
+            "fixed_pass_rate": 0.5 if patch_index is not None else 0.25,
+            "fixed_verdict": "WA",
+            "fixed_tc_outcomes": {},
+            "patch_index": patch_index,
+            "tree_edit_distance": None,
+        }
+
+    record = {
+        "example_id": "e1",
+        "problem_id": "p1",
+        "user_id": "u1",
+        "history": [{"code": "x = 0"}],
+        "target_code": "x = 1",
+    }
+    state = {
+        "buggy_verdict": "WA",
+        "buggy_pass_rate": 0.25,
+        "buggy_execution_cached": True,
+        "generation_time_sec": 1.0,
+        "execution_time_sec": 1.0,
+        "early_stop_stage": None,
+        "candidates": [
+            candidate("current-fallback", "x = 0", None),
+            candidate("Answer-1", "x = 2", 1),
+            candidate("Answer-2", "x = 3", 2),
+        ],
+    }
+    with patch(
+        "src.repair.sequential.tree_edit_distance",
+        side_effect=AssertionError("TED must not run"),
+    ):
+        selected = _select_final_result(
+            record,
+            state,
+            method="Answer-Repeated",
+            prompt_style="D",
+            compute_tree_edit_distance=False,
+        )
+    assert selected["selected_source"] == "Answer-1"
+    assert selected["fixed_pass_rate"] == 0.5
+    assert selected["tree_edit_distance"] is None

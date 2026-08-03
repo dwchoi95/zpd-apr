@@ -82,7 +82,8 @@ evaluate_seed() {
     --case-workers 1 \
     --timeout-sec 2.5 \
     --outcome-cache "${OUTCOME_CACHE}" \
-    --no-stage-feedback
+    --no-stage-feedback \
+    --skip-ted
   test "$(wc -l < "${output}")" -eq "${expected}"
   test -s "${output%.jsonl}.summary.json"
 }
