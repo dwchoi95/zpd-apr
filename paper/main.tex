@@ -452,7 +452,7 @@ Split & Method & PR & RR & IR & \(\mathrm{TED}_{B\to F}\) & \(\mathrm{TED}_{F\to
 \midrule
 \multirow{2}{*}{Unseen}
  & Zero-shot & 75.3 & 62.0 & 68.8 & 17.46 & 15.80 \\
- & \tool & \textbf{83.0} & \textbf{72.0} & \textbf{76.8} & \textbf{11.66} & \textbf{12.54} \\
+ & \tool & \textbf{84.5} & \textbf{73.2} & \textbf{79.2} & \textbf{11.48} & \textbf{12.54} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -470,7 +470,7 @@ Split & Comparator & Both & Only \tool & Only comparator & Neither \\
 \midrule
 Seen & Zero-shot & 273 & 320 & 33 & 371 \\
 Seen & LSGen & 520 & 73 & 280 & 124 \\
-Unseen & Zero-shot & 138 & 42 & 17 & 53 \\
+Unseen & Zero-shot & 139 & 44 & 16 & 51 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -573,6 +573,7 @@ Configuration & PR & RR & IR & Candidates \\
 \progress & 73.4 & 44.8 & 52.0 & 1.00 \\
 \strict & 74.8 & 44.5 & 51.2 & 1.00 \\
 \answer & 77.5 & 50.1 & 57.5 & 1.00 \\
+Answer$\times3$ & 84.1 & 55.2 & 62.4 & 1.98 \\
 Generated Feedback & 84.9 & 56.6 & 64.6 & 2.05 \\
 Independent Policies & \textbf{86.5} & \textbf{59.5} & \textbf{67.0} & 2.04 \\
 \bottomrule
@@ -580,13 +581,15 @@ Independent Policies & \textbf{86.5} & \textbf{59.5} & \textbf{67.0} & 2.04 \\
 \end{table}
 
 \paragraph{Answer to RQ4.}
-Execution-guided escalation improves both complete repair and partial improvement over every single adapter. Keeping policies conditioned on authentic observations adds 2.91 RR points over generated feedback, with a problem-cluster interval [0.81, 5.01]; PR (+1.65 [0.62, 2.71]) and IR (+2.41 [0.11, 4.71]) improve as well. Early stopping avoids a fixed three-generation cost, although the sequence still averages roughly twice the generation work of an individual adapter.
+Execution-guided escalation improves both complete repair and partial improvement over every single adapter. Repeating Answer three times reaches 55.2\% RR, so additional calls to the strongest individual policy recover 5.0 points over Answer once but remain 4.31 points below the heterogeneous independent portfolio. That diversity gain survives problem-cluster resampling [2.16, 6.47] and paired testing (91 portfolio-only versus 48 repeated-Answer-only repairs; McNemar (p=0.000333)); PR (+2.45 [1.38, 3.56]) and IR (+4.61 [2.49, 6.75]) agree. Keeping policies conditioned on authentic observations additionally gains 2.91 RR points over generated feedback [0.81, 5.01], with PR (+1.65 [0.62, 2.71]) and IR (+2.41 [0.11, 4.71]) improvements. Thus neither extra calls to one policy nor synthetic prompt-state updates explain the independent portfolio's gain. Early stopping avoids a fixed three-generation cost, although the sequence still averages roughly twice the generation work of an individual adapter.
 
 \subsection{RQ5: Problem Generalization}
 
-On 250 Unseen instances, \tool obtains 83.0\% PR, 72.0\% RR, and 76.8\% IR, versus 75.3\%, 62.0\%, and 68.8\% for Zero-shot. \tool alone repairs 42 cases and Zero-shot alone repairs 17 (McNemar \(p=0.00155\)). Problem-cluster intervals exclude zero for RR (+10.0 points [4.2, 16.0]), PR (+7.65 [3.64, 11.92]), and IR (+8.0 [2.0, 13.9]); the equal-problem-weight RR gain is 9.2 points [2.8, 15.5]. \tool also reduces mean successful-patch TED from 17.46 to 11.66. Among joint repairs, its patch is 6.33 TED units smaller on average (95\% CI [3.31, 9.77]).
+On 250 Unseen instances, \tool obtains 84.5\% PR, 73.2\% RR, and 79.2\% IR, versus 75.3\%, 62.0\%, and 68.8\% for Zero-shot. \tool alone repairs 44 cases and Zero-shot alone repairs 16 (McNemar \(p=0.000394\)). Problem-cluster intervals exclude zero for RR (+11.2 points [5.15, 17.26]), PR (+9.18 [5.27, 13.34]), and IR (+10.4 [4.94, 15.92]); the equal-problem-weight RR gain is 10.47 points [3.98, 16.78]. \tool also reduces mean successful-patch TED from 17.46 to 11.48. Among 119 jointly repaired parseable instances, its patch is 6.14 TED units smaller on average (95\% CI [3.13, 9.56]).
 
-The 42 favorable versus 17 unfavorable discordant pairs show complementary successes rather than dominance. Absolute Unseen RR is higher for both methods, but the split was defined by trajectory availability rather than randomized difficulty. The valid estimand is the paired within-Unseen difference, which remains positive without same-problem training.
+Heterogeneous policies also outperform repeated use of Answer on Unseen data: 73.2\% versus 68.4\% RR, with 15 portfolio-only and three Answer$\times3$-only repairs (McNemar \(p=0.00754\)) and a +4.8-point problem-cluster interval [1.09, 9.21]. PR improves by 3.34 points [1.12, 5.98]. Against generated feedback, the independent system gains 1.2 RR points [--0.80, 3.31] and 1.54 PR points [0.14, 3.34]; the RR interval includes zero, while the PR interval does not. Thus policy diversity generalizes across problem holdout, whereas the smaller benefit of preserving authentic prompt state is supported more strongly by Seen RR and Unseen PR than by Unseen RR alone.
+
+The 44 favorable versus 16 unfavorable discordant pairs against Zero-shot show complementary successes rather than dominance. Absolute Unseen RR is higher for both methods, but the split was defined by trajectory availability rather than randomized difficulty. The valid estimand is the paired within-Unseen difference, which remains positive without same-problem training.
 
 \paragraph{Answer to RQ5.}
 \tool's advantage over Zero-shot persists on problems completely excluded from adapter training. Because the Unseen group deliberately contains lower-resource problems, its higher absolute RR must not be interpreted as evidence that unseen problems are easier or that familiarity harms repair.

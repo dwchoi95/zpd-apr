@@ -40,14 +40,14 @@ Seen RR을 56.6%에서 59.5%로 +2.91%p 높였으며, problem-cluster 95% CI
 
 ## Accept 이전에 남은 사항
 
-1. 실행 중인 Answer×3 Seen/Unseen 결과를 최종 RQ4 표에 반영해야 한다.
-2. 독립-policy Unseen 생성 평가를 완료해 dynamic 결과를 교체해야 한다.
-3. seed 2028/2029 재학습 결과로 training variance를 보고해야 한다.
-4. canonical evidence manifest에 dataset, evaluation, checkpoint metadata의
+1. ~~Answer×3 Seen/Unseen 및 독립-policy Unseen 결과를 RQ4--RQ5에 반영한다.~~ 완료.
+2. seed 2028/2029 재학습 결과로 training variance를 보고해야 한다.
+3. canonical evidence manifest에 dataset, evaluation, checkpoint metadata의
    SHA-256과 source revision을 봉인해야 한다.
-5. 위 결과를 반영한 PDF가 본문 18쪽과 참고문헌 4쪽 한도를 지키는지
+4. 위 결과를 반영한 PDF가 본문 18쪽과 참고문헌 4쪽 한도를 지키는지
    렌더링 검증해야 한다.
 
-현재 novelty와 technical originality는 Accept 수준으로 올라왔지만, 사전 선언한
-핵심 대조군과 다중 seed가 아직 완료되지 않았으므로 Overall Merit 4를 주기에는
-이르다. 남은 항목이 수치와 artifact로 채워진다면 예상 판정은 4. Accept이다.
+현재 novelty와 technical originality는 Accept 수준으로 올라왔고 사전 선언한
+핵심 대조군도 완료되었다. 다중 seed와 artifact 봉인이 아직 완료되지 않아 Overall
+Merit 4 확정은 보류한다. 남은 항목이 수치와 artifact로 채워진다면 예상 판정은
+4. Accept이다.

@@ -91,9 +91,9 @@ training seed를 사용하고 그 한계를 명시해야 한다.
 - [x] 40,454 Answer, 16,973 Strict, 21,416 Progress 예제의 supervision invariant 감사
 - [x] Strict target event가 Progress target event에 포함됨을 전수 확인
 - [x] 여섯 static portfolio 순서의 coverage/cost/breadth/TED replay
-- [ ] `Answer x 3` 및 `No Stage Feedback` Seen/Unseen 실험 완료
+- [x] `Answer x 3` 및 독립-policy `No Stage Feedback` Seen 실험 완료
+- [x] `Answer x 3` 및 독립-policy `No Stage Feedback` Unseen 실험 완료
 - [ ] 최소 두 추가 training seed의 안정성 실험 완료
 - [ ] evidence manifest와 table-generation 경로 봉인
-- [ ] 명제, 증명, certificate를 Approach와 Results에 통합
+- [x] 명제, 증명, certificate를 Approach와 Results에 통합
 - [ ] 최종 독립 모의 리뷰에서 모든 치명적 지적 해소 및 Overall Merit 4 이상
-
