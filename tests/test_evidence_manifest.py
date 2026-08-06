@@ -39,6 +39,12 @@ class EvidenceManifestTest(unittest.TestCase):
             (external_dataset / "summary.json").write_text(
                 '{"trajectories": 3}\n', encoding="utf-8"
             )
+            (external_dataset / "token-audit-4k.json").write_text(
+                '{"overlength_examples": 0}\n', encoding="utf-8"
+            )
+            (external_dataset / "token-audit.json").write_text(
+                '{"overlength_examples": 19}\n', encoding="utf-8"
+            )
             manifest = analysis / "evidence-manifest.json"
             build = [
                 sys.executable,
@@ -62,12 +68,15 @@ class EvidenceManifestTest(unittest.TestCase):
             first.pop("created_utc")
             second.pop("created_utc")
             self.assertEqual(first, second)
-            self.assertEqual(second["file_count"], 4)
+            self.assertEqual(second["file_count"], 5)
             self.assertEqual(second["external_root_names"], ["tiktoc"])
+            paths = {item["path"] for item in second["files"]}
             self.assertNotIn(
                 "analysis/evidence-manifest.json",
-                {item["path"] for item in second["files"]},
+                paths,
             )
+            self.assertIn("derived/datasets/token-audit-4k.json", paths)
+            self.assertNotIn("derived/datasets/token-audit.json", paths)
             verified = subprocess.run(
                 [
                     sys.executable,
@@ -85,7 +94,7 @@ class EvidenceManifestTest(unittest.TestCase):
                 capture_output=True,
                 text=True,
             )
-            self.assertEqual(json.loads(verified.stdout)["verified"], 4)
+            self.assertEqual(json.loads(verified.stdout)["verified"], 5)
 
 
 if __name__ == "__main__":

@@ -27,7 +27,10 @@ from extract_answer_generations import extract  # noqa: E402
 from seed_policy_generations import seed_rows  # noqa: E402
 from seed_policy_evaluations import seed_rows as seed_evaluation_rows  # noqa: E402
 from normalize_evaluation_baseline import normalize as normalize_baseline  # noqa: E402
-from seed_lsgen_always_three import seed_rows as seed_lsgen_rows  # noqa: E402
+from seed_lsgen_always_three import (  # noqa: E402
+    preserve_complete_rows,
+    seed_rows as seed_lsgen_rows,
+)
 from select_relation_seed_portfolio import select  # noqa: E402
 from sample_problem_balanced_dataset import select as sample_problems  # noqa: E402
 from select_execution_portfolio import select_portfolios  # noqa: E402
@@ -198,7 +201,7 @@ class AnswerSeedControlAnalysisTest(unittest.TestCase):
             )
             self.assertEqual(tree_edit_distance(before, after), canonical_zss)
 
-    def test_seeds_only_complete_three_candidate_lsgen_rows(self) -> None:
+    def test_seeds_complete_and_partial_lsgen_candidate_prefixes(self) -> None:
         dataset = [
             {
                 "example_id": "a",
@@ -244,12 +247,37 @@ class AnswerSeedControlAnalysisTest(unittest.TestCase):
             },
         ]
         rows = seed_lsgen_rows(dataset, legacy)
-        self.assertEqual([row["example_id"] for row in rows], ["a"])
+        self.assertEqual([row["example_id"] for row in rows], ["a", "b"])
         self.assertEqual(rows[0]["selected_patch_index"], 2)
         self.assertTrue(rows[0]["always_generate_max"])
+        self.assertFalse(rows[1]["always_generate_max"])
+        self.assertEqual(len(rows[1]["patches"]), 1)
         self.assertTrue(
-            all("ted_buggy_fixed" in candidate for candidate in rows[0]["patches"])
+            all(
+                "ted_buggy_fixed" in candidate
+                for row in rows
+                for candidate in row["patches"]
+            )
         )
+
+    def test_lsgen_resume_preserves_only_completed_always_three_rows(self) -> None:
+        seeded = [
+            {"example_id": "a", "patches": [{"patch_index": 1}]},
+            {"example_id": "b", "patches": [{"patch_index": 1}]},
+        ]
+        completed = {
+            "example_id": "a",
+            "patches": [{"patch_index": i} for i in (1, 2, 3)],
+            "always_generate_max": True,
+        }
+        incomplete = {
+            "example_id": "b",
+            "patches": [{"patch_index": 1}, {"patch_index": 2}],
+            "always_generate_max": False,
+        }
+        merged = preserve_complete_rows(seeded, [completed, incomplete])
+        self.assertIs(merged[0], completed)
+        self.assertIs(merged[1], seeded[1])
 
     def test_generation_budget_respects_explicit_cap(self) -> None:
         model = type("Model", (), {"config": type("Config", (), {"max_position_embeddings": 32768})()})()

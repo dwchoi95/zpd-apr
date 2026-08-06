@@ -13,16 +13,16 @@ Overall Merit 4 (Accept)는 아래 필수 게이트가 모두 충족되고, 치�
 | 게이트 | 통과 증거 | 현재 상태 |
 |---|---|---|
 | 동일 타깃·독립 시드 통제 | Answer-3Seed와 관계 이질 포트폴리오를 동일한 3회 생성 예산 및 selector로 Seen/Unseen에서 paired 비교 | 통과: Seen에서는 Answer-3Seed가 2.21점 우세, Unseen은 동률 |
-| post-hoc seed 선택 방지 | Seen-Validation에서 문제당 한 trajectory만 고정 hash로 선택하고, 9개 체크포인트 결과로 27개 관계 제약 조합을 정확히 열거 | 통과: test outcome 미사용, 선택 및 독립 replay 완료 |
-| 사전 선언된 패치 예산 | TED 5/10/20/40/80/160 전체 평균 coverage를 validation 목적함수로 사용하고 test 결과를 선택에 사용하지 않음 | 통과: 단일 triple 및 예산별 triple 모두 동결 후 test |
+| post-hoc seed 선택 방지 | Seen-Validation에서 문제당 한 trajectory만 고정 hash로 선택하고, 9개 체크포인트의 84개 size-3 조합과 27개 관계 제약 조합을 정확히 열거 | 통과: test outcome 미사용, 선택 및 독립 replay 완료 |
+| 사전 선언된 패치 예산 | TED 5/10/20/40/80/160 전체 평균 coverage를 validation 목적함수로 사용하고 test 결과를 선택에 사용하지 않음 | 통과: budget-indexed unconstrained가 always-three LSGen 대비 평균 +14.68점 [12.03, 17.43] |
 | 예산 목적-배포 정합성 | 예산 초과 AC에서 중단하지 않고 다음 후보를 실행하며, 각 예산의 배포 coverage가 검증 set-union 정의와 일치 | 통과: 전체 예산 독립 replay 및 Answer-3Seed 재현 mismatch 0 |
 | 선택 포트폴리오 독립 test | 선택 후 Seen/Unseen Test에서 Answer-3Seed와 problem-cluster paired 비교 | 완료, 효과 게이트 실패: 관계 제약 예산평균 Seen -0.70점 [-2.02, 0.71], Unseen +1.60 [-1.07, 4.44] |
 | 관계 제약 통제 | validation-selected unconstrained 3-checkpoint 최적해를 동일 Seen/Unseen Test에서 비교 | 완료: 예산평균 Seen +0.75 [-0.29, 1.86], Unseen +2.60 [0.38, 5.03] 대 Answer-3Seed; 관계 제약은 unconstrained보다 Seen -1.45 [-2.08, -0.87] |
-| 실제 수업 외부 타당성 | CodeWorkout CS1 Java를 학생 단위 Train/Valid/Test로 분리하고 동일한 데이터 규칙·학습 설정·평가 예산 적용 | 데이터·oracle evaluator 통과, 모델 실행 대기 중 |
+| 실제 수업 외부 타당성 | CodeWorkout CS1 Java를 학생 단위 Train/Valid/Test로 분리하고 동일한 데이터 규칙·학습 설정·평가 예산 적용 | 통과: 33명 student-held-out test에서 unconstrained RR 84.0%, Answer-3Seed 84.5%; 차이는 유의하지 않음 |
 | 교육적 과대 주장 제거 | TED를 학습 효과가 아닌 명시적 구조 편집 예산 아래의 배포 coverage로만 해석 | 통과 |
 | 역사 직렬화 음성 결과 | RQ2를 인과적 양성 근거로 재포장하지 않고 안정적 효과가 없다고 명시 | 통과 |
 | 사용자 중복 분석 | Train-disjoint-user strata 및 problem-cluster interval을 보고 | 통과 |
-| 재현성 | 저장된 JSONL/summary, 고정 seed/hash, 전체 단위 테스트, artifact manifest 및 재생성 명령 | 부분 통과; 최종 산출물 manifest 대기 |
+| 재현성 | 저장된 JSONL/summary, 고정 seed/hash, 전체 단위 테스트, artifact manifest 및 재생성 명령 | 부분 통과; CodeWorkout/fair LSGen 및 4K audit 완료, 최종 manifest 대기 |
 | 제출 형식 | `acmsmall,screen,review,anonymous`, 본문 18쪽 이하 + 참고문헌 4쪽 이하, Data Availability, AI 사용 공개 | 현재 18+3쪽; 최종 렌더 재검증 필요 |
 
 ## 이전 Weak Reject 지적별 판정 규칙
@@ -68,5 +68,8 @@ execution portfolio로 갱신한다. relation-constrained 27개 탐색은 삭제
 필수 통제로 유지한다. 이 변경은 부정 결과를 숨기는 서사 축소가 아니라,
 검증 실행이 target relation과 seed를 함께 선택하도록 방법을 일반화한 것이다.
 CodeNet의 동결된 선택은 Answer-2027/Answer-2028/Progress-2027이며 Seen RR
-61.5%, Unseen RR 74.8%다. 외부 CodeWorkout test는 이 갱신 뒤에도 미열람
-상태이므로 두 선택 규칙의 prospective transfer 판정에 사용한다.
+61.5%, Unseen RR 74.8%다. 이 갱신 뒤까지 미열람 상태였던 CodeWorkout test의
+prospective 결과는 unconstrained 84.0%, relation-constrained 81.8%,
+Answer-3Seed 84.5% RR이다. 따라서 외부 데이터는 높은 수업 데이터 transfer는
+확인하지만 relation 또는 unconstrained selection의 추가 coverage 이득은 확인하지
+않는다.

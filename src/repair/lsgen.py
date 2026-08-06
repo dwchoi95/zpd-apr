@@ -98,7 +98,7 @@ def generate_lsgen_repairs(
     output_path = output_path.expanduser().resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     requested_ids = {str(record["example_id"]) for record in records}
-    existing = (
+    resume_rows = (
         {
             str(item["example_id"]): item
             for item in _iter_jsonl(output_path)
@@ -107,6 +107,20 @@ def generate_lsgen_repairs(
         if resume and output_path.exists()
         else {}
     )
+    if always_generate_max:
+        existing = {
+            example_id: item
+            for example_id, item in resume_rows.items()
+            if len(item.get("patches", [])) >= max_iterations
+        }
+        partial = {
+            example_id: item
+            for example_id, item in resume_rows.items()
+            if 0 < len(item.get("patches", [])) < max_iterations
+        }
+    else:
+        existing = resume_rows
+        partial = {}
     pending_records = [
         record for record in records if str(record["example_id"]) not in existing
     ]
@@ -204,6 +218,13 @@ def generate_lsgen_repairs(
     )
     gpu_lock = Lock()
     results: list[dict[str, Any]] = list(existing.values())
+    # Partial always-three rows are continuation state, not finished output.
+    # Rewrite the file to complete rows before appending their completed forms,
+    # so the completion contract remains one JSONL row per example.
+    if partial:
+        with output_path.open("w", encoding="utf-8") as retained:
+            for item in existing.values():
+                retained.write(json.dumps(item, ensure_ascii=False) + "\n")
     mode = "a" if resume and output_path.exists() else "w"
     output = output_path.open(mode, encoding="utf-8")
     pending_by_problem: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -220,10 +241,21 @@ def generate_lsgen_repairs(
         original_buggy = str(record["history"][-1]["code"])
         oracle_code = str(record["target_code"])
         query_code = original_buggy
-        previous_generated: str | None = None
-        patches: list[dict[str, Any]] = []
-        generation_time_total = 0.0
-        execution_time_total = 0.0
+        prior = partial.get(str(record["example_id"]))
+        patches = (
+            [dict(patch) for patch in prior.get("patches", [])]
+            if prior is not None
+            else []
+        )
+        previous_generated = (
+            str(patches[-1]["generated_code"]) if patches else None
+        )
+        generation_time_total = sum(
+            float(patch.get("generation_time_sec", 0.0)) for patch in patches
+        )
+        execution_time_total = sum(
+            float(patch.get("execution_time_sec", 0.0)) for patch in patches
+        )
 
         cached_tc_outcomes = record.get("current_tc_outcomes")
         cached_verdict = record.get("current_execution_verdict")
@@ -257,7 +289,7 @@ def generate_lsgen_repairs(
             for pair in pairs_by_problem.get(problem_id, [])
             if pair.user_id != user_id and pair.pair_id != record["example_id"]
         ]
-        for iteration in range(1, max_iterations + 1):
+        for iteration in range(len(patches) + 1, max_iterations + 1):
             # The two GPU models are shared. Serializing retrieval and generation
             # keeps inference deterministic while CPU test execution overlaps
             # across records.

@@ -39,6 +39,10 @@
 
 \begin{abstract}
 Automated program repair for programming assignments typically treats a student's latest submission as an isolated buggy program. This snapshot omits the revisions, repeated failures, and partial improvements that led to the current code. We present \tool, a repair framework that converts authentic submission trajectories into an execution-ordered portfolio of three repair policies. Verdict and testcase improvements define finite execution-evidence orders; validation execution then selects three checkpoints by exact submodular coverage maximization, while the online controller guarantees observed-test non-regression and optional AST edit-budget compliance. The \progress adapter learns testcase-level Pareto improvements, \strict learns coarse-verdict improvements, and \answer maps failed submissions to the terminal accepted program. We evaluate Qwen2.5-Coder-7B-based adapters on 997 held-out trajectories from 328 test problems drawn from a 492-problem Seen pool, plus 250 trajectories from 54 problem-held-out problems. On Seen problems, the selected portfolio improves repair rate from 30.7\% for trajectory-prompted zero-shot to 61.5\%; a same-target three-seed Answer control reaches 61.7\%, identifying independent checkpoint diversity rather than target heterogeneity as the supported mechanism. On Unseen problems, selection reaches 74.8\% RR versus 62.0\% for zero-shot and 73.2\% for Answer-3Seed. The one-per-relation constraint reduces Seen coverage, whereas budget-indexed unconstrained selection improves the mean Unseen edit-budget frontier by 2.60 points [0.38, 5.03] over Answer-3Seed. A target-matched ablation finds no stable benefit from serializing earlier submissions, and all primary differences use problem-clustered inference.
+Against always-three LSGen under the same edit gate, its mean Seen budget
+frontier is +14.68 points [12.03, 17.43]. On student-held-out CodeWorkout Java, unconstrained selection transfers at
+84.0\% RR but is statistically indistinguishable from Answer-3Seed at 84.5\%,
+showing external repair transfer without a relation-specific coverage effect.
 \end{abstract}
 
 \ccsdesc[500]{Software and its engineering~Software testing and debugging}
@@ -66,7 +70,7 @@ This paper makes the following contributions:
 \begin{itemize}
   \item We formulate trajectory-mined repair as finite execution-evidence orders plus terminal closure, and audit every materialized supervision transition against those definitions.
   \item We pose size-three checkpoint choice as exact submodular validation-coverage maximization, derive a finite-family problem-level selection guarantee, and design an execution controller with observed-test non-regression and structural edit-budget compliance by construction.
-  \item We conduct a problem-familiarity-aware evaluation against zero-shot and retrieval-based repair, including the missing same-target three-seed control, patch-budget curves, target-matched history ablations, ordering, and problem-clustered analyses.
+  \item We conduct a problem-familiarity-aware evaluation against zero-shot and retrieval-based repair, including the missing same-target three-seed control, patch-budget curves, target-matched history ablations, problem-clustered analyses, and student-held-out Java transfer.
 \end{itemize}
 
 \section{Background and Related Work}
@@ -539,15 +543,18 @@ Table~\ref{tab:patch-budget} operationalizes this tradeoff rather than treating
 TED as evidence of pedagogical quality. Under a maximum structural edit budget,
 \tool has substantially higher repair coverage through \(B=80\); LSGen crosses
 over only at the broadest reported budget. At \(B=20\), for example, the gate
-returns an accepted repair for 39.9\% of inputs with \tool versus 10.0\% with
-LSGen, a +29.9-point problem-clustered difference [26.2, 33.7]. The comparison
-therefore supports a constrained deployment claim: retrieval has higher
-unrestricted coverage, whereas the trajectory-trained portfolio covers more
-inputs when large structural replacement is disallowed.
+returns an accepted repair for 44.0\% of inputs with \tool versus 13.9\% with
+always-three LSGen, a +30.09-point problem-clustered difference [26.45, 33.82].
+Across all six predeclared budgets, the mean difference is +14.68 points [12.03,
+17.43]. The comparison therefore supports a constrained deployment claim:
+retrieval has higher unrestricted coverage, whereas the trajectory-trained
+portfolio covers more inputs when large structural replacement is disallowed.
 
 \begin{table}[t]
-\caption{Seen repair rate (\%) after the same AST-TED deployment gate. The last
-column is \tool minus LSGen with a 95\% problem-cluster interval.}
+\caption{Seen repair rate (\%) after the same AST-TED deployment gate. \tool
+uses the validation-frozen budget-indexed unconstrained portfolio; LSGen always
+generates three candidates. The last column is \tool minus LSGen with a 95\%
+problem-cluster interval.}
 \label{tab:patch-budget}
 \centering
 \small
@@ -555,12 +562,12 @@ column is \tool minus LSGen with a 95\% problem-cluster interval.}
 \toprule
 Budget \(B\) & \tool & LSGen & Difference [95\% CI] \\
 \midrule
-5   & 20.2 & 3.3  & +16.9 [14.2, 19.7] \\
-10  & 29.7 & 5.8  & +23.9 [20.7, 27.2] \\
-20  & 39.9 & 10.0 & +29.9 [26.2, 33.7] \\
-40  & 48.6 & 25.7 & +22.9 [19.4, 26.5] \\
-80  & 53.9 & 47.3 & +6.5 [2.7, 10.4] \\
-160 & 55.8 & 65.7 & $-9.9$ [$-14.1$, $-5.7$] \\
+5   & 22.5 & 4.8  & +17.7 [14.8, 20.6] \\
+10  & 32.4 & 8.0  & +24.4 [21.2, 27.7] \\
+20  & 44.0 & 13.9 & +30.1 [26.4, 33.8] \\
+40  & 50.9 & 30.4 & +20.5 [17.0, 24.0] \\
+80  & 56.0 & 50.8 & +5.2 [1.3, 9.3] \\
+160 & 57.9 & 67.6 & $-9.7$ [$-14.2$, $-5.4$] \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -736,33 +743,51 @@ difference, which remains positive without same-problem training.
 \subsection{RQ6: Robustness and External Transfer}
 
 \paragraph{Implementation conformance.}
-An independent artifact audit checks definitions rather than model quality and
-is therefore not treated as an empirical result.
-Answer's 40,454 examples all pair one failed source with an accepted target; all
-19,981 Strict and 29,920 Progress transitions satisfy their declared relation;
-and all 16,973 unique Strict target events occur among the 21,416 Progress
-events. Across 997 Seen and 250 Unseen outputs, selected pass rate is never below
-the current program. These are implementation checks of the formal construction
-and selector, not a separate empirical claim about learned relations.
+An artifact audit finds zero construction-predicate violations and zero
+selected-pass-rate regressions; these are specification checks, not learned-behavior evidence.
 
-Because users may cross splits, we additionally stratify test instances by whether their user identifier occurs in any adapter-training set. Among 155 Seen instances from 150 training-disjoint users, \tool reaches 71.6\% RR versus 31.6\% for Zero-shot, a paired +40.0-point gain with problem-cluster interval [30.7, 48.8]; the corresponding overlap stratum has 842 instances and a +26.7-point gain [22.6, 31.0]. Thus the Seen effect is not confined to repeated users. On Unseen problems, the 69 user-disjoint instances retain a +11.6-point paired difference, but their cluster interval [--1.5, 25.4] includes zero; this smaller subgroup does not establish user-disjoint problem generalization on its own. Strata are observational, so differences between their absolute rates are not causal estimates of memorization.
+Because users may cross CodeNet splits, we stratify by training-user overlap.
+Among 155 Seen instances from 150 training-disjoint users, \tool gains 40.0 RR
+points over Zero-shot [30.7, 48.8]; the 842-instance overlap stratum gains 26.7
+[22.6, 31.0]. The 69 Unseen disjoint-user instances retain +11.6 points, but
+their interval [--1.5, 25.4] includes zero. These observational strata do not
+identify a memorization effect.
 
-Complete retraining with seeds 2027/2028/2029 yields Seen RR 59.5/57.6/59.0\% (mean 58.7, SD 1.0 points) and Unseen RR 73.2/74.0/70.4\% (mean 72.5, SD 1.9). Mean PR/IR are 86.2/66.2\% on Seen and 83.5/78.4\% on Unseen. Every Seen run exceeds the earlier Generated Feedback configuration's 56.6\% RR. This cross-run comparison bounds QLoRA variation but does not replace the paired seed-2027 comparison, which alone holds trained adapters fixed while changing candidate dependence.
+Complete P--S--A retraining with seeds 2027/2028/2029 gives Seen RR
+59.5/57.6/59.0\% (SD 1.0 points) and Unseen RR 73.2/74.0/70.4\% (SD 1.9).
+Replaying all six policy orders leaves fixed-candidate RR unchanged; P--S--A
+has the lowest mean breadth (1.391) and successful-patch TED (21.10).
 
-Finally, replaying all six policy orders on fixed candidates leaves RR at 59.5\%.
-Progress--Strict--Answer has the lowest mean breadth (1.391) and successful-patch
-TED (21.10); Answer-first saves about 0.12 generations but selects broader
-policies and patches. Separately generated-feedback, repeated-Answer, and
-Answer-3Seed controls test prompt-state updates, repeated calls, and
-independent-training diversity.
+\paragraph{Student-held-out Java transfer.}
+Validation selects A29--P29--S28 under the relation constraint and
+A28--A29--S28 without it; Answer-3Seed is A27--A28--A29. Table~\ref{tab:codeworkout}
+reports the prospective 181-trajectory CodeWorkout test. Unconstrained
+selection transfers at 84.0\% RR but does not beat Answer-3Seed (84.5\%): --0.55
+points, with exercise/student-cluster CIs [--3.06, 1.82]/[--2.89, 1.93]. The
+relation constraint reaches 81.8\%; no planned contrast is significant after
+Holm correction (minimum adjusted $p=0.539$).
+
+\begin{table}[t]
+\caption{Student-held-out CodeWorkout Java transfer (181 trajectories, 33 students, 17 exercises); values are percentages.}
+\label{tab:codeworkout}
+\centering
+\small
+\begin{tabular}{lrrr}
+\toprule
+Validation-frozen portfolio & PR & RR & IR \\
+\midrule
+Relation-constrained & 95.5 & 81.8 & 86.2 \\
+Unconstrained & 96.3 & 84.0 & 87.8 \\
+Answer-3Seed & \textbf{96.9} & \textbf{84.5} & \textbf{89.5} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \paragraph{Answer to RQ6.}
-Problem-clustered inference preserves the principal effects, three full
-training runs bound seed variation, and exhaustive order replay identifies the
-selected order as the least-broad, smallest-patch endpoint among fixed-candidate
-portfolios. The conformance audit separately confirms that saved supervision
-and selector outputs satisfy the implemented specifications; it is not evidence
-of learned behavior.
+Problem-clustered inference preserves the CodeNet effects and three full runs
+bound training-seed variation. Student-held-out Java evaluation establishes
+cross-language, course-data transfer of high repair coverage, but it does not
+establish a coverage advantage over same-target checkpoint diversity.
 
 \subsection{Cross-RQ Synthesis}
 
@@ -776,6 +801,8 @@ the optional structural budget. The validation-execution selector converts that
 complementarity into a test-independent deployment choice. Its unconstrained
 winner matches Answer-3Seed on Seen and improves the mean Unseen budget
 frontier, while the explicit relation constraint is detrimental on Seen.
+CodeWorkout reproduces high portfolio coverage under student and language shift,
+but not an advantage over Answer-3Seed.
 
 \section{Discussion}
 \label{sec:discussion}
@@ -823,29 +850,35 @@ Dataset construction, verdict ordering, normalization, runner limits, and candid
 Unseen problems are completely excluded from training and retrieval. This problem-level separation follows evidence that duplicated code across machine-learning splits can materially inflate code-model evaluation~\cite{allamanis2019adverse}. Seen splits share problem identities by design, and users may occur across splits; the benchmark is not user-held-out. We address assignment-level dependence with problem-cluster bootstrap and an equal-problem-weight estimand. The Seen paired gain persists among 155 training-disjoint-user instances, but the smaller Unseen disjoint-user interval includes zero; a prospectively user-held-out split would more directly test personalization transfer.
 
 \paragraph{External validity.}
-The study covers Python solutions from Project CodeNet, one 7B code model, one GPU, and programming-contest-style tasks. Results may not transfer to multi-file projects, other languages, industrial defects, private autograders, or novice courses with different submission behavior. The Unseen set consists of lower-volume problems by construction and should not be treated as a random sample of all new assignments.
+The study covers Python contest submissions from Project CodeNet and
+student-held-out Java CS1 submissions from CodeWorkout, but only one 7B code
+model and one GPU. Results may not transfer to multi-file projects, industrial
+defects, private autograders, other course structures, or other model families.
+The CodeNet Unseen set consists of lower-volume problems by construction and
+should not be treated as a random sample of all new assignments.
 
 \paragraph{Conclusion validity.}
 We define explicit metric families, correct planned RR comparisons, and repeat primary effect estimates with problem clusters. TED intervals remain conditional on joint successful repair and should not be generalized to failures. The current model family and testcase suite still delimit the measured effects; additional architectures and hidden tests would test whether the ordering transfers.
 
 \paragraph{Ethical considerations.}
-The study analyzes a publicly released code dataset and performs no intervention with learners. We do not attempt to re-identify users, and derived evaluation reports need only pseudonymous identifiers. Nevertheless, source-code histories can carry authorship signals; a public artifact should minimize identifiers and follow Project CodeNet's distribution terms.
+The study analyzes publicly released code datasets and performs no intervention
+with learners. We do not attempt to re-identify users, and derived evaluation
+reports need only pseudonymous identifiers. Nevertheless, source-code histories
+can carry authorship signals; a public artifact should minimize identifiers and
+follow each source dataset's distribution terms.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented \tool, an execution-guided APR framework trained from authentic
-submission trajectories. Nested execution-evidence orders define auditable
-Progress and Strict targets, while terminal closure supplies Answer targets.
-Independent composition raises Seen RR from 50.1\% for its strongest member to
-59.5\%, and a same-target Answer-3Seed portfolio further reaches 61.7\%, showing
-that independent checkpoint diversity is the empirically supported coverage
-mechanism. The system outperforms trajectory-prompted zero-shot repair on Seen
-and problem-held-out Unseen data under problem-clustered inference. Same-problem
-retrieval has higher unrestricted coverage, while the certified edit-budget gate
-gives \tool higher coverage through TED 80. Validation execution poses
-relation-constrained portfolio choice as exact submodular coverage maximization;
-the resulting test evaluation separates this method from post-hoc seed choice.
+We presented \tool, an execution-guided APR framework whose finite
+execution-evidence orders mine auditable targets from authentic trajectories.
+Exact validation selection reaches 61.5\% Seen and 74.8\% problem-held-out
+Unseen RR, versus 30.7\% and 62.0\% for zero-shot. Answer-3Seed reaches
+61.7/73.2\% and 84.5\% versus 84.0\% on CodeWorkout Java; the controls identify
+checkpoint diversity, not compulsory relation heterogeneity, as the coverage
+mechanism. Retrieval has higher unrestricted Seen coverage, while the edit gate
+raises mean coverage by 14.68 points over always-three LSGen. Exact finite-family
+selection and frozen testing separate deployment choice from post-hoc seed choice.
 
 \paragraph{Data availability.}
 \label{sec:data-availability}

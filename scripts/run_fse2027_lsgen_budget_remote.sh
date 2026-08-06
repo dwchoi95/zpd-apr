@@ -25,12 +25,11 @@ LEGACY_DESCRIPTION_CACHE=${EVAL_ROOT}/lsgen-seen-test.evaluation.pair-descriptio
 if [[ ! -s "${DESCRIPTION_CACHE}" ]] && [[ -s "${LEGACY_DESCRIPTION_CACHE}" ]]; then
   cp "${LEGACY_DESCRIPTION_CACHE}" "${DESCRIPTION_CACHE}"
 fi
-if [[ ! -s "${ALWAYS_THREE}" ]]; then
-  "${PYTHON}" scripts/seed_lsgen_always_three.py \
-    "${DATASET_ROOT}/seen-test-final.jsonl" \
-    "${EVAL_ROOT}/lsgen-seen-test.evaluation.jsonl" "${ALWAYS_THREE}" \
-    --tokenizer "${BASE_MODEL}" --cap 4096 --decoded-slack 128 --workers 24
-fi
+"${PYTHON}" scripts/seed_lsgen_always_three.py \
+  "${DATASET_ROOT}/seen-test-final.jsonl" \
+  "${EVAL_ROOT}/lsgen-seen-test.evaluation.jsonl" "${ALWAYS_THREE}" \
+  --tokenizer "${BASE_MODEL}" --cap 4096 --decoded-slack 128 --workers 24 \
+  --preserve-complete-from "${ALWAYS_THREE}"
 
 "${PYTHON}" run.py generate-lsgen \
   "${DATASET_ROOT}/seen-test-final.jsonl" "${ALWAYS_THREE}" \

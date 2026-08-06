@@ -85,7 +85,8 @@ def selected_external_files(external_roots: list[Path]) -> list[tuple[Path, Path
         "source-provenance.json",
         "derived/trajectory-summary.json",
         "derived/trajectory-4k-summary.json",
-        "derived/datasets/*.json",
+        "derived/datasets/summary.json",
+        "derived/datasets/token-audit-4k.json",
         "derived/datasets/*.jsonl",
         "derived/java-eval/RecordedOracle.summary.json",
     )

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seed always-three LSGen replay from legacy rows that already store 3 candidates."""
+"""Seed always-three LSGen replay from every reusable legacy candidate prefix."""
 
 from __future__ import annotations
 
@@ -64,7 +64,7 @@ def seed_rows(
     tasks: list[tuple[str, str]] = []
     for record in dataset:
         row = legacy_by_id.get(str(record["example_id"]))
-        if row is None or len(row.get("patches", [])) != 3:
+        if row is None or not 1 <= len(row.get("patches", [])) <= 3:
             continue
         if any(
             not completion_allowed(str(patch.get("raw_generation", "")))
@@ -122,12 +122,23 @@ def seed_rows(
                     selected["source"] if fixed_pass_rate == 1.0 else None
                 ),
                 "patches": patches,
-                "always_generate_max": True,
-                "seeded_from_legacy_three_candidate_row": True,
+                "always_generate_max": len(patches) == 3,
+                "seeded_from_legacy_candidate_prefix": True,
             }
         )
         seeded.append(result)
     return seeded
+
+
+def preserve_complete_rows(seeded: list[Row], existing: list[Row]) -> list[Row]:
+    """Prefer already completed always-three rows over legacy prefixes."""
+    complete = {
+        str(row["example_id"]): row
+        for row in existing
+        if len(row.get("patches", [])) >= 3
+        and row.get("always_generate_max") is True
+    }
+    return [complete.get(str(row["example_id"]), row) for row in seeded]
 
 
 def main() -> None:
@@ -139,6 +150,7 @@ def main() -> None:
     parser.add_argument("--cap", type=int, default=4096)
     parser.add_argument("--decoded-slack", type=int, default=128)
     parser.add_argument("--workers", type=int, default=24)
+    parser.add_argument("--preserve-complete-from", type=Path)
     args = parser.parse_args()
 
     from transformers import AutoTokenizer
@@ -157,6 +169,17 @@ def main() -> None:
         completion_allowed=allowed,
         workers=args.workers,
     )
+    preserved = []
+    if args.preserve_complete_from and args.preserve_complete_from.exists():
+        preserved = [
+            row
+            for row in read_jsonl(args.preserve_complete_from)
+            if all(
+                allowed(str(patch.get("raw_generation", "")))
+                for patch in row.get("patches", [])
+            )
+        ]
+        rows = preserve_complete_rows(rows, preserved)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", encoding="utf-8") as destination:
         for row in rows:
@@ -167,7 +190,17 @@ def main() -> None:
                 "dataset_examples": len(dataset),
                 "legacy_examples": len(legacy),
                 "seeded_examples": len(rows),
-                "candidate_completions_reused": 3 * len(rows),
+                "complete_seeded_examples": sum(
+                    len(row["patches"]) == 3 for row in rows
+                ),
+                "completed_rows_preserved": sum(
+                    len(row.get("patches", [])) >= 3
+                    and row.get("always_generate_max") is True
+                    for row in preserved
+                ),
+                "candidate_completions_reused": sum(
+                    len(row["patches"]) for row in rows
+                ),
                 "decoded_token_limit": limit,
             },
             sort_keys=True,
