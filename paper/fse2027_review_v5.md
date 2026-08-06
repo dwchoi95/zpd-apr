@@ -22,8 +22,8 @@ Overall Merit 4 (Accept)는 아래 필수 게이트가 모두 충족되고, 치�
 | 교육적 과대 주장 제거 | TED를 학습 효과가 아닌 명시적 구조 편집 예산 아래의 배포 coverage로만 해석 | 통과 |
 | 역사 직렬화 음성 결과 | RQ2를 인과적 양성 근거로 재포장하지 않고 안정적 효과가 없다고 명시 | 통과 |
 | 사용자 중복 분석 | Train-disjoint-user strata 및 problem-cluster interval을 보고 | 통과 |
-| 재현성 | 저장된 JSONL/summary, 고정 seed/hash, 전체 단위 테스트, artifact manifest 및 재생성 명령 | 부분 통과; CodeWorkout/fair LSGen 및 4K audit 완료, 최종 manifest 대기 |
-| 제출 형식 | `acmsmall,screen,review,anonymous`, 본문 18쪽 이하 + 참고문헌 4쪽 이하, Data Availability, AI 사용 공개 | 현재 18+3쪽; 최종 렌더 재검증 필요 |
+| 재현성 | 저장된 JSONL/summary, 고정 seed/hash, 전체 단위 테스트, artifact manifest 및 재생성 명령 | 통과: 625개 파일·3,948,755,187 bytes SHA-256 검증, 원격 57 tests 통과, marker와 manifest의 source revision 일치 |
+| 제출 형식 | `acmsmall,screen,review,anonymous`, 본문 18쪽 이하 + 참고문헌 4쪽 이하, Data Availability, AI 사용 공개 | 통과: 본문 18쪽+참고문헌 3쪽, 21쪽 전 페이지 시각 검사 완료 |
 
 ## 이전 Weak Reject 지적별 판정 규칙
 
@@ -73,3 +73,43 @@ prospective 결과는 unconstrained 84.0%, relation-constrained 81.8%,
 Answer-3Seed 84.5% RR이다. 따라서 외부 데이터는 높은 수업 데이터 transfer는
 확인하지만 relation 또는 unconstrained selection의 추가 coverage 이득은 확인하지
 않는다.
+
+## 최종 재리뷰 판정
+
+### Overall Merit: **4 (Accept)**
+
+이 판정은 relation heterogeneity의 효과를 방어해서가 아니라, 그 가설을 직접
+반증 가능한 통제로 분리한 뒤 방법과 실험의 단위를 더 강하게 만든 결과다.
+
+- **독창성·기술적 기여:** 동일 학생의 submission trajectory를 finite
+  execution-evidence order와 terminal closure로 변환하는 자동 supervision,
+  9개 checkpoint의 finite-family exact coverage selection, observed-test
+  non-regression과 구조 편집 budget gate를 하나의 실행 계약으로 결합한다.
+- **이론적 건전성:** Progress chain의 유한 단조성, coverage objective의
+  submodularity와 feasible-family exact optimum, validation problem 단위의
+  finite-family selection bound를 증명한다. 학습된 동작까지 보장하지 않는다는
+  경계도 본문에 명시했다.
+- **핵심 메커니즘 분리:** 누락됐던 Answer-3Seed 통제를 추가해 coverage의
+  지지원인이 compulsory target heterogeneity가 아니라 independently trained
+  checkpoint diversity임을 확인했다. one-per-relation 제약의 Seen 열세와 RQ2
+  history null result를 그대로 보고한다.
+- **평가의 충분성:** CodeNet Seen 997/Unseen 250의 paired·problem-cluster 분석,
+  3개 training seed, 84개 portfolio의 validation-only 선택, 사용자 중복 층화,
+  6개 order replay에 더해 33명 student-held-out CodeWorkout Java 181건을
+  prospective test로 평가했다.
+- **강한 배포 지표:** unrestricted LSGen RR 우세를 숨기지 않으면서도, 동일한
+  always-three 생성 수와 AST-TED gate 아래 budget-indexed unconstrained가
+  여섯 예산 평균 +14.68점 [12.03, 17.43]이고 B=5--80의 모든 CI 하한이
+  0보다 크다. B=160에서는 LSGen이 우세하다는 crossover도 함께 보고한다.
+- **재현성·표현:** 4,096-token audit은 32,071 completion 중 초과 0건이고,
+  최종 manifest와 marker가 동일한 source revision에 결합됐다. 본문은
+  18쪽, 참고문헌은 59편/3쪽이며 모든 페이지를 렌더 검사했다.
+
+### 남아 있는 약점과 점수 상한
+
+단일 7B base model, 공개 testcase correctness, 학습효과를 직접 측정하지 않은 점은
+남는다. CodeWorkout에서 unconstrained와 Answer-3Seed 차이도 유의하지 않다.
+따라서 Strong Accept(5)까지는 부여하지 않는다. 그러나 초기 Weak Reject의 결정적
+원인이던 메커니즘 미분리, LSGen과의 비정합 budget 비교, 실제 수업 데이터 부재,
+자명한 형식화, 과대 인과 주장은 모두 직접 통제·공정 재실행·외부 평가·방법
+일반화로 해결됐고, 남은 약점은 명시된 external/construct validity 범위다.
