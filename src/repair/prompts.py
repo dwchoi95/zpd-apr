@@ -34,16 +34,22 @@ def build_messages(
             if source_key in record:
                 current[target_key] = record[source_key]
     description = str(record["problem_description"]).strip()
+    language = str(record.get("language", "Python")).strip() or "Python"
     time_limit = _display_constraint(record.get("time_limit"))
     memory_limit = _display_constraint(record.get("memory_limit"))
     submission_messages = []
     for index, submission in enumerate(history):
         previous = history[index - 1] if index else None
         submission_messages.append(
-            _render_submission(style, submission, previous_submission=previous)
+            _render_submission(
+                style,
+                submission,
+                previous_submission=previous,
+                language=language,
+            )
         )
 
-    system = _template(style, "system.md")
+    system = _language_specific(_template(style, "system.md"), language)
     if style == "A":
         user = _template(style, "user.md")
         user = user.replace("{{problem_description}}", description)
@@ -83,9 +89,11 @@ def _render_submission(
     submission: dict[str, Any],
     *,
     previous_submission: dict[str, Any] | None,
+    language: str = "Python",
 ) -> str:
     # Prompt A serializes the same submission block into one user message.
     template = _template("B" if style == "A" else style, "user.md")
+    template = template.replace("```python", f"```{language.lower()}")
     template = template.replace("{{position}}", str(submission["position"]))
     template = template.replace("{{verdict}}", str(submission["verdict"]))
     template = template.replace(
@@ -97,6 +105,25 @@ def _render_submission(
         _edit_summary(previous_submission, submission),
     )
     return template.replace("{{source_code}}", str(submission["code"]).rstrip())
+
+
+def _language_specific(template: str, language: str) -> str:
+    """Adapt the language wording while preserving canonical Python prompts."""
+
+    if language.lower() == "python":
+        return template
+    if language.lower() == "java":
+        template = template.replace(
+            "Return exactly one complete Python 3 program as plain text.",
+            "Return exactly one complete Java submission in the same method-only format as the input, as plain text.",
+        )
+        template = template.replace(
+            "complete Python program", "complete Java submission"
+        )
+        return template.replace("Python program", "Java submission")
+    rendered = template.replace("Python 3 program", f"{language} program")
+    rendered = rendered.replace("complete Python program", f"complete {language} program")
+    return rendered.replace("complete Python 3 program", f"complete {language} program")
 
 
 def _execution_feedback(submission: dict[str, Any]) -> str:

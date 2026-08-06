@@ -15,8 +15,18 @@ trajectory-derived program repair 프로젝트이다.
 - inference는 Progress--Strict--Answer 순서로 실행하며 AC에서 조기 종료한다.
 - 모두 실패하면 current program을 포함해 pass rate 최대, AST edit distance 최소 후보를
   선택하므로 관측 testcase에서 regression을 강제하지 않는다.
+- 각 relation의 세 독립 seed checkpoint를 문제 균형 validation에서 실행하고, test를
+  보지 않은 채 one-per-relation 포트폴리오를 정확히 선택한다. Unrestricted coverage와
+  사전 선언 TED 예산 `{5,10,20,40,80,160}`의 평균 coverage를 각각 선택한다.
+- TED 예산 모드에서는 초과 후보를 반환 후 폐기하지 않고 다음 policy까지 계속 실행해,
+  예산 이내 AC가 있으면 첫 후보를 반환한다. 없으면 예산 이내 후보와 current program
+  사이에서 non-regressive selection을 수행한다.
+- 모든 새 후보 생성은 최대 4,096 new tokens에서 종료해, EOS를 내지 않는 실패 출력이
+  32K context 전체를 소비하지 않도록 한다.
 
-Primary seed 2027과 추가 seed 2028/2029의 전체 결과는 다음과 같다.
+아래 표는 validation 선택 이전의 고정 seed 포트폴리오 민감도이다. 최종 시스템 수치는
+`fse2027-portfolio-validation-selection.json`과
+`fse2027-selected-portfolios.json`에서 읽는다.
 
 | Split | Seed 2027 RR | Seed 2028 RR | Seed 2029 RR | Mean +/- SD |
 |---|---:|---:|---:|---:|
@@ -30,7 +40,9 @@ outputs/split-90-10/canonical-v5/
 checkpoints/split-90-10/canonical-v5/
 checkpoints/split-90-10/canonical-v5-rq2/
 checkpoints/split-90-10/canonical-v5-seeds/
+checkpoints/split-90-10/codeworkout/
 data-canonical-v5/
+archive/external/tiktoc/
 ```
 
 UbuntuServer에서도 작업공간은 `/home/cdw/VSCode/zpd-apr/` 하나만 사용한다.
@@ -106,6 +118,38 @@ bash scripts/run_fse2027_acceptance_ablations_remote.sh
 bash scripts/run_fse2027_multiseed_remote.sh
 ```
 
+동일 타깃 Answer-3Seed 통제를 실행하고, 문제당 한 validation trajectory에서 9개
+checkpoint와 27개 relation-constrained 및 84개 size-three 포트폴리오를
+평가·선택한 뒤 독립 Seen/Unseen test로 넘긴다. v5 primary는 84개 전체에서
+고른 포트폴리오이며, one-per-relation 선택과 Answer-3Seed는 필수 통제다.
+
+```bash
+bash scripts/run_fse2027_answer_seed_control_remote.sh
+bash scripts/run_fse2027_portfolio_validation_remote.sh
+bash scripts/run_fse2027_selected_portfolios_remote.sh
+```
+
+선택 평가를 재개할 때는 코드가 동일한 기존 개별·순차 후보의 testcase outcome을
+재사용하고, 새 후보만 실행한다. TED는 동일한 ordered unit-cost 정의의 APTED로
+다시 계산하며 소규모 AST 쌍에서 기존 ZSS 결과와 교차 검증한다. 동일 split의
+모든 후보는 한 canonical current-program outcome을 공유해 timeout 경계의 baseline
+변동이 portfolio 비교에 들어오지 않게 한다.
+
+TIKTOC CodeWorkout에서는 동일한 전체-trajectory 4K 규칙과 학생-disjoint split을
+적용한다. 각 relation의 세 seed를 새로 학습하고 student-disjoint validation으로
+포트폴리오를 선택한 후 student-held-out Java test를 실행한다.
+
+```bash
+bash scripts/run_fse2027_codeworkout_remote.sh
+bash scripts/run_fse2027_lsgen_budget_remote.sh
+```
+
+마지막 스크립트는 LSGen도 성공 후 즉시 중단하지 않고 최대 3후보를 저장한 뒤,
+ZPDPatch와 동일한 TED 예산별 계속 탐색 규칙을 replay한다. 동일한 retrieval-pair
+설명 cache와 이미 세 후보가 모두 저장된 legacy 행은 token-cap 감사 후 재사용한다.
+후보 TED는 unit-cost APTED로 정확 계산하되 AST node-count 차이가 최대 사전 선언
+예산 160을 이미 넘으면 sound lower bound로 `>160`만 저장한다.
+
 논문 분석을 재생성한다.
 
 ```bash
@@ -131,6 +175,8 @@ python scripts/build_fse2027_evidence_manifest.py \
   --checkpoint-root checkpoints/split-90-10/canonical-v5 \
   --checkpoint-root checkpoints/split-90-10/canonical-v5-rq2 \
   --checkpoint-root checkpoints/split-90-10/canonical-v5-seeds \
+  --checkpoint-root checkpoints/split-90-10/codeworkout \
+  --external-root archive/external/tiktoc \
   --source-revision "$REVISION" \
   --output outputs/split-90-10/canonical-v5/analysis/evidence-manifest.json
 
@@ -139,8 +185,19 @@ python scripts/verify_fse2027_evidence_manifest.py \
   --run-root outputs/split-90-10/canonical-v5 \
   --checkpoint-root checkpoints/split-90-10/canonical-v5 \
   --checkpoint-root checkpoints/split-90-10/canonical-v5-rq2 \
-  --checkpoint-root checkpoints/split-90-10/canonical-v5-seeds
+  --checkpoint-root checkpoints/split-90-10/canonical-v5-seeds \
+  --checkpoint-root checkpoints/split-90-10/codeworkout \
+  --external-root archive/external/tiktoc
 ```
+
+UbuntuServer에서는 최종 dev commit 이후 같은 절차와 전체 테스트를 한 번에 실행한다.
+
+```bash
+bash scripts/finalize_fse2027_evidence_remote.sh "$(git rev-parse HEAD)"
+```
+
+성공 시 manifest 검증과 전체 테스트를 통과한 source revision이
+`analysis/FSE2027_COMPLETE`에 기록된다.
 
 ## Verification
 
@@ -150,6 +207,11 @@ bash -n scripts/run_canonical_v5_prepare_remote.sh
 bash -n scripts/run_canonical_v5_gpu_remote.sh
 bash -n scripts/run_fse2027_acceptance_ablations_remote.sh
 bash -n scripts/run_fse2027_multiseed_remote.sh
+bash -n scripts/run_fse2027_portfolio_validation_remote.sh
+bash -n scripts/run_fse2027_selected_portfolios_remote.sh
+bash -n scripts/run_fse2027_codeworkout_remote.sh
+bash -n scripts/run_fse2027_lsgen_budget_remote.sh
 ```
 
-FSE 2027 원고는 `paper/main.tex`이며 PDF는 본문 18쪽과 참고문헌 2쪽으로 빌드된다.
+FSE 2027 원고는 `paper/main.tex`이며 현재 PDF는 본문 18쪽 이내와 참고문헌 3쪽으로
+빌드된다. 최종 결과 반영 후에도 18+4 제한과 시각 레이아웃을 다시 검사한다.

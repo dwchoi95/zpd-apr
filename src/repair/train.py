@@ -24,6 +24,7 @@ class TrainingSummary:
     effective_batch_size: int
     edit_token_weight: float
     num_train_epochs: float
+    seed: int
     resume_from_checkpoint: str | None
     best_eval_loss: float | None
     best_checkpoint: str | None
@@ -239,6 +240,7 @@ def train_qlora(
         effective_batch_size=per_device_batch_size * gradient_accumulation_steps,
         edit_token_weight=edit_token_weight,
         num_train_epochs=num_train_epochs,
+        seed=seed,
         resume_from_checkpoint=(
             str(resume_from_checkpoint)
             if resume_from_checkpoint is not None

@@ -282,6 +282,7 @@ def main() -> None:
     )
     generate.add_argument("--adapter", type=Path, default=None)
     generate.add_argument("--batch-size", type=int, default=1)
+    generate.add_argument("--max-new-tokens", type=int, default=None)
     generate.add_argument("--no-resume", action="store_true")
 
     zero_shot = commands.add_parser(
@@ -514,6 +515,12 @@ def main() -> None:
     lsgen.add_argument("--case-workers", type=int, default=1)
     lsgen.add_argument("--timeout-sec", type=float, default=2.5)
     lsgen.add_argument("--no-resume", action="store_true")
+    lsgen.add_argument("--max-new-tokens", type=int, default=None)
+    lsgen.add_argument(
+        "--always-generate-max",
+        action="store_true",
+        help="Generate all max-iteration candidates even after acceptance for budget replay.",
+    )
 
     choose_prompt = commands.add_parser(
         "select-prompt",
@@ -704,6 +711,7 @@ def main() -> None:
             adapter_path=args.adapter,
             batch_size=args.batch_size,
             resume=not args.no_resume,
+            max_new_tokens=args.max_new_tokens,
         )
         print(json.dumps(asdict(summary), ensure_ascii=False, indent=2, default=str))
         return
@@ -871,11 +879,14 @@ def main() -> None:
             embedding_model=args.embedding_model,
             topk=args.topk,
             max_iterations=args.max_iterations,
+            description_batch_size=args.description_batch_size,
             retention_threshold=args.retention_threshold,
             workers=args.workers,
             case_workers=args.case_workers,
             resume=not args.no_resume,
             timeout_sec=args.timeout_sec,
+            always_generate_max=args.always_generate_max,
+            max_new_tokens=args.max_new_tokens,
         )
         print(json.dumps(asdict(summary), ensure_ascii=False, indent=2, default=str))
         return

@@ -12,7 +12,7 @@ from typing import Any, Iterable
 
 from ..runner.dataset import load_testcases
 from ..runner.python_runner import PythonSubmissionRunner
-from .evaluate import tree_edit_distance
+from .evaluate import budget_bounded_tree_edit_distance, tree_edit_distance
 from .inference import _generation_token_budget, extract_python_code
 
 
@@ -36,6 +36,7 @@ class LSGenSummary:
     retrieval_pairs: int
     described_pairs: int
     max_iterations: int
+    max_new_tokens: int | None
     generated_patches: int
     offline_preparation_sec: float
     average_time_taken_sec: float
@@ -69,6 +70,8 @@ def generate_lsgen_repairs(
     case_workers: int = 1,
     resume: bool = True,
     timeout_sec: float = 2.5,
+    always_generate_max: bool = False,
+    max_new_tokens: int | None = None,
 ) -> LSGenSummary:
     """Run the LSGen artifact pipeline on ZPDPatch final-step examples.
 
@@ -127,6 +130,7 @@ def generate_lsgen_repairs(
             retrieval_pairs=len(pairs),
             described_pairs=len(pairs),
             max_iterations=max_iterations,
+            max_new_tokens=max_new_tokens,
             generated_patches=sum(
                 len(item.get("patches", [])) for item in existing.values()
             ),
@@ -295,7 +299,9 @@ def generate_lsgen_repairs(
                     generated = generator.generate(
                         **encoded,
                         max_new_tokens=_generation_token_budget(
-                            generator, encoded["input_ids"].shape[1]
+                            generator,
+                            encoded["input_ids"].shape[1],
+                            max_new_tokens,
                         ),
                         do_sample=False,
                         pad_token_id=tokenizer.pad_token_id,
@@ -318,6 +324,14 @@ def generate_lsgen_repairs(
             )
             execution_time = time.perf_counter() - execution_started
             execution_time_total += execution_time
+            changed_candidate = fixed_code.strip() != original_buggy.strip()
+            candidate_ted = (
+                budget_bounded_tree_edit_distance(
+                    original_buggy, fixed_code, maximum_budget=160
+                )
+                if changed_candidate
+                else 0
+            )
             patch = {
                 "patch_index": iteration,
                 "source": f"iteration-{iteration}",
@@ -325,7 +339,9 @@ def generate_lsgen_repairs(
                 "raw_generation": raw,
                 "fixed_verdict": outcome.verdict.value,
                 "fixed_pass_rate": _pass_rate(outcome),
-                "tree_edit_distance": None,
+                "tree_edit_distance": candidate_ted,
+                "ted_buggy_fixed": candidate_ted,
+                "ted_censored_above": 160 if candidate_ted == 161 else None,
                 "fixed_tc_outcomes": {
                     case.case_id: case.verdict.value for case in outcome.cases
                 },
@@ -334,18 +350,37 @@ def generate_lsgen_repairs(
                 "metadata": {"retrieval_pair_ids": selected_ids},
             }
             patches.append(patch)
-            if outcome.verdict.value == "AC":
+            if outcome.verdict.value == "AC" and not always_generate_max:
                 break
             previous_generated = fixed_code
 
-        selected_patch = patches[-1]
+        if always_generate_max:
+            accepted = [
+                patch for patch in patches if float(patch["fixed_pass_rate"]) == 1.0
+            ]
+            selected_patch = (
+                accepted[0]
+                if accepted
+                else max(
+                    patches,
+                    key=lambda patch: (
+                        float(patch["fixed_pass_rate"]),
+                        -(
+                            float(patch["ted_buggy_fixed"])
+                            if patch["ted_buggy_fixed"] is not None
+                            else float("inf")
+                        ),
+                        -int(patch["patch_index"]),
+                    ),
+                )
+            )
+        else:
+            selected_patch = patches[-1]
         final_code = str(selected_patch["generated_code"])
         final_pass_rate = float(selected_patch["fixed_pass_rate"])
         changed = final_code.strip() != original_buggy.strip()
         repaired = changed and final_pass_rate == 1.0
-        ted_buggy_fixed = (
-            tree_edit_distance(original_buggy, final_code) if repaired else None
-        )
+        ted_buggy_fixed = selected_patch["ted_buggy_fixed"] if repaired else None
         ted_fixed_oracle = (
             tree_edit_distance(final_code, oracle_code) if repaired else None
         )
@@ -380,6 +415,7 @@ def generate_lsgen_repairs(
                 else None
             ),
             "patches": patches,
+            "always_generate_max": always_generate_max,
         }
 
     for problem_id in sorted(pending_by_problem):
@@ -426,6 +462,7 @@ def generate_lsgen_repairs(
         retrieval_pairs=len(pairs),
         described_pairs=len(descriptions),
         max_iterations=max_iterations,
+        max_new_tokens=max_new_tokens,
         generated_patches=sum(len(item.get("patches", [])) for item in results),
         offline_preparation_sec=offline_preparation_sec,
         average_time_taken_sec=(

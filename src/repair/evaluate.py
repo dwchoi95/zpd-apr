@@ -293,12 +293,37 @@ def rescore_evaluations(
 
 def tree_edit_distance(before: str, after: str) -> int | None:
     try:
-        from zss import Node, distance
-
-        before_tree = _ast_to_zss(ast.parse(before), Node)
-        after_tree = _ast_to_zss(ast.parse(after), Node)
-    except (SyntaxError, ValueError, TypeError, ImportError):
+        before_ast = ast.parse(before)
+        after_ast = ast.parse(after)
+    except (SyntaxError, ValueError, TypeError):
         return None
+    try:
+        return _apted_distance(before_ast, after_ast)
+    except ImportError:
+        try:
+            return _zss_distance(before_ast, after_ast)
+        except ImportError:
+            return None
+
+
+def _apted_distance(before_ast: ast.AST, after_ast: ast.AST) -> int:
+    from apted import APTED, Config
+
+    class AstConfig(Config):
+        def children(self, node: ast.AST) -> list[ast.AST]:
+            return list(ast.iter_child_nodes(node))
+
+        def rename(self, left: ast.AST, right: ast.AST) -> int:
+            return int(_ast_label(left) != _ast_label(right))
+
+    return int(APTED(before_ast, after_ast, AstConfig()).compute_edit_distance())
+
+
+def _zss_distance(before_ast: ast.AST, after_ast: ast.AST) -> int:
+    from zss import Node, distance
+
+    before_tree = _ast_to_zss(before_ast, Node)
+    after_tree = _ast_to_zss(after_ast, Node)
     return int(
         distance(
             before_tree,
@@ -311,7 +336,40 @@ def tree_edit_distance(before: str, after: str) -> int | None:
     )
 
 
+def budget_bounded_tree_edit_distance(
+    before: str, after: str, *, maximum_budget: int
+) -> int | None:
+    """Return exact TED when needed, or a sound greater-than-budget sentinel."""
+    if maximum_budget < 0:
+        raise ValueError("maximum_budget must be non-negative")
+    try:
+        before_ast = ast.parse(before)
+        after_ast = ast.parse(after)
+    except (SyntaxError, ValueError, TypeError):
+        return None
+    before_nodes = sum(1 for _ in ast.walk(before_ast))
+    after_nodes = sum(1 for _ in ast.walk(after_ast))
+    # Unit-cost insertions and removals change the node count by at most one, so
+    # the absolute count difference is a lower bound on exact tree edit distance.
+    if abs(before_nodes - after_nodes) > maximum_budget:
+        return maximum_budget + 1
+    try:
+        return _apted_distance(before_ast, after_ast)
+    except ImportError:
+        try:
+            return _zss_distance(before_ast, after_ast)
+        except ImportError:
+            return None
+
+
 def _ast_to_zss(node: ast.AST, node_type: Any) -> Any:
+    root = node_type(_ast_label(node))
+    for child in ast.iter_child_nodes(node):
+        root.addkid(_ast_to_zss(child, node_type))
+    return root
+
+
+def _ast_label(node: ast.AST) -> str:
     label = node.__class__.__name__
     if isinstance(node, ast.Name):
         label += f":{node.id}"
@@ -319,10 +377,7 @@ def _ast_to_zss(node: ast.AST, node_type: Any) -> Any:
         label += f":{node.arg}"
     elif isinstance(node, ast.Constant):
         label += f":{node.value!r}"
-    root = node_type(label)
-    for child in ast.iter_child_nodes(node):
-        root.addkid(_ast_to_zss(child, node_type))
-    return root
+    return label
 
 
 def _pass_rate(outcome: Any) -> float:

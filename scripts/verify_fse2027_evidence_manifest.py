@@ -23,11 +23,11 @@ def jsonl_rows(path: Path) -> int:
         return sum(1 for line in source if line.strip())
 
 
-def checkpoint_roots(paths: list[Path]) -> dict[str, Path]:
+def named_roots(paths: list[Path], prefix: str) -> dict[str, Path]:
     roots: dict[str, Path] = {}
     for path in paths:
         resolved = path.expanduser().resolve()
-        label = f"checkpoints:{resolved.name}"
+        label = f"{prefix}:{resolved.name}"
         if label in roots:
             raise ValueError(f"duplicate checkpoint label: {label}")
         roots[label] = resolved
@@ -56,11 +56,13 @@ def main() -> None:
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--run-root", type=Path, required=True)
     parser.add_argument("--checkpoint-root", type=Path, action="append", default=[])
+    parser.add_argument("--external-root", type=Path, action="append", default=[])
     args = parser.parse_args()
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     roots = {"run": args.run_root.expanduser().resolve()}
-    roots.update(checkpoint_roots(args.checkpoint_root))
+    roots.update(named_roots(args.checkpoint_root, "checkpoints"))
+    roots.update(named_roots(args.external_root, "external"))
     records = manifest["files"]
     identities = [(str(item["root"]), str(item["path"])) for item in records]
     if len(identities) != len(set(identities)):

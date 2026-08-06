@@ -15,3 +15,4 @@ datasets>=2.20
 sentencepiece>=0.2
 bitsandbytes>=0.44; platform_system == "Linux"
 zss>=1.2.0
+apted==1.0.3

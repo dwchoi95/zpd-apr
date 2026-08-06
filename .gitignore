@@ -12,6 +12,7 @@ env/
 data/
 outputs/
 checkpoints/
+archive/
 
 paper/build/
 paper/tmp/
@@ -24,6 +25,7 @@ paper/*.toc
 paper/*.fls
 paper/*.fdb_latexmk
 paper/*.synctex.gz
+tmp/pdfs/
 
 .DS_Store
 *.swp

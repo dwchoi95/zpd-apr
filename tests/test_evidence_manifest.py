@@ -20,8 +20,14 @@ class EvidenceManifestTest(unittest.TestCase):
             run_root = root / "canonical-v5"
             analysis = run_root / "analysis"
             checkpoints = root / "canonical-v5-checkpoints"
+            external = root / "tiktoc"
             analysis.mkdir(parents=True)
             checkpoints.mkdir()
+            external_dataset = external / "derived" / "datasets"
+            external_dataset.mkdir(parents=True)
+            (external / "source-provenance.json").write_text(
+                '{"source_revision": "fixture"}\n', encoding="utf-8"
+            )
             (run_root / "split-summary.json").write_text(
                 '{"split": "fixture"}\n',
                 encoding="utf-8",
@@ -29,6 +35,9 @@ class EvidenceManifestTest(unittest.TestCase):
             (analysis / "fixture.json").write_text(
                 '{"metric": 1}\n',
                 encoding="utf-8",
+            )
+            (external_dataset / "summary.json").write_text(
+                '{"trajectories": 3}\n', encoding="utf-8"
             )
             manifest = analysis / "evidence-manifest.json"
             build = [
@@ -38,6 +47,8 @@ class EvidenceManifestTest(unittest.TestCase):
                 str(run_root),
                 "--checkpoint-root",
                 str(checkpoints),
+                "--external-root",
+                str(external),
                 "--source-revision",
                 "fixture-revision",
                 "--output",
@@ -51,7 +62,8 @@ class EvidenceManifestTest(unittest.TestCase):
             first.pop("created_utc")
             second.pop("created_utc")
             self.assertEqual(first, second)
-            self.assertEqual(second["file_count"], 2)
+            self.assertEqual(second["file_count"], 4)
+            self.assertEqual(second["external_root_names"], ["tiktoc"])
             self.assertNotIn(
                 "analysis/evidence-manifest.json",
                 {item["path"] for item in second["files"]},
@@ -66,12 +78,14 @@ class EvidenceManifestTest(unittest.TestCase):
                     str(run_root),
                     "--checkpoint-root",
                     str(checkpoints),
+                    "--external-root",
+                    str(external),
                 ],
                 check=True,
                 capture_output=True,
                 text=True,
             )
-            self.assertEqual(json.loads(verified.stdout)["verified"], 2)
+            self.assertEqual(json.loads(verified.stdout)["verified"], 4)
 
 
 if __name__ == "__main__":

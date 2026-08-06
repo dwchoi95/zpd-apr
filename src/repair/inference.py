@@ -14,6 +14,7 @@ class GenerationSummary:
     prompt_style: str
     base_model: str
     adapter_path: str | None
+    max_new_tokens: int | None
     examples: int
     generated: int
     mean_generation_time_sec: float
@@ -30,6 +31,7 @@ def generate_repairs(
     adapter_path: Path | None = None,
     batch_size: int = 1,
     resume: bool = True,
+    max_new_tokens: int | None = None,
 ) -> GenerationSummary:
     import torch
     from peft import PeftModel
@@ -100,7 +102,7 @@ def generate_repairs(
                 generated = model.generate(
                     **encoded,
                     max_new_tokens=_generation_token_budget(
-                        model, encoded["input_ids"].shape[1]
+                        model, encoded["input_ids"].shape[1], max_new_tokens
                     ),
                     do_sample=False,
                     pad_token_id=tokenizer.pad_token_id,
@@ -134,6 +136,7 @@ def generate_repairs(
         prompt_style=prompt_style.upper(),
         base_model=base_model,
         adapter_path=str(adapter_path) if adapter_path is not None else None,
+        max_new_tokens=max_new_tokens,
         examples=len(requested_ids),
         generated=len(elapsed_values),
         mean_generation_time_sec=(
@@ -150,13 +153,17 @@ def generate_repairs(
 
 def extract_python_code(text: str) -> str:
     text = text.strip()
-    fenced = re.search(r"```(?:python)?\s*\n?(.*?)```", text, flags=re.I | re.S)
+    fenced = re.search(
+        r"```(?:python|java)?\s*\n?(.*?)```", text, flags=re.I | re.S
+    )
     if fenced:
         return fenced.group(1).strip()
     return text
 
 
-def _generation_token_budget(model: Any, input_length: int) -> int:
+def _generation_token_budget(
+    model: Any, input_length: int, max_new_tokens: int | None = None
+) -> int:
     context_length = getattr(model.config, "max_position_embeddings", None)
     if not isinstance(context_length, int) or context_length < 1:
         raise ValueError("Model config does not expose a finite context length.")
@@ -166,6 +173,10 @@ def _generation_token_budget(model: Any, input_length: int) -> int:
             f"Input uses {input_length} tokens but model context is "
             f"{context_length}; the input is not truncated."
         )
+    if max_new_tokens is not None:
+        if max_new_tokens < 1:
+            raise ValueError("max_new_tokens must be positive")
+        remaining = min(remaining, max_new_tokens)
     return remaining
 
 

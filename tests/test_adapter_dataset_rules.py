@@ -223,7 +223,6 @@ class AdapterDatasetRulesTest(unittest.TestCase):
             "max_history",
             "max_input_tokens",
             "max_length",
-            "max_new_tokens",
             "max_steps",
             "max_target_chars",
             "max_testcase_input_chars",
@@ -251,6 +250,7 @@ class AdapterDatasetRulesTest(unittest.TestCase):
         )
 
         self.assertEqual(_generation_token_budget(model, 30), 70)
+        self.assertEqual(_generation_token_budget(model, 30, 40), 40)
         with self.assertRaisesRegex(ValueError, "input is not truncated"):
             _generation_token_budget(model, 100)
 

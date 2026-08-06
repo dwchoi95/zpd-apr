@@ -6,8 +6,6 @@
 \usepackage{amsthm}
 \usepackage{graphicx}
 \usepackage{xspace}
-\usepackage{algorithm}
-\usepackage{algpseudocode}
 \usepackage{flafter}
 
 \setcopyright{none}
@@ -40,7 +38,7 @@
 \begin{document}
 
 \begin{abstract}
-Automated program repair for programming assignments typically treats a student's latest submission as an isolated buggy program. This snapshot omits the revisions, repeated failures, and partial improvements that led to the current code. We present \tool, a repair framework that converts authentic submission trajectories into an execution-ordered portfolio of three repair policies. We formalize verdict and testcase improvements as nested execution-evidence orders and prove finite monotone supervision, policy-event inclusion, observed-test non-regression, and pointwise minimal escalation. The \progress adapter learns testcase-level Pareto improvements, \strict learns coarse-verdict improvements, and \answer maps failed submissions to the terminal accepted program. At inference, all policies condition independently on the authentic trajectory; execution stops at the first accepted candidate and otherwise selects the highest pass rate with minimum AST edit distance. We evaluate Qwen2.5-Coder-7B-based adapters on 997 held-out trajectories from 328 test problems drawn from a 492-problem Seen pool, plus 250 trajectories from 54 problem-held-out problems. On seen problems, \tool improves repair rate from 30.7\% for a trajectory-prompted zero-shot baseline to 59.5\%, while producing smaller successful patches; a same-problem retrieval baseline reaches 80.2\% but makes substantially larger changes. On unseen problems, the corresponding execution-guided system substantially outperforms zero-shot. Across three independent training seeds, Seen and Unseen repair rates average 58.7\% and 72.5\%, with standard deviations of 1.0 and 1.9 points. Problem-clustered inference preserves both gains. Controlled target-matched and portfolio ablations localize the gain to trajectory-derived relational supervision and heterogeneous policy composition rather than prompt length alone.
+Automated program repair for programming assignments typically treats a student's latest submission as an isolated buggy program. This snapshot omits the revisions, repeated failures, and partial improvements that led to the current code. We present \tool, a repair framework that converts authentic submission trajectories into an execution-ordered portfolio of three repair policies. Verdict and testcase improvements define finite execution-evidence orders; validation execution then selects three checkpoints by exact submodular coverage maximization, while the online controller guarantees observed-test non-regression and optional AST edit-budget compliance. The \progress adapter learns testcase-level Pareto improvements, \strict learns coarse-verdict improvements, and \answer maps failed submissions to the terminal accepted program. We evaluate Qwen2.5-Coder-7B-based adapters on 997 held-out trajectories from 328 test problems drawn from a 492-problem Seen pool, plus 250 trajectories from 54 problem-held-out problems. On Seen problems, the selected portfolio improves repair rate from 30.7\% for trajectory-prompted zero-shot to 61.5\%; a same-target three-seed Answer control reaches 61.7\%, identifying independent checkpoint diversity rather than target heterogeneity as the supported mechanism. On Unseen problems, selection reaches 74.8\% RR versus 62.0\% for zero-shot and 73.2\% for Answer-3Seed. The one-per-relation constraint reduces Seen coverage, whereas budget-indexed unconstrained selection improves the mean Unseen edit-budget frontier by 2.60 points [0.38, 5.03] over Answer-3Seed. A target-matched ablation finds no stable benefit from serializing earlier submissions, and all primary differences use problem-clustered inference.
 \end{abstract}
 
 \ccsdesc[500]{Software and its engineering~Software testing and debugging}
@@ -60,15 +58,15 @@ Automated program repair (APR) offers executable, code-specific feedback. The fi
 
 The motivation for using history is straightforward but unverified. Two students may arrive at similar current programs through different revisions. Their histories expose repeated errors, attempted edits, and states that they demonstrably reached. In educational terms, such reachable improvements resemble the Zone of Proximal Development (ZPD): states attainable with appropriate support but not yet reached independently~\cite{cole1978mind,murray2002toward,chounta2017grey}. We therefore ask whether repair can exploit a student's observed trajectory to produce a useful next program rather than immediately replacing it with an arbitrary correct solution. We use ZPD as a design motivation, not as a measured psychological construct or a claim about learning outcomes.
 
-We introduce \tool, illustrated in Figure~\ref{fig:overview}. It automatically converts authentic submission trajectories into three supervised repair datasets. \progress retains verdict improvements and same-verdict transitions whose per-test outcomes improve monotonically. \strict retains only transitions that improve the online-judge verdict. \answer pairs every failed submission with the trajectory's final accepted program. Three QLoRA adapters are trained independently over the same code language model and prompt. At inference time, \tool calls the adapters from narrower to broader supervision, executes each candidate, stops on acceptance, and otherwise selects a non-regressive candidate using test pass rate and AST tree edit distance (TED).
+We introduce \tool, illustrated in Figure~\ref{fig:overview}. It automatically converts authentic submission trajectories into three supervised repair datasets. \progress retains verdict improvements and same-verdict transitions whose per-test outcomes improve monotonically. \strict retains only transitions that improve the online-judge verdict. \answer pairs every failed submission with the trajectory's final accepted program. Three seeds per target relation produce nine independently trained QLoRA checkpoints over the same code language model and prompt. Validation execution selects three complementary checkpoints, which are invoked from narrower to broader supervision. \tool executes each candidate, stops on an eligible acceptance, and otherwise selects a non-regressive candidate using test pass rate and AST tree edit distance (TED).
 
-Our evaluation separates three mechanisms that are easy to conflate: learned relational targets, heterogeneous policy composition, and the serialization of prior submissions. The complete system substantially improves over zero-shot on both seen and problem-held-out data, and sequential escalation outperforms each adapter alone. Target-matched retraining further shows that the learned benefit survives removing earlier submissions from the inference prompt. Thus, trajectories contribute not merely extra prompt tokens but automatically mined reachability relations that are distilled into policy parameters; independent-policy composition then turns those relations into complementary executable candidates.
+Our evaluation separates three mechanisms that are easy to conflate: learned relational targets, heterogeneous policy composition, and the serialization of prior submissions. The complete system substantially improves over zero-shot on both seen and problem-held-out data, and sequential escalation outperforms each adapter alone. Target-matched retraining finds no stable causal benefit from serializing earlier submissions; both conditions still use targets mined from trajectories, so this null result neither establishes nor refutes relational supervision as the source of the complete-system gain. We therefore test policy heterogeneity directly against three independently trained Answer adapters that share examples, targets, and decoding but differ in training seed.
 
 This paper makes the following contributions:
 \begin{itemize}
-  \item We formulate trajectory-mined repair as nested execution-evidence orders plus terminal closure, prove an end-to-end safety theorem from finite monotone supervision, policy inclusion, non-regression, and minimum-breadth escalation, and provide executable audits of these properties.
-  \item We design an execution-guided repair procedure that composes independently conditioned policies, supports early stopping, and abstains when no candidate improves over the current program.
-  \item We conduct a problem-familiarity-aware evaluation against zero-shot and retrieval-based repair, including target-matched, repeated-policy, generated-feedback, ordering, multi-seed, and problem-clustered analyses.
+  \item We formulate trajectory-mined repair as finite execution-evidence orders plus terminal closure, and audit every materialized supervision transition against those definitions.
+  \item We pose size-three checkpoint choice as exact submodular validation-coverage maximization, derive a finite-family problem-level selection guarantee, and design an execution controller with observed-test non-regression and structural edit-budget compliance by construction.
+  \item We conduct a problem-familiarity-aware evaluation against zero-shot and retrieval-based repair, including the missing same-target three-seed control, patch-budget curves, target-matched history ablations, ordering, and problem-clustered analyses.
 \end{itemize}
 
 \section{Background and Related Work}
@@ -130,8 +128,16 @@ We call a later state \emph{reachable} when it occurs in the same student's obse
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{Figures/zpdpatch_overview_v5.png}
-  \caption{Overview of \tool. Authentic submission trajectories are normalized and re-executed. Adapter-specific rules construct supervision for \progress, \strict, and \answer. Independently trained adapters generate candidates sequentially; execution outcomes determine early stopping and final selection.}
-  \Description{The ZPDPatch pipeline converts student submission trajectories and cached test outcomes into Progress, Strict, and Answer training pairs. At inference time, the three adapters generate repair candidates in sequence, with execution-based early stopping and final candidate selection.}
+  \caption{Overview of trajectory supervision and execution control. The
+  displayed P--S--A route is the one-per-relation control; the deployed system
+  trains three seeds per relation and uses validation execution to select any
+  three checkpoints, so a relation may repeat. Execution outcomes determine
+  early stopping and final selection.}
+  \Description{The ZPDPatch pipeline converts student submission trajectories
+  and cached test outcomes into Progress, Strict, and Answer training pairs.
+  Three seeds per relation form a nine-checkpoint pool; validation execution
+  selects three checkpoints for execution-based early stopping and final
+  candidate selection. The drawing shows the one-per-relation control route.}
   \label{fig:overview}
 \end{figure}
 
@@ -170,28 +176,12 @@ Starting with \(R=[s_1]\), we scan the trajectory and append \(s_t\) only when i
 
 The datasets are constructed independently and may overlap. A strict transition is also a progress transition, and final accepted transitions can occur in both. The objectives nevertheless differ: \answer learns direct completion from one failed program, whereas \strict and \progress learn transitions from retained prefixes.
 
-Algorithm~\ref{alg:construct} gives the common retained-prefix construction. The predicate \textsc{Keep} is the only difference between \strict and \progress. Comparing a candidate with the last retained state, rather than the immediately previous raw submission, makes the retained sequence monotonic under the selected rule. Importantly, the algorithm emits every retained prefix. A trajectory with \(m\) retained states yields \(m-1\) training examples, so early transitions are not discarded in favor of only the final prefix.
-
-\begin{algorithm}[t]
-\caption{Retained-prefix supervision for \strict and \progress}
-\label{alg:construct}
-\begin{algorithmic}[1]
-\Require Trajectory \(\tau=[s_1,\ldots,s_n]\), policy \(a\in\{\mathrm{strict},\mathrm{prog}\}\)
-\Ensure Supervised examples \(D_a\)
-\State \(R\gets[s_1]\); \(D_a\gets[]\)
-\For{\(t\gets2\) to \(n\)}
-  \State \(r\gets R[-1]\)
-  \State \(q\gets \mathrm{sev}(v_t)<\mathrm{sev}(v_r)\)
-  \If{\(a=\mathrm{prog}\)}
-    \State \(q\gets q\lor(v_t=v_r\land\mathrm{TCProg}(r,t))\)
-  \EndIf
-  \If{\(q\)}
-    \State append \((R,c_t)\) to \(D_a\); append \(s_t\) to \(R\)
-  \EndIf
-\EndFor
-\State \Return \(D_a\)
-\end{algorithmic}
-\end{algorithm}
+The common retained-prefix procedure scans \(s_2,\ldots,s_n\), compares each
+state with \(R[-1]\), and, whenever the corresponding predicate above holds,
+emits \((R,c_t)\) before appending \(s_t\) to \(R\). Comparing with the last
+retained rather than immediately previous raw state makes \(R\) monotonic under
+the selected relation. A trajectory with \(m\) retained states yields all
+\(m-1\) prefixes, so early transitions are not discarded.
 
 \subsection{Execution-Evidence Order}
 \label{sec:evidence-order}
@@ -219,52 +209,32 @@ Consequently, retained Progress chains contain no cycles and have length at most
 A Strict transition decreases the first component, independently of the second. A same-verdict Progress transition is Pareto non-worsening and strict on at least one testcase, so it preserves the first component and decreases the sum. Thus every retained transition strictly decreases \(\rho\). There are six verdict-severity values and \(5T+1\) possible sums, which gives the finite bound.
 \end{proof}
 
-\begin{proposition}[Policy-event inclusion]
-For the same trajectory and initial state, every target event retained by Strict is retained by Progress.
-\end{proposition}
-\begin{proof}
-Both scans retain every strict verdict improvement. A transition retained only by Progress has the same verdict as its predecessor and therefore does not change the last-retained verdict severity. By induction over the raw trajectory, both scans have equal last-retained verdict severity whenever the next strict improvement occurs, so they retain that event simultaneously. Progress may additionally retain same-verdict Pareto improvements.
-\end{proof}
+Because \(\prec_S\subseteq\prec_P\), every Strict target event is also a
+Progress event. Moreover, for any failed state, the first Progress-improving
+state cannot occur after the first Strict-improving state, and acceptance closes
+both relations. These inclusion facts determine the fine-to-broad policy order;
+they are construction invariants rather than claims about learned behavior.
 
-\begin{proposition}[Nested assistance horizons]
-For a failed state \(s_i\) in a trajectory whose first accepted state is \(s_n\), let
-\(j_P\) and \(j_S\) be the first later indices satisfying \(s_i\prec_Ps_j\) and
-\(s_i\prec_Ss_j\), respectively. Then both exist and
-\(j_P\leq j_S\leq n\); Answer's target is exactly \(s_n\).
-\end{proposition}
-\begin{proof}
-Acceptance has minimum verdict severity, so \(s_i\prec_Ss_n\) for every failed \(s_i\), establishing existence and \(j_S\leq n\). Because \(\prec_S\subseteq\prec_P\), every Strict-improving state is also Progress-improving. The first Progress-improving index therefore cannot occur after the first Strict-improving index.
-\end{proof}
-
-The proposition derives the assistance breadth used online from target reachability rather than assigning arbitrary policy names: Progress can stop at an earlier observed improvement, Strict waits for coarse-verdict progress, and Answer closes the remaining distance to acceptance. The inequality can be strict or collapse to equality on a particular trajectory; the adapters retain separate supervision distributions in either case.
-
-\subsection{Why an Order Rather Than a Scalar Reward?}
-
-A scalar such as number of passed tests can declare one submission better even when it breaks a previously passing testcase. Equation~\ref{eq:tcprogress} deliberately refuses that compensation: within one coarse verdict, Progress accepts only Pareto improvements. Strict permits a change in testcase outcomes only when the judge's coarse verdict itself improves. This creates a lexicographic evidence geometry: coarse failure class is the first coordinate, and non-compensatory testcase severity is the refinement used inside one class. The rank in Proposition 1 proves termination, while the product order preserves which individual observations justify a transition.
-
-The relations also separate \emph{supervision soundness} from \emph{model soundness}. A retained target is sound with respect to its declared evidence order because it was actually executed and observed later; this says nothing about whether a learned model reproduces that relation on a new input. Algorithm~\ref{alg:repair} closes that gap at inference by executing every generated program and including the original program in selection. The composition therefore has two proof boundaries: Propositions 1--3 certify what may enter training, and Propositions 4--5 certify what the controller may return and how far it escalates. No likelihood score is used as a correctness surrogate.
-
-These properties depend on a fixed testcase universe and severity map. Cache keys consequently bind the testcase identity and resource limits, and Progress fails closed when a complete outcome vector is unavailable. This engineering constraint follows from the theory: comparing vectors from different universes would make the product order undefined, while silently dropping a testcase could turn a regression into an apparent Pareto improvement.
-
-\subsection{Illustrative Trajectory}
-
-Consider an illustrative trajectory with verdicts
-\[
-[\texttt{RE},\texttt{WA},\texttt{WA},\texttt{WA},\texttt{AC}]
-\]
-and three-test outcome vectors
-\[
-[(\texttt{RE},\texttt{RE},\texttt{RE}),
- (\texttt{AC},\texttt{WA},\texttt{WA}),
- (\texttt{AC},\texttt{AC},\texttt{WA}),
- (\texttt{AC},\texttt{WA},\texttt{WA}),
- (\texttt{AC},\texttt{AC},\texttt{AC})].
-\]
-The example is synthetic. \strict retains \(S_1,S_2,S_5\), emitting \(([S_1],c_2)\) and \(([S_1,S_2],c_5)\). \progress also retains \(S_3\), where one test improves without regression, but rejects \(S_4\), which regresses relative to the last retained state; it emits three prefixes over \(S_1,S_2,S_3,S_5\). \answer emits four independent pairs \(([S_1],c_5),\ldots,([S_4],c_5)\). Thus Progress can preserve useful same-verdict edits, Strict skips them, and Answer can learn from states excluded by both chains. The construction is filtered transition learning, not next-submission imitation: a non-adjacent state can be targeted when intervening submissions violate the relation.
+\paragraph{Order versus scalar reward.}
+A passed-test count can improve while breaking a previously passing testcase;
+Equation~\ref{eq:tcprogress} refuses this compensation. Coarse verdict is the
+first coordinate and non-compensatory testcase severity refines equal verdicts,
+so the rank proves termination while the product order records which
+observations justify a transition. Execution certifies retained supervision,
+not model behavior on new inputs; the online controller must still test every
+candidate and retain the original fallback. The order is defined only over one
+fixed testcase universe and severity map, so cache keys bind tests and resource
+limits and Progress fails closed on incomplete vectors. Otherwise a missing
+test could turn a regression into apparent Pareto progress.
 
 \subsection{Prompt and Adapter Training}
 
-All adapters share one role-neutral prompt: statement and limits, chronologically retained complete programs with verdict/outcome/edit summaries, and the current program requesting one complete Python solution. No instruction names a policy or asks for a particular edit size, so specialization can arise only from supervision. Only assistant target tokens contribute to loss. Whole-program targets avoid patch-application failures at the cost of regenerating unchanged context, motivating greedy decoding and early stopping.
+All adapters share one role-neutral prompt: statement and limits,
+chronologically retained complete submissions with verdict/outcome/edit summaries,
+and the current submission requesting one complete solution in the dataset's
+language and format. No instruction names a policy or asks for a particular edit
+size, so specialization can arise only from supervision. Only assistant target
+tokens contribute to loss.
 
 For adapter \(a\in\{\mathrm{prog},\mathrm{strict},\mathrm{ans}\}\), let \(\mathcal{D}_a\) be its dataset, \(x_i\) the prompt, and \(y_i\) the target tokens. We minimize the target-only supervised fine-tuning objective
 \begin{equation}
@@ -276,14 +246,115 @@ For adapter \(a\in\{\mathrm{prog},\mathrm{strict},\mathrm{ans}\}\), let \(\mathc
 \end{equation}
 where \(\theta\) is the frozen base model and \(\phi_a\) is an adapter's QLoRA parameter set. Prompt tokens are masked from the loss. The adapters are trained and stored independently.
 
+\subsection{Validation-Selected Execution Portfolio}
+Training loss ranks checkpoints within one target distribution, but it does not
+measure the cross-policy repair complementarity used at deployment. We
+therefore select the portfolio using execution on validation problems. Let
+\(V=V_P\mathbin{\dot\cup}V_S\mathbin{\dot\cup}V_A\) be independently trained
+Progress, Strict, and Answer checkpoints and let \(R_v\subseteq U\) be the
+validation instances repaired by checkpoint \(v\). For a portfolio \(S\),
+define execution coverage
+\begin{equation}
+ f(S)=|\bigcup_{v\in S}R_v|/|U|.
+ \label{eq:portfolio-objective}
+\end{equation}
+The deployed search family is
+\(\mathcal F_3=\{S\subseteq V:|S|=3\}\). It allows validation evidence to
+choose both target relations and training seeds rather than assuming that one
+checkpoint per relation is optimal. We retain
+\(\mathcal F_{\mathrm{rel}}=\{S\in\mathcal F_3:
+|S\cap V_a|=1\ \forall a\}\) as the direct relation-heterogeneity control.
+We sample one trajectory per validation problem by a fixed hash before any
+execution, preventing high-volume assignments from dominating selection. In
+addition to unrestricted \(f\), let \(R_v^B\) contain repairs whose AST TED is at
+most \(B\), and predeclare \(\mathcal B=\{5,10,20,40,80,160\}\). Define
+\(f_B(S)=|\bigcup_{v\in S}R_v^B|/|U|\). The budget-aware objective
+\(f_{\mathcal B}(S)=|\mathcal B|^{-1}\sum_{B\in\mathcal B}f_B(S)\)
+averages the complete coverage curve for deployments that require one
+budget-agnostic triple. When the budget is declared before a query, the aligned
+controller instead freezes the validation maximizer for that budget and invokes
+its triple under the corresponding gate. We exactly enumerate all
+$\binom{9}{3}=84$ members of \(\mathcal F_3\) and the 27
+relation-constrained triples for unrestricted, budget-agnostic, and each
+budget-indexed objective. The three Answer checkpoints form the prespecified
+same-target control. Test outcomes never enter selection.
+
+\begin{proposition}[Coverage structure and exact selection]
+The objectives \(f\), every \(f_B\), and \(f_{\mathcal B}\) are normalized, monotone, and
+submodular. Exhaustive enumeration returns their global optima over
+\(\mathcal F_3\), and the parallel enumeration of
+\(V_P\times V_S\times V_A\) returns the global optima under the relation
+constraint.
+\end{proposition}
+\begin{proof}
+Normalization and monotonicity follow from set union. For \(S\subseteq T\) and
+checkpoint \(v\notin T\), the marginal gain is
+\(|R_v\setminus\bigcup_{u\in S}R_u|/|U|\), which cannot be smaller than the same
+quantity with \(T\) replacing \(S\); hence \(f\) is submodular. Enumeration
+evaluates every feasible triple. Each budgeted coverage term has the same set
+union form, and a nonnegative sum of submodular functions is submodular. The two
+finite enumerations inspect every member of their respective feasible sets.
+\end{proof}
+
+Exact optimization does not by itself guarantee that the validation winner is
+the best population portfolio. The finite search space nevertheless permits a
+problem-level guarantee. Let \(Z_1,\ldots,Z_m\) be independent validation
+problems drawn from the deployment distribution, let \(h_S(Z)\in\{0,1\}\)
+indicate whether portfolio \(S\) repairs the sampled state for problem \(Z\),
+and let \(F(S)=\mathbb E[h_S(Z)]\).
+
+\begin{theorem}[Finite-portfolio selection guarantee]
+For a frozen family \(\mathcal F\) of \(M\) candidate portfolios, let
+\(\widehat S\) maximize empirical problem-level repair coverage on \(m\)
+validation problems and let \(S^*\) maximize \(F\). With probability at least
+\(1-\delta\),
+\begin{equation}
+ F(S^*)-F(\widehat S)
+ \leq \sqrt{\frac{2\log(2M/\delta)}{m}}.
+ \label{eq:finite-selection-bound}
+\end{equation}
+The same statement holds for a fixed edit budget after replacing \(h_S\) by
+the budget-gated repair indicator; simultaneous selection over \(q\) declared
+budgets replaces \(M\) by \(Mq\).
+\end{theorem}
+\begin{proof}
+For any fixed \(S\), Hoeffding's inequality bounds the deviation between its
+empirical and population coverage by \(2e^{-2m\epsilon^2}\). A union bound over
+the \(M\) portfolios makes all deviations at most
+\(\epsilon=\sqrt{\log(2M/\delta)/(2m)}\) simultaneously. On that event,
+\(F(S^*)\leq\widehat F(S^*)+\epsilon\leq
+\widehat F(\widehat S)+\epsilon\leq F(\widehat S)+2\epsilon\), which gives
+Equation~\ref{eq:finite-selection-bound}. The budgeted cases use the same
+binary indicator and a union bound over the declared objectives.
+\end{proof}
+
+The theorem makes the unit of selection explicit: sampling one state per
+validation problem supports a problem-distribution claim, whereas treating all
+trajectories as independent would not. Its i.i.d. premise is an idealization;
+we therefore freeze the selected portfolios and report independent test
+results with problem-clustered intervals rather than using the bound as an
+effect estimate.
+
 \subsection{Execution-Guided Sequential Repair}
 \label{sec:sequential}
 
-At inference, we invoke \progress, \strict, and \answer from fine-grained improvement to coarse improvement to terminal solution. Each adapter receives the same observed student trajectory and produces one complete program; generated candidates are never inserted into another adapter's prompt. This independence makes the three outputs a policy portfolio rather than a synthetic trajectory whose later states may lie outside the training distribution. Execution has two roles only: an accepted candidate stops the sequence, and failed candidates are compared by the certified selector below. The order is fixed before evaluation and tested independently in RQ3--RQ6. We also evaluate the previously plausible alternative of appending generated execution feedback as a controlled ablation.
+At inference, we invoke the three validation-selected checkpoints in
+fine-to-broad relation order, breaking same-relation ties by their frozen member
+order. Each checkpoint receives the same observed student trajectory and
+produces one complete program; generated candidates are never inserted into
+another checkpoint's prompt. This independence makes the outputs a policy
+portfolio rather than a synthetic trajectory whose later states may lie outside
+the training distribution. In unrestricted mode, an accepted candidate stops
+the sequence; otherwise executed candidates are compared by the certified
+selector below. The budgeted mode additionally continues past accepted
+candidates that exceed the declared structural limit. The order is fixed before
+evaluation and tested independently in RQ3--RQ6. We also evaluate the previously
+plausible alternative of appending generated execution feedback as a controlled
+ablation.
 
 If all candidates fail, the selector includes the current program \(c_i\) as a fallback:
 \begin{equation}
-\mathcal{C}=\{c_i,c^{\mathrm{prog}},c^{\mathrm{strict}},c^{\mathrm{ans}}\}.
+\mathcal{C}=\{c_i,c^{(1)},c^{(2)},c^{(3)}\}.
 \end{equation}
 Let \(\mathrm{Pass}(c)\) be the fraction of tests passed and \(\mathrm{ted}(c_i,c)\) the Python AST tree edit distance. Selection is lexicographic:
 \begin{equation}
@@ -291,53 +362,24 @@ c^*=\underset{c\in\mathcal{C}}{\arg\max}
 \left(\mathrm{Pass}(c),-\mathrm{ted}(c_i,c)\right).
 \label{eq:selection}
 \end{equation}
-The selector first maximizes executed correctness and then minimizes change. If no candidate improves on \(c_i\), the unchanged fallback has TED zero and the system abstains. Algorithm~\ref{alg:repair} preserves conditional independence of generated candidates given the authentic observed trajectory; all executed candidates remain available to final selection.
+The selector first maximizes executed correctness and then minimizes change. If no candidate improves on \(c_i\), the unchanged fallback has TED zero and the system abstains. Sequentially generating, executing, and stopping at the first accepted candidate preserves conditional independence given the authentic observed trajectory; if all fail, every executed candidate remains available to Equation~\ref{eq:selection}.
 
-\begin{algorithm}[t]
-\caption{Execution-guided sequential repair}
-\label{alg:repair}
-\begin{algorithmic}[1]
-\Require Problem \(p\), current code \(c_i\), observed trajectory \(h\)
-\State \(C\gets[c_i]\)
-\For{\(a\) in \([\mathrm{Progress},\mathrm{Strict},\mathrm{Answer}]\)}
-  \State \(c^a\gets\mathrm{Generate}(a,p,h)\)
-  \State \(z^a\gets\mathrm{Execute}(p,c^a)\); append \(c^a\) to \(C\)
-  \If{\(\mathrm{Pass}(c^a)=1\)}
-    \State \Return \(c^a\)
-  \EndIf
-\EndFor
-\State \Return \(\arg\max_{c\in C}(\mathrm{Pass}(c),-\mathrm{ted}(c_i,c))\)
-\end{algorithmic}
-\end{algorithm}
+\paragraph{Certified selection and cost.}
+Including \(c_i\) in Equation~\ref{eq:selection} makes observed-test
+non-regression an invariant: an early return has pass rate one, and otherwise
+the maximum cannot score below its fallback. With a structural budget \(B\),
+the gate \(G_B\) discards undefined or over-budget TED, continues past an
+over-budget acceptance, and selects from the eligible candidates plus \(c_i\).
+Thus every returned change has pass rate at least \(\mathrm{Pass}(c_i)\) and
+\(\mathrm{ted}(c_i,c^*)\leq B\); deployed coverage is exactly the validation
+set-union objective \(f_B\). These guarantees concern observed tests and edit
+compliance, not hidden-test correctness or learned relational behavior.
 
-\subsection{Certified Selection and Computational Cost}
-
-\begin{proposition}[Observed-test non-regression]
-For every input, Algorithm~\ref{alg:repair} returns a program \(c^*\) such that \(\mathrm{Pass}(c^*)\geq\mathrm{Pass}(c_i)\).
-\end{proposition}
-\begin{proof}
-If the algorithm stops early, the returned candidate has pass rate one. Otherwise, \(c_i\) is a member of \(C\), and the final selector maximizes pass rate before edit distance. Its maximum therefore cannot be below \(\mathrm{Pass}(c_i)\).
-\end{proof}
-
-\begin{proposition}[Pointwise minimal escalation]
-Assume each policy candidate is conditionally independent of policy order given the observed trajectory, and assign breadth
-\(b(\mathrm{Progress})<b(\mathrm{Strict})<b(\mathrm{Answer})\).
-Among all permutations with acceptance-based early stopping, Algorithm~\ref{alg:repair} returns a successful candidate of minimum breadth whenever at least one policy succeeds.
-\end{proposition}
-\begin{proof}
-The algorithm visits policies in strictly increasing breadth and stops at the first success. Every skipped policy has lower breadth and failed, while every unvisited policy has greater breadth. The returned successful policy therefore minimizes breadth over the successful set. Any alternative permutation can only choose the same minimum or a broader successful policy.
-\end{proof}
-
-\begin{theorem}[End-to-end evidence safety]
-Under a fixed testcase universe and severity map, the union of Progress, Strict, and Answer supervision edges for any finite first-acceptance trajectory is a directed acyclic graph. Given order-independent policy candidates, \tool returns (i) a minimum-breadth accepted candidate when one exists, or (ii) a candidate whose observed pass rate is no lower than the current program otherwise.
-\end{theorem}
-\begin{proof}
-Proposition 1 makes every Progress and Strict edge strictly rank-decreasing. Every Answer edge starts at a failed state and ends at acceptance, so its first rank component strictly decreases to zero. A directed cycle would require rank to return to a larger value and is therefore impossible. The online alternatives follow from Propositions 5 and 4, respectively.
-\end{proof}
-
-The guarantees are relative to the observed test suite and to the derived breadth order; they neither prove semantic correctness on hidden inputs nor forbid a large edit when that edit improves more tests. Candidate independence is essential to Proposition 5: feeding one generated program into the next adapter changes the candidate under a counterfactual order. We validate the supervision, selection, and ordering propositions with executable certificates in Section~\ref{sec:results}.
-
-For a raw trajectory of length \(n\) and \(T\) tests, dataset construction performs a single retained scan once cached outcomes exist. Comparing outcome vectors costs \(O(T)\), giving \(O(nT)\) time and \(O(n)\) retained-state storage per trajectory, excluding program text. Answer construction is \(O(n)\). At inference, generation dominates cost. The system performs between one and three generations and executions, with exactly three only when neither early stage produces an accepted program. The cache can eliminate repeated execution for identical candidates but does not change the worst-case generation count.
+With cached outcomes, constructing a length-\(n\) trajectory over \(T\) tests
+costs \(O(nT)\) time and \(O(n)\) retained-state storage; Answer construction is
+\(O(n)\). Inference performs one to three generations and executions. Early
+acceptance can reduce this cost, while the cache avoids repeated execution of
+identical candidates without changing the worst case.
 
 \section{Experimental Design}
 \label{sec:experiment}
@@ -350,7 +392,7 @@ For a raw trajectory of length \(n\) and \(T\) tests, dataset construction perfo
   \item[RQ3: Adapter Specialization.] Do \progress, \strict, and \answer exhibit different repair coverage and patch size?
   \item[RQ4: Sequential Escalation.] Does execution-guided composition improve effectiveness without always invoking all adapters?
   \item[RQ5: Problem Generalization.] Does \tool retain an advantage on problems completely excluded from training?
-  \item[RQ6: Guarantees and Robustness.] Do the supervision and selection invariants hold in the complete artifacts, and are conclusions robust to problem-level dependence and adapter ordering?
+  \item[RQ6: Robustness and Transfer.] Are the conclusions robust to training seed, user overlap, problem-level dependence, policy ordering, and a student-held-out Java course dataset?
 \end{description}
 
 \subsection{Dataset Construction and Splits}
@@ -380,7 +422,7 @@ Unseen & Test & 54 & 642 & 260 & 965 & 705 & 237 \\
 \end{tabular}
 \end{table}
 
-Adapter construction yields the training and validation sizes in Table~\ref{tab:adapter-data}. Final evaluation uses the prefix ending at the last non-accepted submission and the final accepted program as the oracle. We retain only cases for which re-execution confirms the current program as non-accepted and the oracle as accepted, leaving 997 Seen and 250 Unseen repair instances.
+Adapter construction yields the training and validation sizes in Table~\ref{tab:adapter-data}. Final evaluation uses the prefix ending at the last non-accepted submission and the final accepted program as the oracle. We retain only cases for which re-execution confirms the current program as non-accepted and the oracle as accepted, leaving 997 Seen instances from 328 of the 492 Seen problems and 250 Unseen instances from all 54 held-out problems. The remaining Seen problems still contribute Train or Validation trajectories but have no Test trajectory satisfying both execution checks; this is why the abstract's test-problem count is smaller than the Seen pool.
 
 \begin{table}[t]
 \caption{Adapter supervision datasets. Validation examples are excluded from training.}
@@ -397,6 +439,24 @@ Adapter & Train examples & Validation examples \\
 \end{tabular}
 \end{table}
 
+To test the educational and language scope directly, we add TIKTOC's
+testcase-augmented CodeWorkout release, which contains authentic CS1 Java
+submissions and per-test outcomes~\cite{duan2024tiktoc}. We apply the same
+first-acceptance, duplicate, minimum-length, and 4,096-token whole-trajectory
+rules, then split by student rather than trajectory. The resulting external
+corpus has 1,125 trajectories from 224 students over all 17 exercises, with
+zero student overlap: 786/158/181 train/validation/test trajectories from
+157/34/33 students. Every split contains all 17 exercises. External training
+contains 3,470 Answer, 1,110 Strict, and 1,386 Progress examples; validation
+contains 730/230/276. We train the same model and hyperparameters from the same
+base checkpoint. For each relation, seeds 2027/2028/2029 create nine independent
+checkpoints. We execute all nine on the 158 student-disjoint validation states,
+exactly enumerate all 84 size-three and 27 one-per-relation portfolios under
+Equation~\ref{eq:portfolio-objective}, and freeze both winners before testing.
+The 181 student-held-out final states compare both with the mandatory
+same-target Answer-3Seed control; no CodeWorkout test outcome enters checkpoint
+or portfolio selection.
+
 \subsection{Baselines}
 
 \paragraph{Zero-shot.}
@@ -405,25 +465,47 @@ The zero-shot baseline uses the same Qwen base model and prompt as \tool without
 \paragraph{LSGen.}
 LSGen is an iterative retrieval-based solution generator~\cite{dai2026learner}. We preserve its repair-pair filtering, edit-vector retrieval, diff-guided generation, and re-retrieval, while replacing hard-coded infrastructure with our common dataset and runner. For a Seen query, the retrieval database contains buggy/correct pairs from other Seen-Train trajectories of the same problem; the same student and example are excluded. LSGen retrieves five pairs and performs at most three iterations. We do not evaluate it on Unseen problems because exposing same-problem correct programs would violate problem holdout.
 
-All approaches use the same base LLM, public tests, 2.5-second per-test timeout, 2GB memory limit, and maximum of three candidate generations.
+All approaches use the same base LLM, public tests, 2.5-second per-test timeout,
+2GB memory limit, and a maximum of three candidate generations. Final
+validation-selected, external-transfer, and budget-controller runs cap every
+new candidate at 4,096 new tokens; reused control candidates are audited against the
+same bound.
 
 \subsection{Implementation}
 
-We use Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2} and train each adapter for one epoch with 4-bit QLoRA~\cite{dettmers2023qlora}. The base weights use NF4 double quantization and BF16 computation. LoRA targets the \(q,k,v,o\) attention projections and gate/up/down MLP projections with rank 16, scaling 32, and dropout 0.05. Optimization uses paged 8-bit AdamW, learning rate \(2\times10^{-4}\), cosine scheduling, 0.03 warmup ratio, gradient checkpointing, micro-batches of 2, and eight accumulation steps. Seed 2027 is primary; seeds 2028 and 2029 repeat all adapter trainings and Seen/Unseen evaluation with identical data, hyperparameters, and greedy decoding. We select the lowest validation-loss checkpoint and run on one NVIDIA RTX 5090. OpenAI Codex assisted experiment-script and analysis-code development; all jobs ran on our infrastructure, artifacts were independently checked, and no generated datum or citation was accepted as evidence.
+We use Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2} and train each adapter for one epoch with 4-bit QLoRA~\cite{dettmers2023qlora}. The base weights use NF4 double quantization and BF16 computation. LoRA targets the \(q,k,v,o\) attention projections and gate/up/down MLP projections with rank 16, scaling 32, and dropout 0.05. Optimization uses paged 8-bit AdamW, learning rate \(2\times10^{-4}\), cosine scheduling, 0.03 warmup ratio, and gradient checkpointing. Both canonical and CodeWorkout training use micro-batches of 2 with eight accumulation steps, for an effective batch of 16. Seed 2027 is primary; seeds 2028 and 2029 repeat all adapter trainings and evaluation with identical within-dataset data, hyperparameters, and greedy decoding. We select the lowest validation-loss checkpoint and run on one NVIDIA RTX 5090.
 
-A single Python runner executes original and generated programs. We cache outcomes by problem, code, test set, timeout, and memory configuration and reuse the cache across supervision construction and evaluation. Candidate generation can proceed in parallel, but candidate execution and recorded outcomes are shared so that an identical program cannot receive inconsistent labels under CPU contention.
+OpenAI Codex was used interactively to propose control and validation-selection
+design alternatives, implement dataset builders, orchestrate experiments,
+develop statistical-analysis scripts, and assist manuscript drafting. The
+authors selected the final design and acceptance criteria, executed every job on
+author-controlled infrastructure, reviewed code changes, and checked reported
+values against saved machine-readable outputs. AI-produced text was not treated
+as empirical evidence, and every cited work was checked against a retrievable
+source.
+
+An isolated runner executes original and generated programs: Python800 uses the
+Python judge and CodeWorkout compiles Java 21 in a network-disabled container.
+We cache outcomes by problem, code, test set, timeout, and memory configuration
+and reuse the cache across supervision construction and evaluation. Within an
+evaluation split, every policy is bound to the same cached current-program
+verdict and pass rate; only a previously unseen generated candidate is executed,
+which prevents timeout-boundary noise from changing the baseline across
+portfolio members. The Java
+harness reproduces all 181 recorded accepted test programs before model
+evaluation.
 
 \subsection{Ablations}
 
 For RQ2, we construct adapter-specific \strict and \progress examples for both Seen and Unseen tests. \emph{Full Trajectory} uses each retained prefix. \emph{Current Code Only} retrains an adapter on identical examples and targets after removing every submission before the current one; its displayed position is reset to \(S_1\) to prevent index leakage. \answer is excluded because its inputs already contain one submission. This design isolates the presence of history while holding targets, counts, model, and hyperparameters fixed.
 
-For RQ3, each adapter independently generates one candidate for the same 997 Seen instances. For RQ4, we compose these candidates with \progress--\strict--\answer early stopping and fallback selection. Two controls distinguish policy diversity from repeated use and prompt-state effects: \emph{Answer$\times3$} invokes the same Answer adapter up to three times, appending generated execution feedback so that deterministic greedy decoding can produce a non-identical later candidate; repeating the identical prompt would collapse exactly to Answer once. \emph{Generated Feedback} applies the same update protocol to the heterogeneous P--S--A policies. The final \emph{Independent Policies} system instead keeps every policy conditioned on the same authentic trajectory. All configurations share the maximum three-generation budget, execution limits, and fallback selector. Answer$\times3$ and the two additional-seed stability runs are effectiveness-only controls: we omit AST TED and choose the earliest candidate when failed candidates tie in pass rate, which cannot change PR, RR, or IR.
+For RQ3, each adapter independently generates one candidate for the same 997 Seen instances. For RQ4, we first compose the seed-2027 candidates with \progress--\strict--\answer early stopping and fallback selection, then evaluate the final validation-selected size-three portfolio. Four controls separate target heterogeneity from repeated calls, prompt-state effects, training randomness, and the relation constraint. \emph{Answer$\times3$} invokes the same Answer adapter up to three times, appending generated execution feedback so that deterministic greedy decoding can produce a non-identical later candidate; repeating the identical prompt would collapse exactly to Answer once. \emph{Generated Feedback} applies the same update protocol to the heterogeneous P--S--A policies. \emph{Answer-3Seed} independently trains three Answer adapters on the identical 40,454 training and 4,965 validation examples with identical targets and hyperparameters, changing only seeds 2027/2028/2029; all three receive the same authentic evaluation trajectory without generated feedback. \emph{Validation Relation-Constrained} selects one checkpoint per relation, while the primary \emph{Validation Execution Portfolio} selects any three of all nine checkpoints on the same problem-balanced validation execution; both are frozen before test. Every independent policy remains conditioned on the same authentic trajectory. All configurations share the maximum three-generation budget, execution limits, early stopping, and fallback selector. We audit matching Answer training metadata and pairwise-distinct adapter-weight hashes. Effectiveness-only controls may omit AST TED only when failed pass-rate ties are resolved by earliest candidate, which cannot change PR, RR, or IR; Answer-3Seed and the validation-selected portfolios instead use the complete production selector so patch size can also be compared.
 
 \subsection{Metrics and Statistical Analysis}
 
 For \(M\) instances, let \(c_m\) be the current program and \(\hat c_m\) the selected result. \(\mathrm{Pass}(c)\in[0,1]\) is the test pass fraction. Pass Rate (PR) averages \(\mathrm{Pass}(\hat c_m)\); Repair Rate (RR) averages \(\mathbf{1}[\mathrm{Pass}(\hat c_m)=1]\); Improvement Rate (IR) averages \(\mathbf{1}[\mathrm{Pass}(\hat c_m)>\mathrm{Pass}(c_m)]\).
 
-For successfully repaired, parseable programs, \(\mathrm{TED}_{B\rightarrow F}\) measures AST distance from current to fixed code and \(\mathrm{TED}_{F\rightarrow O}\) from fixed code to the recorded accepted oracle, using the standard ordered-tree edit formulation~\cite{zhang1989simple}. RQ2 uses \(\mathrm{TED}_{F\rightarrow T}\), where \(T\) is the identical adapter-specific recorded target shared by Full and Current configurations.
+For successfully repaired, parseable programs, \(\mathrm{TED}_{B\rightarrow F}\) measures AST distance from current to fixed code and \(\mathrm{TED}_{F\rightarrow O}\) from fixed code to the recorded accepted oracle, using the standard unit-cost ordered-tree edit formulation~\cite{zhang1989simple}. Legacy fixed-policy reports use ZSS; validation-selected portfolios and exhaustive budget replay use the equivalent APTED implementation~\cite{pawlik2016tree}, cross-checked against ZSS on identical labeled ASTs. Because node-count difference lower-bounds unit-cost TED, pairs whose difference already exceeds the largest declared budget are stored only as $>160$, which preserves every budget decision. RQ2 uses \(\mathrm{TED}_{F\rightarrow T}\), where \(T\) is the identical adapter-specific recorded target shared by Full and Current configurations.
 
 We report Wilson 95\% intervals for RR and IR~\cite{wilson1927probable}. Paired RR comparisons use two-sided exact McNemar tests~\cite{mcnemar1947note}, with Holm correction within each planned comparison family~\cite{holm1979simple}. Because trajectories from one problem are dependent, our primary robustness analysis resamples problems as clusters 10,000 times with seed 2027 and reports intervals for paired RR, PR, and IR differences. We additionally report a problem-balanced estimand that gives every problem equal weight, with a problem bootstrap interval. Paired TED differences use 10,000 instance bootstrap resamples on jointly repaired inputs; both procedures follow the nonparametric bootstrap principle~\cite{efron1979bootstrap}. Unless stated otherwise, percentages are absolute percentage points.
 
@@ -432,9 +514,56 @@ We report Wilson 95\% intervals for RR and IR~\cite{wilson1927probable}. Paired 
 
 \subsection{RQ1: Repair Effectiveness}
 
-Table~\ref{tab:main-results} summarizes RQ1 and RQ5. On Seen problems, \tool repairs 593 of 997 programs (59.5\%), compared with 306 (30.7\%) for Zero-shot. Their Wilson RR intervals are [56.4, 62.5] and [27.9, 33.6], respectively. \tool alone repairs 320 instances, whereas Zero-shot alone repairs 33 (exact McNemar \(p<10^{-50}\)). More importantly for dependent trajectories, the 28.8-point paired RR gain remains under problem-cluster bootstrap [24.4, 33.1]; the equal-problem-weight gain is 24.1 points [19.4, 28.7]. PR increases by 10.23 points [8.38, 12.15] and IR by 23.3 points [18.9, 27.5] under the same clustered analysis.
+Table~\ref{tab:main-results} summarizes RQ1 and RQ5. On Seen problems, the
+validation-selected execution portfolio repairs 613 of 997 programs (61.5\%),
+compared with 306 (30.7\%) for Zero-shot. Their Wilson RR intervals are [58.4,
+64.5] and [27.9, 33.6], respectively. \tool alone repairs 342 instances,
+whereas Zero-shot alone repairs 35 (exact McNemar \(p<10^{-63}\)). More
+importantly for dependent trajectories, the 30.8-point paired RR gain remains
+under problem-cluster bootstrap [26.4, 35.1]; the equal-problem-weight gain is
+26.1 points [21.2, 30.9]. PR increases by 11.07 points [9.16, 13.02] and IR by
+25.2 points [20.8, 29.4] under the same clustered analysis.
 
-LSGen achieves the highest Seen execution correctness: 88.0\% PR, 80.2\% RR, and 82.4\% IR. It alone repairs 280 instances, while \tool alone repairs 73 (exact McNemar \(p<10^{-28}\)); the clustered RR difference is $-20.8$ points [$-25.0$,$-16.5$]. The tradeoff is patch size. \tool's mean \(\mathrm{TED}_{B\rightarrow F}\) is 21.10, versus 27.25 for Zero-shot and 88.27 for LSGen. Among jointly repaired parseable instances, \tool reduces TED by 8.95 relative to Zero-shot (95\% CI [5.41, 13.05]) and by 42.68 relative to LSGen (95\% CI [37.77, 47.79]).
+The legacy LSGen controller achieves the highest Seen execution correctness:
+88.0\% PR, 80.2\% RR, and 82.4\% IR. It alone repairs 267 instances, while
+\tool alone repairs 80 (exact McNemar \(p<10^{-23}\)); the clustered RR
+difference is $-18.8$ points [$-23.0$,$-14.5$]. The tradeoff is patch size.
+\tool's mean \(\mathrm{TED}_{B\rightarrow F}\) is 21.05, versus 27.25 for
+Zero-shot and 88.27 for LSGen. Among jointly repaired parseable instances,
+\tool reduces TED by 8.46 relative to Zero-shot (95\% CI [5.05, 12.55]) and by
+43.34 relative to LSGen (95\% CI [38.47, 48.44]). RQ6 replaces the legacy
+early-stop replay with an always-three LSGen controller before making the final
+budget-frontier comparison.
+
+Table~\ref{tab:patch-budget} operationalizes this tradeoff rather than treating
+TED as evidence of pedagogical quality. Under a maximum structural edit budget,
+\tool has substantially higher repair coverage through \(B=80\); LSGen crosses
+over only at the broadest reported budget. At \(B=20\), for example, the gate
+returns an accepted repair for 39.9\% of inputs with \tool versus 10.0\% with
+LSGen, a +29.9-point problem-clustered difference [26.2, 33.7]. The comparison
+therefore supports a constrained deployment claim: retrieval has higher
+unrestricted coverage, whereas the trajectory-trained portfolio covers more
+inputs when large structural replacement is disallowed.
+
+\begin{table}[t]
+\caption{Seen repair rate (\%) after the same AST-TED deployment gate. The last
+column is \tool minus LSGen with a 95\% problem-cluster interval.}
+\label{tab:patch-budget}
+\centering
+\small
+\begin{tabular}{rrrr}
+\toprule
+Budget \(B\) & \tool & LSGen & Difference [95\% CI] \\
+\midrule
+5   & 20.2 & 3.3  & +16.9 [14.2, 19.7] \\
+10  & 29.7 & 5.8  & +23.9 [20.7, 27.2] \\
+20  & 39.9 & 10.0 & +29.9 [26.2, 33.7] \\
+40  & 48.6 & 25.7 & +22.9 [19.4, 26.5] \\
+80  & 53.9 & 47.3 & +6.5 [2.7, 10.4] \\
+160 & 55.8 & 65.7 & $-9.9$ [$-14.1$, $-5.7$] \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{table}[t]
 \caption{Main repair results. PR, RR, and IR are percentages; TED is computed on successfully repaired, parseable programs.}
@@ -448,34 +577,27 @@ Split & Method & PR & RR & IR & \(\mathrm{TED}_{B\to F}\) & \(\mathrm{TED}_{F\to
 \multirow{3}{*}{Seen}
  & Zero-shot & 76.3 & 30.7 & 43.7 & 27.25 & 27.67 \\
  & LSGen & \textbf{88.0} & \textbf{80.2} & \textbf{82.4} & 88.27 & 83.23 \\
- & \tool & 86.5 & 59.5 & 67.0 & \textbf{21.10} & \textbf{21.45} \\
+ & \tool & 87.4 & 61.5 & 68.9 & \textbf{21.05} & \textbf{21.64} \\
 \midrule
 \multirow{2}{*}{Unseen}
  & Zero-shot & 75.3 & 62.0 & 68.8 & 17.46 & 15.80 \\
- & \tool & \textbf{84.5} & \textbf{73.2} & \textbf{79.2} & \textbf{11.48} & \textbf{12.54} \\
+ & \tool & \textbf{84.9} & \textbf{74.8} & \textbf{79.6} & \textbf{11.40} & \textbf{11.96} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:paired-outcomes} shows that the gains are not marginal exchanges: against Seen Zero-shot, \tool has 320 unique repairs versus 33; against LSGen, it has 73 versus 280. LSGen has higher coverage, but neither success set contains the other.
+Paired outcomes show complementary success rather than marginal exchanges. On
+Seen, \tool and Zero-shot repair 271 jointly, with 342 versus 35 unique repairs;
+against LSGen the corresponding counts are 533 jointly and 80 versus 267
+uniquely. On Unseen, \tool and Zero-shot repair 142 jointly, with 45 versus 13
+unique repairs. Thus LSGen has higher coverage, but neither Seen success set
+contains the other.
 
-\begin{table}[t]
-\caption{Paired complete-repair outcomes. ``Only \tool'' and ``only comparator'' are the discordant pairs used by McNemar tests. Counts are derived from the same instances as Table~\ref{tab:main-results}.}
-\label{tab:paired-outcomes}
-\centering
-\small
-\begin{tabular}{llrrrr}
-\toprule
-Split & Comparator & Both & Only \tool & Only comparator & Neither \\
-\midrule
-Seen & Zero-shot & 273 & 320 & 33 & 371 \\
-Seen & LSGen & 520 & 73 & 280 & 124 \\
-Unseen & Zero-shot & 139 & 44 & 16 & 51 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-PR and IR confirm that the RR gain is accompanied by partial behavioral improvement. Patch distance separates repair from replacement: mean current-to-fix TED is 22.6\% below Zero-shot and 76.1\% below LSGen on each method's successful set, while the jointly repaired paired analyses above establish the same direction without success-set confounding.
+PR and IR confirm that the RR gain is accompanied by partial behavioral
+improvement. Patch distance separates repair from replacement: mean
+current-to-fix TED is 22.8\% below Zero-shot and 76.2\% below legacy LSGen on
+each method's successful set, while the jointly repaired paired analyses above
+establish the same direction without success-set confounding.
 
 \subsection{RQ2: Trajectory Conditioning}
 
@@ -532,107 +654,157 @@ Coverage specialization is weak between \progress and \strict, but patch-scope s
 
 Independent-policy escalation reaches 59.5\% RR, 9.4 points above the strongest individual adapter, \answer; its problem-cluster interval [7.6, 11.3] excludes zero. Gains over \progress and \strict are 14.6 [12.3, 17.0] and 14.9 [12.8, 17.1] points, respectively. The increase appears in PR and IR as well, so the portfolio is not trading complete repairs for weaker partial outputs.
 
-Table~\ref{tab:stage-flow} expands control flow. Progress accepts 447 inputs, Strict accepts 60 more, and 490 reach Answer. The resulting \(997+550+490=2{,}037\) generations average 2.04 per input, avoiding 954 (31.9\%) of an always-three budget.
+Progress accepts 447 inputs, Strict accepts 60 more, and 490 reach Answer. The
+resulting 2,037 generations average 2.04 per input, avoiding 954 (31.9\%) of an
+always-three budget. Final selection returns the unchanged program 329 times,
+making certified abstention a substantial behavior rather than a corner case.
 
 \begin{table}[t]
-\caption{RQ4 stage flow and final selector provenance on 997 Seen inputs. ``Reached'' counts generated candidates; ``accepted here'' counts early stops. Selector provenance includes early stops and final selection.}
-\label{tab:stage-flow}
+\caption{RQ4 sequential and validation-selected portfolios on 997 Seen
+instances. Selection uses one validation trajectory per problem; test outcomes
+are not used.}
+\label{tab:rq4}
 \centering
 \small
 \begin{tabular}{lrrr}
 \toprule
-Stage / source & Reached & Accepted here & Returned by system \\
+Configuration & PR & RR & IR \\
 \midrule
-\progress & 997 & 447 & 485 \\
-\strict & 550 & 60 & 79 \\
-\answer & 490 & 86 & 104 \\
-Unchanged fallback & -- & -- & 329 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Returned-source counts exceed early stops because final selection can recover an improving failed candidate. The unchanged program is returned 329 times, making certified abstention a substantial behavior rather than a corner case.
-
-\begin{table}[t]
-\caption{RQ4 sequential escalation on 997 Seen instances. ``Candidates'' is the mean number generated.}
-\label{tab:rq4}
-\centering
-\begin{tabular}{lrrrr}
-\toprule
-Configuration & PR & RR & IR & Candidates \\
-\midrule
-\progress & 73.4 & 44.8 & 52.0 & 1.00 \\
-\strict & 74.8 & 44.5 & 51.2 & 1.00 \\
-\answer & 77.5 & 50.1 & 57.5 & 1.00 \\
-Answer$\times3$ & 84.1 & 55.2 & 62.4 & 1.98 \\
-Generated Feedback & 84.9 & 56.6 & 64.6 & 2.05 \\
-Independent Policies & \textbf{86.5} & \textbf{59.5} & \textbf{67.0} & 2.04 \\
+Answer$\times3$ & 84.1 & 55.2 & 62.4 \\
+Answer-3Seed & 87.0 & \textbf{61.7} & \textbf{69.1} \\
+Generated Feedback & 84.9 & 56.6 & 64.6 \\
+Fixed P--S--A & 86.5 & 59.5 & 67.0 \\
+Validation relation-constrained & 85.8 & 57.3 & 65.4 \\
+Validation unconstrained & \textbf{87.4} & 61.5 & 68.9 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Answer to RQ4.}
-Execution-guided escalation improves both complete repair and partial improvement over every single adapter. Repeating Answer three times reaches 55.2\% RR, so additional calls to the strongest individual policy recover 5.0 points over Answer once but remain 4.31 points below the heterogeneous independent portfolio. That diversity gain survives problem-cluster resampling [2.16, 6.47] and paired testing (91 portfolio-only versus 48 repeated-Answer-only repairs; McNemar (p=0.000333)); PR (+2.45 [1.38, 3.56]) and IR (+4.61 [2.49, 6.75]) agree. Keeping policies conditioned on authentic observations additionally gains 2.91 RR points over generated feedback [0.81, 5.01], with PR (+1.65 [0.62, 2.71]) and IR (+2.41 [0.11, 4.71]) improvements. Thus neither extra calls to one policy nor synthetic prompt-state updates explain the independent portfolio's gain. Early stopping avoids a fixed three-generation cost, although the sequence still averages roughly twice the generation work of an individual adapter.
+Execution-guided escalation improves both complete repair and partial improvement over every single adapter. Repeating Answer with generated feedback reaches 55.2\% RR, so additional calls recover 5.0 points over Answer once but remain 4.31 points below the relation-heterogeneous portfolio. The stricter target-matched control reverses that comparison: three independently trained Answer adapters reach 61.7\% RR, exceeding Independent Policies by 2.21 points with a problem-cluster interval [0.11, 4.20] (67 Answer-3Seed-only versus 45 independent-policy-only repairs; McNemar \(p=0.0467\)). On jointly repaired programs, Independent Policies makes smaller patches by 1.56 TED [0.36, 2.79], but it does not recover the coverage difference.
+
+Validation execution does not rescue the relation constraint on Seen test.
+The unrestricted relation-constrained winner obtains 57.3\% RR, 4.41 points
+below Answer-3Seed [--6.54, --2.24]. The unconstrained winner
+(Answer-2027, Answer-2028, Progress-2027) reaches 61.5\%, statistically
+indistinguishable from Answer-3Seed at --0.20 points [--1.83, 1.46]. This
+control is decisive: checkpoint complementarity transfers, but forcing one
+member from every relation reduces coverage. Early stopping still avoids a
+fixed three-generation cost, and Equation~\ref{eq:portfolio-objective} remains
+the test-independent mechanism for selecting the deployed checkpoints.
+
+Under the six predeclared budgets, choosing a separate validation winner for
+each declared budget gives the unconstrained family +0.75 mean points over
+Answer-3Seed [--0.29, 1.86] on Seen. The only individually conclusive budget is
+TED 20 (+1.81 [0.53, 3.16]); the relation-constrained family averages --0.70
+[--2.02, 0.71]. Thus the CodeNet evidence supports budget-indexed validation
+selection at a specific operating point, not a general coverage benefit from
+relation heterogeneity.
 
 \subsection{RQ5: Problem Generalization}
 
-On 250 Unseen instances, \tool obtains 84.5\% PR, 73.2\% RR, and 79.2\% IR, versus 75.3\%, 62.0\%, and 68.8\% for Zero-shot. \tool alone repairs 44 cases and Zero-shot alone repairs 16 (McNemar \(p=0.000394\)). Problem-cluster intervals exclude zero for RR (+11.2 points [5.15, 17.26]), PR (+9.18 [5.27, 13.34]), and IR (+10.4 [4.94, 15.92]); the equal-problem-weight RR gain is 10.47 points [3.98, 16.78]. \tool also reduces mean successful-patch TED from 17.46 to 11.48. Among 119 jointly repaired parseable instances, its patch is 6.14 TED units smaller on average (95\% CI [3.13, 9.56]).
+On 250 Unseen instances, \tool obtains 84.9\% PR, 74.8\% RR, and 79.6\% IR,
+versus 75.3\%, 62.0\%, and 68.8\% for Zero-shot. \tool alone repairs 45 cases
+and Zero-shot alone repairs 13 (McNemar \(p=3.01\times10^{-5}\)).
+Problem-cluster intervals exclude zero for RR (+12.8 points [6.83, 18.75]), PR
+(+9.56 [5.66, 13.64]), and IR (+10.8 [4.76, 16.95]); the
+equal-problem-weight RR gain is 12.38 points [6.01, 18.62]. \tool also reduces
+mean successful-patch TED from 17.46 to 11.40. Among 122 jointly repaired
+parseable instances, its patch is 6.41 TED units smaller on average (95\% CI
+[3.43, 9.89]).
 
-Heterogeneous policies also outperform repeated use of Answer on Unseen data: 73.2\% versus 68.4\% RR, with 15 portfolio-only and three Answer$\times3$-only repairs (McNemar \(p=0.00754\)) and a +4.8-point problem-cluster interval [1.09, 9.21]. PR improves by 3.34 points [1.12, 5.98]. Against generated feedback, the independent system gains 1.2 RR points [--0.80, 3.31] and 1.54 PR points [0.14, 3.34]; the RR interval includes zero, while the PR interval does not. Thus policy diversity generalizes across problem holdout, whereas the smaller benefit of preserving authentic prompt state is supported more strongly by Seen RR and Unseen PR than by Unseen RR alone.
+Against the weaker repeated-Answer-with-feedback control on Unseen data, Independent Policies reaches 73.2\% versus 68.4\% RR, with 15 portfolio-only and three control-only repairs (McNemar \(p=0.00754\)). The independent Answer-3Seed control, however, also reaches 73.2\%; its problem-clustered difference from Independent Policies is 0.0 points [--3.2, 3.1] and McNemar \(p=1.0\). The problem-held-out result therefore supports execution-selected checkpoint diversity but does not identify target-relation heterogeneity as its source.
 
-The 44 favorable versus 16 unfavorable discordant pairs against Zero-shot show complementary successes rather than dominance. Absolute Unseen RR is higher for both methods, but the split was defined by trajectory availability rather than randomized difficulty. The valid estimand is the paired within-Unseen difference, which remains positive without same-problem training.
+The frozen validation winners reach 74.8\% Unseen RR for both unrestricted
+relation-constrained and unconstrained selection, +1.60 points over
+Answer-3Seed; both unrestricted intervals include zero. Budget-indexed
+unconstrained selection is stronger across the declared frontier: its mean
+coverage difference is +2.60 points [0.38, 5.03], whereas the
+relation-constrained mean is +1.60 [--1.07, 4.44]. This independently confirms
+the budget-selection effect but again does not support the one-per-relation
+constraint.
+
+The 45 favorable versus 13 unfavorable discordant pairs against Zero-shot show
+complementary successes rather than dominance. Absolute Unseen RR is higher for
+both methods, but the split was defined by trajectory availability rather than
+randomized difficulty. The valid estimand is the paired within-Unseen
+difference, which remains positive without same-problem training.
 
 \paragraph{Answer to RQ5.}
 \tool's advantage over Zero-shot persists on problems completely excluded from adapter training. Because the Unseen group deliberately contains lower-resource problems, its higher absolute RR must not be interpreted as evidence that unseen problems are easier or that familiarity harms repair.
 
-\subsection{RQ6: Guarantees and Robustness}
+\subsection{RQ6: Robustness and External Transfer}
 
-We executed an independent certificate checker over every canonical training example. Answer's 40,454 examples all contain one failed source and an accepted terminal target. The checker evaluated 19,981 retained Strict transitions and 29,920 retained Progress transitions; every transition satisfied its defining relation. All 16,973 unique Strict target events occur among the 21,416 Progress target events, with zero missing events. These exhaustive counts connect Propositions 1--3 to the materialized datasets rather than only to pseudocode. Eight executable property tests additionally exercise rank descent, terminal closure, inclusion, assistance-horizon nesting, selection, effectiveness-only tie handling, and all policy permutations over randomized finite trajectories.
+\paragraph{Implementation conformance.}
+An independent artifact audit checks definitions rather than model quality and
+is therefore not treated as an empirical result.
+Answer's 40,454 examples all pair one failed source with an accepted target; all
+19,981 Strict and 29,920 Progress transitions satisfy their declared relation;
+and all 16,973 unique Strict target events occur among the 21,416 Progress
+events. Across 997 Seen and 250 Unseen outputs, selected pass rate is never below
+the current program. These are implementation checks of the formal construction
+and selector, not a separate empirical claim about learned relations.
 
-The selection certificate likewise reports zero violations on all 997 Seen and 250 Unseen inputs. In every case, selected pass rate is at least current pass rate; the minimum difference is exactly zero because abstention is allowed. Thus, Proposition 4 is both a general property of Algorithm~\ref{alg:repair} and an audited property of the reported outputs. The problem-cluster and problem-balanced intervals reported in RQ1--RQ5 further show that the main positive conclusions do not depend on treating trajectories from one assignment as independent.
+Because users may cross splits, we additionally stratify test instances by whether their user identifier occurs in any adapter-training set. Among 155 Seen instances from 150 training-disjoint users, \tool reaches 71.6\% RR versus 31.6\% for Zero-shot, a paired +40.0-point gain with problem-cluster interval [30.7, 48.8]; the corresponding overlap stratum has 842 instances and a +26.7-point gain [22.6, 31.0]. Thus the Seen effect is not confined to repeated users. On Unseen problems, the 69 user-disjoint instances retain a +11.6-point paired difference, but their cluster interval [--1.5, 25.4] includes zero; this smaller subgroup does not establish user-disjoint problem generalization on its own. Strata are observational, so differences between their absolute rates are not causal estimates of memorization.
 
 Complete retraining with seeds 2027/2028/2029 yields Seen RR 59.5/57.6/59.0\% (mean 58.7, SD 1.0 points) and Unseen RR 73.2/74.0/70.4\% (mean 72.5, SD 1.9). Mean PR/IR are 86.2/66.2\% on Seen and 83.5/78.4\% on Unseen. Every Seen run exceeds the earlier Generated Feedback configuration's 56.6\% RR. This cross-run comparison bounds QLoRA variation but does not replace the paired seed-2027 comparison, which alone holds trained adapters fixed while changing candidate dependence.
 
-Finally, we freeze the three independently generated candidate sets and replay all six policy orders (Table~\ref{tab:order-replay}). Because candidate membership is fixed, coverage is identical at 59.5\%; the replay isolates which accepted candidate is encountered first and how many candidates are inspected. Progress--Strict--Answer has the lowest mean policy breadth (1.391 on a 1--3 scale) and the smallest mean successful-patch TED (21.10). Answer-first orders reduce generation calls to 1.92--1.93 but select substantially broader policies and patches. Progress--Answer--Strict is a nearby alternative with fewer calls but higher breadth and TED. The deployed order therefore occupies the conservative endpoint of a measured cost--intervention frontier, rather than being chosen because Progress has the highest standalone RR.
-
-\begin{table}[t]
-\caption{Static replay of all policy orders on identical Seen candidates. P, S, and A denote Progress, Strict, and Answer. Breadth assigns policy levels 1, 2, and 3; TED is over parseable repairs.}
-\label{tab:order-replay}
-\centering
-\small
-\begin{tabular}{lrrrr}
-\toprule
-Order & RR & Generations & Breadth & TED \\
-\midrule
-P--S--A & 59.5 & 2.043 & \textbf{1.391} & \textbf{21.10} \\
-P--A--S & 59.5 & 1.976 & 1.460 & 21.16 \\
-S--P--A & 59.5 & 2.046 & 2.039 & 22.16 \\
-S--A--P & 59.5 & 1.989 & 2.153 & 22.45 \\
-A--P--S & 59.5 & \textbf{1.924} & 2.715 & 22.30 \\
-A--S--P & 59.5 & 1.934 & 2.793 & 22.63 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The 59.5\% replay is the final independent-policy system result: every adapter candidate is conditioned on the same authentic trajectory, as required by Algorithm~\ref{alg:repair}. The six-order replay changes only early-stop precedence, so it is also an exhaustive empirical certificate of Proposition 5. Separately generated-feedback and repeated-Answer controls test whether synthetic prompt-state updates or repeated use of the strongest single policy explain the portfolio gain.
+Finally, replaying all six policy orders on fixed candidates leaves RR at 59.5\%.
+Progress--Strict--Answer has the lowest mean breadth (1.391) and successful-patch
+TED (21.10); Answer-first saves about 0.12 generations but selects broader
+policies and patches. Separately generated-feedback, repeated-Answer, and
+Answer-3Seed controls test prompt-state updates, repeated calls, and
+independent-training diversity.
 
 \paragraph{Answer to RQ6.}
-The execution-evidence and non-regression propositions hold without violations in the complete artifacts. Problem-clustered inference preserves the principal effects, three full training runs bound seed variation, and exhaustive order replay identifies the selected order as the least-broad, smallest-patch endpoint among fixed-candidate portfolios.
+Problem-clustered inference preserves the principal effects, three full
+training runs bound seed variation, and exhaustive order replay identifies the
+selected order as the least-broad, smallest-patch endpoint among fixed-candidate
+portfolios. The conformance audit separately confirms that saved supervision
+and selector outputs satisfy the implemented specifications; it is not evidence
+of learned behavior.
 
 \subsection{Cross-RQ Synthesis}
 
-Together, the RQs locate the gain in two components: authentic trajectories supply ordered offline supervision, and execution controls online escalation and abstention. Target-matched retraining shows that these relations can be distilled without requiring a long history at deployment; Progress and Strict differ more in patch scope than coverage; problem holdout, cluster resampling, and independent retraining preserve the system advantage; and certificates connect observed outputs to the formal relations. This decomposition identifies a stronger mechanism than prompt-level ``trajectory conditioning'': trajectories define learnable reachability structure.
+Together, the RQs distinguish properties of the data construction from causes of
+test-time coverage. The execution-evidence orders are exactly satisfied by the
+materialized supervision, but neither the history ablation nor the Answer-3Seed
+control shows that relation heterogeneity causes the portfolio gain. What the
+experiments do establish is that independently trained checkpoints provide
+complementary candidates and that execution controls escalation, abstention, and
+the optional structural budget. The validation-execution selector converts that
+complementarity into a test-independent deployment choice. Its unconstrained
+winner matches Answer-3Seed on Seen and improves the mean Unseen budget
+frontier, while the explicit relation constraint is detrimental on Seen.
 
 \section{Discussion}
 \label{sec:discussion}
 
 \subsection{What Produces the Observed Improvement?}
 
-Adapter training matters because \tool beats a zero-shot model that already receives trajectory context; sequential execution matters because composition beats every member; and target-matched current-code adapters retain the relational benefit. The practical consequence is favorable: expensive history serialization is not required for every deployment even though authentic histories remain essential for constructing the ordered targets. Counterfactual histories paired with identical current code would further test when path information changes the appropriate repair rather than only its supervision source.
+Adapter training matters because every trained portfolio beats a zero-shot model
+that already receives trajectory context, and sequential execution matters
+because composition beats every member. The stronger causal attribution is
+checkpoint diversity: Answer-3Seed exceeds the original relation-heterogeneous
+portfolio on Seen and ties it on Unseen. Relation-mined targets still change the
+patch-scope distributions, but the present controls do not establish them as a
+coverage mechanism. Our final method therefore lets validation execution select
+any three checkpoints and reports both the one-per-relation restriction and the
+seed-matched Answer portfolio as mandatory comparators. The selected CodeNet
+portfolio contains two Answer checkpoints and Progress, empirically rejecting
+the assumption that all three target relations must appear. Counterfactual
+histories paired with identical current code would further test when path
+information changes the appropriate repair rather than only its supervision
+source.
 
 \subsection{Coverage Versus Patch Size}
 
-LSGen demonstrates the value of same-problem correct programs, reaching higher coverage with mean TED over four times \tool's. Smaller edits can preserve structure but do not prove pedagogical superiority. The measured tradeoff is software-level: retrieval maximizes coverage in repository-mature settings, whereas adapters make more conservative changes and remain applicable to held-out problems.
+LSGen demonstrates the value of same-problem correct programs, reaching higher
+unrestricted coverage with mean TED over four times \tool's. Smaller edits do
+not prove pedagogical superiority. The budget gate instead gives edit size an
+operational meaning: \tool repairs more inputs than LSGen at every tested budget
+through TED 80, whereas LSGen dominates when broad changes are allowed. This is
+a deployment coverage--intervention frontier, not a learner-outcome claim.
 
 \subsection{Implications for Educational Use}
 
@@ -642,13 +814,13 @@ LSGen demonstrates the value of same-problem correct programs, reaching higher c
 \label{sec:threats}
 
 \paragraph{Construct validity.}
-Passing the available tests is a proxy for semantic correctness and may admit overfitting. We reduce this risk by requiring the recorded oracle to pass the same suite, but hidden tests could change absolute rates. AST TED measures structural change, not readability, conceptual difficulty, or educational value. ``Reachable'' means observed later in a trajectory; it does not imply that the generated transition lies within an individual learner's ZPD. We therefore avoid claims about learning outcomes.
+Passing the available tests is a proxy for semantic correctness and may admit overfitting, a longstanding generate-and-validate repair risk~\cite{qi2014strength,smith2015cure}. We reduce this risk by requiring the recorded oracle to pass the same suite, but hidden tests could change absolute rates. AST TED measures structural change, not readability, conceptual difficulty, or educational value. ``Reachable'' means observed later in a trajectory; it does not imply that the generated transition lies within an individual learner's ZPD. We therefore avoid claims about learning outcomes.
 
 \paragraph{Internal validity.}
 Dataset construction, verdict ordering, normalization, runner limits, and candidate selection can affect results. We use one runner and shared outcome cache across methods, preserve full trajectories after filtering, and compare paired outputs on identical instances. LSGen required infrastructure adaptation; although its retrieval and generation logic is retained, our integration may differ from its original environment. Greedy decoding removes sampling variance, and three full QLoRA runs quantify training-seed variation, but other hyperparameters and stochastic decoding remain untested.
 
 \paragraph{Data leakage and dependence.}
-Unseen problems are completely excluded from training and retrieval. This problem-level separation follows evidence that duplicated code across machine-learning splits can materially inflate code-model evaluation~\cite{allamanis2019adverse}. Seen splits share problem identities by design, and users may occur across splits; the benchmark is not user-held-out. We address assignment-level dependence with problem-cluster bootstrap and an equal-problem-weight estimand. Residual dependence through users who solve multiple problems remains possible; a complementary user-held-out study would test personalization transfer rather than problem transfer.
+Unseen problems are completely excluded from training and retrieval. This problem-level separation follows evidence that duplicated code across machine-learning splits can materially inflate code-model evaluation~\cite{allamanis2019adverse}. Seen splits share problem identities by design, and users may occur across splits; the benchmark is not user-held-out. We address assignment-level dependence with problem-cluster bootstrap and an equal-problem-weight estimand. The Seen paired gain persists among 155 training-disjoint-user instances, but the smaller Unseen disjoint-user interval includes zero; a prospectively user-held-out split would more directly test personalization transfer.
 
 \paragraph{External validity.}
 The study covers Python solutions from Project CodeNet, one 7B code model, one GPU, and programming-contest-style tasks. Results may not transfer to multi-file projects, other languages, industrial defects, private autograders, or novice courses with different submission behavior. The Unseen set consists of lower-volume problems by construction and should not be treated as a random sample of all new assignments.
@@ -662,14 +834,24 @@ The study analyzes a publicly released code dataset and performs no intervention
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented \tool, an execution-guided APR framework trained from authentic student submission trajectories. Nested execution-evidence orders expose monotonic testcase progress and verdict improvement, while terminal closure supplies accepted targets. Their finite-chain, inclusion, selection-safety, and minimum-escalation properties are proved and mechanically verified. Independent-policy composition raises Seen repair rate from 50.1\% for the strongest individual adapter to 59.5\%, while early stopping averages 2.04 candidates. The system outperforms trajectory-prompted zero-shot repair on Seen and problem-held-out Unseen data under problem-clustered inference and produces smaller successful patches, although same-problem retrieval achieves higher coverage. Three seeds yield Seen and Unseen RR standard deviations of 1.0 and 1.9 points.
+We presented \tool, an execution-guided APR framework trained from authentic
+submission trajectories. Nested execution-evidence orders define auditable
+Progress and Strict targets, while terminal closure supplies Answer targets.
+Independent composition raises Seen RR from 50.1\% for its strongest member to
+59.5\%, and a same-target Answer-3Seed portfolio further reaches 61.7\%, showing
+that independent checkpoint diversity is the empirically supported coverage
+mechanism. The system outperforms trajectory-prompted zero-shot repair on Seen
+and problem-held-out Unseen data under problem-clustered inference. Same-problem
+retrieval has higher unrestricted coverage, while the certified edit-budget gate
+gives \tool higher coverage through TED 80. Validation execution poses
+relation-constrained portfolio choice as exact submodular coverage maximization;
+the resulting test evaluation separates this method from post-hoc seed choice.
 
-Target-matched adapters retain the benefit without serialized histories: trajectories provide executable reachability relations distilled into parameters, while the certified portfolio converts complementary relations into minimum-breadth repairs.
-
-\section{Data Availability}
+\paragraph{Data availability.}
 \label{sec:data-availability}
-
-An anonymized artifact will provide code, prompts, splits, outputs, and a SHA-256 manifest for 143 records (2.29 GB) at revision \texttt{aa908288a397}. Project CodeNet will be reacquired from its source; deterministic regeneration and checksum instructions will be included.
+An anonymized artifact will provide code, prompts, splits, outputs, and a
+SHA-256 manifest. Project CodeNet and CodeWorkout are reacquired from their
+official sources; deterministic regeneration and checksums are included.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}

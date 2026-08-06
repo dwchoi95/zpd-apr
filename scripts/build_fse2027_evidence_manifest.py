@@ -60,6 +60,8 @@ def selected_files(run_root: Path, checkpoint_roots: list[Path]) -> list[tuple[P
         "eval/acceptance-ablations/*.evaluation.summary.json",
         "eval/acceptance-seeds/*.evaluation.jsonl",
         "eval/acceptance-seeds/*.evaluation.summary.json",
+        "eval/**/*.jsonl",
+        "eval/**/*.json",
         "analysis/*.json",
     )
     found: list[tuple[Path, Path]] = []
@@ -77,6 +79,24 @@ def selected_files(run_root: Path, checkpoint_roots: list[Path]) -> list[tuple[P
     return sorted(unique.values(), key=lambda item: (str(item[1]), str(item[0])))
 
 
+def selected_external_files(external_roots: list[Path]) -> list[tuple[Path, Path]]:
+    """Curate external evidence without sealing redistributability-sensitive raw data."""
+    patterns = (
+        "source-provenance.json",
+        "derived/trajectory-summary.json",
+        "derived/trajectory-4k-summary.json",
+        "derived/datasets/*.json",
+        "derived/datasets/*.jsonl",
+        "derived/java-eval/RecordedOracle.summary.json",
+    )
+    found: list[tuple[Path, Path]] = []
+    for root in external_roots:
+        for pattern in patterns:
+            found.extend((path, root) for path in root.glob(pattern) if path.is_file())
+    unique = {(str(path), str(root)): (path, root) for path, root in found}
+    return sorted(unique.values(), key=lambda item: (str(item[1]), str(item[0])))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-root", type=Path, required=True)
@@ -84,11 +104,16 @@ def main() -> None:
         "--checkpoint-root", type=Path, action="append", required=True,
         help="Checkpoint tree to hash metadata from; may be repeated.",
     )
+    parser.add_argument(
+        "--external-root", type=Path, action="append", default=[],
+        help="Curated external-dataset evidence root; may be repeated.",
+    )
     parser.add_argument("--source-revision", required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     run_root = args.run_root.expanduser().resolve()
     checkpoint_roots = [path.expanduser().resolve() for path in args.checkpoint_root]
+    external_roots = [path.expanduser().resolve() for path in args.external_root]
     output = args.output.expanduser().resolve()
     files = []
     for path, logical_root in selected_files(run_root, checkpoint_roots):
@@ -99,12 +124,17 @@ def main() -> None:
             "run" if logical_root == run_root else f"checkpoints:{logical_root.name}"
         )
         files.append(item)
+    for path, logical_root in selected_external_files(external_roots):
+        item = record(path, logical_root)
+        item["root"] = f"external:{logical_root.name}"
+        files.append(item)
     manifest = {
         "schema_version": 1,
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "source_revision": args.source_revision,
         "run_root_name": run_root.name,
         "checkpoint_root_names": [path.name for path in checkpoint_roots],
+        "external_root_names": [path.name for path in external_roots],
         "files": files,
         "file_count": len(files),
         "total_bytes": sum(item["bytes"] for item in files),
