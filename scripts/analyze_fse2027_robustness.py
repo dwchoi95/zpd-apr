@@ -451,6 +451,13 @@ def complete_eval(path: Path, expected: int) -> bool:
         return sum(1 for line in source if line.strip()) == expected
 
 
+def has_stage_feedback(path: Path, expected: bool) -> bool:
+    summary = path.with_suffix(".summary.json")
+    if not summary.is_file():
+        return False
+    return bool(json.loads(summary.read_text(encoding="utf-8"))["stage_feedback"]) is expected
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--eval-root", type=Path, required=True)
@@ -512,27 +519,45 @@ def main() -> None:
         for index, (name, paths) in enumerate(comparisons.items())
         if existing(paths["left"]) and existing(paths["right"])
     }
-    no_feedback = replay_selected_rows(root, ("progress", "strict", "answer"))
+    canonical_seen = root / "zpdpatch-seen-test.evaluation.jsonl"
+    canonical_seen_is_independent = complete_eval(
+        canonical_seen,
+        997,
+    ) and has_stage_feedback(canonical_seen, False)
+    no_feedback = (
+        read_jsonl(canonical_seen)
+        if canonical_seen_is_independent
+        else replay_selected_rows(root, ("progress", "strict", "answer"))
+    )
+    no_feedback_label = (
+        str(canonical_seen)
+        if canonical_seen_is_independent
+        else "replayed:progress-strict-answer"
+    )
+    ablation_root = root / "acceptance-ablations"
+    generated_seen = ablation_root / "zpdpatch-seen-test-generated-feedback.evaluation.jsonl"
+    if not complete_eval(generated_seen, 997):
+        generated_seen = canonical_seen
     comparison_results["seen_no_feedback_vs_zero"] = paired_suite_rows(
         no_feedback,
         read_jsonl(root / "zero-shot-seen-test.evaluation.jsonl"),
-        left_label="replayed:progress-strict-answer",
+        left_label=no_feedback_label,
         right_label=str(root / "zero-shot-seen-test.evaluation.jsonl"),
         samples=args.bootstrap_samples,
         seed=args.seed + 1000,
     )
     comparison_results["seen_no_feedback_vs_dynamic_feedback"] = paired_suite_rows(
         no_feedback,
-        read_jsonl(root / "zpdpatch-seen-test.evaluation.jsonl"),
-        left_label="replayed:progress-strict-answer",
-        right_label=str(root / "zpdpatch-seen-test.evaluation.jsonl"),
+        read_jsonl(generated_seen),
+        left_label=no_feedback_label,
+        right_label=str(generated_seen),
         samples=args.bootstrap_samples,
         seed=args.seed + 1010,
     )
     comparison_results["seen_no_feedback_vs_lsgen"] = paired_suite_rows(
         no_feedback,
         read_jsonl(root / "lsgen-seen-test.evaluation.jsonl"),
-        left_label="replayed:progress-strict-answer",
+        left_label=no_feedback_label,
         right_label=str(root / "lsgen-seen-test.evaluation.jsonl"),
         samples=args.bootstrap_samples,
         seed=args.seed + 1015,
@@ -541,24 +566,32 @@ def main() -> None:
         comparison_results[f"seen_no_feedback_vs_{adapter}"] = paired_suite_rows(
             no_feedback,
             read_jsonl(root / f"{adapter}-seen-test.evaluation.jsonl"),
-            left_label="replayed:progress-strict-answer",
+            left_label=no_feedback_label,
             right_label=str(root / f"{adapter}-seen-test.evaluation.jsonl"),
             samples=args.bootstrap_samples,
             seed=args.seed + 1010 + offset * 10,
         )
 
-    ablation_root = root / "acceptance-ablations"
     answer_seen = ablation_root / "answer-repeated-seen-test.evaluation.jsonl"
     if complete_eval(answer_seen, 997):
         comparison_results["seen_no_feedback_vs_answer_repeated"] = paired_suite_rows(
             no_feedback,
             read_jsonl(answer_seen),
-            left_label="replayed:progress-strict-answer",
+            left_label=no_feedback_label,
             right_label=str(answer_seen),
             samples=args.bootstrap_samples,
             seed=args.seed + 1100,
         )
-    unseen_no_feedback = ablation_root / "zpdpatch-unseen-test-no-stage-feedback.evaluation.jsonl"
+    canonical_unseen = root / "zpdpatch-unseen-test.evaluation.jsonl"
+    unseen_no_feedback = canonical_unseen
+    if not (
+        complete_eval(canonical_unseen, 250)
+        and has_stage_feedback(canonical_unseen, False)
+    ):
+        unseen_no_feedback = ablation_root / "zpdpatch-unseen-test-no-stage-feedback.evaluation.jsonl"
+    generated_unseen = ablation_root / "zpdpatch-unseen-test-generated-feedback.evaluation.jsonl"
+    if not complete_eval(generated_unseen, 250):
+        generated_unseen = canonical_unseen
     if complete_eval(unseen_no_feedback, 250):
         comparison_results["unseen_no_feedback_vs_zero"] = paired_suite(
             unseen_no_feedback,
@@ -568,7 +601,7 @@ def main() -> None:
         )
         comparison_results["unseen_no_feedback_vs_dynamic_feedback"] = paired_suite(
             unseen_no_feedback,
-            root / "zpdpatch-unseen-test.evaluation.jsonl",
+            generated_unseen,
             samples=args.bootstrap_samples,
             seed=args.seed + 1120,
         )

@@ -41,6 +41,7 @@ def record(path: Path, root: Path) -> dict[str, Any]:
 def selected_files(run_root: Path, checkpoint_roots: list[Path]) -> list[tuple[Path, Path]]:
     patterns = (
         "split-summary.json",
+        "trajectory-context-4k.jsonl",
         "dataset-token-audit.json",
         "datasets/*.build-summary.json",
         "datasets/*-final.summary.json",
@@ -88,8 +89,11 @@ def main() -> None:
     args = parser.parse_args()
     run_root = args.run_root.expanduser().resolve()
     checkpoint_roots = [path.expanduser().resolve() for path in args.checkpoint_root]
+    output = args.output.expanduser().resolve()
     files = []
     for path, logical_root in selected_files(run_root, checkpoint_roots):
+        if path.resolve() == output:
+            continue
         item = record(path, logical_root)
         item["root"] = (
             "run" if logical_root == run_root else f"checkpoints:{logical_root.name}"
@@ -105,8 +109,8 @@ def main() -> None:
         "file_count": len(files),
         "total_bytes": sum(item["bytes"] for item in files),
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":

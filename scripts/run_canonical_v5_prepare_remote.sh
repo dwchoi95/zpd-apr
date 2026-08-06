@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORK_ROOT=/home/cdw/VSCode/zpd-apr-canonical-v2
-PYTHON=/home/cdw/VSCode/zpd-apr/env/bin/python
-BASE_MODEL=/home/cdw/VSCode/zpd-apr/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
+WORK_ROOT=/home/cdw/VSCode/zpd-apr
+PYTHON=${WORK_ROOT}/env/bin/python
+BASE_MODEL=${WORK_ROOT}/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
 SOURCE_DATA_ROOT="${WORK_ROOT}/data"
 DATA_ROOT="${WORK_ROOT}/data-canonical-v5"
-V4_ROOT="${WORK_ROOT}/outputs/split-90-10/canonical-v4"
-V4_PAPER_ROOT="${V4_ROOT}/paper-run"
 RUN_ROOT="${WORK_ROOT}/outputs/split-90-10/canonical-v5"
 DATASET_ROOT="${RUN_ROOT}/datasets"
 OUTCOME_ROOT="${RUN_ROOT}/outcomes"
 LOG_ROOT="${RUN_ROOT}/logs"
 PIPELINE_LOG="${LOG_ROOT}/prepare-pipeline.log"
-CONTEXT_MANIFEST="${V4_PAPER_ROOT}/trajectory-context-4k-final-feedback.jsonl"
+CONTEXT_MANIFEST="${RUN_ROOT}/trajectory-context-4k.jsonl"
 MERGED_CACHE="${OUTCOME_ROOT}/all-original-submissions.jsonl"
 
 cd "${WORK_ROOT}"
 mkdir -p "${DATA_ROOT}" "${DATASET_ROOT}" "${OUTCOME_ROOT}" "${LOG_ROOT}"
 exec >>"${PIPELINE_LOG}" 2>&1
+
+test -s "${CONTEXT_MANIFEST}"
 
 export PYTHONPATH=.
 export TOKENIZERS_PARALLELISM=false
@@ -78,15 +78,39 @@ for name in ("seen_train", "seen_valid", "seen_test"):
 assert summary["seen"]["minimum_trajectories_per_problem"] >= 3
 ' "${RUN_ROOT}/split-summary.json"
 
-echo "[$(date --iso-8601=seconds)] Merging and validating existing testcase caches"
-"${PYTHON}" scripts/merge_outcome_caches.py \
-  "${MERGED_CACHE}" \
-  "${V4_ROOT}/outcomes/seen-train-all.jsonl" \
-  "${V4_ROOT}/outcomes/seen-valid-all.jsonl" \
-  "${V4_PAPER_ROOT}/outcomes/seen-test-all.jsonl" \
-  "${V4_PAPER_ROOT}/outcomes/unseen-test-all.jsonl" \
-  --data-root "${DATA_ROOT}" \
-  >"${OUTCOME_ROOT}/merge-summary.log"
+echo "[$(date --iso-8601=seconds)] Building a self-contained canonical-v5 testcase cache"
+if [[ -s "${MERGED_CACHE}" ]] \
+    && [[ -s "${MERGED_CACHE%.jsonl}.summary.json" ]] \
+    && grep -q '"outcome_cache_complete": true' "${MERGED_CACHE%.jsonl}.summary.json"; then
+  echo "[$(date --iso-8601=seconds)] Reusing complete merged testcase cache"
+else
+  CACHE_ROOT="${OUTCOME_ROOT}/split-caches"
+  mkdir -p "${CACHE_ROOT}"
+  for split in seen_train seen_valid seen_test unseen_test; do
+    cache="${CACHE_ROOT}/${split}.jsonl"
+    if [[ -s "${cache}" ]] \
+        && [[ -s "${cache%.jsonl}.summary.json" ]] \
+        && grep -q '"outcome_cache_complete": true' "${cache%.jsonl}.summary.json"; then
+      echo "[$(date --iso-8601=seconds)] Reusing ${split} testcase cache"
+      continue
+    fi
+    "${PYTHON}" run.py build-outcome-cache \
+      --data-root "${DATA_ROOT}" \
+      --split "${split}" \
+      --output "${cache}" \
+      --workers 24 \
+      --case-workers 1 \
+      --timeout-sec 2.5
+  done
+  "${PYTHON}" scripts/merge_outcome_caches.py \
+    "${MERGED_CACHE}" \
+    "${CACHE_ROOT}/seen-train.jsonl" \
+    "${CACHE_ROOT}/seen-valid.jsonl" \
+    "${CACHE_ROOT}/seen-test.jsonl" \
+    "${CACHE_ROOT}/unseen-test.jsonl" \
+    --data-root "${DATA_ROOT}" \
+    >"${OUTCOME_ROOT}/merge-summary.log"
+fi
 grep -q '"outcome_cache_complete": true' "${MERGED_CACHE%.jsonl}.summary.json"
 
 build_dataset() {

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORK_ROOT=/home/cdw/VSCode/zpd-apr-canonical-v2
-PYTHON=/home/cdw/VSCode/zpd-apr/env/bin/python
-BASE_MODEL=/home/cdw/VSCode/zpd-apr/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
+WORK_ROOT=/home/cdw/VSCode/zpd-apr
+PYTHON=${WORK_ROOT}/env/bin/python
+BASE_MODEL=${WORK_ROOT}/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
 DATA_ROOT=${WORK_ROOT}/data-canonical-v5
 RUN_ROOT=${WORK_ROOT}/outputs/split-90-10/canonical-v5
 DATASET_ROOT=${RUN_ROOT}/datasets

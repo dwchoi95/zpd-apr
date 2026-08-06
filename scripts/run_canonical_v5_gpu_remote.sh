@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORK_ROOT=/home/cdw/VSCode/zpd-apr-canonical-v2
-PYTHON=/home/cdw/VSCode/zpd-apr/env/bin/python
-BASE_MODEL=/home/cdw/VSCode/zpd-apr/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
-EMBEDDING_MODEL=/home/cdw/VSCode/zpd-apr/.cache/huggingface/hub/models--microsoft--unixcoder-base/snapshots/5604afdc964f6c53782a6813140ade5216b99006
+WORK_ROOT=/home/cdw/VSCode/zpd-apr
+PYTHON=${WORK_ROOT}/env/bin/python
+BASE_MODEL=${WORK_ROOT}/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
+EMBEDDING_MODEL=${WORK_ROOT}/.cache/huggingface/hub/models--microsoft--unixcoder-base/snapshots/5604afdc964f6c53782a6813140ade5216b99006
 DATA_ROOT="${WORK_ROOT}/data-canonical-v5"
 RUN_ROOT="${WORK_ROOT}/outputs/split-90-10/canonical-v5"
 DATASET_ROOT="${RUN_ROOT}/datasets"
@@ -85,7 +85,8 @@ run_sequential() {
   local expected=$2
   local dataset="${DATASET_ROOT}/${split}-final.jsonl"
   local output="${EVAL_ROOT}/zpdpatch-${split}.evaluation.jsonl"
-  if jsonl_complete "${output}" "${expected}"; then
+  if jsonl_complete "${output}" "${expected}" \
+      && "${PYTHON}" -c 'import json,sys; assert json.load(open(sys.argv[1], encoding="utf-8"))["stage_feedback"] is False' "${output%.jsonl}.summary.json"; then
     echo "[$(date --iso-8601=seconds)] Reusing completed ZPDPatch ${split}"
     return
   fi
@@ -105,7 +106,8 @@ run_sequential() {
     --case-workers 1 \
     --timeout-sec 2.5 \
     --outcome-cache "${MERGED_CACHE}" \
-    --stage-feedback
+    --no-stage-feedback \
+    --no-resume
   test "$(wc -l < "${output}")" -eq "${expected}"
   test -s "${output%.jsonl}.summary.json"
 }

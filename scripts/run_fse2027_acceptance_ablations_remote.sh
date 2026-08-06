@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORK_ROOT=/home/cdw/VSCode/zpd-apr-canonical-v2
-PYTHON=/home/cdw/VSCode/zpd-apr/env/bin/python
-BASE_MODEL=/home/cdw/VSCode/zpd-apr/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
+WORK_ROOT=/home/cdw/VSCode/zpd-apr
+PYTHON=${WORK_ROOT}/env/bin/python
+BASE_MODEL=${WORK_ROOT}/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
 DATA_ROOT=${WORK_ROOT}/data-canonical-v5
 RUN_ROOT=${WORK_ROOT}/outputs/split-90-10/canonical-v5
 DATASET_ROOT=${RUN_ROOT}/datasets
@@ -31,14 +31,10 @@ complete() {
     && [[ -s "${output%.jsonl}.summary.json" ]]
 }
 
-run_no_feedback() {
+run_generated_feedback() {
   local split=$1
   local expected=$2
-  local output=${ABLATION_ROOT}/zpdpatch-${split}-no-stage-feedback.evaluation.jsonl
-  if [[ "${split}" == "seen-test" ]]; then
-    echo "[$(date --iso-8601=seconds)] Seen no-feedback is reconstructed from the three canonical single-adapter evaluations by analyze_fse2027_robustness.py"
-    return
-  fi
+  local output=${ABLATION_ROOT}/zpdpatch-${split}-generated-feedback.evaluation.jsonl
   if complete "${output}" "${expected}"; then
     echo "[$(date --iso-8601=seconds)] Reusing ${output}"
     return
@@ -47,7 +43,7 @@ run_no_feedback() {
     "${DATASET_ROOT}/${split}-final.jsonl" \
     "${output}" \
     --data-root "${DATA_ROOT}" \
-    --method ZPDPatch-No-Stage-Feedback \
+    --method ZPDPatch-Generated-Feedback \
     --prompt D \
     --base-model "${BASE_MODEL}" \
     --adapter "Progress=${CHECKPOINT_ROOT}/progress" \
@@ -58,7 +54,7 @@ run_no_feedback() {
     --case-workers 1 \
     --timeout-sec 2.5 \
     --outcome-cache "${OUTCOME_CACHE}" \
-    --no-stage-feedback
+    --stage-feedback
   complete "${output}" "${expected}"
 }
 
@@ -91,9 +87,9 @@ run_answer_repeated() {
 }
 
 echo "[$(date --iso-8601=seconds)] Starting FSE 2027 acceptance ablations"
-run_no_feedback seen-test 997
+run_generated_feedback seen-test 997
 run_answer_repeated seen-test 997
-run_no_feedback unseen-test 250
+run_generated_feedback unseen-test 250
 run_answer_repeated unseen-test 250
 touch "${ABLATION_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] Completed FSE 2027 acceptance ablations"

@@ -9,9 +9,9 @@ from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = ROOT / "data"
-DATASET_ROOT = ROOT / "outputs/split-90-10/canonical-v4/datasets"
+DATASET_ROOT = ROOT / "outputs/split-90-10/canonical-v5/datasets"
 OUTCOME_CACHE = (
-    ROOT / "outputs/split-90-10/canonical-v4/outcomes/seen-train-all.jsonl"
+    ROOT / "outputs/split-90-10/canonical-v5/outcomes/all-original-submissions.jsonl"
 )
 CONTEXT_MANIFEST = DATA_ROOT / "trajectory_context_4k.jsonl"
 ARTIFACTS = {
@@ -200,14 +200,14 @@ class CanonicalDatasetArtifactsTest(unittest.TestCase):
 
     @unittest.skipUnless(
         ARTIFACTS["answer"].is_file(),
-        "canonical-v4 Answer artifact has not been generated",
+        "canonical-v5 Answer artifact has not been generated",
     )
     def test_answer_matches_independent_reconstruction(self) -> None:
         self.assertEqual(self._actual("answer"), self._expected("answer"))
 
     @unittest.skipUnless(
         ARTIFACTS["strict"].is_file(),
-        "canonical-v4 Strict artifact has not been generated",
+        "canonical-v5 Strict artifact has not been generated",
     )
     def test_strict_matches_independent_reconstruction(self) -> None:
         self.assertEqual(self._actual("strict"), self._expected("strict"))
@@ -219,7 +219,7 @@ class CanonicalDatasetArtifactsTest(unittest.TestCase):
             OUTCOME_CACHE.with_suffix(".summary.json").read_text(encoding="utf-8")
         ).get("outcome_cache_complete")
         is True,
-        "canonical-v4 Progress artifact and complete outcome cache are required",
+        "canonical-v5 Progress artifact and complete outcome cache are required",
     )
     def test_progress_matches_independent_reconstruction(self) -> None:
         self.assertEqual(self._actual("progress"), self._expected("progress"))
