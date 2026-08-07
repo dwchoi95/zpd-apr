@@ -29,11 +29,25 @@ def split_row(mixed: float, answer: float) -> dict:
 class ResultBridgeTest(unittest.TestCase):
     def test_canonical_values_and_macros(self) -> None:
         answer9 = {"splits": {"seen": split_row(0.6, 0.59), "unseen": split_row(0.7, 0.68)}}
-        result = build(answer9, {"h": 1}, {"c": 1}, {"s": 1}, {"p": 1})
+        stability = {"problem_bootstrap": {"full_selection_fraction": 0.44}}
+        problem_disjoint = {
+            "selection": {"validation_problems": 138},
+            "summary": {"rr": 0.58},
+        }
+        result = build(
+            answer9,
+            {"h": 1},
+            {"c": 1},
+            {"s": 1},
+            {"p": 1},
+            stability,
+            problem_disjoint,
+        )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
         self.assertIn(r"\newcommand{\MixedMinusAnswerNineUnseen}{2.0}", rendered)
+        self.assertIn(r"\newcommand{\ProblemDisjointSeenRR}{58.0}", rendered)
 
 
 if __name__ == "__main__":

@@ -24,6 +24,8 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json"
   "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json"
   "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json"
+  "${RUN_ROOT}/analysis/fse2027-portfolio-selection-stability.json"
+  "${RUN_ROOT}/analysis/fse2027-problem-disjoint-selection.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
@@ -39,6 +41,8 @@ done
   --codeworkout "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json" \
   --scale "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json" \
   --problem-holdout "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json" \
+  --selection-stability "${RUN_ROOT}/analysis/fse2027-portfolio-selection-stability.json" \
+  --problem-disjoint "${RUN_ROOT}/analysis/fse2027-problem-disjoint-selection.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 

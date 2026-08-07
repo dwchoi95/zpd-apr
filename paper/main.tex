@@ -756,13 +756,10 @@ inconclusive.
 \subsection{RQ6: Robustness and External Replication}
 
 \paragraph{Implementation conformance.}
-An artifact audit finds zero construction-predicate violations and zero
-selected-pass-rate regressions; these are specification checks, not learned-behavior evidence.
-The unchanged fallback defines self-distance even for the 31/23 unparsable
-current programs in Seen/Unseen. Across 687/199 changed outputs selected by the
-unconstrained controller, none is unparsable; every budgeted return also passes
-the finite-TED gate. Thus Equation~\ref{eq:selection} covers compilation-error
-inputs without silently treating an undefined changed-program TED as zero.
+An artifact audit finds zero construction-predicate or pass-rate-regression
+violations. The fallback covers 31/23 unparsable Seen/Unseen inputs; all 687/199
+selected changes parse and every budgeted return has finite TED. These are
+specification checks, not evidence about learned behavior.
 
 Because users may cross CodeNet splits, we stratify by training-user overlap.
 Among 155 Seen instances from 150 training-disjoint users, \tool gains 40.0 RR
@@ -776,6 +773,15 @@ Complete P--S--A retraining with seeds 2027/2028/2029 gives Seen RR
 Replaying all six policy orders leaves fixed-candidate RR unchanged; P--S--A
 has the lowest mean breadth (1.391) and successful-patch TED (21.10).
 
+\paragraph{Selection stability and problem identity.}
+Of 461 selection problems, 323 overlap the 328-problem Seen test. The chosen
+A27--A28--P27 triple is unchanged in all 461 leave-one-problem-out fits, but
+appears in only 44.2\% of 2,000 problem-bootstrap fits. Excluding every test
+problem leaves 138 validation problems and selects P27--P29--A28; its Seen RR
+is 58.0\%, 3.51 points below the primary selector [1.88, 5.14] and 3.71 below
+Answer-3Seed [1.50, 5.88]. Thus Seen selection benefits partly from its problem
+distribution; the Unseen evaluation remains entirely problem-disjoint.
+
 \paragraph{Student-held-out Java replication.}
 Validation selects A29--P29--S28 under the relation constraint and
 A28--A29--S28 without it; Answer-3Seed is A27--A28--A29. Table~\ref{tab:codeworkout}
@@ -786,7 +792,7 @@ relation constraint reaches 81.8\%; no planned contrast is significant after
 Holm correction (minimum adjusted $p=0.539$).
 
 \begin{table}[t]
-\caption{Separately trained, student-held-out CodeWorkout Java replication (181 trajectories, 33 students, 17 exercises); values are percentages.}
+\caption{Student-held-out CodeWorkout Java test (181 trajectories; percentages).}
 \label{tab:codeworkout}
 \centering
 \small
@@ -803,9 +809,10 @@ Answer-3Seed & \textbf{96.9} & \textbf{84.5} & \textbf{89.5} \\
 
 \paragraph{Answer to RQ6.}
 Problem-clustered inference preserves the CodeNet effects and three full runs
-bound training-seed variation. Student-held-out Java evaluation establishes
-cross-dataset replication of high repair coverage after Java-specific training, but it does not
-establish a coverage advantage over same-target checkpoint diversity.
+bound training-seed variation. The problem-disjoint selector quantifies the
+cost of removing Seen problem overlap. Student-held-out Java evaluation
+replicates high coverage after Java-specific training, but not an advantage
+over same-target checkpoint diversity.
 
 \subsection{Cross-RQ Synthesis}
 
@@ -848,23 +855,18 @@ deployment frontier rather than a learner-outcome claim.
 \label{sec:threats}
 
 \paragraph{Construct validity.}
-Passing tests can overfit~\cite{qi2014strength,smith2015cure}. The prompt and
-selector cannot inspect 310 hidden cases, but both partitions share one
-benchmark-authored suite rather than independent semantic oracles. AST TED is
-structural, not readability or educational value; observed reachability is not
-an individual learner's ZPD or a learning outcome. The system returns programs,
-not hints; learner benefit requires a transfer study.
+Tests can overfit~\cite{qi2014strength,smith2015cure}; the 310 hidden cases share
+one authored suite with observed cases. TED is structural, not educational
+value; program outputs, observed reachability, and ZPD are not learner outcomes.
 
 \paragraph{Internal validity.}
-Construction, verdict order, normalization, and selection affect results. A
-shared runner, paired instances, and repeated seeds control major alternatives;
-other hyperparameters and stochastic decoding remain untested.
+Construction and selection choices affect results. A shared runner, pairing,
+and repeated seeds control alternatives; other decoding remains untested.
 
 \paragraph{Data leakage and dependence.}
 Unseen excludes training and retrieval problems, avoiding code
-duplication~\cite{allamanis2019adverse}. Seen shares problem identities and may
-share users; clustering handles dependence, not memorization. The gain persists
-for 155 training-disjoint-user Seen cases, but prospective holdout is needed.
+duplication~\cite{allamanis2019adverse}. Seen may share problems and users;
+clustering handles dependence, not memorization. A prospective holdout is needed.
 
 \paragraph{External validity.}
 The study spans Python contest code and Java CS1 code after dataset-specific
@@ -876,23 +878,21 @@ Problem-clustered effects support the planned metrics, but TED intervals apply
 only to joint repairs. More architectures are needed for broader transfer.
 
 \paragraph{Ethical considerations.}
-Public code is analyzed without learner intervention or re-identification.
-Because histories carry authorship signals, the artifact minimizes identifiers
-and follows source-dataset terms.
+Public code is analyzed without re-identification; the artifact minimizes
+authorship signals and follows source-dataset terms.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
 \tool mines auditable trajectory targets and selects an execution-guided repair
-portfolio. It reaches 61.5/74.8\% Seen/Unseen RR versus 30.7/62.0\% zero-shot,
-while Answer-3Seed reaches 61.7/73.2\%. Thus current evidence attributes
-coverage to checkpoint diversity, not compulsory relation heterogeneity.
-Observed/hidden Unseen joint RR is 75.6\% versus 72.8\%; frozen exhaustive
-selection separates deployment choice from post-hoc seed choice.
+portfolio. Its 61.5/74.8\% Seen/Unseen RR exceeds 30.7/62.0\% zero-shot but
+matches Answer-3Seed's 61.7/73.2\%, attributing coverage to checkpoint diversity,
+not compulsory relation heterogeneity. Frozen exhaustive selection makes this
+mechanism testable rather than a post-hoc seed comparison.
 
 \paragraph{Data availability.}
 \label{sec:data-availability}
-An anonymized artifact will provide code, prompts, splits, outputs, deterministic regeneration, and a SHA-256 manifest; source datasets are reacquired officially.
+The anonymized artifact will provide code, splits, outputs, regeneration, and a SHA-256 manifest.
 
 \clearpage
 \bibliographystyle{ACM-Reference-Format}
