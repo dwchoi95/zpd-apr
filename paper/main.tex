@@ -267,15 +267,25 @@ budget-indexed objective. The three Answer checkpoints form the prespecified
 same-target control. Final test-split outcomes never enter selection.
 
 Set-union coverage \(f\), each \(f_B\), and their mean are normalized,
-monotone, and submodular; exhaustive enumeration therefore returns the exact
-validation optimum in each declared finite family. Exact validation
-optimization is not a population guarantee. A two-sided Hoeffding union bound
-over \(M\) portfolios gives selection regret at most
-\(\sqrt{2\log(2M/\delta)/m}\), but with \(m=461\), \(M=84\), and
-\(\delta=.05\) it is 18.8 points (20.7 over six budgets), too loose to certify
-the observed effects. We therefore use the bound only as a procedural check,
-freeze every argmax, and estimate effects on independent tests with
-problem-clustered intervals.
+monotone, and submodular; exhaustive enumeration returns the exact validation
+optimum in each declared finite family. This is not a population guarantee, so
+we freeze every argmax and estimate effects on independent test problems.
+
+\paragraph{Mechanism-identification ladder.}
+Let \(r(P)\) be held-out RR for controller \(P\), \(A_1\) one Answer checkpoint,
+\(A_3\) the fixed three-seed Answer controller, \(A_9\) Answer-9Choose3, and
+\(M_9\) mixed-target-9Choose3. The planned contrasts
+\begin{equation}
+ r(A_3)-r(A_1),\quad r(A_9)-r(A_3),\quad r(M_9)-r(A_9)
+ \label{eq:mechanism-ladder}
+\end{equation}
+separate fixed-budget checkpoint breadth, added pool-and-validation-selection
+opportunity, and target composition, respectively. Only the last contrast
+matches pool size, 84-way search, validation instances, selector, and three-call
+test budget; Answer training uses more examples, making it a compute-favored
+control rather than an advantage for \(M_9\). Thus a positive last contrast is
+evidence for mixed targets conditional on the declared seed family, whereas a
+null or negative result attributes coverage to seed diversity and selection.
 
 \subsection{Execution-Guided Sequential Repair}
 \label{sec:sequential}
