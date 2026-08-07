@@ -19,6 +19,11 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-codeworkout-selection.json"
   "${RUN_ROOT}/analysis/fse2027-codeworkout.json"
   "${RUN_ROOT}/analysis/fse2027-lsgen-budget-controller.json"
+  "${RUN_ROOT}/analysis/fse2027-answer9-control.json"
+  "${RUN_ROOT}/analysis/fse2027-answer9-independent-hidden.json"
+  "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json"
+  "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json"
+  "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
@@ -33,9 +38,11 @@ checkpoint_args=(
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-rq2"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-seeds"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/codeworkout"
+  --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-1.5b"
+  --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/codeworkout-problem-holdout"
 )
 external_args=(--external-root "${WORK_ROOT}/archive/external/tiktoc")
-for index in 1 3 5 7; do
+for index in 1 3 5 7 9 11; do
   if [[ ! -d "${checkpoint_args[index]}" ]]; then
     echo "missing checkpoint root: ${checkpoint_args[index]}" >&2
     exit 1
