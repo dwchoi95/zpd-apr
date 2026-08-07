@@ -38,7 +38,7 @@
 \begin{document}
 
 \begin{abstract}
-Automated program repair for programming assignments typically treats a student's latest submission as an isolated buggy program. This snapshot omits the revisions, repeated failures, and partial improvements that led to the current code. We present \tool, a repair framework that converts authentic submission trajectories into an execution-ordered portfolio of three repair policies. Verdict and testcase improvements define finite execution-evidence orders; validation execution then selects three checkpoints by exact submodular coverage maximization, while the online controller guarantees observed-test non-regression and optional AST edit-budget compliance. The \progress adapter learns testcase-level Pareto improvements, \strict learns coarse-verdict improvements, and \answer maps failed submissions to the terminal accepted program. We evaluate Qwen2.5-Coder-7B-based adapters on 997 held-out trajectories from 328 test problems drawn from a 492-problem Seen pool, plus 250 trajectories from 54 problem-held-out problems. On Seen problems, the selected portfolio improves repair rate from 30.7\% for trajectory-prompted zero-shot to 61.5\%; a same-target three-seed Answer control reaches 61.7\%, identifying independent checkpoint diversity rather than target heterogeneity as the supported mechanism. On Unseen problems, selection reaches 74.8\% RR versus 62.0\% for zero-shot and 73.2\% for Answer-3Seed. When prompts and selection see only half the Unseen tests, the returned patch independently passes both observed and hidden partitions for 75.6\% versus 72.8\%; the equal-problem difference is +3.83 points [0.62, 7.62], although instance-level McNemar \(p=0.118\). The one-per-relation constraint reduces Seen coverage, whereas budget-indexed unconstrained selection improves the mean Unseen edit-budget frontier by 2.60 points [0.38, 5.03] over Answer-3Seed. A target-matched ablation finds no stable benefit from serializing earlier submissions, and all primary differences use problem-clustered inference.
+Automated program repair for programming assignments typically treats a student's latest submission as an isolated buggy program. This snapshot omits the revisions, repeated failures, and partial improvements that led to the current code. We present \tool, a repair framework that converts authentic submission trajectories into an execution-ordered portfolio of three repair policies. Verdict and testcase improvements define finite execution-evidence orders; validation execution then selects three checkpoints by exact finite set-coverage search, while the online controller guarantees observed-test non-regression and optional AST edit-budget compliance. The \progress adapter learns testcase-level Pareto improvements, \strict learns coarse-verdict improvements, and \answer maps failed submissions to the terminal accepted program. We evaluate Qwen2.5-Coder-7B-based adapters on 997 held-out trajectories from 328 test problems drawn from a 492-problem Seen pool, plus 250 trajectories from 54 problem-held-out problems. On Seen problems, the selected portfolio improves repair rate from 30.7\% for trajectory-prompted zero-shot to 61.5\%; a same-target three-seed Answer control reaches 61.7\%, identifying independent checkpoint diversity rather than target heterogeneity as the supported mechanism. On Unseen problems, selection reaches 74.8\% RR versus 62.0\% for zero-shot and 73.2\% for Answer-3Seed. When prompts and selection see only half the Unseen tests, the returned patch independently passes both observed and hidden partitions for 75.6\% versus 72.8\%; the equal-problem difference is +3.83 points [0.62, 7.62], although instance-level McNemar \(p=0.118\). The one-per-relation constraint reduces Seen coverage, whereas budget-indexed unconstrained selection improves the mean Unseen edit-budget frontier by 2.60 points [0.38, 5.03] over Answer-3Seed. A target-matched ablation finds no stable benefit from serializing earlier submissions, and all primary differences use problem-clustered inference.
 Against always-three LSGen under the same edit gate, its mean Seen budget
 frontier is +14.68 points [12.03, 17.43]. In a separately trained, student-held-out CodeWorkout Java replication, unconstrained selection reaches
 84.0\% RR but is statistically indistinguishable from Answer-3Seed at 84.5\%,
@@ -69,7 +69,7 @@ Our evaluation separates three mechanisms that are easy to conflate: learned rel
 This paper makes the following contributions:
 \begin{itemize}
   \item We formulate trajectory-mined repair as finite execution-evidence orders plus terminal closure, and audit every materialized supervision transition against those definitions.
-  \item We pose size-three checkpoint choice as exact submodular validation-coverage maximization, derive a finite-family problem-level selection guarantee, and design an execution controller with observed-test non-regression and structural edit-budget compliance by construction.
+  \item We pose size-three checkpoint choice as exact finite validation-coverage search, derive a problem-level finite-family selection bound, and design an execution controller with observed-test non-regression and structural edit-budget compliance by construction.
   \item We empirically separate relation supervision from seed diversity using a mandatory same-target Answer-3Seed baseline, target-matched history ablations, relation-constrained selection, an observed/hidden-test confirmation, problem-clustered analyses, patch-budget curves, and a separately trained student-held-out Java replication.
 \end{itemize}
 
@@ -268,8 +268,24 @@ same-target control. Final test-split outcomes never enter selection.
 
 Set-union coverage \(f\), each \(f_B\), and their mean are normalized,
 monotone, and submodular; exhaustive enumeration returns the exact validation
-optimum in each declared finite family. This is not a population guarantee, so
-we freeze every argmax and estimate effects on independent test problems.
+optimum in each declared finite family; submodularity is a property, not the
+algorithm used here.
+
+\paragraph{Finite-family selection bound.}
+For problem \(q\), let \(X_q(S)\in[0,1]\) be portfolio coverage,
+\(F(S)=\mathbb E[X_q(S)]\), and \(\widehat F_n\) its mean over \(n\) i.i.d.
+validation problems. If \(\widehat S\) maximizes \(\widehat F_n\) over finite
+family \(\mathcal F\) and \(S^*\) maximizes \(F\), then with probability at
+least \(1-\delta\),
+\begin{equation}
+ F(S^*)-F(\widehat S) \leq
+ 2\sqrt{\frac{\log(2|\mathcal F|/\delta)}{2n}}.
+ \label{eq:finite-family-bound}
+\end{equation}
+Hoeffding's inequality plus a union bound controls every \(S\in\mathcal F\);
+empirical optimality inserts the two uniform deviations. This conditional
+bound does not justify overlapping identities or distribution shift; RQ6
+therefore audits bootstrap stability and problem-disjoint selection.
 
 \paragraph{Mechanism-identification ladder.}
 Let \(r(P)\) be held-out RR for controller \(P\), \(A_1\) one Answer checkpoint,
