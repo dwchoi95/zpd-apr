@@ -11,6 +11,7 @@ class FSEPageLimitTest(unittest.TestCase):
         result = check(ROOT / "paper" / "main.pdf")
         self.assertLessEqual(result["body_pages"], 18)
         self.assertLessEqual(result["reference_pages"], 4)
+        self.assertEqual(result["body_lines_on_reference_page"], 0)
 
 
 if __name__ == "__main__":

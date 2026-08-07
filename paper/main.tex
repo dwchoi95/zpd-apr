@@ -631,7 +631,7 @@ We also searched directly for cases in which history should be most identifiable
 
 \subsection{RQ3: Adapter Specialization}
 
-Table~\ref{tab:rq3} exposes a coverage-size tradeoff. \answer has the highest PR, RR, and IR, but also the largest mean patch at TED 20.22. \progress has lower coverage but the smallest patch at TED 15.85. \strict and \progress have statistically indistinguishable RR (adjusted \(p=0.857\)). \answer repairs 5.2 points more than \progress and 5.5 points more than \strict; problem-cluster intervals are [2.5, 7.9] and [2.9, 8.0], respectively. The ordered increase in patch size is consistent with broader targets, but \strict does not form a clearly distinct coverage regime.
+Table~\ref{tab:rq3} exposes a coverage-size tradeoff. \answer has the highest PR, RR, and IR, but also the largest mean patch at TED 20.22. \progress has lower coverage but the smallest patch at TED 15.85. \strict and \progress have statistically indistinguishable RR (adjusted \(p=0.857\)). \answer repairs 5.2 points more than \progress and 5.5 points more than \strict; problem-cluster intervals are [2.5, 7.9] and [2.9, 8.0], respectively.
 
 \begin{table}[t]
 \caption{RQ3 individual-adapter results on 997 Seen instances.}
@@ -648,7 +648,13 @@ Adapter & PR & RR & IR & \(\mathrm{TED}_{B\to F}\) & \(\mathrm{TED}_{F\to O}\) \
 \end{tabular}
 \end{table}
 
-Coverage specialization is weak between \progress and \strict, but patch-scope specialization is ordered: their mean current-to-fix TEDs are 15.85, 17.45, and 20.22 through Answer, while Answer repairs 5.2--5.5 points more. Oracle distance follows the same pattern. These are distributional effects rather than decoding constraints; hard non-regression enters only through selection.
+The raw TED ordering could reflect different repaired subsets, so we also pair
+joint repairs and resample problems. On 350 Answer--Progress joint repairs,
+Progress is 1.84 TED smaller [0.50, 3.26]; on 361 Strict--Progress joint repairs,
+it is 1.67 smaller [0.53, 2.93]. Strict differs from Answer by only 0.29
+[--1.09, 1.64] across 358 joint repairs. Thus the supported specialization is
+Progress's narrower patch scope, not a fully ordered three-policy hierarchy;
+hard non-regression enters only through selection.
 
 \subsection{RQ4: Sequential Escalation}
 
@@ -838,10 +844,6 @@ over four times \tool's. The gate operationalizes, rather than valorizes, edit
 size: \tool leads through TED 80 and LSGen when broad changes are allowed, a
 deployment frontier rather than a learner-outcome claim.
 
-\subsection{Implications for Educational Use}
-
-\tool produces programs, not hints; deployment should expose diffs or derive a hint ladder, while its fallback prevents observed-test regressions. Educational benefit still requires a learner study of transfer, time, and help seeking.
-
 \section{Threats to Validity}
 \label{sec:threats}
 
@@ -850,21 +852,28 @@ Passing tests can overfit~\cite{qi2014strength,smith2015cure}. The prompt and
 selector cannot inspect 310 hidden cases, but both partitions share one
 benchmark-authored suite rather than independent semantic oracles. AST TED is
 structural, not readability or educational value; observed reachability is not
-an individual learner's ZPD or a learning outcome.
+an individual learner's ZPD or a learning outcome. The system returns programs,
+not hints; learner benefit requires a transfer study.
 
 \paragraph{Internal validity.}
-Construction, verdict order, normalization, limits, and selection affect results. One runner, shared baseline cache, paired instances, and repeated seeds control major alternatives; LSGen infrastructure adaptation, other hyperparameters, and stochastic decoding remain untested.
+Construction, verdict order, normalization, and selection affect results. A
+shared runner, paired instances, and repeated seeds control major alternatives;
+other hyperparameters and stochastic decoding remain untested.
 
 \paragraph{Data leakage and dependence.}
-Unseen problems are excluded from training and retrieval, avoiding problem-code duplication~\cite{allamanis2019adverse}. Seen shares problem identities and may share users; clustering and equal-problem weighting address assignment dependence, not memorization. The gain persists for 155 training-disjoint-user Seen cases, whereas the smaller Unseen interval includes zero; prospective user holdout is still needed.
+Unseen excludes training and retrieval problems, avoiding code
+duplication~\cite{allamanis2019adverse}. Seen shares problem identities and may
+share users; clustering handles dependence, not memorization. The gain persists
+for 155 training-disjoint-user Seen cases, but prospective holdout is needed.
 
 \paragraph{External validity.}
-The study spans Python contest code and student-held-out Java CS1 code, but one
-7B model, not multi-file projects, private judges, or other course structures.
-Low-volume CodeNet Unseen problems are not a random sample of new assignments.
+The study spans Python contest code and Java CS1 code after dataset-specific
+retraining, but one 7B model and no multi-file projects. Student-held-out
+CodeWorkout shares exercises; CodeNet Unseen is not a random assignment sample.
 
 \paragraph{Conclusion validity.}
-Problem-clustered effects support the planned metrics, but TED intervals apply only to joint repairs. Independently authored tests and additional architectures are needed for broader transfer.
+Problem-clustered effects support the planned metrics, but TED intervals apply
+only to joint repairs. More architectures are needed for broader transfer.
 
 \paragraph{Ethical considerations.}
 Public code is analyzed without learner intervention or re-identification.
@@ -875,18 +884,17 @@ and follows source-dataset terms.
 \label{sec:conclusion}
 
 \tool mines auditable trajectory targets and selects an execution-guided repair
-portfolio. It reaches 61.5/74.8\% Seen/Unseen RR versus 30.7/62.0\% zero-shot;
-Answer-3Seed reaches 61.7/73.2\%, attributing coverage to checkpoint diversity
-rather than compulsory relation heterogeneity. Observed/hidden Unseen joint RR
-is 75.6\% versus 72.8\% (+3.83 equal-problem points [0.62, 7.62], but
-inconclusive McNemar evidence). Retrieval wins unrestricted Seen coverage,
-whereas \tool gains 14.68 mean points under edit budgets. Frozen exhaustive
+portfolio. It reaches 61.5/74.8\% Seen/Unseen RR versus 30.7/62.0\% zero-shot,
+while Answer-3Seed reaches 61.7/73.2\%. Thus current evidence attributes
+coverage to checkpoint diversity, not compulsory relation heterogeneity.
+Observed/hidden Unseen joint RR is 75.6\% versus 72.8\%; frozen exhaustive
 selection separates deployment choice from post-hoc seed choice.
 
 \paragraph{Data availability.}
 \label{sec:data-availability}
 An anonymized artifact will provide code, prompts, splits, outputs, deterministic regeneration, and a SHA-256 manifest; source datasets are reacquired officially.
 
+\clearpage
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
 

@@ -210,6 +210,7 @@ def paired_suite_rows(
         (
             float(left_by_id[item]["ted_buggy_fixed"]),
             float(right_by_id[item]["ted_buggy_fixed"]),
+            str(left_by_id[item]["problem_id"]),
         )
         for item in shared
         if bool(left_by_id[item]["repaired"])
@@ -220,15 +221,53 @@ def paired_suite_rows(
     rng = random.Random(seed + 9)
     ted_difference = None
     if joint_ted:
-        observed_ted = sum(right_ted - left_ted for left_ted, right_ted in joint_ted) / len(joint_ted)
+        observed_ted = sum(right_ted - left_ted for left_ted, right_ted, _ in joint_ted) / len(joint_ted)
         draws = []
+        ted_by_problem: dict[str, list[float]] = defaultdict(list)
+        for left_ted, right_ted, problem_id in joint_ted:
+            ted_by_problem[problem_id].append(right_ted - left_ted)
+        ted_problems = sorted(ted_by_problem)
+        problem_means = {
+            problem: sum(values) / len(values)
+            for problem, values in ted_by_problem.items()
+        }
+        cluster_draws = []
+        problem_draws = []
         for _ in range(samples):
             sample = [rng.choice(joint_ted) for _ in joint_ted]
-            draws.append(sum(right_ted - left_ted for left_ted, right_ted in sample) / len(sample))
+            draws.append(
+                sum(right_ted - left_ted for left_ted, right_ted, _ in sample)
+                / len(sample)
+            )
+            sampled_problems = [rng.choice(ted_problems) for _ in ted_problems]
+            sampled_differences = [
+                difference
+                for problem in sampled_problems
+                for difference in ted_by_problem[problem]
+            ]
+            cluster_draws.append(
+                sum(sampled_differences) / len(sampled_differences)
+            )
+            problem_draws.append(
+                sum(problem_means[problem] for problem in sampled_problems)
+                / len(sampled_problems)
+            )
         ted_difference = {
             "joint_repairs": len(joint_ted),
+            "joint_repair_problems": len(ted_problems),
             "right_minus_left_mean_ted": observed_ted,
             "instance_bootstrap_95ci": [percentile(draws, 0.025), percentile(draws, 0.975)],
+            "problem_cluster_bootstrap_95ci": [
+                percentile(cluster_draws, 0.025),
+                percentile(cluster_draws, 0.975),
+            ],
+            "right_minus_left_problem_balanced_mean_ted": (
+                sum(problem_means.values()) / len(problem_means)
+            ),
+            "problem_bootstrap_95ci": [
+                percentile(problem_draws, 0.025),
+                percentile(problem_draws, 0.975),
+            ],
         }
     return {
         "left": left_label,
@@ -487,6 +526,10 @@ def main() -> None:
         "rq3_answer_vs_strict": {
             "left": root / "answer-seen-test.evaluation.jsonl",
             "right": root / "strict-seen-test.evaluation.jsonl",
+        },
+        "rq3_strict_vs_progress": {
+            "left": root / "strict-seen-test.evaluation.jsonl",
+            "right": root / "progress-seen-test.evaluation.jsonl",
         },
         "rq4_sequential_vs_progress": {
             "left": root / "zpdpatch-seen-test.evaluation.jsonl",
