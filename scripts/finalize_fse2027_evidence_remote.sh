@@ -33,6 +33,15 @@ for path in "${required_analysis[@]}"; do
   fi
 done
 
+"${PYTHON}" scripts/build_fse2027_result_bridge.py \
+  --answer9 "${RUN_ROOT}/analysis/fse2027-answer9-control.json" \
+  --hidden "${RUN_ROOT}/analysis/fse2027-answer9-independent-hidden.json" \
+  --codeworkout "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json" \
+  --scale "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json" \
+  --problem-holdout "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json" \
+  --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
+  --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
+
 checkpoint_args=(
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-rq2"
