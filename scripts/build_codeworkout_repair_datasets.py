@@ -99,7 +99,11 @@ def payload(
     }
 
 
-def build(trajectories: list[Row]) -> tuple[dict[str, list[Row]], Row]:
+def build(
+    trajectories: list[Row], *, split_unit: str = "student"
+) -> tuple[dict[str, list[Row]], Row]:
+    if split_unit not in {"student", "problem"}:
+        raise ValueError("split_unit must be student or problem")
     datasets: dict[str, list[Row]] = defaultdict(list)
     relation_counts: dict[str, Counter[str]] = {}
     for trajectory in trajectories:
@@ -143,13 +147,25 @@ def build(trajectories: list[Row]) -> tuple[dict[str, list[Row]], Row]:
         split: {row["user_id"] for row in trajectories if row["split"] == split}
         for split in ("train", "valid", "test")
     }
-    if any(
+    problems_by_split = {
+        split: {row["problem_id"] for row in trajectories if row["split"] == split}
+        for split in ("train", "valid", "test")
+    }
+    user_overlaps = [
         users_by_split[left] & users_by_split[right]
         for left, right in (("train", "valid"), ("train", "test"), ("valid", "test"))
-    ):
+    ]
+    problem_overlaps = [
+        problems_by_split[left] & problems_by_split[right]
+        for left, right in (("train", "valid"), ("train", "test"), ("valid", "test"))
+    ]
+    if split_unit == "student" and any(user_overlaps):
         raise ValueError("CodeWorkout student-held-out splits overlap")
+    if split_unit == "problem" and any(problem_overlaps):
+        raise ValueError("CodeWorkout problem-held-out splits overlap")
     summary = {
         "schema_version": 1,
+        "split_unit": split_unit,
         "trajectories": len(trajectories),
         "relation_definition": {
             "answer": "each failed submission paired 1:1 with first AC",
@@ -162,7 +178,8 @@ def build(trajectories: list[Row]) -> tuple[dict[str, list[Row]], Row]:
             for name, rows in sorted(datasets.items())
         },
         "students": {split: len(users) for split, users in users_by_split.items()},
-        "student_overlap": 0,
+        "student_overlap": len(set().union(*user_overlaps)),
+        "problem_overlap": len(set().union(*problem_overlaps)),
         "filter_counts": {
             name: dict(counts) for name, counts in sorted(relation_counts.items())
         },
@@ -174,8 +191,13 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("trajectories", type=Path)
     parser.add_argument("output_dir", type=Path)
+    parser.add_argument(
+        "--split-unit", choices=("student", "problem"), default="student"
+    )
     args = parser.parse_args()
-    datasets, summary = build(read_jsonl(args.trajectories))
+    datasets, summary = build(
+        read_jsonl(args.trajectories), split_unit=args.split_unit
+    )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     for name, rows in datasets.items():
         path = args.output_dir / f"{name}.jsonl"
