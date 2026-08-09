@@ -142,6 +142,12 @@ done
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 
+"${PYTHON}" scripts/verify_fse2027_paper_result_bridge.py \
+  --expected "${RUN_ROOT}/analysis/fse2027-result-bridge.tex" \
+  --checked-in "${WORK_ROOT}/paper/fse2027-result-bridge.tex" \
+  --paper "${WORK_ROOT}/paper/main.tex" \
+  --output "${RUN_ROOT}/analysis/fse2027-paper-result-bridge-audit.json"
+
 "${PYTHON}" scripts/verify_fse2027_fair_selection.py \
   --analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json" \
   --ladder-analysis "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json" \

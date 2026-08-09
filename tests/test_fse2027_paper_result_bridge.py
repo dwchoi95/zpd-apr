@@ -5,6 +5,9 @@ from pathlib import Path
 from scripts.verify_fse2027_paper_result_bridge import verify
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
 BRIDGE = """\
 \\newcommand{\\ScaleMixedSeenRR}{61.0}
 \\newcommand{\\CodeWorkoutProblemMixedRR}{71.0}
@@ -57,6 +60,14 @@ class PaperResultBridgeTest(unittest.TestCase):
             )
             with self.assertRaisesRegex(ValueError, "Prompt"):
                 verify(expected, checked_in, paper)
+
+    def test_finalizer_enforces_bridge_audit(self) -> None:
+        finalizer = (ROOT / "scripts" / "finalize_fse2027_evidence_remote.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("verify_fse2027_paper_result_bridge.py", finalizer)
+        self.assertIn("paper/fse2027-result-bridge.tex", finalizer)
+        self.assertIn("fse2027-paper-result-bridge-audit.json", finalizer)
 
 
 if __name__ == "__main__":
