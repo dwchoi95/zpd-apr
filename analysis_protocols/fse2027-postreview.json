@@ -5,13 +5,14 @@
     "scale_1_5b": {
       "files": {
         "scripts/run_fse2027_scale_replication_remote.sh": "509ec37dc6d235ca2458abe979d845b43b2215c1",
-        "scripts/analyze_fse2027_scale_replication.py": "50eeb477048e14cbfba9b567e1c461fed41d7176"
+        "scripts/run_fse2027_scale_a3_remote.sh": "704789a8368457459ed7813b6add553d5b7a7c62",
+        "scripts/analyze_fse2027_scale_replication.py": "704789a8368457459ed7813b6add553d5b7a7c62"
       }
     },
     "codeworkout_exercise_holdout": {
       "files": {
-        "scripts/run_fse2027_codeworkout_problem_holdout_remote.sh": "a0d15fb6a82f39c65b3004b5e04a2486e2531a08",
-        "scripts/analyze_codeworkout_problem_holdout.py": "ecd660e341b0ab5144a532dfc2a0b42c88d555ab"
+        "scripts/run_fse2027_codeworkout_problem_holdout_remote.sh": "704789a8368457459ed7813b6add553d5b7a7c62",
+        "scripts/analyze_codeworkout_problem_holdout.py": "704789a8368457459ed7813b6add553d5b7a7c62"
       }
     },
     "prompt_distribution": {
