@@ -13,6 +13,16 @@ SOURCE_REVISION=$1
 
 cd "${WORK_ROOT}"
 
+ACTUAL_REVISION=$(git rev-parse HEAD)
+if [[ "${ACTUAL_REVISION}" != "${SOURCE_REVISION}" ]]; then
+  echo "source revision mismatch: checkout=${ACTUAL_REVISION} requested=${SOURCE_REVISION}" >&2
+  exit 1
+fi
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "tracked source files are dirty; refusing to seal evidence" >&2
+  exit 1
+fi
+
 required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json"
   "${RUN_ROOT}/analysis/fse2027-selected-portfolios.json"
