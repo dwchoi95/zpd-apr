@@ -310,6 +310,89 @@ def _target_loss_weights(
     return weights
 
 
+def _edit_weighted_causal_loss(
+    logits: Any,
+    labels: Any,
+    loss_weights: Any,
+) -> Any:
+    """Compute the weighted next-token loss without copying batched logits.
+
+    Slicing ``logits[..., :-1, :]`` across a batch is not contiguous.  Making
+    that view contiguous duplicates B x T x V logits, which dominates memory
+    for code models with large vocabularies.  Each per-example prefix is
+    contiguous already, so reducing one example at a time is algebraically
+    identical while avoiding that allocation.
+    """
+    import torch
+    import torch.nn.functional as functional
+    from torch.utils.checkpoint import checkpoint
+
+    def weighted_row_loss(
+        row_logits: Any,
+        row_labels: Any,
+        row_weights: Any,
+    ) -> Any:
+        # Match Transformers' causal-LM loss precision without materializing
+        # the FP32 form of the entire B x T x V tensor.
+        loss_logits = (
+            row_logits.float()
+            if row_logits.dtype in (torch.float16, torch.bfloat16)
+            else row_logits
+        )
+        token_loss = functional.cross_entropy(
+            loss_logits,
+            row_labels,
+            reduction="none",
+            ignore_index=-100,
+        )
+        return (token_loss * row_weights).sum()
+
+    numerator = logits[..., 0].sum().float() * 0.0
+    denominator = loss_weights.new_zeros(())
+    for row in range(logits.size(0)):
+        row_labels = labels[row, 1:]
+        valid = row_labels.ne(-100)
+        effective_weights = loss_weights[row, 1:] * valid
+        row_logits = logits[row, :-1, :]
+        if torch.is_grad_enabled() and row_logits.requires_grad:
+            row_numerator = checkpoint(
+                weighted_row_loss,
+                row_logits,
+                row_labels,
+                effective_weights,
+                use_reentrant=False,
+            )
+        else:
+            row_numerator = weighted_row_loss(
+                row_logits,
+                row_labels,
+                effective_weights,
+            )
+        numerator = numerator + row_numerator
+        denominator = denominator + effective_weights.sum()
+    return numerator / denominator.clamp_min(1.0)
+
+
+def _forward_without_output_fp32_conversion(
+    model: Any,
+    inputs: dict[str, Any],
+) -> Any:
+    """Keep Accelerate autocast but defer FP32 conversion to the row loss."""
+    forward = model.forward
+    forward_function = getattr(forward, "__func__", forward)
+    converter = getattr(forward_function, "__wrapped__", None)
+    if (
+        converter is not None
+        and converter.__class__.__module__ == "accelerate.utils.operations"
+        and converter.__class__.__name__ == "ConvertOutputsToFp32"
+    ):
+        unconverted_forward = converter.model_forward
+        if hasattr(forward, "__func__"):
+            return unconverted_forward(model, **inputs)
+        return unconverted_forward(**inputs)
+    return model(**inputs)
+
+
 class _EditWeightedTrainer:
     """Lazily inherit Trainer so importing this module does not require transformers."""
 
@@ -325,23 +408,14 @@ class _EditWeightedTrainer:
                 num_items_in_batch: Any = None,
             ) -> Any:
                 del num_items_in_batch
-                import torch.nn.functional as functional
-
                 loss_weights = inputs.pop("loss_weights")
-                labels = inputs["labels"]
-                outputs = model(**inputs)
-                shift_logits = outputs.logits[..., :-1, :].contiguous()
-                shift_labels = labels[..., 1:].contiguous()
-                shift_weights = loss_weights[..., 1:].contiguous()
-                valid = shift_labels.ne(-100)
-                token_loss = functional.cross_entropy(
-                    shift_logits.view(-1, shift_logits.size(-1)),
-                    shift_labels.view(-1),
-                    reduction="none",
-                    ignore_index=-100,
-                ).view_as(shift_labels)
-                effective_weights = shift_weights * valid
-                loss = (token_loss * effective_weights).sum() / effective_weights.sum().clamp_min(1.0)
+                labels = inputs.pop("labels")
+                outputs = _forward_without_output_fp32_conversion(model, inputs)
+                loss = _edit_weighted_causal_loss(
+                    outputs.logits,
+                    labels,
+                    loss_weights,
+                )
                 return (loss, outputs) if return_outputs else loss
 
         return TrainerWithEditWeights(*args, **kwargs)

@@ -61,9 +61,10 @@ difference, +2.55 [--0.86, 6.39], is inconclusive. A target-matched ablation
 finds no stable benefit from serializing earlier submissions. \tool exceeds
 always-three LSGen's mean Seen edit-budget frontier by 14.68 points
 [12.03, 17.43], although LSGen has higher unrestricted coverage. A separately
-trained, student-held-out CodeWorkout Java replication reaches 84.0\% RR but
-does not beat the 84.5\% Answer-3Seed control. All primary differences use
-problem-clustered inference.
+trained, student-held-out CodeWorkout Java replication reaches 84.0\% RR
+versus 83.4\% for selection-matched \(A_9\); the +0.55-point
+exercise-clustered difference [--1.24, 2.37] is inconclusive. All primary
+differences use clustered inference.
 \end{abstract}
 
 \ccsdesc[500]{Software and its engineering~Software testing and debugging}
@@ -504,7 +505,9 @@ We use Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2} and train each adapter for 
 
 Two replications retain the same targets, selectors, and effective batch.
 The scale replication substitutes Qwen2.5-Coder-1.5B-Instruct and uses
-micro-batches of 8 with two accumulation steps. The assignment-held-out
+micro-batches of 4 with four accumulation steps. To avoid duplicating its
+large-vocabulary logits, the algebraically identical weighted FP32 token loss
+is reduced one sequence at a time with backward recomputation. The assignment-held-out
 CodeWorkout split uses 10/3/4 disjoint train/validation/test exercises
 (605/216/304 trajectories) and retrains both nine-checkpoint pools. It contains
 213/150/161 students, including 151 shared train--test identities; it therefore
@@ -855,12 +858,14 @@ evaluation remains entirely problem-disjoint.
 
 \paragraph{Student-held-out Java replication.}
 Validation selects A29--P29--S28 under the relation constraint and
-A28--A29--S28 without it; Answer-3Seed is A27--A28--A29. Table~\ref{tab:codeworkout}
-reports the prospective 181-trajectory CodeWorkout test. Unconstrained
-selection reaches 84.0\% RR but does not beat Answer-3Seed (84.5\%): --0.55
-points, with exercise/student-cluster CIs [--3.06, 1.82]/[--2.89, 1.93]. The
-relation constraint reaches 81.8\%; no planned contrast is significant after
-Holm correction (minimum adjusted $p=0.539$).
+A28--A29--S28 without it; the independently selected Answer pool chooses
+A28--A29--A31. Table~\ref{tab:codeworkout} reports the prospective
+181-trajectory CodeWorkout test. Selection-matched \(M_9\) reaches 84.0\% RR
+versus 83.4\% for \(A_9\): +0.55 points, with exercise/student-cluster CIs
+[--1.24, 2.37]/[--1.20, 2.59]. Their exclusive repairs are two versus one
+(exact McNemar $p=1.0$). The relation-constrained portfolio reaches 81.8\%; the
+matched test therefore provides no evidence that target composition changes
+unrestricted Java coverage.
 
 \begin{table}[t]
 \caption{Student-held-out CodeWorkout Java test (181 trajectories; percentages).}
@@ -872,8 +877,8 @@ Holm correction (minimum adjusted $p=0.539$).
 Validation-frozen portfolio & PR & RR & IR \\
 \midrule
 Relation-constrained & 95.5 & 81.8 & 86.2 \\
-Unconstrained & 96.3 & 84.0 & 87.8 \\
-Answer-3Seed & \textbf{96.9} & \textbf{84.5} & \textbf{89.5} \\
+\(M_9\): mixed-target Choose3 & 96.3 & \textbf{84.0} & 87.8 \\
+\(A_9\): Answer-9Choose3 & \textbf{96.4} & 83.4 & \textbf{88.4} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -885,27 +890,16 @@ cost of removing Seen problem overlap. Student-held-out Java evaluation
 replicates high coverage after Java-specific training, but not an advantage
 over same-target checkpoint diversity.
 
-\subsection{Cross-RQ Synthesis}
-
-Together, the RQs distinguish properties of the data construction from causes of
-test-time coverage. The execution-evidence orders are exactly satisfied by the
-materialized supervision, but neither the history ablation nor the \(A_1\)--
-\(A_3\)--\(A_9\)--\(M_9\) ladder attributes unrestricted coverage to relation
-heterogeneity. Independent checkpoints provide complementary candidates, and
-execution controls escalation and abstention. Relation targets instead yield
-more source-preserving candidates and improve the Seen budget frontier, with
-problem-disjoint support at particular budgets. CodeWorkout tests whether this
-division transfers after Java-specific training.
-
 \section{Discussion}
 \label{sec:discussion}
 
-Every trained portfolio beats trajectory-prompted zero-shot and composition
-beats each member, but \(A_3-A_1\) is large whereas \(A_9-A_3\) and
-\(M_9-A_9\) are not robustly positive in unrestricted RR. Thus checkpoint
-diversity explains coverage. Relation targets change patch scope: the matched
-mixed pool preserves more source and improves the declared Seen budget frontier.
-Compulsory relation coverage is unsupported; matched Answer pools are mandatory.
+The RQs separate construction correctness from causes of test-time coverage.
+Every trained portfolio beats trajectory-prompted zero-shot, but the history
+ablation is null, \(A_3-A_1\) is large, and neither \(A_9-A_3\) nor
+\(M_9-A_9\) is robustly positive in unrestricted RR. Thus independent
+checkpoint diversity explains coverage; execution controls escalation and
+abstention. Relation targets instead preserve more source and improve the Seen
+budget frontier, with problem-disjoint support at particular budgets.
 
 LSGen's same-problem programs yield higher unrestricted coverage with mean TED
 over four times \tool's. The gate operationalizes, rather than valorizes, edit

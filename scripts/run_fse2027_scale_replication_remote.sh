@@ -13,6 +13,9 @@ MIXED_SELECTION=${RUN_ROOT}/analysis/fse2027-scale-1.5b-mixed-selection.json
 ANSWER_SELECTION=${RUN_ROOT}/analysis/fse2027-scale-1.5b-answer-selection.json
 ANALYSIS=${RUN_ROOT}/analysis/fse2027-scale-1.5b.json
 LOG=${RUN_ROOT}/logs/scale-1.5b.log
+TRAIN_BATCH_SIZE=4
+TRAIN_GRADIENT_ACCUMULATION=4
+GENERATION_BATCH_SIZE=4
 
 cd "${WORK_ROOT}"
 mkdir -p "${OUTPUT_ROOT}/validation" "${OUTPUT_ROOT}/test" "${CHECKPOINT_ROOT}" "$(dirname "${LOG}")"
@@ -34,7 +37,8 @@ train_adapter() {
     --prompt D --base-model "${BASE_MODEL}" --epochs 1 --learning-rate 2e-4 \
     --edit-token-weight 1 --validation-dataset "${DATASETS}/valid-${mode}.jsonl" \
     --eval-steps 100 --early-stopping-patience 2 --seed "${seed}" \
-    --batch-size 8 --gradient-accumulation 2
+    --batch-size "${TRAIN_BATCH_SIZE}" \
+    --gradient-accumulation "${TRAIN_GRADIENT_ACCUMULATION}"
 }
 
 complete() {
@@ -51,7 +55,7 @@ evaluate_member() {
   if complete "${evaluation}" "${expected}"; then return; fi
   "${PYTHON}" run.py generate "${dataset}" "${generations}" \
     --method "1.5B-${name}" --prompt D --base-model "${BASE_MODEL}" \
-    --adapter "${checkpoint}" --batch-size 8 --max-new-tokens 4096
+    --adapter "${checkpoint}" --batch-size "${GENERATION_BATCH_SIZE}" --max-new-tokens 4096
   "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
     --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
