@@ -197,7 +197,9 @@ bash scripts/finalize_fse2027_evidence_remote.sh "$(git rev-parse HEAD)"
 ```
 
 성공 시 manifest 검증과 전체 테스트를 통과한 source revision이
-`analysis/FSE2027_COMPLETE`에 기록된다.
+`analysis/FSE2027_COMPLETE`에 기록된다. 최종화는 실험에서 생성한 TeX
+result bridge와 `paper/fse2027-result-bridge.tex`의 바이트 동일성 및 논문의
+신규 결과군 참조도 함께 검사한다.
 
 ## Verification
 

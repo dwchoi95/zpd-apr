@@ -16,9 +16,11 @@ It deliberately contains no author names or author-revealing repository URL.
   `outputs/split-90-10/canonical-v5/analysis/FSE2027_COMPLETE`
 
 The finalizer regenerates `fse2027-result-bridge.json` and
-`fse2027-result-bridge.tex`, verifies every declared checkpoint family,
-checks every manifest hash and JSONL row count, runs the complete test suite,
-and records the exact source revision.
+`fse2027-result-bridge.tex`, requires the latter to be byte-identical to the
+checked-in `paper/fse2027-result-bridge.tex`, and verifies that the paper
+references every new result family. It then verifies every declared checkpoint
+family, checks every manifest hash and JSONL row count, runs the complete test
+suite, and records the exact source revision.
 
 ## Paper-to-evidence map
 
@@ -27,6 +29,7 @@ and records the exact source revision.
 | `tab:functional-comparison` | cited primary systems in `paper/references.bib`; input/control dimensions encoded in `paper/main.tex` |
 | FSE 18+4 page boundary | `analysis/fse2027-pdf-page-limit-audit.json`; rendered-page boundary checked by `scripts/verify_fse2027_pdf_page_limit.py` using Poppler text extraction |
 | double-anonymous submission audit | `analysis/fse2027-anonymity-audit.json`; PDF metadata/text plus `paper/main.tex` and this anonymous entry point checked by `scripts/verify_fse2027_anonymity.py` |
+| paper/result evidence identity | `analysis/fse2027-paper-result-bridge-audit.json`; generated and checked-in TeX bridges compared by `scripts/verify_fse2027_paper_result_bridge.py`, with scale, exercise-held-out, prompt, cross-fit, and verdict-order macro use required in `paper/main.tex` |
 | `tab:data` | `split-summary.json`; `datasets/*-final.summary.json`; `datasets/*-final.filter-summary.json` |
 | `tab:adapter-data` | `datasets/train-*.jsonl`; `datasets/valid-*.jsonl`; `analysis/fse2027-supervision-audit.json` |
 | `tab:patch-budget` | `analysis/fse2027-lsgen-budget-controller.json`; budgeted evaluations under `eval/selected-portfolios/` |
@@ -53,7 +56,9 @@ and records the exact source revision.
 
 All displayed aggregate values are consolidated in
 `analysis/fse2027-result-bridge.json`; its TeX companion is the paper-facing
-numeric interface.
+numeric interface. The checked-in copy is source-revision-bound, while the
+bridge audit records its generated SHA-256 and is itself included in the sealed
+manifest.
 
 ## Reproducing the reviewer-directed controls
 
