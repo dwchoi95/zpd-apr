@@ -33,6 +33,7 @@ def build(
     scale: dict[str, Any],
     problem_holdout: dict[str, Any],
     selection_stability: dict[str, Any],
+    answer_selection_stability: dict[str, Any],
     problem_disjoint: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
@@ -42,6 +43,7 @@ def build(
         "scale_1_5b": scale,
         "codeworkout_problem": problem_holdout,
         "selection_stability": selection_stability,
+        "answer_selection_stability": answer_selection_stability,
         "problem_disjoint_selection": problem_disjoint,
     }
     for split in ("seen", "unseen"):
@@ -83,6 +85,11 @@ def macros(result: dict[str, Any]) -> str:
     disjoint = result["problem_disjoint_selection"]
     values["SelectionBootstrapFrequency"] = pct(
         stability["problem_bootstrap"]["full_selection_fraction"]
+    )
+    values["AnswerNineSelectionBootstrapFrequency"] = pct(
+        result["answer_selection_stability"]["problem_bootstrap"][
+            "full_selection_fraction"
+        ]
     )
     values["ProblemDisjointValidationCount"] = str(
         disjoint["selection"]["validation_problems"]
@@ -140,6 +147,7 @@ def main() -> None:
     parser.add_argument("--scale", type=Path, required=True)
     parser.add_argument("--problem-holdout", type=Path, required=True)
     parser.add_argument("--selection-stability", type=Path, required=True)
+    parser.add_argument("--answer-selection-stability", type=Path, required=True)
     parser.add_argument("--problem-disjoint", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
@@ -151,6 +159,7 @@ def main() -> None:
         read(args.scale),
         read(args.problem_holdout),
         read(args.selection_stability),
+        read(args.answer_selection_stability),
         read(args.problem_disjoint),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)

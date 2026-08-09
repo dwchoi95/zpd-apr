@@ -46,6 +46,7 @@ class ResultBridgeTest(unittest.TestCase):
     def test_canonical_values_and_macros(self) -> None:
         answer9 = {"splits": {"seen": split_row(0.6, 0.59), "unseen": split_row(0.7, 0.68)}}
         stability = {"problem_bootstrap": {"full_selection_fraction": 0.44}}
+        answer_stability = {"problem_bootstrap": {"full_selection_fraction": 0.25}}
         problem_disjoint = {
             "selection": {"validation_problems": 138},
             "summary": {"rr": 0.58},
@@ -73,6 +74,7 @@ class ResultBridgeTest(unittest.TestCase):
             scale,
             problem_holdout,
             stability,
+            answer_stability,
             problem_disjoint,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
@@ -80,6 +82,7 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
         self.assertIn(r"\newcommand{\MixedMinusAnswerNineUnseen}{2.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointSeenRR}{58.0}", rendered)
+        self.assertIn(r"\newcommand{\AnswerNineSelectionBootstrapFrequency}{25.0}", rendered)
         self.assertIn(r"\newcommand{\HiddenMixedJointRR}{75.0}", rendered)
         self.assertIn(r"\newcommand{\CodeWorkoutStudentAnswerNineRR}{85.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
