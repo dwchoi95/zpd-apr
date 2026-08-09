@@ -93,7 +93,15 @@ mapfile -t answer_members < <(
 for split in seen unseen; do
   dataset=${DATASETS}/${split}-test-final.jsonl
   expected=$(wc -l < "${dataset}")
-  for name in $(printf '%s\n' "${mixed_members[@]}" "${answer_members[@]}" | sort -u); do
+  mapfile -t test_members < <(
+    "${PYTHON}" -c 'import json,sys
+m=json.load(open(sys.argv[1])); a=json.load(open(sys.argv[2]))
+names=set(m["best_unconstrained"]["members"]) | set(a["selected_unrestricted"]["members"])
+for row in m["selected_unconstrained_by_budget"].values(): names.update(row["members"])
+for row in a["selected_by_budget"].values(): names.update(row["members"])
+print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
+  )
+  for name in "${test_members[@]}"; do
     relation=${name%20??}; seed=${name: -4}
     evaluate_member "${name}" "${relation}" "${seed}" "${dataset}" test "${expected}"
   done
@@ -111,6 +119,32 @@ for split in seen unseen; do
   done
   "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/answer9-${split}-test.evaluation.jsonl" --method Answer-1.5B-9Choose3 "${stages[@]}"
+
+  for budget in 5 10 20 40 80 160; do
+    mapfile -t selected < <(
+      "${PYTHON}" -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1]))["selected_unconstrained_by_budget"][sys.argv[2]]["members"]))' "${MIXED_SELECTION}" "${budget}"
+    )
+    stages=()
+    for relation in Progress Strict Answer; do
+      for name in "${selected[@]}"; do
+        [[ "${name}" == ${relation}* ]] && stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
+      done
+    done
+    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+      "${OUTPUT_ROOT}/mixed-budget-${budget}-${split}-test.evaluation.jsonl" \
+      --method "Mixed-1.5B-9Choose3-TED-${budget}" --max-ted "${budget}" "${stages[@]}"
+
+    mapfile -t selected < <(
+      "${PYTHON}" -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1]))["selected_by_budget"][sys.argv[2]]["members"]))' "${ANSWER_SELECTION}" "${budget}"
+    )
+    stages=()
+    for name in "${selected[@]}"; do
+      stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
+    done
+    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+      "${OUTPUT_ROOT}/answer9-budget-${budget}-${split}-test.evaluation.jsonl" \
+      --method "Answer-1.5B-9Choose3-TED-${budget}" --max-ted "${budget}" "${stages[@]}"
+  done
 done
 
 "${PYTHON}" scripts/analyze_fse2027_scale_replication.py \

@@ -8,6 +8,11 @@ import json
 from pathlib import Path
 
 from analyze_fse2027_robustness import paired_suite_rows, read_jsonl, summarize_method
+from analyze_fse2027_selected_portfolios import (
+    BUDGETS,
+    budget_contrast,
+    clustered_mean_budget_difference,
+)
 
 
 def main() -> None:
@@ -31,6 +36,18 @@ def main() -> None:
     for offset, split in enumerate(("seen", "unseen")):
         mixed = read_jsonl(args.eval_root / f"mixed-{split}-test.evaluation.jsonl")
         answer = read_jsonl(args.eval_root / f"answer9-{split}-test.evaluation.jsonl")
+        mixed_budget = {
+            budget: read_jsonl(
+                args.eval_root / f"mixed-budget-{budget}-{split}-test.evaluation.jsonl"
+            )
+            for budget in BUDGETS
+        }
+        answer_budget = {
+            budget: read_jsonl(
+                args.eval_root / f"answer9-budget-{budget}-{split}-test.evaluation.jsonl"
+            )
+            for budget in BUDGETS
+        }
         result["splits"][split] = {
             "mixed_target_9choose3": summarize_method(mixed),
             "answer_9choose3": summarize_method(answer),
@@ -42,6 +59,15 @@ def main() -> None:
                 samples=args.samples,
                 seed=2027 + offset,
             ),
+            "budget_indexed_mixed_minus_answer": {
+                "per_budget": budget_contrast(mixed_budget, answer_budget),
+                "mean_over_predeclared_budgets": clustered_mean_budget_difference(
+                    mixed_budget,
+                    answer_budget,
+                    samples=args.samples,
+                    seed=2127 + offset,
+                ),
+            },
         }
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

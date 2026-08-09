@@ -27,7 +27,7 @@ def split_row(mixed: float, answer: float) -> dict:
 
 
 def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> dict:
-    return {
+    result = {
         "mixed_target_9choose3": {"rr": mixed},
         "answer_9choose3": {"rr": answer},
         key: {
@@ -40,6 +40,11 @@ def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> 
             ]
         },
     }
+    if key == "mixed_minus_answer":
+        result["budget_indexed_mixed_minus_answer"] = {
+            "mean_over_predeclared_budgets": {"difference": 0.015}
+        }
+    return result
 
 
 class ResultBridgeTest(unittest.TestCase):
@@ -103,6 +108,7 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\HiddenMixedJointRR}{75.0}", rendered)
         self.assertIn(r"\newcommand{\CodeWorkoutStudentAnswerNineRR}{85.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleBudgetMixedMinusAnswerNineSeen}{1.5}", rendered)
         self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedRR}{71.0}", rendered)
 
 

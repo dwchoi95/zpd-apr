@@ -138,6 +138,11 @@ def macros(result: dict[str, Any]) -> str:
         values[f"ScaleMixedMinusAnswerNine{prefix}"] = pct(
             scale_rr["left_minus_right_instance_weighted"]
         )
+        values[f"ScaleBudgetMixedMinusAnswerNine{prefix}"] = pct(
+            row["budget_indexed_mixed_minus_answer"][
+                "mean_over_predeclared_budgets"
+            ]["difference"]
+        )
 
     problem = result["codeworkout_problem"]
     problem_rr = metric(problem["mixed_minus_answer"])
