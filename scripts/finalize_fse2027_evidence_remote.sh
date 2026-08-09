@@ -34,6 +34,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-normalized-ted-frontier.json"
   "${RUN_ROOT}/analysis/fse2027-operational-cost.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-distribution-control.json"
+  "${RUN_ROOT}/analysis/fse2027-problem-crossfit.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
@@ -75,6 +76,7 @@ done
   --normalized-ted "${RUN_ROOT}/analysis/fse2027-normalized-ted-frontier.json" \
   --operational-cost "${RUN_ROOT}/analysis/fse2027-operational-cost.json" \
   --prompt-distribution "${RUN_ROOT}/analysis/fse2027-prompt-distribution-control.json" \
+  --problem-crossfit "${RUN_ROOT}/analysis/fse2027-problem-crossfit.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 

@@ -257,6 +257,39 @@ class ResultBridgeTest(unittest.TestCase):
                     }
                 },
             }
+        problem_crossfit = {
+            "folds": 5,
+            "mixed": {"rr": 0.61},
+            "answer": {"rr": 0.59},
+            "mixed_minus_answer": {
+                "paired": [
+                    {
+                        "metric": "rr",
+                        "left_minus_right_instance_weighted": 0.02,
+                        "cluster_bootstrap_95ci": [-0.01, 0.05],
+                    }
+                ],
+                "exact_mcnemar_two_sided_p": 0.4,
+            },
+            "budget": {
+                "mixed_minus_answer": {
+                    "mean_over_predeclared_budgets": {
+                        "difference": 0.013,
+                        "problem_cluster_95ci": [0.001, 0.025],
+                    },
+                    "per_budget": {
+                        "10": {
+                            "difference": 0.025,
+                            "problem_cluster_95ci": [0.005, 0.045],
+                        },
+                        "40": {
+                            "difference": 0.021,
+                            "problem_cluster_95ci": [0.002, 0.04],
+                        },
+                    },
+                }
+            },
+        }
         result = build(
             answer9,
             hidden,
@@ -272,6 +305,7 @@ class ResultBridgeTest(unittest.TestCase):
             normalized_ted,
             operational_cost,
             prompt_distribution,
+            problem_crossfit,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
@@ -361,6 +395,20 @@ class ResultBridgeTest(unittest.TestCase):
         )
         self.assertIn(
             r"\newcommand{\PromptFrozenMixedCurrentMinusFullUnseenCI}{[-3.00, 1.00]}",
+            rendered,
+        )
+        self.assertIn(r"\newcommand{\CrossFitFolds}{5}", rendered)
+        self.assertIn(r"\newcommand{\CrossFitMixedSeenRR}{61.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\CrossFitMixedMinusAnswerNineSeenCI}{[-1.00, 5.00]}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\CrossFitBudgetMixedMinusAnswerNineSeen}{1.3}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\CrossFitTED40MixedMinusAnswerNineSeenCI}{[0.20, 4.00]}",
             rendered,
         )
 

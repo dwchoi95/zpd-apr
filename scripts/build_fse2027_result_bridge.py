@@ -50,6 +50,7 @@ def build(
     normalized_ted: dict[str, Any],
     operational_cost: dict[str, Any],
     prompt_distribution: dict[str, Any],
+    problem_crossfit: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -66,6 +67,7 @@ def build(
         "normalized_ted_frontier": normalized_ted,
         "operational_cost": operational_cost,
         "prompt_distribution": prompt_distribution,
+        "problem_crossfit": problem_crossfit,
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -328,6 +330,34 @@ def macros(result: dict[str, Any]) -> str:
             values[f"PromptFrozen{method_prefix}CurrentMinusFull{prefix}CI"] = ci(
                 effect
             )
+
+    crossfit = result["problem_crossfit"]
+    crossfit_rr = metric(crossfit["mixed_minus_answer"])
+    values["CrossFitFolds"] = str(crossfit["folds"])
+    values["CrossFitMixedSeenRR"] = pct(crossfit["mixed"]["rr"])
+    values["CrossFitAnswerNineSeenRR"] = pct(crossfit["answer"]["rr"])
+    values["CrossFitMixedMinusAnswerNineSeen"] = pct(
+        crossfit_rr["left_minus_right_instance_weighted"]
+    )
+    values["CrossFitMixedMinusAnswerNineSeenCI"] = ci(crossfit_rr)
+    values["CrossFitMixedMinusAnswerNineSeenP"] = (
+        f"{crossfit['mixed_minus_answer']['exact_mcnemar_two_sided_p']:.4g}"
+    )
+    crossfit_budget = crossfit["budget"]["mixed_minus_answer"]
+    values["CrossFitBudgetMixedMinusAnswerNineSeen"] = pct(
+        crossfit_budget["mean_over_predeclared_budgets"]["difference"]
+    )
+    values["CrossFitBudgetMixedMinusAnswerNineSeenCI"] = interval(
+        crossfit_budget["mean_over_predeclared_budgets"]["problem_cluster_95ci"]
+    )
+    for budget in (10, 40):
+        budget_row = crossfit_budget["per_budget"][str(budget)]
+        values[f"CrossFitTED{budget}MixedMinusAnswerNineSeen"] = pct(
+            budget_row["difference"]
+        )
+        values[f"CrossFitTED{budget}MixedMinusAnswerNineSeenCI"] = interval(
+            budget_row["problem_cluster_95ci"]
+        )
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )
@@ -349,6 +379,7 @@ def main() -> None:
     parser.add_argument("--normalized-ted", type=Path, required=True)
     parser.add_argument("--operational-cost", type=Path, required=True)
     parser.add_argument("--prompt-distribution", type=Path, required=True)
+    parser.add_argument("--problem-crossfit", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -367,6 +398,7 @@ def main() -> None:
         read(args.normalized_ted),
         read(args.operational_cost),
         read(args.prompt_distribution),
+        read(args.problem_crossfit),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)
