@@ -400,7 +400,7 @@ cached current execution. Nine 155MB LoRA files occupy 1.4GB; deployment loads t
   \item[RQ3: Adapter Specialization.] Do \progress, \strict, and \answer exhibit different repair coverage and patch size?
   \item[RQ4: Sequential Escalation.] Does execution-guided composition improve effectiveness without always invoking all adapters?
   \item[RQ5: Problem Generalization.] Does \tool retain an advantage on problems completely excluded from training?
-  \item[RQ6: Robustness and Replication.] Are conclusions robust across scale, seed, prompt/verdict specifications, user/problem dependence, ordering, and student/exercise-held-out Java data?
+  \item[RQ6: Robustness and Replication.] Are conclusions robust to scale, seeds, prompt and verdict choices, dependence, ordering, and the Java replications?
 \end{description}
 
 \begin{table}[t]
@@ -413,17 +413,17 @@ cached current execution. Nine 155MB LoRA files occupy 1.4GB; deployment loads t
 Status & Analyses \\
 \midrule
 Original selection-frozen & Canonical tests, mechanism ladder, RQ2, and student-heldout Java \\
-Post-review, frozen before outcomes & Hidden tests, 1.5B scale, exercise-heldout Java, prompt control, five-fold problem cross-fitting, and verdict-order retraining \\
+Post-review, fixed before test evaluation & Hidden tests, 1.5B scale, exercise-heldout Java, prompt control, five-fold problem cross-fitting, and verdict-order retraining \\
 Exploratory after canonical outcomes & Disjoint/bootstrap selection, normalized TED, retention, user strata, order replay, and effect heterogeneity \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 ``Frozen'' excludes final-test outcomes from training and selection. None of
-these analyses was externally preregistered; for each post-review run, its
-split, endpoint, selector, and inference code were committed before model or
-test outcomes were read. Conformance audits are specification checks, not
-effect tests.
+these analyses was externally preregistered. Each post-review split, endpoint,
+selector, and inference implementation was committed before final-test repair
+evaluation; training diagnostics selected none of them. Conformance audits are
+specification checks, not effect tests.
 
 RR is the primary effectiveness endpoint. The system contrast is portfolio
 versus Zero-shot; the mechanism contrast is selection-matched \(M_9-A_9\).
