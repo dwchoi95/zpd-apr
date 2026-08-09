@@ -190,6 +190,9 @@ def select_portfolios(
     return {
         "selection_partition": "training validation split",
         "test_outcomes_used": False,
+        "candidate_checkpoints": sorted(maps),
+        "candidate_checkpoint_count": len(maps),
+        "portfolio_size": 3,
         "primary_objective": "repair coverage",
         "budget_aware_objective": (
             "mean repair coverage at predeclared AST TED budgets 5,10,20,40,80,160"

@@ -15,6 +15,30 @@ from analyze_fse2027_selected_portfolios import (
 )
 
 
+def selection_audit(mixed: dict, answer: dict) -> dict:
+    audit = {
+        "mixed_candidate_checkpoint_count": mixed["candidate_checkpoint_count"],
+        "answer_candidate_checkpoint_count": answer["candidate_checkpoint_count"],
+        "mixed_feasible_size_three_portfolios": mixed[
+            "feasible_unconstrained_size_three_portfolios"
+        ],
+        "answer_feasible_size_three_portfolios": answer["feasible_portfolios"],
+    }
+    audit["candidate_pool_sizes_matched"] = (
+        audit["mixed_candidate_checkpoint_count"]
+        == audit["answer_candidate_checkpoint_count"]
+    )
+    audit["portfolio_search_spaces_matched"] = (
+        audit["mixed_feasible_size_three_portfolios"]
+        == audit["answer_feasible_size_three_portfolios"]
+    )
+    if not audit["candidate_pool_sizes_matched"]:
+        raise ValueError("mixed and Answer candidate pool sizes differ")
+    if not audit["portfolio_search_spaces_matched"]:
+        raise ValueError("mixed and Answer portfolio search spaces differ")
+    return audit
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--eval-root", type=Path, required=True)
@@ -29,6 +53,9 @@ def main() -> None:
         "base_model": "Qwen2.5-Coder-1.5B-Instruct",
         "selection_partition": "Seen validation, one trajectory per problem",
         "test_outcomes_used_for_selection": False,
+        "selection_fairness_audit": selection_audit(
+            mixed_selection, answer_selection
+        ),
         "mixed_members": mixed_selection["best_unconstrained"]["members"],
         "answer_members": answer_selection["selected_unrestricted"]["members"],
         "splits": {},
