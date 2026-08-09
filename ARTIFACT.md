@@ -16,7 +16,7 @@ It deliberately contains no author names or author-revealing repository URL.
   `outputs/split-90-10/canonical-v5/analysis/FSE2027_COMPLETE`
 
 The finalizer regenerates `fse2027-result-bridge.json` and
-`fse2027-result-bridge.tex`, verifies all matched nine-checkpoint families,
+`fse2027-result-bridge.tex`, verifies every declared checkpoint family,
 checks every manifest hash and JSONL row count, runs the complete test suite,
 and records the exact source revision.
 
@@ -31,9 +31,14 @@ and records the exact source revision.
 | `tab:rq2` | `eval/rq2-*-comparison/`; `analysis/fse2027-robustness.json` |
 | `tab:rq3` | `eval/progress-seen-test.evaluation.jsonl`; `eval/strict-seen-test.evaluation.jsonl`; `eval/answer-seen-test.evaluation.jsonl` |
 | `tab:rq4` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-operational-cost.json` |
+| analysis-provenance table | selection rules in `scripts/select_execution_portfolio.py` and `scripts/select_answer_seed_portfolio.py`; frozen-selection analyses listed below |
 | hidden-test confirmation | `analysis/fse2027-answer9-independent-hidden.json` |
 | problem-disjoint selection | `analysis/fse2027-problem-disjoint-selection.json`; `analysis/fse2027-answer9-problem-disjoint-selection.json`; `analysis/fse2027-problem-disjoint-budget-fair-pools.json` |
+| five-fold problem cross-fitting | `analysis/fse2027-problem-crossfit.json`; fold construction and frozen test replay in `scripts/analyze_problem_crossfit_portfolios.py` |
+| prompt-distribution control | `analysis/fse2027-prompt-distribution-control.json`; regenerated candidates under `eval/prompt-distribution-current-only/` |
+| verdict-order sensitivity | `analysis/fse2027-verdict-order-model-sensitivity.json`; `analysis/fse2027-verdict-order-token-audit.json`; alternative datasets under `datasets/verdict-order/accepted-vs-failure/` |
 | normalized edit frontier | `analysis/fse2027-normalized-ted-frontier.json` |
+| absolute-budget interpretation | current-program AST node counts and per-budget fractions in `analysis/fse2027-normalized-ted-frontier.json` |
 | source retention | `analysis/fse2027-patch-locality.json` |
 | `tab:codeworkout` | `analysis/fse2027-codeworkout-answer9.json`; `analysis/fse2027-codeworkout-answer9-selection.json` |
 | 1.5B scale replication | `analysis/fse2027-scale-1.5b.json`; `analysis/fse2027-scale-1.5b-{mixed,answer}-selection.json` |
@@ -42,3 +47,37 @@ and records the exact source revision.
 All displayed aggregate values are consolidated in
 `analysis/fse2027-result-bridge.json`; its TeX companion is the paper-facing
 numeric interface.
+
+## Reproducing the reviewer-directed controls
+
+Run these commands from the repository root on the configured Ubuntu host.
+Each runner is restart-safe: completed checkpoints and complete evaluation
+files are reused, while an incomplete file is regenerated. The runners write a
+`COMPLETE` marker only after their row-count and analysis checks succeed.
+
+```bash
+bash scripts/run_fse2027_scale_replication_remote.sh
+bash scripts/run_fse2027_codeworkout_problem_holdout_remote.sh
+bash scripts/run_fse2027_prompt_distribution_control_remote.sh
+bash scripts/run_fse2027_problem_crossfit_remote.sh
+bash scripts/run_fse2027_verdict_order_retraining_remote.sh
+```
+
+The five-fold cross-fitting script hashes problem identities into deterministic
+folds, excludes the held-out fold from validation selection, freezes the
+selected portfolio, and only then reads that fold's test outcomes. The
+verdict-order runner rebuilds Progress and Strict supervision from the original
+trajectories under the declared accepted-versus-failure partial order, trains
+new 7B adapters, and compares their decisions with the canonical-order models;
+it is not a post-hoc relabeling of evaluation rows. The prompt control likewise
+regenerates candidates under the current-only prompt before selection and test
+replay.
+
+After all controls finish, seal the complete evidence graph with:
+
+```bash
+bash scripts/finalize_fse2027_evidence_remote.sh <source-revision>
+```
+
+Finalization intentionally fails if any required control, checkpoint family,
+token-cap audit, row count, or manifest hash is missing or inconsistent.
