@@ -44,6 +44,7 @@ def build(
     problem_disjoint_budget: dict[str, Any],
     patch_locality: dict[str, Any],
     normalized_ted: dict[str, Any],
+    operational_cost: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -58,6 +59,7 @@ def build(
         "problem_disjoint_budget_fair_pools": problem_disjoint_budget,
         "patch_locality": patch_locality,
         "normalized_ted_frontier": normalized_ted,
+        "operational_cost": operational_cost,
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -265,6 +267,14 @@ def macros(result: dict[str, Any]) -> str:
         values[f"NormalizedTED{suffix}MixedMinusAnswerNineCI"] = interval(
             row["problem_cluster_95ci"]
         )
+    for name in ("A1", "A3", "A9", "M9"):
+        row = result["operational_cost"]["mechanism_ladder_seen"][name]
+        values[f"Cost{name}TrainHours"] = f"{row['train_gpu_hours']:.1f}"
+        values[f"Cost{name}ValidationExecutions"] = str(
+            row["portfolio_selection_validation_executions"]
+        )
+        values[f"Cost{name}SeenRR"] = pct(row["repair_rate"])
+        values[f"Cost{name}MeanCalls"] = f"{row['mean_candidates_invoked']:.2f}"
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )
@@ -284,6 +294,7 @@ def main() -> None:
     parser.add_argument("--problem-disjoint-budget", type=Path, required=True)
     parser.add_argument("--patch-locality", type=Path, required=True)
     parser.add_argument("--normalized-ted", type=Path, required=True)
+    parser.add_argument("--operational-cost", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -300,6 +311,7 @@ def main() -> None:
         read(args.problem_disjoint_budget),
         read(args.patch_locality),
         read(args.normalized_ted),
+        read(args.operational_cost),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)

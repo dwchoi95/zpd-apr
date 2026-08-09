@@ -177,6 +177,34 @@ class ResultBridgeTest(unittest.TestCase):
                 },
             },
         }
+        operational_cost = {
+            "mechanism_ladder_seen": {
+                "A1": {
+                    "train_gpu_hours": 5.84,
+                    "portfolio_selection_validation_executions": 0,
+                    "repair_rate": 0.501,
+                    "mean_candidates_invoked": 1.0,
+                },
+                "A3": {
+                    "train_gpu_hours": 17.52,
+                    "portfolio_selection_validation_executions": 0,
+                    "repair_rate": 0.617,
+                    "mean_candidates_invoked": 1.93,
+                },
+                "A9": {
+                    "train_gpu_hours": 52.57,
+                    "portfolio_selection_validation_executions": 4149,
+                    "repair_rate": 0.598,
+                    "mean_candidates_invoked": 1.93,
+                },
+                "M9": {
+                    "train_gpu_hours": 37.07,
+                    "portfolio_selection_validation_executions": 4149,
+                    "repair_rate": 0.615,
+                    "mean_candidates_invoked": 1.98,
+                },
+            }
+        }
         result = build(
             answer9,
             hidden,
@@ -190,6 +218,7 @@ class ResultBridgeTest(unittest.TestCase):
             problem_disjoint_budget,
             patch_locality,
             normalized_ted,
+            operational_cost,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
@@ -252,6 +281,9 @@ class ResultBridgeTest(unittest.TestCase):
             r"\newcommand{\NormalizedTEDFortyMixedMinusAnswerNineCI}{[0.61, 5.23]}",
             rendered,
         )
+        self.assertIn(r"\newcommand{\CostA9TrainHours}{52.6}", rendered)
+        self.assertIn(r"\newcommand{\CostM9ValidationExecutions}{4149}", rendered)
+        self.assertIn(r"\newcommand{\CostM9MeanCalls}{1.98}", rendered)
 
 
 if __name__ == "__main__":

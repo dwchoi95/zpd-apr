@@ -72,6 +72,7 @@ done
   --problem-disjoint-budget "${RUN_ROOT}/analysis/fse2027-problem-disjoint-budget-fair-pools.json" \
   --patch-locality "${RUN_ROOT}/analysis/fse2027-patch-locality.json" \
   --normalized-ted "${RUN_ROOT}/analysis/fse2027-normalized-ted-frontier.json" \
+  --operational-cost "${RUN_ROOT}/analysis/fse2027-operational-cost.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 
