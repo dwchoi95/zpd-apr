@@ -525,7 +525,7 @@ confirmatory audit partitions every Unseen problem's tests by a fixed
 SHA-256 hash (seed 2027) before regeneration. The observed side contains 332
 tests and the hidden side 310, with at least three of each for all 54 problems.
 We recompute every displayed verdict, pass rate, and failure signature from
-observed tests only, regenerate the frozen ZPDPatch and Answer-3Seed members,
+observed tests only, regenerate the frozen ZPDPatch and Answer-9Choose3 members,
 and select candidates using only observed execution. A \emph{joint repair}
 must pass both observed and untouched hidden tests; hidden outcomes never enter
 the prompt, generation, early stopping, tie breaking, or method selection.
@@ -553,11 +553,11 @@ under problem-cluster bootstrap [26.4, 35.1]; the equal-problem-weight gain is
 26.1 points [21.2, 30.9]. PR increases by 11.07 points [9.16, 13.02] and IR by
 25.2 points [20.8, 29.4] under the same clustered analysis.
 
-The target- and compute-matched Answer-3Seed baseline is the stricter
-comparison: \tool differs by $-0.20$ Seen RR points [--1.83, 1.46] and
-$+1.60$ Unseen points [--1.07, 4.44]. Thus the unrestricted results establish
-portfolio repair utility, but not a general coverage gain from relation-mined
-targets over independently trained Answer checkpoints.
+The selection-matched Answer-9Choose3 baseline is the strictest target
+comparison: \tool differs by +1.71 Seen RR points [--0.79, 4.29] and 0.0
+Unseen points [--3.70, 3.75]. Thus unrestricted results establish portfolio
+repair utility, but not a general coverage gain from relation-mined targets over
+an equally large pool of independently trained Answer checkpoints.
 
 The legacy LSGen controller achieves the highest Seen execution correctness:
 88.0\% PR, 80.2\% RR, and 82.4\% IR. It alone repairs 267 instances, while
@@ -615,13 +615,13 @@ Split & Method & PR & RR & IR & \(\mathrm{TED}_{B\to F}\) & \(\mathrm{TED}_{F\to
 \multirow{4}{*}{Seen}
  & Zero-shot & 76.3 & 30.7 & 43.7 & 27.25 & 27.67 \\
  & LSGen & \textbf{88.0} & \textbf{80.2} & \textbf{82.4} & 88.27 & 83.23 \\
- & Answer-3Seed & 87.0 & 61.7 & 69.1 & 24.52 & 24.82 \\
+ & Answer-9Choose3 & 85.9 & 59.8 & 68.0 & 25.46 & 24.01 \\
  & \tool & 87.4 & 61.5 & 68.9 & \textbf{21.05} & \textbf{21.64} \\
 \midrule
 \multirow{3}{*}{Unseen}
  & Zero-shot & 75.3 & 62.0 & 68.8 & 17.46 & 15.80 \\
- & Answer-3Seed & 84.8 & 73.2 & 79.2 & 13.38 & 13.86 \\
- & \tool & \textbf{84.9} & \textbf{74.8} & \textbf{79.6} & \textbf{11.40} & \textbf{11.96} \\
+ & Answer-9Choose3 & \textbf{85.7} & \textbf{74.8} & \textbf{80.4} & 15.19 & 13.75 \\
+ & \tool & 84.9 & \textbf{74.8} & 79.6 & \textbf{11.40} & \textbf{11.96} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -768,14 +768,14 @@ parseable instances, its patch is 6.41 TED units smaller on average (95\% CI
 
 Against the weaker repeated-Answer-with-feedback control on Unseen data, Independent Policies reaches 73.2\% versus 68.4\% RR, with 15 portfolio-only and three control-only repairs (McNemar \(p=0.00754\)). The independent Answer-3Seed control, however, also reaches 73.2\%; its problem-clustered difference from Independent Policies is 0.0 points [--3.2, 3.1] and McNemar \(p=1.0\). The problem-held-out result therefore supports execution-selected checkpoint diversity but does not identify target-relation heterogeneity as its source.
 
-The frozen validation winners reach 74.8\% Unseen RR for both unrestricted
-relation-constrained and unconstrained selection, +1.60 points over
-Answer-3Seed; both unrestricted intervals include zero. Budget-indexed
-unconstrained selection is stronger across the declared frontier: its mean
-coverage difference is +2.60 points [0.38, 5.03], whereas the
-relation-constrained mean is +1.60 [--1.07, 4.44]. This independently confirms
-the budget-selection effect but again does not support the one-per-relation
-constraint.
+The frozen unrestricted \(M_9\) and selection-matched \(A_9\) winners both
+reach 74.8\% Unseen RR. Their paired difference is 0.0 points
+[--3.70, 3.75], so enlarging the candidate pool does not reveal a mixed-target
+coverage effect. Budget-indexed \(M_9-A_9\) averages +1.40 points
+[--1.24, 4.02] across the declared frontier; unlike the Seen contrast, this
+interval also includes zero. The problem-held-out evidence therefore supports
+portfolio coverage over zero-shot, not relation-specific coverage or a
+generalized constrained advantage.
 
 The 45 favorable versus 13 unfavorable discordant pairs against Zero-shot show
 complementary successes rather than dominance. Absolute Unseen RR is higher for
