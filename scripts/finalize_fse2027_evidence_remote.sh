@@ -55,6 +55,11 @@ done
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 
+"${PYTHON}" scripts/verify_fse2027_fair_selection.py \
+  --analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json" \
+  --analysis "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json" \
+  --analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json"
+
 checkpoint_args=(
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-rq2"
