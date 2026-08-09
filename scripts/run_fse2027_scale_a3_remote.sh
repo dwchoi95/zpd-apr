@@ -28,27 +28,51 @@ complete() {
     && [[ -s "${path%.jsonl}.summary.json" ]]
 }
 
-for split in seen unseen; do
+mapfile -t selected_members < <(
+  "${PYTHON}" -c 'import json,sys
+m=json.load(open(sys.argv[1])); a=json.load(open(sys.argv[2]))
+names=set(m["best_unconstrained"]["members"]) | set(a["selected_unrestricted"]["members"])
+for row in m["selected_unconstrained_by_budget"].values(): names.update(row["members"])
+for row in a["selected_by_budget"].values(): names.update(row["members"])
+print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
+)
+
+ensure_split_member() {
+  local name=$1 split=$2 dataset=$3 expected=$4 relation seed generations evaluation
+  relation=${name%20??}
+  seed=${name: -4}
+  mkdir -p "${OUTPUT_ROOT}/members/${split}"
+  generations=${OUTPUT_ROOT}/members/${split}/${name}.generations.jsonl
+  evaluation=${OUTPUT_ROOT}/members/${split}/${name}.evaluation.jsonl
+  if complete "${evaluation}" "${expected}"; then return; fi
+  if [[ "${split}" == unseen ]] \
+      && complete "${OUTPUT_ROOT}/test/${name}.evaluation.jsonl" "${expected}"; then
+    cp "${OUTPUT_ROOT}/test/${name}.evaluation.jsonl" "${evaluation}"
+    cp "${OUTPUT_ROOT}/test/${name}.evaluation.summary.json" \
+      "${evaluation%.jsonl}.summary.json"
+    if [[ -s "${OUTPUT_ROOT}/test/${name}.generations.jsonl" ]]; then
+      cp "${OUTPUT_ROOT}/test/${name}.generations.jsonl" "${generations}"
+    fi
+    return
+  fi
+  "${PYTHON}" run.py generate "${dataset}" "${generations}" \
+    --method "1.5B-${name}" --prompt D --base-model "${BASE_MODEL}" \
+    --adapter "${CHECKPOINT_ROOT}/seed-${seed}/${relation,,}" \
+    --batch-size 4 --max-new-tokens 4096
+  "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
+    --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  test "$(wc -l < "${evaluation}")" -eq "${expected}"
+}
+
+for split in unseen seen; do
   dataset=${DATASETS}/${split}-test-final.jsonl
   expected=$(wc -l < "${dataset}")
-  mkdir -p "${OUTPUT_ROOT}/a3/${split}"
-  for seed in 2027 2028 2029; do
-    name=Answer${seed}
-    generations=${OUTPUT_ROOT}/a3/${split}/${name}.generations.jsonl
-    evaluation=${OUTPUT_ROOT}/a3/${split}/${name}.evaluation.jsonl
-    if ! complete "${evaluation}" "${expected}"; then
-      "${PYTHON}" run.py generate "${dataset}" "${generations}" \
-        --method "1.5B-${name}" --prompt D --base-model "${BASE_MODEL}" \
-        --adapter "${CHECKPOINT_ROOT}/seed-${seed}/answer" \
-        --batch-size 4 --max-new-tokens 4096
-      "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
-        --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
-      test "$(wc -l < "${evaluation}")" -eq "${expected}"
-    fi
+  for name in "${selected_members[@]}" Answer2027 Answer2028 Answer2029; do
+    ensure_split_member "${name}" "${split}" "${dataset}" "${expected}"
   done
   stages=()
   for seed in 2027 2028 2029; do
-    stages+=(--stage "Answer${seed}=${OUTPUT_ROOT}/a3/${split}/Answer${seed}.evaluation.jsonl")
+    stages+=(--stage "Answer${seed}=${OUTPUT_ROOT}/members/${split}/Answer${seed}.evaluation.jsonl")
   done
   "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/answer3-${split}-test.evaluation.jsonl" \
@@ -58,8 +82,8 @@ done
 "${PYTHON}" scripts/analyze_fse2027_scale_replication.py \
   --eval-root "${OUTPUT_ROOT}" --mixed-selection "${MIXED_SELECTION}" \
   --answer-selection "${ANSWER_SELECTION}" \
-  --answer1-seen "${OUTPUT_ROOT}/a3/seen/Answer2027.evaluation.jsonl" \
-  --answer1-unseen "${OUTPUT_ROOT}/a3/unseen/Answer2027.evaluation.jsonl" \
+  --answer1-seen "${OUTPUT_ROOT}/members/seen/Answer2027.evaluation.jsonl" \
+  --answer1-unseen "${OUTPUT_ROOT}/members/unseen/Answer2027.evaluation.jsonl" \
   --answer3-seen "${OUTPUT_ROOT}/answer3-seen-test.evaluation.jsonl" \
   --answer3-unseen "${OUTPUT_ROOT}/answer3-unseen-test.evaluation.jsonl" \
   --output "${ANALYSIS}"

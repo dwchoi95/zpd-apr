@@ -68,6 +68,14 @@ if [[ ! -f "${RUN_ROOT}/eval/scale-1.5b/A3_COMPLETE" ]]; then
   exit 1
 fi
 
+"${PYTHON}" scripts/verify_fse2027_scale_split_members.py \
+  --eval-root "${RUN_ROOT}/eval/scale-1.5b" \
+  --seen-dataset "${RUN_ROOT}/datasets/seen-test-final.jsonl" \
+  --unseen-dataset "${RUN_ROOT}/datasets/unseen-test-final.jsonl" \
+  --mixed-selection "${RUN_ROOT}/analysis/fse2027-scale-1.5b-mixed-selection.json" \
+  --answer-selection "${RUN_ROOT}/analysis/fse2027-scale-1.5b-answer-selection.json" \
+  --output "${RUN_ROOT}/analysis/fse2027-scale-split-member-audit.json"
+
 required_external=(
   "${WORK_ROOT}/archive/external/tiktoc/source-provenance.json"
   "${WORK_ROOT}/archive/external/tiktoc/derived/trajectory-summary.json"
