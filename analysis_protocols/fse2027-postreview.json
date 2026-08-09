@@ -24,7 +24,7 @@
     "problem_crossfit": {
       "files": {
         "scripts/run_fse2027_problem_crossfit_remote.sh": "dc4eacc6596551231f7b134f8023f6bf4f52507f",
-        "scripts/analyze_problem_crossfit_portfolios.py": "0ca3ea0c3ceb51ba70017803371cc291e11472d9"
+        "scripts/analyze_problem_crossfit_portfolios.py": "c23a62685fc78a5e01e7bc1bcfb72c07ba692c1e"
       }
     },
     "verdict_order_retraining": {
