@@ -37,6 +37,7 @@ def build(
     problem_disjoint: dict[str, Any],
     answer_problem_disjoint: dict[str, Any],
     problem_disjoint_budget: dict[str, Any],
+    patch_locality: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -49,6 +50,7 @@ def build(
         "problem_disjoint_selection": problem_disjoint,
         "answer_problem_disjoint_selection": answer_problem_disjoint,
         "problem_disjoint_budget_fair_pools": problem_disjoint_budget,
+        "patch_locality": patch_locality,
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -137,6 +139,18 @@ def macros(result: dict[str, Any]) -> str:
         values[f"ProblemDisjointTED{budget}MixedMinusAnswerNine"] = pct(
             disjoint_budget["per_budget"][str(budget)]["difference"]
         )
+    locality = result["patch_locality"]["comparisons"]
+    for comparison, prefix in (
+        ("Progress_minus_Answer", "ProgressMinusAnswer"),
+        ("Mixed9_minus_Answer9", "MixedMinusAnswerNine"),
+    ):
+        for locality_metric, suffix in (
+            ("token_retention", "TokenRetention"),
+            ("line_retention", "LineRetention"),
+        ):
+            values[f"{prefix}{suffix}"] = pct(
+                locality[comparison]["metrics"][locality_metric]["left_minus_right"]
+            )
 
     hidden = result["hidden"]
     values["HiddenMixedJointRR"] = pct(
@@ -198,6 +212,7 @@ def main() -> None:
     parser.add_argument("--problem-disjoint", type=Path, required=True)
     parser.add_argument("--answer-problem-disjoint", type=Path, required=True)
     parser.add_argument("--problem-disjoint-budget", type=Path, required=True)
+    parser.add_argument("--patch-locality", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -212,6 +227,7 @@ def main() -> None:
         read(args.problem_disjoint),
         read(args.answer_problem_disjoint),
         read(args.problem_disjoint_budget),
+        read(args.patch_locality),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)

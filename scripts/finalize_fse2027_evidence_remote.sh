@@ -30,6 +30,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-answer9-problem-disjoint-selection.json"
   "${RUN_ROOT}/analysis/fse2027-problem-disjoint-fair-pool-selection.json"
   "${RUN_ROOT}/analysis/fse2027-problem-disjoint-budget-fair-pools.json"
+  "${RUN_ROOT}/analysis/fse2027-patch-locality.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
@@ -50,6 +51,7 @@ done
   --problem-disjoint "${RUN_ROOT}/analysis/fse2027-problem-disjoint-selection.json" \
   --answer-problem-disjoint "${RUN_ROOT}/analysis/fse2027-answer9-problem-disjoint-selection.json" \
   --problem-disjoint-budget "${RUN_ROOT}/analysis/fse2027-problem-disjoint-budget-fair-pools.json" \
+  --patch-locality "${RUN_ROOT}/analysis/fse2027-patch-locality.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 
