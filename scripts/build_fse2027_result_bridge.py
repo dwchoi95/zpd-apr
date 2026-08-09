@@ -26,6 +26,11 @@ def ci(row: dict[str, Any]) -> str:
     return f"[{100 * lo:.2f}, {100 * hi:.2f}]"
 
 
+def interval(values: list[float]) -> str:
+    lo, hi = values
+    return f"[{100 * lo:.2f}, {100 * hi:.2f}]"
+
+
 def build(
     answer9: dict[str, Any],
     hidden: dict[str, Any],
@@ -68,8 +73,14 @@ def build(
             "answer_3seed_minus_answer_1": a3_minus_a1[
                 "left_minus_right_instance_weighted"
             ],
+            "answer_3seed_minus_answer_1_cluster_95ci": a3_minus_a1[
+                "cluster_bootstrap_95ci"
+            ],
             "answer_9choose3_minus_answer_3seed": a9_minus_a3[
                 "left_minus_right_instance_weighted"
+            ],
+            "answer_9choose3_minus_answer_3seed_cluster_95ci": a9_minus_a3[
+                "cluster_bootstrap_95ci"
             ],
             "rr_difference": rr["left_minus_right_instance_weighted"],
             "rr_cluster_95ci": rr["cluster_bootstrap_95ci"],
@@ -92,8 +103,14 @@ def macros(result: dict[str, Any]) -> str:
         values[f"AnswerThreeMinusOne{prefix}"] = pct(
             row["answer_3seed_minus_answer_1"]
         )
+        values[f"AnswerThreeMinusOne{prefix}CI"] = interval(
+            row["answer_3seed_minus_answer_1_cluster_95ci"]
+        )
         values[f"AnswerNineMinusThree{prefix}"] = pct(
             row["answer_9choose3_minus_answer_3seed"]
+        )
+        values[f"AnswerNineMinusThree{prefix}CI"] = interval(
+            row["answer_9choose3_minus_answer_3seed_cluster_95ci"]
         )
         values[f"Mixed{prefix}RR"] = pct(row["mixed_rr"])
         values[f"MixedMinusAnswerNine{prefix}"] = pct(row["rr_difference"])
@@ -104,6 +121,9 @@ def macros(result: dict[str, Any]) -> str:
         values[f"MixedMinusAnswerNine{prefix}P"] = f"{row['rr_mcnemar_p']:.4g}"
         values[f"BudgetMixedMinusAnswerNine{prefix}"] = pct(
             row["mean_budget_difference"]
+        )
+        values[f"BudgetMixedMinusAnswerNine{prefix}CI"] = interval(
+            row["mean_budget_cluster_95ci"]
         )
     stability = result["selection_stability"]
     disjoint = result["problem_disjoint_selection"]
@@ -129,15 +149,25 @@ def macros(result: dict[str, Any]) -> str:
     values["ProblemDisjointMixedMinusAnswerNine"] = pct(
         -fair_pool_rr["left_minus_right_instance_weighted"]
     )
+    values["ProblemDisjointMixedMinusAnswerNineCI"] = interval(
+        [-value for value in reversed(fair_pool_rr["cluster_bootstrap_95ci"])]
+    )
     disjoint_budget = result["problem_disjoint_budget_fair_pools"][
         "mixed_minus_answer"
     ]
     values["ProblemDisjointBudgetMixedMinusAnswerNine"] = pct(
         disjoint_budget["mean_over_predeclared_budgets"]["difference"]
     )
+    values["ProblemDisjointBudgetMixedMinusAnswerNineCI"] = interval(
+        disjoint_budget["mean_over_predeclared_budgets"]["problem_cluster_95ci"]
+    )
     for budget in (10, 40):
+        budget_row = disjoint_budget["per_budget"][str(budget)]
         values[f"ProblemDisjointTED{budget}MixedMinusAnswerNine"] = pct(
-            disjoint_budget["per_budget"][str(budget)]["difference"]
+            budget_row["difference"]
+        )
+        values[f"ProblemDisjointTED{budget}MixedMinusAnswerNineCI"] = interval(
+            budget_row["problem_cluster_95ci"]
         )
     locality = result["patch_locality"]["comparisons"]
     for comparison, prefix in (
@@ -151,6 +181,11 @@ def macros(result: dict[str, Any]) -> str:
             values[f"{prefix}{suffix}"] = pct(
                 locality[comparison]["metrics"][locality_metric]["left_minus_right"]
             )
+            values[f"{prefix}{suffix}CI"] = interval(
+                locality[comparison]["metrics"][locality_metric][
+                    "problem_cluster_bootstrap_95ci"
+                ]
+            )
 
     hidden = result["hidden"]
     values["HiddenMixedJointRR"] = pct(
@@ -162,6 +197,9 @@ def macros(result: dict[str, Any]) -> str:
     values["HiddenMixedMinusAnswerNine"] = pct(
         hidden["comparison"]["left_minus_right"]
     )
+    values["HiddenMixedMinusAnswerNineCI"] = interval(
+        hidden["comparison"]["problem_cluster_95_ci"]
+    )
 
     codeworkout = result["codeworkout_student"]
     codeworkout_rr = metric(codeworkout["zpdpatch_minus_answer_9choose3"])
@@ -172,6 +210,7 @@ def macros(result: dict[str, Any]) -> str:
     values["CodeWorkoutStudentMixedMinusAnswerNine"] = pct(
         codeworkout_rr["left_minus_right_instance_weighted"]
     )
+    values["CodeWorkoutStudentMixedMinusAnswerNineCI"] = ci(codeworkout_rr)
 
     scale = result["scale_1_5b"]
     for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
@@ -182,10 +221,15 @@ def macros(result: dict[str, Any]) -> str:
         values[f"ScaleMixedMinusAnswerNine{prefix}"] = pct(
             scale_rr["left_minus_right_instance_weighted"]
         )
+        values[f"ScaleMixedMinusAnswerNine{prefix}CI"] = ci(scale_rr)
+        scale_budget = row["budget_indexed_mixed_minus_answer"][
+            "mean_over_predeclared_budgets"
+        ]
         values[f"ScaleBudgetMixedMinusAnswerNine{prefix}"] = pct(
-            row["budget_indexed_mixed_minus_answer"][
-                "mean_over_predeclared_budgets"
-            ]["difference"]
+            scale_budget["difference"]
+        )
+        values[f"ScaleBudgetMixedMinusAnswerNine{prefix}CI"] = interval(
+            scale_budget["problem_cluster_95ci"]
         )
 
     problem = result["codeworkout_problem"]
@@ -195,6 +239,7 @@ def macros(result: dict[str, Any]) -> str:
     values["CodeWorkoutProblemMixedMinusAnswerNine"] = pct(
         problem_rr["left_minus_right_instance_weighted"]
     )
+    values["CodeWorkoutProblemMixedMinusAnswerNineCI"] = ci(problem_rr)
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )

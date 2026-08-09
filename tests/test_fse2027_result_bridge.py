@@ -62,7 +62,10 @@ def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> 
     }
     if key == "mixed_minus_answer":
         result["budget_indexed_mixed_minus_answer"] = {
-            "mean_over_predeclared_budgets": {"difference": 0.015}
+            "mean_over_predeclared_budgets": {
+                "difference": 0.015,
+                "problem_cluster_95ci": [-0.005, 0.035],
+            }
         }
     return result
 
@@ -92,10 +95,19 @@ class ResultBridgeTest(unittest.TestCase):
         }
         problem_disjoint_budget = {
             "mixed_minus_answer": {
-                "mean_over_predeclared_budgets": {"difference": 0.011},
+                "mean_over_predeclared_budgets": {
+                    "difference": 0.011,
+                    "problem_cluster_95ci": [-0.002, 0.024],
+                },
                 "per_budget": {
-                    "10": {"difference": 0.026},
-                    "40": {"difference": 0.022},
+                    "10": {
+                        "difference": 0.026,
+                        "problem_cluster_95ci": [0.008, 0.044],
+                    },
+                    "40": {
+                        "difference": 0.022,
+                        "problem_cluster_95ci": [0.002, 0.041],
+                    },
                 },
             }
         }
@@ -103,14 +115,26 @@ class ResultBridgeTest(unittest.TestCase):
             "comparisons": {
                 "Progress_minus_Answer": {
                     "metrics": {
-                        "token_retention": {"left_minus_right": 0.013},
-                        "line_retention": {"left_minus_right": 0.029},
+                        "token_retention": {
+                            "left_minus_right": 0.013,
+                            "problem_cluster_bootstrap_95ci": [0.001, 0.026],
+                        },
+                        "line_retention": {
+                            "left_minus_right": 0.029,
+                            "problem_cluster_bootstrap_95ci": [0.012, 0.047],
+                        },
                     }
                 },
                 "Mixed9_minus_Answer9": {
                     "metrics": {
-                        "token_retention": {"left_minus_right": 0.026},
-                        "line_retention": {"left_minus_right": 0.033},
+                        "token_retention": {
+                            "left_minus_right": 0.026,
+                            "problem_cluster_bootstrap_95ci": [0.016, 0.036],
+                        },
+                        "line_retention": {
+                            "left_minus_right": 0.033,
+                            "problem_cluster_bootstrap_95ci": [0.019, 0.048],
+                        },
                     }
                 },
             }
@@ -120,7 +144,10 @@ class ResultBridgeTest(unittest.TestCase):
                 "ZPDPatch": {"joint_repair_rate": 0.75},
                 "Answer-9Choose3": {"joint_repair_rate": 0.72},
             },
-            "comparison": {"left_minus_right": 0.03},
+            "comparison": {
+                "left_minus_right": 0.03,
+                "problem_cluster_95_ci": [-0.01, 0.06],
+            },
         }
         codeworkout = paired_row(0.84, 0.85, "zpdpatch_minus_answer_9choose3")
         codeworkout["zpdpatch"] = {"rr": 0.84}
@@ -148,20 +175,37 @@ class ResultBridgeTest(unittest.TestCase):
         rendered = macros(result)
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
         self.assertIn(r"\newcommand{\AnswerThreeMinusOneSeen}{4.0}", rendered)
+        self.assertIn(r"\newcommand{\AnswerThreeMinusOneSeenCI}{[2.00, 6.00]}", rendered)
         self.assertIn(r"\newcommand{\AnswerNineMinusThreeSeen}{1.0}", rendered)
         self.assertIn(r"\newcommand{\MixedMinusAnswerNineUnseen}{2.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointSeenRR}{58.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointAnswerNineRR}{57.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointMixedMinusAnswerNine}{1.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointBudgetMixedMinusAnswerNine}{1.1}", rendered)
+        self.assertIn(
+            r"\newcommand{\ProblemDisjointBudgetMixedMinusAnswerNineCI}{[-0.20, 2.40]}",
+            rendered,
+        )
         self.assertIn(r"\newcommand{\ProblemDisjointTED10MixedMinusAnswerNine}{2.6}", rendered)
         self.assertIn(r"\newcommand{\ProgressMinusAnswerTokenRetention}{1.3}", rendered)
+        self.assertIn(
+            r"\newcommand{\ProgressMinusAnswerTokenRetentionCI}{[0.10, 2.60]}",
+            rendered,
+        )
         self.assertIn(r"\newcommand{\MixedMinusAnswerNineLineRetention}{3.3}", rendered)
         self.assertIn(r"\newcommand{\AnswerNineSelectionBootstrapFrequency}{25.0}", rendered)
         self.assertIn(r"\newcommand{\HiddenMixedJointRR}{75.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\HiddenMixedMinusAnswerNineCI}{[-1.00, 6.00]}",
+            rendered,
+        )
         self.assertIn(r"\newcommand{\CodeWorkoutStudentAnswerNineRR}{85.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleBudgetMixedMinusAnswerNineSeen}{1.5}", rendered)
+        self.assertIn(
+            r"\newcommand{\ScaleBudgetMixedMinusAnswerNineSeenCI}{[-0.50, 3.50]}",
+            rendered,
+        )
         self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedRR}{71.0}", rendered)
 
 
