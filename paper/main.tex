@@ -127,9 +127,10 @@ Unlike reference alignment and LSGen, \tool does not require a same-problem solu
 
 A direct numerical port would either grant held-out tasks the method-only
 evidence in Table~\ref{tab:functional-comparison} or remove a defining
-component; query budgets also differ. We instead use matched controls:
-Zero-shot for adaptation, Answer for target/checkpoint diversity, and LSGen for
-same-problem retrieval under the common runner.
+component; query budgets also differ. We instead use matched controls: an
+iterative execution-feedback Zero-shot for adaptation, Answer for
+target/checkpoint diversity, and LSGen for same-problem retrieval under the
+common runner.
 
 \begin{table}[t]
 \caption{Functional comparison with execution-aware educational and neural APR.
@@ -498,7 +499,12 @@ enters checkpoint or portfolio selection.
 \subsection{Baselines}
 
 \paragraph{Zero-shot.}
-The zero-shot baseline uses the same Qwen base model and prompt as \tool without fine-tuning. If a candidate fails, its verdict and number of passed tests are added to the conversation before the next attempt. It receives at most three generations, matching \tool's maximum budget. Because it receives the full trajectory, comparison with zero-shot measures the complete effect of learned adapters and sequential composition, not history in isolation.
+Despite its name, Zero-shot is an execution-aware iterative baseline: it uses
+the same Qwen base model and prompt as \tool without fine-tuning, and after a
+failure adds the verdict and number of passed tests before its next call. It
+receives at most three generations, matching \tool's maximum budget. Because
+it receives the full trajectory, the contrast measures the complete effect of
+learned adapters and sequential composition, not history in isolation.
 
 \paragraph{Supervised Answer ensemble.}
 Answer-3Seed is an inference-matched learned baseline: three conventional
