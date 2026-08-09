@@ -133,6 +133,31 @@ Submission sequences also support knowledge tracing, which estimates latent mast
 
 Unlike reference alignment and LSGen, \tool does not require a same-problem solution repository; unlike prior LLM and iterative repair, its targets are mined as ordered transitions from the same user's authentic submissions. Its multi-checkpoint control must also be distinguished from deep ensembles and model soups, which aggregate predictive distributions or weights~\cite{lakshminarayanan2017simple,wortsman2022model}. We instead execute complete programs, measure set-union repair coverage on validation problems, and retain separate checkpoints for conditional early stopping and structural gating. Because seed diversity alone can create complementary candidates, our evaluation gives a same-target Answer pool the identical number of trained checkpoints, exhaustive size-three choices, and test-time generation budget as the mixed-target pool.
 
+Prior scores are not directly portable because information and query budgets
+differ (Table~\ref{tab:functional-comparison}). We instead use matched causal
+controls: Zero-shot for adaptation, Answer for target/checkpoint diversity, and
+LSGen for same-problem retrieval under the common runner.
+
+\begin{table}[t]
+\caption{Functional comparison with execution-aware educational and neural APR.
+``Adaptive'' means that a generated candidate changes a later model query.}
+\label{tab:functional-comparison}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{p{.17\columnwidth}p{.35\columnwidth}p{.39\columnwidth}}
+\toprule
+System & Method-specific evidence & Query/control role \\
+\midrule
+SelfAPR~\cite{ye2022selfapr} & Diagnostic; project-local synthetic data & Static; diagnostic-conditioned generation \\
+PyDex~\cite{zhang2024pydex} & Statement, tests, selected few-shots & Adaptive; tests select iterative candidates \\
+CREF~\cite{yang2024cref} & Tutor hint, solution, failing tests & Adaptive; tutor conversation \\
+CEGIS repair~\cite{orvalho2025counterexample} & Tests, reference, MaxSAT sketch & Adaptive; counterexample refinement \\
+\tool & Statement, tests, trajectory; no repair-time reference & Non-adaptive generation; execution-conditioned stop, fallback, and TED gate \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Problem Formulation}
 \label{sec:formulation}
 
@@ -842,8 +867,11 @@ budget violations; all 687/199 selected Seen/Unseen changes parse. These are
 specification checks, not learned-behavior evidence. For 155 Seen instances
 from training-disjoint users, \tool gains 40.0 RR points over Zero-shot [30.7,
 48.8], versus 26.7 [22.6, 31.0] on 842 overlap instances; the 69-instance
-Unseen disjoint-user estimate is +11.6 [--1.5, 25.4]. These observational
-strata do not identify memorization. Three complete P--S--A runs give Seen RR
+Unseen disjoint-user estimate is +11.6 [--1.5, 25.4]; these strata do not
+identify memorization. An outcome-blind exploratory audit by verdict, current
+pass rate, history length, and fixed AST-size bins finds every $M_9-A_9$
+clustered interval includes zero, revealing no concentrated subgroup advantage.
+Three complete P--S--A runs give Seen RR
 59.5/57.6/59.0\% (SD 1.0) and Unseen RR 73.2/74.0/70.4\% (SD 1.9). All six
 orders preserve fixed-candidate RR; P--S--A minimizes breadth (1.391) and
 successful-patch TED (21.10).

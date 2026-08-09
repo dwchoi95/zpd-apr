@@ -37,6 +37,7 @@ and records the exact source revision.
 | five-fold problem cross-fitting | `analysis/fse2027-problem-crossfit.json`; fold construction and frozen test replay in `scripts/analyze_problem_crossfit_portfolios.py` |
 | prompt-distribution control | `analysis/fse2027-prompt-distribution-control.json`; regenerated candidates under `eval/prompt-distribution-current-only/` |
 | verdict-order sensitivity | `analysis/fse2027-verdict-order-model-sensitivity.json`; `analysis/fse2027-verdict-order-token-audit.json`; alternative datasets under `datasets/accepted-vs-failure/` |
+| exploratory effect heterogeneity | `analysis/fse2027-effect-heterogeneity.json`; fixed strata and paired problem-cluster analysis in `scripts/analyze_fse2027_effect_heterogeneity.py` |
 | normalized edit frontier | `analysis/fse2027-normalized-ted-frontier.json` |
 | absolute-budget interpretation | current-program AST node counts and per-budget fractions in `analysis/fse2027-normalized-ted-frontier.json` |
 | source retention | `analysis/fse2027-patch-locality.json` |
@@ -61,6 +62,7 @@ bash scripts/run_fse2027_codeworkout_problem_holdout_remote.sh
 bash scripts/run_fse2027_prompt_distribution_control_remote.sh
 bash scripts/run_fse2027_problem_crossfit_remote.sh
 bash scripts/run_fse2027_verdict_order_retraining_remote.sh
+bash scripts/run_fse2027_effect_heterogeneity_remote.sh
 ```
 
 The five-fold cross-fitting script hashes problem identities into deterministic
