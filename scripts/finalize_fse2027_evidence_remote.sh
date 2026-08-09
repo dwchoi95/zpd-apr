@@ -32,6 +32,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-problem-disjoint-budget-fair-pools.json"
   "${RUN_ROOT}/analysis/fse2027-patch-locality.json"
   "${RUN_ROOT}/analysis/fse2027-normalized-ted-frontier.json"
+  "${RUN_ROOT}/analysis/fse2027-operational-cost.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do

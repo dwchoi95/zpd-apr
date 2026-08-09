@@ -379,14 +379,15 @@ Thus every returned change has pass rate at least \(\mathrm{Pass}(c_i)\) and
 set-union objective \(f_B\). These guarantees concern observed tests and edit
 compliance, not hidden-test correctness or learned relational behavior.
 
-Construction costs \(O(nT)\) time and \(O(n)\) retained-state storage for a
-length-\(n\), \(T\)-test trajectory; Answer is \(O(n)\). On Seen Test, the
-deployed portfolio averages 1.98 calls and 13.62 seconds, versus 1.93/13.32 for
-Answer-3Seed and 3.00/24.40 for always-three LSGen, excluding cached current
-execution. Nine 155MB LoRA files occupy 1.4GB, while deployment loads three.
-Sequential training takes 37.1 RTX 5090 GPU-hours (Progress/Strict/Answer:
-3.94/2.58/5.84 hours per seed), versus 17.5 hours for three Answer adapters;
-these are single-GPU measurements, not optimized-serving claims.
+Construction costs \(O(nT)\) time and \(O(n)\) storage; Answer is \(O(n)\).
+The \(A_1/A_3/A_9/M_9\) ladder trains 1/3/9/9 adapters for
+5.84/17.5/52.6/37.1 RTX 5090 GPU-hours and uses 0/0/4,149/4,149 portfolio-selection
+validation executions. Its Seen RR is 50.1/61.7/59.8/61.5\%, with
+1.00/1.93/1.93/1.98 mean deployment calls. Thus \(A_3\) dominates \(A_9\) in
+unrestricted RR and cost; the nine-model pools are diagnostic and support the
+edit-constrained frontier, not a universally cheaper default. \(M_9/A_3\)
+latency is 13.62/13.32 seconds versus 24.40 for always-three LSGen, excluding
+cached current execution. Nine 155MB LoRA files occupy 1.4GB; deployment loads three.
 
 \section{Experimental Design}
 \label{sec:experiment}
