@@ -40,6 +40,23 @@ for path in "${required_analysis[@]}"; do
   fi
 done
 
+required_external=(
+  "${WORK_ROOT}/archive/external/tiktoc/source-provenance.json"
+  "${WORK_ROOT}/archive/external/tiktoc/derived/trajectory-summary.json"
+  "${WORK_ROOT}/archive/external/tiktoc/derived/trajectory-4k-summary.json"
+  "${WORK_ROOT}/archive/external/tiktoc/derived/datasets/summary.json"
+  "${WORK_ROOT}/archive/external/tiktoc/derived/datasets/token-audit-4k.json"
+  "${WORK_ROOT}/archive/external/tiktoc/derived/problem-holdout/split-summary.json"
+  "${WORK_ROOT}/archive/external/tiktoc/derived/problem-holdout/datasets/summary.json"
+  "${WORK_ROOT}/archive/external/tiktoc/derived/java-eval/RecordedOracle.summary.json"
+)
+for path in "${required_external[@]}"; do
+  if [[ ! -s "${path}" ]]; then
+    echo "missing required external evidence: ${path}" >&2
+    exit 1
+  fi
+done
+
 "${PYTHON}" scripts/build_fse2027_result_bridge.py \
   --answer9 "${RUN_ROOT}/analysis/fse2027-answer9-control.json" \
   --hidden "${RUN_ROOT}/analysis/fse2027-answer9-independent-hidden.json" \
