@@ -211,6 +211,9 @@ def macros(result: dict[str, Any]) -> str:
         codeworkout_rr["left_minus_right_instance_weighted"]
     )
     values["CodeWorkoutStudentMixedMinusAnswerNineCI"] = ci(codeworkout_rr)
+    values["CodeWorkoutStudentMixedMinusAnswerNineStudentCI"] = interval(
+        codeworkout["zpdpatch_minus_answer_9choose3"]["student_cluster_rr_95ci"]
+    )
 
     scale = result["scale_1_5b"]
     for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
@@ -240,6 +243,9 @@ def macros(result: dict[str, Any]) -> str:
         problem_rr["left_minus_right_instance_weighted"]
     )
     values["CodeWorkoutProblemMixedMinusAnswerNineCI"] = ci(problem_rr)
+    values["CodeWorkoutProblemMixedMinusAnswerNineStudentCI"] = interval(
+        problem["mixed_minus_answer"]["student_cluster_rr_95ci"]
+    )
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )

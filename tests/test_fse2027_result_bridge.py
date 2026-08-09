@@ -57,7 +57,8 @@ def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> 
                     "left_minus_right_instance_weighted": mixed - answer,
                     "cluster_bootstrap_95ci": [-0.01, 0.03],
                 }
-            ]
+            ],
+            "student_cluster_rr_95ci": [-0.02, 0.04],
         },
     }
     if key == "mixed_minus_answer":
@@ -200,6 +201,10 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(r"\newcommand{\CodeWorkoutStudentAnswerNineRR}{85.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\CodeWorkoutStudentMixedMinusAnswerNineStudentCI}{[-2.00, 4.00]}",
+            rendered,
+        )
         self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleBudgetMixedMinusAnswerNineSeen}{1.5}", rendered)
         self.assertIn(
@@ -207,6 +212,10 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedRR}{71.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\CodeWorkoutProblemMixedMinusAnswerNineStudentCI}{[-2.00, 4.00]}",
+            rendered,
+        )
 
 
 if __name__ == "__main__":

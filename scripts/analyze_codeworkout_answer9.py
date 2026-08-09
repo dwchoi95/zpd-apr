@@ -8,6 +8,39 @@ import json
 from pathlib import Path
 
 from analyze_fse2027_robustness import paired_suite_rows, read_jsonl, summarize_method
+from analyze_codeworkout_portfolios import clustered_interval
+
+
+def analyze(
+    zpdpatch: list[dict],
+    answer9: list[dict],
+    selection: dict,
+    *,
+    samples: int,
+    seed: int,
+) -> dict:
+    comparison = paired_suite_rows(
+        zpdpatch,
+        answer9,
+        left_label="ZPDPatch",
+        right_label="Answer-9Choose3",
+        samples=samples,
+        seed=seed,
+    )
+    comparison["student_cluster_rr_95ci"] = clustered_interval(
+        zpdpatch, answer9, "user_id", seed=seed
+    )
+    return {
+        "dataset": "CodeWorkout student-held-out Java test",
+        "selection_partition": "CodeWorkout student-held-out validation",
+        "test_outcomes_used_for_selection": False,
+        "answer_candidate_checkpoints": selection["candidate_checkpoint_count"],
+        "answer_feasible_portfolios": selection["feasible_portfolios"],
+        "answer_selected_members": selection["selected_unrestricted"]["members"],
+        "zpdpatch": summarize_method(zpdpatch),
+        "answer_9choose3": summarize_method(answer9),
+        "zpdpatch_minus_answer_9choose3": comparison,
+    }
 
 
 def main() -> None:
@@ -22,24 +55,13 @@ def main() -> None:
     zpdpatch = read_jsonl(args.zpdpatch)
     answer9 = read_jsonl(args.answer9)
     selection = json.loads(args.selection.read_text(encoding="utf-8"))
-    result = {
-        "dataset": "CodeWorkout student-held-out Java test",
-        "selection_partition": "CodeWorkout student-held-out validation",
-        "test_outcomes_used_for_selection": False,
-        "answer_candidate_checkpoints": selection["candidate_checkpoint_count"],
-        "answer_feasible_portfolios": selection["feasible_portfolios"],
-        "answer_selected_members": selection["selected_unrestricted"]["members"],
-        "zpdpatch": summarize_method(zpdpatch),
-        "answer_9choose3": summarize_method(answer9),
-        "zpdpatch_minus_answer_9choose3": paired_suite_rows(
-            zpdpatch,
-            answer9,
-            left_label="ZPDPatch",
-            right_label="Answer-9Choose3",
-            samples=args.samples,
-            seed=args.seed,
-        ),
-    }
+    result = analyze(
+        zpdpatch,
+        answer9,
+        selection,
+        samples=args.samples,
+        seed=args.seed,
+    )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, sort_keys=True))
