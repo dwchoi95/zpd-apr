@@ -894,6 +894,31 @@ class AnswerSeedControlAnalysisTest(unittest.TestCase):
         self.assertEqual(by_id["c"]["fixed_pass_rate"], 0.5)
         self.assertAlmostEqual(summarize(rows)["repair_rate"], 2 / 3)
 
+    def test_sparse_composition_accepts_codeworkout_baseline_schema(self) -> None:
+        dataset = [{"example_id": "cw"}]
+
+        def row(rate: float) -> dict:
+            return {
+                "example_id": "cw",
+                "problem_id": "cw001",
+                "user_id": "u",
+                "current_pass_rate": rate,
+                "fixed_pass_rate": 1.0,
+                "repaired": True,
+            }
+
+        result = compose(
+            dataset,
+            [("a", [row(0.25)]), ("b", [row(0.25)]), ("c", [row(0.25)])],
+        )
+        self.assertEqual(result[0]["buggy_pass_rate"], 0.25)
+        self.assertEqual(result[0]["current_pass_rate"], 0.25)
+        with self.assertRaisesRegex(ValueError, "stage baselines disagree"):
+            compose(
+                dataset,
+                [("a", [row(0.25)]), ("b", [row(0.5)]), ("c", [row(0.25)])],
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

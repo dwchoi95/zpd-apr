@@ -30,6 +30,19 @@ def ted_key(row: Row) -> float:
     return float(value) if value is not None else float("inf")
 
 
+def baseline_pass_rate(row: Row) -> float:
+    values = [
+        float(row[key])
+        for key in ("buggy_pass_rate", "current_pass_rate")
+        if row.get(key) is not None
+    ]
+    if not values:
+        raise ValueError("evaluation row has no baseline pass rate")
+    if any(value != values[0] for value in values[1:]):
+        raise ValueError("baseline pass-rate fields disagree")
+    return values[0]
+
+
 def compose(
     dataset: list[Row],
     stages: list[tuple[str, list[Row]]],
@@ -44,12 +57,14 @@ def compose(
     results: list[Row] = []
     for example_id in sorted(dataset_by_id):
         reference = stage_maps[0][1][example_id]
-        baseline = float(reference["buggy_pass_rate"])
+        baseline = baseline_pass_rate(reference)
         available: list[tuple[str, Row]] = [
             (name, rows[example_id])
             for name, rows in stage_maps
             if example_id in rows
         ]
+        if any(baseline_pass_rate(row) != baseline for _name, row in available):
+            raise ValueError(f"stage baselines disagree for {example_id}")
         def within_budget(candidate: Row) -> bool:
             if max_ted is None:
                 return True
@@ -87,6 +102,7 @@ def compose(
                 "user_id": reference["user_id"],
                 "method": "Answer-3Seed",
                 "buggy_pass_rate": baseline,
+                "current_pass_rate": baseline,
                 "fixed_pass_rate": fixed_pass_rate,
                 "repaired": bool(selected is not None and selected["repaired"]),
                 "improved": fixed_pass_rate > baseline,
