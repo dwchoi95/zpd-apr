@@ -506,8 +506,9 @@ Two replications retain the same targets, selectors, and effective batch.
 The scale replication substitutes Qwen2.5-Coder-1.5B-Instruct and uses
 micro-batches of 8 with two accumulation steps. The assignment-held-out
 CodeWorkout split uses 10/3/4 disjoint train/validation/test exercises
-(605/216/304 trajectories) and retrains both nine-checkpoint pools; unlike the
-student holdout, users may cross these exercise partitions.
+(605/216/304 trajectories) and retrains both nine-checkpoint pools. It contains
+213/150/161 students, including 151 shared train--test identities; it therefore
+isolates assignment transfer, whereas the student split isolates learners.
 
 OpenAI Codex was used interactively to propose control and validation-selection
 design alternatives, implement dataset builders, orchestrate experiments,
@@ -931,7 +932,8 @@ problems; clustering and disjoint-selection audits do not eliminate memorization
 \paragraph{External validity.}
 The study spans Python contest code and Java CS1 code after dataset-specific
 retraining, but no multi-file projects. CodeWorkout and CodeNet holdouts reflect
-different populations and are not random difficulty samples.
+different populations and are not random difficulty samples. CodeWorkout holds
+out students or exercises separately, not both simultaneously.
 
 \paragraph{Conclusion validity.}
 Problem-clustered effects support the planned metrics, but TED intervals apply
@@ -944,14 +946,11 @@ signals and follows source-dataset terms.
 \section{Conclusion}
 \label{sec:conclusion}
 
-\tool execution-selects repair portfolios from auditable trajectory targets.
-Its 61.5/74.8\% Seen/Unseen RR exceeds zero-shot's 30.7/62.0\% but matches
-same-target controls in unrestricted coverage. The matched ladder identifies
-independent checkpoint diversity as the coverage mechanism and relation targets
-as a source of smaller, budget-feasible repairs. \label{sec:data-availability}\textbf{Data availability.}
-The anonymous artifact provides splits, checkpoint identities and training
-summaries, validation coverage sets, raw generations and executions (including
-Answer9 and hidden tests), replay scripts, and a revision-bound SHA-256 manifest.
+\tool raises Seen/Unseen RR over zero-shot to 61.5/74.8\%, but matched controls
+attribute unrestricted coverage to checkpoint diversity; relation targets
+improve edit-constrained coverage and source retention. \label{sec:data-availability}\textbf{Data availability.}
+The artifact provides splits, checkpoints, raw executions, replay scripts, and
+a revision-bound SHA-256 manifest.
 
 \clearpage
 \bibliographystyle{ACM-Reference-Format}
