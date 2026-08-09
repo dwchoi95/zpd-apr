@@ -117,6 +117,7 @@ done
   --analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json" \
   --ladder-analysis "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json" \
   --ladder-analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json" \
+  --problem-crossfit "${RUN_ROOT}/analysis/fse2027-problem-crossfit.json" \
   --external-split-summary \
   "${WORK_ROOT}/archive/external/tiktoc/derived/problem-holdout/split-summary.json"
 

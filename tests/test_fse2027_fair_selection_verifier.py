@@ -9,6 +9,7 @@ from scripts.verify_fse2027_fair_selection import (
     verify,
     verify_external_split,
     verify_mechanism_ladder,
+    verify_problem_crossfit,
 )
 
 
@@ -129,6 +130,42 @@ class FairSelectionVerifierTest(unittest.TestCase):
             value["answer_1"]["examples"] = 9
             with self.assertRaisesRegex(ValueError, "different examples"):
                 verify_mechanism_ladder(self.write(root, value))
+
+    def test_requires_complete_problem_crossfit_audit(self) -> None:
+        paired = [
+            {"metric": metric, "examples": 997}
+            for metric in ("pr", "rr", "ir")
+        ]
+        fold_sizes = [66, 66, 66, 65, 65]
+        value = {
+            "folds": 5,
+            "test_outcomes_used_for_selection": False,
+            "cohort_audit": {
+                "validation_examples": 461,
+                "test_examples": 997,
+                "unique_examples_per_member": True,
+                "mixed_answer_validation_examples_identical": True,
+                "mixed_answer_test_examples_identical": True,
+            },
+            "fold_audit": [
+                {
+                    "fold": fold,
+                    "test_problems": count,
+                    "validation_problems": 390,
+                    "validation_test_problem_overlap": 0,
+                }
+                for fold, count in enumerate(fold_sizes)
+            ],
+            "mixed": {"examples": 997, "problems": 328},
+            "answer": {"examples": 997, "problems": 328},
+            "mixed_minus_answer": {"paired": paired},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            verify_problem_crossfit(self.write(root, value))
+            value["fold_audit"][2]["validation_test_problem_overlap"] = 1
+            with self.assertRaisesRegex(ValueError, "overlapping"):
+                verify_problem_crossfit(self.write(root, value))
 
 
 if __name__ == "__main__":

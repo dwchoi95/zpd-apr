@@ -10,6 +10,10 @@ from pathlib import Path
 
 EXPECTED_CANDIDATES = 9
 EXPECTED_PORTFOLIOS = 84
+EXPECTED_CROSSFIT_FOLDS = 5
+EXPECTED_CROSSFIT_VALIDATION_EXAMPLES = 461
+EXPECTED_CROSSFIT_TEST_EXAMPLES = 997
+EXPECTED_CROSSFIT_TEST_PROBLEMS = 328
 
 
 def verify_external_split(path: Path) -> None:
@@ -109,10 +113,61 @@ def verify_mechanism_ladder(path: Path) -> None:
                     )
 
 
+def verify_problem_crossfit(path: Path) -> None:
+    result = json.loads(path.read_text(encoding="utf-8"))
+    if result.get("folds") != EXPECTED_CROSSFIT_FOLDS:
+        raise ValueError(f"{path}: cross-fit must use {EXPECTED_CROSSFIT_FOLDS} folds")
+    if result.get("test_outcomes_used_for_selection") is not False:
+        raise ValueError(f"{path}: test outcomes must not enter cross-fit selection")
+    cohort = result.get("cohort_audit")
+    expected_cohort = {
+        "validation_examples": EXPECTED_CROSSFIT_VALIDATION_EXAMPLES,
+        "test_examples": EXPECTED_CROSSFIT_TEST_EXAMPLES,
+        "unique_examples_per_member": True,
+        "mixed_answer_validation_examples_identical": True,
+        "mixed_answer_test_examples_identical": True,
+    }
+    if not isinstance(cohort, dict):
+        raise ValueError(f"{path}: missing cross-fit cohort audit")
+    for key, value in expected_cohort.items():
+        if cohort.get(key) != value:
+            raise ValueError(f"{path}: cross-fit {key}={cohort.get(key)!r}, expected {value!r}")
+    folds = result.get("fold_audit")
+    if not isinstance(folds, list) or len(folds) != EXPECTED_CROSSFIT_FOLDS:
+        raise ValueError(f"{path}: incomplete cross-fit fold audit")
+    if {row.get("fold") for row in folds} != set(range(EXPECTED_CROSSFIT_FOLDS)):
+        raise ValueError(f"{path}: cross-fit fold identifiers are incomplete")
+    if any(
+        row.get("validation_test_problem_overlap") != 0
+        or not isinstance(row.get("test_problems"), int)
+        or row["test_problems"] <= 0
+        or not isinstance(row.get("validation_problems"), int)
+        or row["validation_problems"] <= 0
+        for row in folds
+    ):
+        raise ValueError(f"{path}: invalid or overlapping cross-fit fold")
+    if sum(row["test_problems"] for row in folds) != EXPECTED_CROSSFIT_TEST_PROBLEMS:
+        raise ValueError(f"{path}: cross-fit test problems do not sum to {EXPECTED_CROSSFIT_TEST_PROBLEMS}")
+    for method in ("mixed", "answer"):
+        summary = result.get(method, {})
+        if (
+            summary.get("examples") != EXPECTED_CROSSFIT_TEST_EXAMPLES
+            or summary.get("problems") != EXPECTED_CROSSFIT_TEST_PROBLEMS
+        ):
+            raise ValueError(f"{path}: cross-fit {method} summary has wrong cohort")
+    paired = result.get("mixed_minus_answer", {}).get("paired")
+    by_metric = {row.get("metric"): row for row in paired or [] if isinstance(row, dict)}
+    for metric_name in ("pr", "rr", "ir"):
+        row = by_metric.get(metric_name)
+        if row is None or row.get("examples") != EXPECTED_CROSSFIT_TEST_EXAMPLES:
+            raise ValueError(f"{path}: cross-fit missing aligned {metric_name.upper()} contrast")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--analysis", action="append", type=Path, required=True)
     parser.add_argument("--ladder-analysis", action="append", type=Path, default=[])
+    parser.add_argument("--problem-crossfit", type=Path, required=True)
     parser.add_argument("--external-split-summary", type=Path, required=True)
     args = parser.parse_args()
     for path in args.analysis:
@@ -120,12 +175,14 @@ def main() -> None:
     for path in args.ladder_analysis:
         verify(path)
         verify_mechanism_ladder(path)
+    verify_problem_crossfit(args.problem_crossfit)
     verify_external_split(args.external_split_summary)
     print(
         json.dumps(
             {
                 "verified_analyses": len(args.analysis) + len(args.ladder_analysis),
                 "verified_mechanism_ladders": len(args.ladder_analysis),
+                "problem_crossfit_verified": True,
                 "candidate_checkpoints_per_pool": EXPECTED_CANDIDATES,
                 "feasible_size_three_portfolios_per_pool": EXPECTED_PORTFOLIOS,
                 "external_split_summary_verified": True,
