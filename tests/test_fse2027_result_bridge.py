@@ -70,6 +70,15 @@ class ResultBridgeTest(unittest.TestCase):
                 }
             },
         }
+        problem_disjoint_budget = {
+            "mixed_minus_answer": {
+                "mean_over_predeclared_budgets": {"difference": 0.011},
+                "per_budget": {
+                    "10": {"difference": 0.026},
+                    "40": {"difference": 0.022},
+                },
+            }
+        }
         hidden = {
             "methods": {
                 "ZPDPatch": {"joint_repair_rate": 0.75},
@@ -96,6 +105,7 @@ class ResultBridgeTest(unittest.TestCase):
             answer_stability,
             problem_disjoint,
             answer_problem_disjoint,
+            problem_disjoint_budget,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
@@ -104,6 +114,8 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\ProblemDisjointSeenRR}{58.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointAnswerNineRR}{57.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointMixedMinusAnswerNine}{1.0}", rendered)
+        self.assertIn(r"\newcommand{\ProblemDisjointBudgetMixedMinusAnswerNine}{1.1}", rendered)
+        self.assertIn(r"\newcommand{\ProblemDisjointTED10MixedMinusAnswerNine}{2.6}", rendered)
         self.assertIn(r"\newcommand{\AnswerNineSelectionBootstrapFrequency}{25.0}", rendered)
         self.assertIn(r"\newcommand{\HiddenMixedJointRR}{75.0}", rendered)
         self.assertIn(r"\newcommand{\CodeWorkoutStudentAnswerNineRR}{85.0}", rendered)
