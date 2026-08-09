@@ -267,38 +267,30 @@ measure the cross-policy repair complementarity used at deployment. We
 therefore select the portfolio using execution on validation problems. Let
 \(V=V_P\mathbin{\dot\cup}V_S\mathbin{\dot\cup}V_A\) be independently trained
 Progress, Strict, and Answer checkpoints and let \(R_v\subseteq U\) be the
-validation instances repaired by checkpoint \(v\). For a portfolio \(S\),
-define execution coverage
+validation instances repaired by checkpoint \(v\). Portfolio coverage is
 \begin{equation}
  f(S)=|\bigcup_{v\in S}R_v|/|U|.
  \label{eq:portfolio-objective}
 \end{equation}
-The deployed search family is
-\(\mathcal F_3=\{S\subseteq V:|S|=3\}\). It allows validation evidence to
-choose both target relations and training seeds rather than assuming that one
-checkpoint per relation is optimal. We retain
+We search \(\mathcal F_3=\{S\subseteq V:|S|=3\}\), allowing validation to
+choose relations and seeds, and retain
 \(\mathcal F_{\mathrm{rel}}=\{S\in\mathcal F_3:
 |S\cap V_a|=1\ \forall a\}\) as the direct relation-heterogeneity control.
 We sample one eligible trajectory per validation problem by a fixed hash
 before any execution, yielding 461 problems with complete nine-checkpoint
-evaluation and preventing high-volume assignments from dominating selection. In
-addition to unrestricted \(f\), let \(R_v^B\) contain repairs whose AST TED is at
-most \(B\), and predeclare \(\mathcal B=\{5,10,20,40,80,160\}\). Define
-\(f_B(S)=|\bigcup_{v\in S}R_v^B|/|U|\). The budget-aware objective
+evaluation. For predeclared \(\mathcal B=\{5,10,20,40,80,160\}\), let
+\(R_v^B\) retain repairs with AST TED at most \(B\), define
+\(f_B(S)=|\bigcup_{v\in S}R_v^B|/|U|\), and use
 \(f_{\mathcal B}(S)=|\mathcal B|^{-1}\sum_{B\in\mathcal B}f_B(S)\)
-averages the complete coverage curve for deployments that require one
-budget-agnostic triple. When the budget is declared before a query, the aligned
-controller instead freezes the validation maximizer for that budget and invokes
-its triple under the corresponding gate. We exactly enumerate all
-$\binom{9}{3}=84$ members of \(\mathcal F_3\) and the 27
-relation-constrained triples for unrestricted, budget-agnostic, and each
-budget-indexed objective. The three Answer checkpoints form the prespecified
-same-target control. Final test-split outcomes never enter selection.
+when one triple must span budgets. A budget known before a query instead uses
+the validation maximizer of \(f_B\). We enumerate all $\binom{9}{3}=84$
+unrestricted and 27 relation-constrained triples for every objective; a fixed
+three-Answer portfolio is the same-target control. Test outcomes never enter
+selection.
 
-The objectives \(f\), \(f_B\), and their mean are normalized and monotone. They
-are also submodular~\cite{nemhauser1978analysis}. Enumeration returns the exact
-validation optimum in each declared finite family; submodularity is a property,
-not the algorithm used here.
+These normalized set-union objectives are monotone and
+submodular~\cite{nemhauser1978analysis}; enumeration, rather than an
+approximation algorithm, returns each finite-family optimum.
 
 \paragraph{Finite-family selection guarantee.}
 For problem \(q\), let \(X_q(S)\in[0,1]\) be portfolio coverage,
@@ -312,11 +304,9 @@ probability at least \(1-\delta\),
  (1+\alpha)\sqrt{\frac{\log(2|\mathcal F|/\delta)}{2n}}.
 \label{eq:finite-family-bound}
 \end{equation}
-Hoeffding plus a union bound controls every portfolio; inserting the
-\(\alpha\)-approximation between the two deviations gives the result. Exact
-enumeration sets \(\alpha=1\), so regret is at most twice the uniform
-deviation. Its i.i.d. premise does not cover identity overlap or distribution
-shift; RQ6 audits both rather than treating the bound as an effect certificate.
+This follows from Hoeffding and a union bound over \(\mathcal F\). Exact
+enumeration sets \(\alpha=1\); RQ6 separately audits identity overlap and
+distribution shift, which the i.i.d. bound does not cover.
 
 \paragraph{Mechanism-identification ladder.}
 Let \(r(P)\) be held-out RR for controller \(P\), \(A_1\) one Answer checkpoint,
@@ -326,13 +316,11 @@ Let \(r(P)\) be held-out RR for controller \(P\), \(A_1\) one Answer checkpoint,
  r(A_3)-r(A_1),\quad r(A_9)-r(A_3),\quad r(M_9)-r(A_9)
  \label{eq:mechanism-ladder}
 \end{equation}
-separate fixed-budget checkpoint breadth, added pool-and-validation-selection
-opportunity, and target composition, respectively. Only the last contrast
-matches pool size, 84-way search, validation instances, selector, and three-call
-test budget; Answer training uses more examples, making it a compute-favored
-control rather than an advantage for \(M_9\). Thus a positive last contrast is
-evidence for mixed targets conditional on the declared seed family, whereas a
-null or negative result attributes coverage to seed diversity and selection.
+separate checkpoint breadth, added pool/selection opportunity, and target
+composition. Only the last matches pool size, 84-way search, validation data,
+selector, and three-call budget. Answer also has more training examples, so it
+is a compute-favored control. The last contrast therefore isolates mixed
+targets conditional on the declared seed family.
 
 \subsection{Execution-Guided Sequential Repair}
 \label{sec:sequential}
@@ -341,18 +329,12 @@ At inference, we invoke the three validation-selected checkpoints in
 fine-to-broad relation order, breaking same-relation ties by their frozen member
 order. Each checkpoint receives the same complete observed evaluation trajectory,
 including Answer checkpoints whose SFT records contained only one submission,
-and produces one complete program. This common-context inference rule holds the
-available evidence fixed across policies; it does not claim that Answer was
-history-trained. Generated candidates are never inserted into another
-checkpoint's prompt. This independence makes the outputs a policy portfolio
-rather than a synthetic trajectory whose later states may lie outside the
-training distribution. In unrestricted mode, an accepted candidate stops
-the sequence; otherwise executed candidates are compared by the certified
-selector below. The budgeted mode additionally continues past accepted
-candidates that exceed the declared structural limit. The order is fixed before
-evaluation and tested independently in RQ3--RQ6. We also evaluate the previously
-plausible alternative of appending generated execution feedback as a controlled
-ablation.
+and produces one complete program. This fixes available evidence across
+policies without claiming that Answer was history-trained. Candidates never
+enter later prompts, avoiding synthetic off-distribution trajectories.
+Unrestricted execution stops at the first acceptance; budgeted execution
+continues past over-budget acceptances. The order is frozen before evaluation,
+and generated-feedback prompting is evaluated separately.
 
 If all candidates fail, the selector includes the current program \(c_i\) as a fallback:
 \begin{equation}
@@ -367,14 +349,15 @@ c^*=\underset{c\in\mathcal{C}}{\arg\max}
 \left(\mathrm{Pass}(c),-\mathrm{ted}^{\dagger}(c_i,c)\right).
 \label{eq:selection}
 \end{equation}
-The selector first maximizes executed correctness and then minimizes change. If no candidate improves on \(c_i\), the unchanged fallback has TED zero and the system abstains. Sequentially generating, executing, and stopping at the first accepted candidate preserves non-interacting generation from the authentic observed trajectory; if all fail, every executed candidate remains available to Equation~\ref{eq:selection}.
+The selector maximizes executed correctness, then minimizes change; when no
+candidate improves \(c_i\), the zero-TED fallback makes the system abstain.
 
 \paragraph{Certified selection and cost.}
 Including \(c_i\) in Equation~\ref{eq:selection} makes observed-test
 non-regression an invariant: an early return has pass rate one, and otherwise
 the maximum cannot score below its fallback. With a structural budget \(B\),
-the gate \(G_B\) discards changed candidates with infinite or over-budget TED, continues past an
-over-budget acceptance, and selects from the eligible candidates plus \(c_i\).
+the gate \(G_B\) discards changed candidates with infinite or over-budget TED
+and selects from the eligible candidates plus \(c_i\).
 Thus every returned change has pass rate at least \(\mathrm{Pass}(c_i)\) and
 \(\mathrm{ted}^{\dagger}(c_i,c^*)\leq B\); deployed coverage is exactly the validation
 set-union objective \(f_B\). These guarantees concern observed tests and edit
@@ -1002,6 +985,7 @@ tests, and pinned environments. \texttt{ARTIFACT.md} maps claims and seals
 counts, digests, and revision; release follows acceptance subject to dataset
 terms.
 
+\clearpage
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
 
