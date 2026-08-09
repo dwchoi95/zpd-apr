@@ -72,9 +72,16 @@ class FairSelectionVerifierTest(unittest.TestCase):
                 verify_external_split(path)
 
     def test_requires_complete_answer_mechanism_ladder(self) -> None:
-        method = {"pr": 0.8, "rr": 0.7, "ir": 0.75}
+        method = {"examples": 10, "pr": 0.8, "rr": 0.7, "ir": 0.75}
         contrast = {
-            "paired": [{"metric": "rr", "cluster_bootstrap_95ci": [-0.1, 0.1]}]
+            "paired": [
+                {
+                    "metric": metric,
+                    "examples": 10,
+                    "cluster_bootstrap_95ci": [-0.1, 0.1],
+                }
+                for metric in ("pr", "rr", "ir")
+            ]
         }
         value = {
             "answer_3seed_members": ["Answer2027", "Answer2028", "Answer2029"],
@@ -84,12 +91,43 @@ class FairSelectionVerifierTest(unittest.TestCase):
             "answer_1": method,
             "answer_3seed_minus_answer_1": contrast,
             "answer_9choose3_minus_answer_3seed": contrast,
+            "mixed_minus_answer": contrast,
         }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             verify_mechanism_ladder(self.write(root, value))
             del value["answer_3seed"]
             with self.assertRaisesRegex(ValueError, "missing answer_3seed"):
+                verify_mechanism_ladder(self.write(root, value))
+
+    def test_rejects_missing_target_contrast_or_mismatched_cohort(self) -> None:
+        method = {"examples": 10, "pr": 0.8, "rr": 0.7, "ir": 0.75}
+        contrast = {
+            "paired": [
+                {
+                    "metric": metric,
+                    "examples": 10,
+                    "cluster_bootstrap_95ci": [-0.1, 0.1],
+                }
+                for metric in ("pr", "rr", "ir")
+            ]
+        }
+        value = {
+            "answer_3seed_members": ["Answer2027", "Answer2028", "Answer2029"],
+            "mixed_target_9choose3": dict(method),
+            "answer_9choose3": dict(method),
+            "answer_3seed": dict(method),
+            "answer_1": dict(method),
+            "answer_3seed_minus_answer_1": contrast,
+            "answer_9choose3_minus_answer_3seed": contrast,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaisesRegex(ValueError, "mixed_minus_answer"):
+                verify_mechanism_ladder(self.write(root, value))
+            value["mixed_minus_answer"] = contrast
+            value["answer_1"]["examples"] = 9
+            with self.assertRaisesRegex(ValueError, "different examples"):
                 verify_mechanism_ladder(self.write(root, value))
 
 

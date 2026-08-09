@@ -69,27 +69,44 @@ def verify_mechanism_ladder(path: Path) -> None:
     else:
         labeled = [("test", result)]
     for label, node in labeled:
+        summaries = {}
         for method in (
             "mixed_target_9choose3", "answer_9choose3", "answer_3seed", "answer_1"
         ):
             summary = node.get(method)
             if not isinstance(summary, dict):
                 raise ValueError(f"{path}: {label} missing {method}")
+            if not isinstance(summary.get("examples"), int) or summary["examples"] <= 0:
+                raise ValueError(f"{path}: {label} {method} missing example count")
+            summaries[method] = summary
             for metric_name in ("pr", "rr", "ir"):
                 value = summary.get(metric_name)
                 if not isinstance(value, (int, float)):
                     raise ValueError(
                         f"{path}: {label} {method} missing numeric {metric_name}"
                     )
+        if len({summary["examples"] for summary in summaries.values()}) != 1:
+            raise ValueError(f"{path}: {label} ladder methods cover different examples")
         for contrast in (
-            "answer_3seed_minus_answer_1", "answer_9choose3_minus_answer_3seed"
+            "answer_3seed_minus_answer_1",
+            "answer_9choose3_minus_answer_3seed",
+            "mixed_minus_answer",
         ):
             paired = node.get(contrast, {}).get("paired")
-            rr = next(
-                (row for row in paired or [] if row.get("metric") == "rr"), None
-            )
-            if rr is None or len(rr.get("cluster_bootstrap_95ci", [])) != 2:
-                raise ValueError(f"{path}: {label} missing clustered RR {contrast}")
+            by_metric = {
+                row.get("metric"): row for row in paired or []
+                if isinstance(row, dict)
+            }
+            for metric_name in ("pr", "rr", "ir"):
+                row = by_metric.get(metric_name)
+                if (
+                    row is None
+                    or row.get("examples") != next(iter(summaries.values()))["examples"]
+                    or len(row.get("cluster_bootstrap_95ci", [])) != 2
+                ):
+                    raise ValueError(
+                        f"{path}: {label} missing aligned clustered {metric_name.upper()} {contrast}"
+                    )
 
 
 def main() -> None:
