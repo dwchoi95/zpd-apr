@@ -26,6 +26,22 @@ def split_row(mixed: float, answer: float) -> dict:
     }
 
 
+def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> dict:
+    return {
+        "mixed_target_9choose3": {"rr": mixed},
+        "answer_9choose3": {"rr": answer},
+        key: {
+            "paired": [
+                {
+                    "metric": "rr",
+                    "left_minus_right_instance_weighted": mixed - answer,
+                    "cluster_bootstrap_95ci": [-0.01, 0.03],
+                }
+            ]
+        },
+    }
+
+
 class ResultBridgeTest(unittest.TestCase):
     def test_canonical_values_and_macros(self) -> None:
         answer9 = {"splits": {"seen": split_row(0.6, 0.59), "unseen": split_row(0.7, 0.68)}}
@@ -34,12 +50,28 @@ class ResultBridgeTest(unittest.TestCase):
             "selection": {"validation_problems": 138},
             "summary": {"rr": 0.58},
         }
+        hidden = {
+            "methods": {
+                "ZPDPatch": {"joint_repair_rate": 0.75},
+                "Answer-9Choose3": {"joint_repair_rate": 0.72},
+            },
+            "comparison": {"left_minus_right": 0.03},
+        }
+        codeworkout = paired_row(0.84, 0.85, "zpdpatch_minus_answer_9choose3")
+        codeworkout["zpdpatch"] = {"rr": 0.84}
+        scale = {
+            "splits": {
+                "seen": paired_row(0.55, 0.53),
+                "unseen": paired_row(0.65, 0.62),
+            }
+        }
+        problem_holdout = paired_row(0.71, 0.68)
         result = build(
             answer9,
-            {"h": 1},
-            {"c": 1},
-            {"s": 1},
-            {"p": 1},
+            hidden,
+            codeworkout,
+            scale,
+            problem_holdout,
             stability,
             problem_disjoint,
         )
@@ -48,6 +80,10 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
         self.assertIn(r"\newcommand{\MixedMinusAnswerNineUnseen}{2.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointSeenRR}{58.0}", rendered)
+        self.assertIn(r"\newcommand{\HiddenMixedJointRR}{75.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutStudentAnswerNineRR}{85.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedRR}{71.0}", rendered)
 
 
 if __name__ == "__main__":

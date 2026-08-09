@@ -88,6 +88,45 @@ def macros(result: dict[str, Any]) -> str:
         disjoint["selection"]["validation_problems"]
     )
     values["ProblemDisjointSeenRR"] = pct(disjoint["summary"]["rr"])
+
+    hidden = result["hidden"]
+    values["HiddenMixedJointRR"] = pct(
+        hidden["methods"]["ZPDPatch"]["joint_repair_rate"]
+    )
+    values["HiddenAnswerNineJointRR"] = pct(
+        hidden["methods"]["Answer-9Choose3"]["joint_repair_rate"]
+    )
+    values["HiddenMixedMinusAnswerNine"] = pct(
+        hidden["comparison"]["left_minus_right"]
+    )
+
+    codeworkout = result["codeworkout_student"]
+    codeworkout_rr = metric(codeworkout["zpdpatch_minus_answer_9choose3"])
+    values["CodeWorkoutStudentMixedRR"] = pct(codeworkout["zpdpatch"]["rr"])
+    values["CodeWorkoutStudentAnswerNineRR"] = pct(
+        codeworkout["answer_9choose3"]["rr"]
+    )
+    values["CodeWorkoutStudentMixedMinusAnswerNine"] = pct(
+        codeworkout_rr["left_minus_right_instance_weighted"]
+    )
+
+    scale = result["scale_1_5b"]
+    for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+        row = scale["splits"][split]
+        scale_rr = metric(row["mixed_minus_answer"])
+        values[f"ScaleMixed{prefix}RR"] = pct(row["mixed_target_9choose3"]["rr"])
+        values[f"ScaleAnswerNine{prefix}RR"] = pct(row["answer_9choose3"]["rr"])
+        values[f"ScaleMixedMinusAnswerNine{prefix}"] = pct(
+            scale_rr["left_minus_right_instance_weighted"]
+        )
+
+    problem = result["codeworkout_problem"]
+    problem_rr = metric(problem["mixed_minus_answer"])
+    values["CodeWorkoutProblemMixedRR"] = pct(problem["mixed_target_9choose3"]["rr"])
+    values["CodeWorkoutProblemAnswerNineRR"] = pct(problem["answer_9choose3"]["rr"])
+    values["CodeWorkoutProblemMixedMinusAnswerNine"] = pct(
+        problem_rr["left_minus_right_instance_weighted"]
+    )
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )
