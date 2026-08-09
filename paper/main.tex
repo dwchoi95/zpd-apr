@@ -48,19 +48,17 @@ Qwen2.5-Coder-7B adapters on 997 Seen and 250 problem-held-out trajectories,
 plus separately trained student-held-out Java models. On Seen, \tool raises
 repair rate from 30.7\% for trajectory-prompted Zero-shot to 61.5\%. A matched
 \(A_1\!\rightarrow A_3\!\rightarrow A_9\!\rightarrow M_9\) ladder shows that
-independent checkpoint diversity explains the dominant unrestricted gain:
-\(A_3-A_1=+11.63\) points [9.54, 13.74], while selection-matched mixed-target
-\(M_9-A_9=+1.71\) [--0.79, 4.29] is uncertain. Relation targets instead affect
-patch scope. Across six fixed edit budgets, \(M_9\) gains 1.22 mean Seen points
-[0.02, 2.42] over \(A_9\) and preserves more buggy tokens and source lines on
-joint repairs. Problem-disjoint selection reverses their unrestricted ranking
-but retains mixed-target gains at two edit budgets. Both pools reach 74.8\%
-unrestricted repair on held-out problems; hidden-test and Java contrasts are
-inconclusive. A target-matched ablation finds no stable benefit from serializing
-earlier submissions. LSGen repairs more programs without an edit limit, whereas
-\tool leads its mean edit-budget frontier by 14.68 points [12.03, 17.43]. Thus
-checkpoint diversity explains coverage, while trajectory-mined targets change
-the executable locality frontier rather than establishing a history effect.
+independent checkpoint diversity explains the dominant unrestricted gain
+(\(A_3-A_1=+11.63\) points), while selection-matched mixed-target coverage is
+uncertain. Relation targets instead affect patch scope: across six edit budgets,
+\(M_9\) gains 1.22 mean Seen points [0.02, 2.42] over \(A_9\) and preserves more
+buggy tokens and lines. Problem-disjoint selection reverses their unrestricted
+ranking but retains two budget-specific gains; held-out-problem and Java tests
+show no matched coverage advantage. Serializing earlier submissions has no
+stable target-matched effect. LSGen repairs more without an edit limit, whereas
+\tool leads its mean edit-budget frontier by 14.68 points. Thus checkpoint
+diversity explains coverage, while trajectory-mined targets change the
+executable locality frontier rather than establishing a history effect.
 \end{abstract}
 
 \ccsdesc[500]{Software and its engineering~Software testing and debugging}
