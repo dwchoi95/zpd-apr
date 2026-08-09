@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.verify_fse2027_fair_selection import verify
+from scripts.verify_fse2027_fair_selection import verify, verify_external_split
 
 
 def report() -> dict:
@@ -42,6 +42,30 @@ class FairSelectionVerifierTest(unittest.TestCase):
             ] = 56
             with self.assertRaisesRegex(ValueError, "expected 84"):
                 verify(self.write(root, value))
+
+    def test_external_split_claims_are_exactly_reproduced(self) -> None:
+        value = {
+            "problems_by_split": {"train": 10, "valid": 3, "test": 4},
+            "trajectories_by_split": {"train": 605, "valid": 216, "test": 304},
+            "students_by_split": {"train": 213, "valid": 150, "test": 161},
+            "problem_overlap_counts": {
+                "train-valid": 0,
+                "train-test": 0,
+                "valid-test": 0,
+            },
+            "student_overlap_counts": {
+                "train-valid": 147,
+                "train-test": 151,
+                "valid-test": 121,
+            },
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = self.write(Path(directory), value)
+            verify_external_split(path)
+            value["problem_overlap_counts"]["train-test"] = 1
+            path = self.write(Path(directory), value)
+            with self.assertRaisesRegex(ValueError, "problem_overlap_counts"):
+                verify_external_split(path)
 
 
 if __name__ == "__main__":
