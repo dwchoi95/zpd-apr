@@ -217,32 +217,21 @@ s\prec_P t \iff s\prec_S t\ \lor\
 \end{equation}
 where \(o(t)\prec_{\times}o(s)\) is the strict product order: every testcase outcome is no worse and at least one is better under severity. Strict and Progress retain a chain under \(\prec_S\) and \(\prec_P\), respectively. Answer is the terminal closure \(A(s)=s_n\) from each failed state to the first accepted state; it is intentionally not an intermediate order.
 
-This view makes the target granularity explicit. Strict observes only a projection of execution evidence onto the coarse verdict. Progress refines that projection with the testcase product order. Answer discards intermediate ordering and connects a failed state to the absorbing accepted state. Adapter specialization therefore corresponds to distinct relations over the same trajectory rather than to role words inserted in prompts.
-
-For a problem with \(T\) tests, every retained transition decreases
+Strict is therefore a coarse projection, Progress its non-compensatory testcase
+refinement, and Answer a closure to the absorbing accepted state. The relations,
+not role words in prompts, define target specialization. For \(T\) tests, every
+retained transition decreases
 \(\rho(s)=(\mathrm{sev}(v(s)),\sum_e\mathrm{sev}(o(s,e)))\)
-lexicographically: Strict decreases the first component and same-verdict
-Progress preserves it while decreasing the second. Hence retained chains are
-acyclic and have length at most \(6(5T+1)\). This construction invariant is
-mechanically checked; it does not constrain learned behavior.
+lexicographically, so chains are acyclic and have length at most \(6(5T+1)\).
+Moreover, \(\prec_S\subseteq\prec_P\): every Strict event is a Progress event,
+the first Progress target cannot follow the first Strict target, and acceptance
+closes both. These facts induce the fine-to-broad controller order.
 
-Because \(\prec_S\subseteq\prec_P\), every Strict target event is also a
-Progress event. Moreover, for any failed state, the first Progress-improving
-state cannot occur after the first Strict-improving state, and acceptance closes
-both relations. These inclusion facts determine the fine-to-broad policy order;
-they are construction invariants rather than claims about learned behavior.
-
-\paragraph{Order versus scalar reward.}
-A passed-test count can improve while breaking a previously passing testcase;
-Equation~\ref{eq:tcprogress} refuses this compensation. Coarse verdict is the
-first coordinate and non-compensatory testcase severity refines equal verdicts,
-so the rank proves termination while the product order records which
-observations justify a transition. Execution certifies retained supervision,
-not model behavior on new inputs; the online controller must still test every
-candidate and retain the original fallback. The order is defined only over one
-fixed testcase universe and severity map, so cache keys bind tests and resource
-limits and Progress fails closed on incomplete vectors. Otherwise a missing
-test could turn a regression into apparent Pareto progress.
+Unlike a passed-test scalar, the product order cannot trade a newly broken test
+for another repaired test. Its guarantee is limited to supervision construction:
+learned candidates still require execution and the original fallback. The order
+is defined over one fixed testcase universe and severity map; cache keys bind
+both tests and resource limits, and Progress fails closed on incomplete vectors.
 
 \subsection{Prompt and Adapter Training}
 
@@ -775,6 +764,13 @@ buggy-token points [1.56, 3.64] and 3.33 more non-empty-line points
 [1.89, 4.83]. The method contribution is therefore target-dependent patch
 scope under an executable deployment constraint, while checkpoint diversity
 explains most unrestricted coverage.
+
+For auditability, using relation initial plus the last two seed digits, the
+validation-frozen \(M_9/A_9\) triples at \(B=5,10,20,40,80,160\) are,
+respectively: A29--P27--S27/A30--A33--A35,
+A27--P29--S27/A28--A33--A34, A27--A29--P27/A27--A29--A33,
+A27--A28--P29/A27--A31--A33, A27--A28--P27/A28--A32--A33, and
+A27--A28--P27/A32--A33--A34. Test outcomes did not choose any member.
 
 A post-hoc size-normalized audit applies the same gate to the validation-frozen
 unrestricted triples on 966 parseable-current inputs. At
