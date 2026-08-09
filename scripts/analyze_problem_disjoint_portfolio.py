@@ -28,6 +28,13 @@ def main() -> None:
     parser.add_argument("--member", action="append", required=True, help="NAME=PATH")
     parser.add_argument("--full-selection", type=Path, required=True)
     parser.add_argument("--answer3", type=Path, required=True)
+    parser.add_argument(
+        "--reference",
+        action="append",
+        default=[],
+        help="optional additional paired reference as LABEL=PATH",
+    )
+    parser.add_argument("--composed-output", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--bootstrap-samples", type=int, default=10_000)
     parser.add_argument("--seed", type=int, default=2027)
@@ -49,6 +56,11 @@ def main() -> None:
     rows = compose(stages[0][1], stages)
     for row in rows:
         row["method"] = "Problem-Disjoint-Validation-Portfolio"
+    if args.composed_output:
+        args.composed_output.parent.mkdir(parents=True, exist_ok=True)
+        with args.composed_output.open("w", encoding="utf-8") as destination:
+            for row in rows:
+                destination.write(json.dumps(row) + "\n")
     full = read_jsonl(args.full_selection)
     answer3 = read_jsonl(args.answer3)
     result = {
@@ -71,7 +83,20 @@ def main() -> None:
             samples=args.bootstrap_samples,
             seed=args.seed + 10,
         ),
+        "problem_disjoint_minus_references": {},
     }
+    for offset, raw in enumerate(args.reference):
+        if "=" not in raw:
+            parser.error("--reference must use LABEL=PATH")
+        label, path = raw.split("=", 1)
+        result["problem_disjoint_minus_references"][label] = paired_suite_rows(
+            rows,
+            read_jsonl(Path(path)),
+            left_label="Problem-disjoint validation portfolio",
+            right_label=label,
+            samples=args.bootstrap_samples,
+            seed=args.seed + 20 + offset,
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({"members": names, "summary": result["summary"]}, sort_keys=True))
