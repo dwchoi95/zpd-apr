@@ -43,6 +43,7 @@ def build(
     answer_problem_disjoint: dict[str, Any],
     problem_disjoint_budget: dict[str, Any],
     patch_locality: dict[str, Any],
+    normalized_ted: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -56,6 +57,7 @@ def build(
         "answer_problem_disjoint_selection": answer_problem_disjoint,
         "problem_disjoint_budget_fair_pools": problem_disjoint_budget,
         "patch_locality": patch_locality,
+        "normalized_ted_frontier": normalized_ted,
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -250,6 +252,19 @@ def macros(result: dict[str, Any]) -> str:
     values["CodeWorkoutProblemMixedMinusAnswerNineStudentCI"] = interval(
         problem["mixed_minus_answer"]["student_cluster_rr_95ci"]
     )
+    normalized = result["normalized_ted_frontier"]
+    values["NormalizedTEDExamples"] = str(normalized["examples_parseable_current"])
+    values["NormalizedTEDExcluded"] = str(
+        normalized["examples_excluded_unparseable_current"]
+    )
+    for budget, suffix in (("0.1", "Ten"), ("0.2", "Twenty"), ("0.4", "Forty")):
+        row = normalized["per_budget"][budget]
+        values[f"NormalizedTED{suffix}MixedMinusAnswerNine"] = pct(
+            row["mixed_minus_answer"]
+        )
+        values[f"NormalizedTED{suffix}MixedMinusAnswerNineCI"] = interval(
+            row["problem_cluster_95ci"]
+        )
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )
@@ -268,6 +283,7 @@ def main() -> None:
     parser.add_argument("--answer-problem-disjoint", type=Path, required=True)
     parser.add_argument("--problem-disjoint-budget", type=Path, required=True)
     parser.add_argument("--patch-locality", type=Path, required=True)
+    parser.add_argument("--normalized-ted", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -283,6 +299,7 @@ def main() -> None:
         read(args.answer_problem_disjoint),
         read(args.problem_disjoint_budget),
         read(args.patch_locality),
+        read(args.normalized_ted),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)

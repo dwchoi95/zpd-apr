@@ -298,7 +298,7 @@ budget-indexed objective. The three Answer checkpoints form the prespecified
 same-target control. Final test-split outcomes never enter selection.
 
 Set-union coverage \(f\), each \(f_B\), and their mean are normalized,
-monotone, and submodular; exhaustive enumeration returns the exact validation
+monotone, and submodular~\cite{nemhauser1978analysis}; exhaustive enumeration returns the exact validation
 optimum in each declared finite family; submodularity is a property, not the
 algorithm used here.
 
@@ -315,13 +315,10 @@ probability at least \(1-\delta\),
 \label{eq:finite-family-bound}
 \end{equation}
 Hoeffding plus a union bound controls every portfolio; inserting the
-\(\alpha\)-approximation between the two uniform deviations gives the result.
-Our enumerator has \(\alpha=1\), recovering regret at most twice the uniform
-deviation. For a larger pool under a size bound, greedy maximization of any of
-our monotone submodular coverage objectives has
-\(\alpha=1-(1-1/k)^k\geq1-1/e\)~\cite{nemhauser1978analysis}, so the same theorem
-separates optimization and sampling error. Its i.i.d. premise does not justify
-overlapping identities or shift; RQ6 audits both empirically.
+\(\alpha\)-approximation between the two deviations gives the result. Exact
+enumeration sets \(\alpha=1\), so regret is at most twice the uniform
+deviation. Its i.i.d. premise does not cover identity overlap or distribution
+shift; RQ6 audits both rather than treating the bound as an effect certificate.
 
 \paragraph{Mechanism-identification ladder.}
 Let \(r(P)\) be held-out RR for controller \(P\), \(A_1\) one Answer checkpoint,
@@ -382,20 +379,14 @@ Thus every returned change has pass rate at least \(\mathrm{Pass}(c_i)\) and
 set-union objective \(f_B\). These guarantees concern observed tests and edit
 compliance, not hidden-test correctness or learned relational behavior.
 
-With cached outcomes, constructing a length-\(n\) trajectory over \(T\) tests
-costs \(O(nT)\) time and \(O(n)\) retained-state storage; Answer construction is
-\(O(n)\). Inference performs one to three generations and executions. Early
-acceptance can reduce this cost, while the cache avoids repeated execution of
-identical candidates without changing the worst case. On Seen Test, the deployed
-portfolio invokes 1.98 candidates per query on average and takes 13.62 seconds
-of sequential generation plus execution, versus 1.93/13.32 seconds for
-Answer-3Seed and 3.00/24.40 seconds for always-three LSGen on the same machine;
-all exclude the already cached current-program execution.
-The nine LoRA weight files occupy 1.4GB (155MB each), while deployment loads
-only the selected three. Sequentially training all nine took 37.1 RTX 5090
-GPU-hours: Progress, Strict, and Answer averaged 3.94, 2.58, and 5.84 hours per
-seed; the three-Answer baseline therefore costs 17.5 GPU-hours. These are
-single-GPU measurements rather than claims about optimized serving latency.
+Construction costs \(O(nT)\) time and \(O(n)\) retained-state storage for a
+length-\(n\), \(T\)-test trajectory; Answer is \(O(n)\). On Seen Test, the
+deployed portfolio averages 1.98 calls and 13.62 seconds, versus 1.93/13.32 for
+Answer-3Seed and 3.00/24.40 for always-three LSGen, excluding cached current
+execution. Nine 155MB LoRA files occupy 1.4GB, while deployment loads three.
+Sequential training takes 37.1 RTX 5090 GPU-hours (Progress/Strict/Answer:
+3.94/2.58/5.84 hours per seed), versus 17.5 hours for three Answer adapters;
+these are single-GPU measurements, not optimized-serving claims.
 
 \section{Experimental Design}
 \label{sec:experiment}
@@ -773,6 +764,13 @@ buggy-token points [1.56, 3.64] and 3.33 more non-empty-line points
 [1.89, 4.83]. The method contribution is therefore target-dependent patch
 scope under an executable deployment constraint, while checkpoint diversity
 explains most unrestricted coverage.
+
+A post-hoc size-normalized audit applies the same gate to the validation-frozen
+unrestricted triples on 966 parseable-current inputs. At
+TED/current-AST-node limits 0.10, 0.20, and 0.40, \(M_9-A_9\) is +2.80
+[1.04, 4.61], +3.83 [1.81, 5.95], and +2.90 [0.61, 5.23] points; limits 0.05,
+0.80, and 1.60 include zero. This robustness result reduces size confounding
+but neither replaces the predeclared absolute frontier nor licenses a learner-quality claim.
 
 \subsection{RQ5: Problem Generalization}
 

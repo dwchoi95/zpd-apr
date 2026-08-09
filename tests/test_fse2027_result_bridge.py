@@ -159,6 +159,24 @@ class ResultBridgeTest(unittest.TestCase):
             }
         }
         problem_holdout = paired_row(0.71, 0.68)
+        normalized_ted = {
+            "examples_parseable_current": 966,
+            "examples_excluded_unparseable_current": 31,
+            "per_budget": {
+                "0.1": {
+                    "mixed_minus_answer": 0.028,
+                    "problem_cluster_95ci": [0.0104, 0.0461],
+                },
+                "0.2": {
+                    "mixed_minus_answer": 0.0383,
+                    "problem_cluster_95ci": [0.0181, 0.0595],
+                },
+                "0.4": {
+                    "mixed_minus_answer": 0.029,
+                    "problem_cluster_95ci": [0.0061, 0.0523],
+                },
+            },
+        }
         result = build(
             answer9,
             hidden,
@@ -171,6 +189,7 @@ class ResultBridgeTest(unittest.TestCase):
             answer_problem_disjoint,
             problem_disjoint_budget,
             patch_locality,
+            normalized_ted,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
@@ -222,6 +241,15 @@ class ResultBridgeTest(unittest.TestCase):
         )
         self.assertIn(
             r"\newcommand{\CodeWorkoutProblemMixedMinusAnswerNineExerciseCI}{[-1.00, 3.00]}",
+            rendered,
+        )
+        self.assertIn(r"\newcommand{\NormalizedTEDExamples}{966}", rendered)
+        self.assertIn(
+            r"\newcommand{\NormalizedTEDTwentyMixedMinusAnswerNine}{3.8}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\NormalizedTEDFortyMixedMinusAnswerNineCI}{[0.61, 5.23]}",
             rendered,
         )
 
