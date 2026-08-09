@@ -64,6 +64,24 @@ def subset(rows: list[Row], problems: set[str], *, include: bool) -> list[Row]:
     ]
 
 
+def aligned_example_ids(members: dict[str, list[Row]], *, label: str) -> set[str]:
+    """Require every candidate in a selection family to cover one unique cohort."""
+    if not members:
+        raise ValueError(f"{label} has no members")
+    expected: set[str] | None = None
+    for name, rows in members.items():
+        ids = [str(row["example_id"]) for row in rows]
+        if len(ids) != len(set(ids)):
+            raise ValueError(f"{label} member {name} has duplicate example IDs")
+        current = set(ids)
+        if expected is None:
+            expected = current
+        elif current != expected:
+            raise ValueError(f"{label} members do not cover identical examples")
+    assert expected is not None
+    return expected
+
+
 def compose_selected(
     members: dict[str, list[Row]],
     names: list[str],
@@ -104,6 +122,18 @@ def analyze(
         raise ValueError("mixed validation and test members differ")
     if set(answer_validation) != set(answer_test):
         raise ValueError("Answer validation and test members differ")
+    mixed_validation_ids = aligned_example_ids(
+        mixed_validation, label="mixed validation"
+    )
+    answer_validation_ids = aligned_example_ids(
+        answer_validation, label="Answer validation"
+    )
+    mixed_test_ids = aligned_example_ids(mixed_test, label="mixed test")
+    answer_test_ids = aligned_example_ids(answer_test, label="Answer test")
+    if mixed_validation_ids != answer_validation_ids:
+        raise ValueError("mixed and Answer validation cohorts differ")
+    if mixed_test_ids != answer_test_ids:
+        raise ValueError("mixed and Answer test cohorts differ")
     relations = {name: relation(name) for name in mixed_validation}
     test_problems = {
         str(row["problem_id"])
@@ -228,6 +258,13 @@ def analyze(
         "folds": folds,
         "fold_seed": fold_seed,
         "test_outcomes_used_for_selection": False,
+        "cohort_audit": {
+            "validation_examples": len(mixed_validation_ids),
+            "test_examples": len(mixed_test_ids),
+            "unique_examples_per_member": True,
+            "mixed_answer_validation_examples_identical": True,
+            "mixed_answer_test_examples_identical": True,
+        },
         "fold_audit": audits,
         "mixed": summarize_method(mixed_rows),
         "answer": summarize_method(answer_rows),

@@ -54,6 +54,11 @@ class ProblemCrossFitTest(unittest.TestCase):
             bootstrap_seed=2027,
         )
         self.assertFalse(result["test_outcomes_used_for_selection"])
+        self.assertEqual(result["cohort_audit"]["validation_examples"], 6)
+        self.assertEqual(result["cohort_audit"]["test_examples"], 4)
+        self.assertTrue(
+            result["cohort_audit"]["mixed_answer_test_examples_identical"]
+        )
         self.assertEqual(result["mixed"]["examples"], 4)
         self.assertEqual(result["answer"]["examples"], 4)
         self.assertTrue(
@@ -74,6 +79,44 @@ class ProblemCrossFitTest(unittest.TestCase):
                 {"Progress2028": []},
                 {"Answer2027": []},
                 {"Answer2027": []},
+                folds=2,
+                fold_seed=2027,
+                bootstrap_samples=10,
+                bootstrap_seed=2027,
+            )
+
+    def test_rejects_nonidentical_or_duplicate_cohorts(self) -> None:
+        mixed_names = [
+            f"{relation}{seed}"
+            for relation in ("Progress", "Strict", "Answer")
+            for seed in (2027, 2028, 2029)
+        ]
+        answer_names = [f"Answer{seed}" for seed in range(2027, 2036)]
+        validation = candidates(mixed_names, ["t0", "t1", "v0", "v1"])
+        answer_validation = candidates(answer_names, ["t0", "t1", "v0", "v1"])
+        test = candidates(mixed_names, ["t0", "t1"])
+        answer_test = candidates(answer_names, ["t0", "t1"])
+        test["Progress2027"].append(dict(test["Progress2027"][0]))
+        with self.assertRaisesRegex(ValueError, "duplicate example IDs"):
+            analyze(
+                validation,
+                test,
+                answer_validation,
+                answer_test,
+                folds=2,
+                fold_seed=2027,
+                bootstrap_samples=10,
+                bootstrap_seed=2027,
+            )
+
+        test = candidates(mixed_names, ["t0", "t1"])
+        answer_test["Answer2027"] = [row("e-other", "other", True)]
+        with self.assertRaisesRegex(ValueError, "identical examples"):
+            analyze(
+                validation,
+                test,
+                answer_validation,
+                answer_test,
                 folds=2,
                 fold_seed=2027,
                 bootstrap_samples=10,
