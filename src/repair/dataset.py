@@ -827,6 +827,7 @@ def _display_execution_verdict(value: Any) -> str:
         "AC": "Accepted",
         "WA": "Wrong Answer",
         "TLE": "Time Limit Exceeded",
+        "MLE": "Memory Limit Exceeded",
         "RE": "Runtime Error",
         "CE": "Compilation Error",
     }.get(str(value), str(value))

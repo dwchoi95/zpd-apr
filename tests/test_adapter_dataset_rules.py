@@ -224,6 +224,12 @@ class AdapterDatasetRulesTest(unittest.TestCase):
                 _outcome("WA", "RE"),
             )
         )
+        self.assertTrue(
+            _is_testcase_verdict_improvement(
+                _outcome("MLE", "MLE"),
+                _outcome("WA", "MLE"),
+            )
+        )
         self.assertFalse(
             _is_testcase_verdict_improvement(
                 _outcome("TLE", "TLE"),
