@@ -45,6 +45,12 @@ fi
   --pdf "${WORK_ROOT}/paper/main.pdf" \
   --output "${RUN_ROOT}/analysis/fse2027-pdf-page-limit-audit.json"
 
+"${PYTHON}" scripts/verify_fse2027_anonymity.py \
+  --pdf "${WORK_ROOT}/paper/main.pdf" \
+  --source "${WORK_ROOT}/paper/main.tex" \
+  --source "${WORK_ROOT}/ARTIFACT.md" \
+  --output "${RUN_ROOT}/analysis/fse2027-anonymity-audit.json"
+
 required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json"
   "${RUN_ROOT}/analysis/fse2027-answer9-validation-selection.json"
@@ -76,6 +82,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
   "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
   "${RUN_ROOT}/analysis/fse2027-pdf-page-limit-audit.json"
+  "${RUN_ROOT}/analysis/fse2027-anonymity-audit.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
