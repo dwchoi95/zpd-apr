@@ -38,11 +38,32 @@
 \begin{document}
 
 \begin{abstract}
-Automated program repair for programming assignments typically treats a student's latest submission as an isolated buggy program. This snapshot omits the revisions, repeated failures, and partial improvements that led to the current code. We present \tool, a repair framework that converts authentic submission trajectories into an execution-ordered portfolio of three repair policies. Verdict and testcase improvements define finite execution-evidence orders; validation execution then selects three checkpoints by exact finite set-coverage search, while the online controller guarantees observed-test non-regression and optional AST edit-budget compliance. The \progress adapter learns testcase-level Pareto improvements, \strict learns coarse-verdict improvements, and \answer maps failed submissions to the terminal accepted program. We evaluate Qwen2.5-Coder-7B-based adapters on 997 held-out trajectories from 328 test problems drawn from a 492-problem Seen pool, plus 250 trajectories from 54 problem-held-out problems. On Seen problems, the selected portfolio improves repair rate from 30.7\% for trajectory-prompted zero-shot to 61.5\%; a same-target three-seed Answer control reaches 61.7\%, identifying independent checkpoint diversity rather than target heterogeneity as the supported mechanism. On Unseen problems, selection reaches 74.8\% RR versus 62.0\% for zero-shot and 73.2\% for Answer-3Seed. When prompts and selection see only half the Unseen tests, the returned patch independently passes both observed and hidden partitions for 75.6\% versus 72.8\%; the equal-problem difference is +3.83 points [0.62, 7.62], although instance-level McNemar \(p=0.118\). The one-per-relation constraint reduces Seen coverage, whereas budget-indexed unconstrained selection improves the mean Unseen edit-budget frontier by 2.60 points [0.38, 5.03] over Answer-3Seed. A target-matched ablation finds no stable benefit from serializing earlier submissions, and all primary differences use problem-clustered inference.
-Against always-three LSGen under the same edit gate, its mean Seen budget
-frontier is +14.68 points [12.03, 17.43]. In a separately trained, student-held-out CodeWorkout Java replication, unconstrained selection reaches
-84.0\% RR but is statistically indistinguishable from Answer-3Seed at 84.5\%,
-showing cross-dataset replication without a relation-specific coverage effect.
+Automated program repair for programming assignments usually treats the latest
+submission as an isolated buggy program. We present \tool, which mines
+execution-ordered Progress, Strict, and terminal Answer relations from authentic
+submission trajectories, trains independent repair checkpoints, and selects a
+size-three portfolio by validation execution. Its controller guarantees
+observed-test non-regression and optional AST edit-budget compliance. We
+evaluate Qwen2.5-Coder-7B adapters on 997 trajectories from 328 Seen test
+problems and 250 trajectories from 54 problem-held-out problems. On Seen,
+\tool raises repair rate from 30.7\% for trajectory-prompted zero-shot to
+61.5\%. A matched \(A_1\!\rightarrow A_3\!\rightarrow A_9\!\rightarrow M_9\)
+ladder attributes the dominant unrestricted gain to independent checkpoint
+diversity: \(A_3-A_1=+11.63\) points [9.54, 13.74], whereas mixed-target
+\(M_9-A_9=+1.71\) [--0.79, 4.29]. Relation targets instead affect patch scope.
+Across six predeclared edit budgets, \(M_9\) improves mean Seen coverage over
+selection-matched \(A_9\) by 1.22 points [0.02, 2.42]; on joint repairs it
+retains 2.57 more buggy-token points [1.56, 3.64] and 3.33 more source-line
+points [1.89, 4.83]. Both pools reach 74.8\% unrestricted RR on Unseen. With
+selection and prompts restricted to half the Unseen tests, their patches pass
+both observed and hidden partitions at 75.6\% versus 73.6\%; the equal-problem
+difference, +2.55 [--0.86, 6.39], is inconclusive. A target-matched ablation
+finds no stable benefit from serializing earlier submissions. \tool exceeds
+always-three LSGen's mean Seen edit-budget frontier by 14.68 points
+[12.03, 17.43], although LSGen has higher unrestricted coverage. A separately
+trained, student-held-out CodeWorkout Java replication reaches 84.0\% RR but
+does not beat the 84.5\% Answer-3Seed control. All primary differences use
+problem-clustered inference.
 \end{abstract}
 
 \ccsdesc[500]{Software and its engineering~Software testing and debugging}
