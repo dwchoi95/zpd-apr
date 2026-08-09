@@ -683,7 +683,7 @@ Split & Adapter & Input & \(N\) & PR & RR & IR & \(\mathrm{TED}_{F\to T}\) \\
 \end{tabular}
 \end{table}
 
-Each Full--Current pair holds training examples, targets, architecture, hyperparameters, and evaluation inputs fixed; only earlier submissions are removed and position leakage reset. Direction changes across conditions, clustered RR intervals include zero (Unseen Strict reaches zero at its upper endpoint), and target TED is mixed. RQ1 can therefore establish complete-system utility while RQ2 rejects history serialization as a stable causal explanation.
+Each Full--Current pair holds training examples, targets, architecture, hyperparameters, and evaluation inputs fixed; only earlier submissions are removed and position leakage reset. Direction changes across conditions, clustered RR intervals include zero (Unseen Strict reaches zero at its upper endpoint), and target TED is mixed. RQ1 can therefore establish complete-system utility while RQ2 does not support history serialization as a stable causal explanation.
 
 We also searched directly for cases in which history should be most identifiable. A mechanically specified matched audit requires different users on the same problem, identical current verdict and pass rate, at least one earlier submission each, and normalized current-code similarity of at least 0.8. Only 6 Strict and 12 Progress Seen examples qualify (none Unseen); Full reaches 16.7/58.3\% RR versus 66.7/66.7\% for Current. These tiny, post-hoc subsets cannot estimate a population effect, but they expose rather than conceal that the benchmark contains little counterfactual support for a history-sensitive claim.
 
