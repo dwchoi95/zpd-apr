@@ -55,6 +55,10 @@ Across six predeclared edit budgets, \(M_9\) improves mean Seen coverage over
 selection-matched \(A_9\) by 1.22 points [0.02, 2.42]; on joint repairs it
 retains 2.57 more buggy-token points [1.56, 3.64] and 3.33 more source-line
 points [1.89, 4.83]. Both pools reach 74.8\% unrestricted RR on Unseen. With
+Seen test identities removed from portfolio selection, unrestricted
+\(M_9-A_9\) is --2.91 points [--5.34, --0.52], but the mixed pool retains
+positive coverage at TED budgets 10 (+2.61 [0.86, 4.36]) and 40
+(+2.21 [0.21, 4.14]). With
 selection and prompts restricted to half the Unseen tests, their patches pass
 both observed and hidden partitions at 75.6\% versus 73.6\%; the equal-problem
 difference, +2.55 [--0.86, 6.39], is inconclusive. A target-matched ablation
@@ -64,7 +68,7 @@ always-three LSGen's mean Seen edit-budget frontier by 14.68 points
 trained, student-held-out CodeWorkout Java replication reaches 84.0\% RR
 versus 83.4\% for selection-matched \(A_9\); the +0.55-point
 exercise-clustered difference [--1.24, 2.37] is inconclusive. All primary
-differences use clustered inference.
+paired differences use clustered inference.
 \end{abstract}
 
 \ccsdesc[500]{Software and its engineering~Software testing and debugging}
@@ -195,13 +199,6 @@ The datasets are constructed independently and may overlap. A strict transition 
 
 The order is consequential and auditable. Of the retained training labels, 89.5\% of Strict and 90.7\% of Progress remain valid if RE is placed below WA; 82.6\% and 84.6\% remain valid when every non-AC verdict is tied. This retrospective label audit does not estimate retrained-model performance, so we treat the chosen order as part of the method specification rather than a universal correctness ranking.
 
-The common retained-prefix procedure scans \(s_2,\ldots,s_n\), compares each
-state with \(R[-1]\), and, whenever the corresponding predicate above holds,
-emits \((R,c_t)\) before appending \(s_t\) to \(R\). Comparing with the last
-retained rather than immediately previous raw state makes \(R\) monotonic under
-the selected relation. A trajectory with \(m\) retained states yields all
-\(m-1\) prefixes, so early transitions are not discarded.
-
 \subsection{Execution-Evidence Order}
 \label{sec:evidence-order}
 
@@ -217,15 +214,12 @@ s\prec_P t \iff s\prec_S t\ \lor\
 \end{equation}
 where \(o(t)\prec_{\times}o(s)\) is the strict product order: every testcase outcome is no worse and at least one is better under severity. Strict and Progress retain a chain under \(\prec_S\) and \(\prec_P\), respectively. Answer is the terminal closure \(A(s)=s_n\) from each failed state to the first accepted state; it is intentionally not an intermediate order.
 
-Strict is therefore a coarse projection, Progress its non-compensatory testcase
-refinement, and Answer a closure to the absorbing accepted state. The relations,
-not role words in prompts, define target specialization. For \(T\) tests, every
-retained transition decreases
+Strict is a coarse projection, Progress its non-compensatory testcase
+refinement, and Answer a closure to acceptance. For \(T\) tests, every transition decreases
 \(\rho(s)=(\mathrm{sev}(v(s)),\sum_e\mathrm{sev}(o(s,e)))\)
 lexicographically, so chains are acyclic and have length at most \(6(5T+1)\).
-Moreover, \(\prec_S\subseteq\prec_P\): every Strict event is a Progress event,
-the first Progress target cannot follow the first Strict target, and acceptance
-closes both. These facts induce the fine-to-broad controller order.
+Moreover, \(\prec_S\subseteq\prec_P\); these facts induce the fine-to-broad
+controller order.
 
 Unlike a passed-test scalar, the product order cannot trade a newly broken test
 for another repaired test. Its guarantee is limited to supervision construction:
@@ -245,15 +239,8 @@ through that submission. No instruction names a policy or asks for a particular
 edit size, so specialization can arise only from the input--target distribution.
 Only assistant target tokens contribute to loss.
 
-For adapter \(a\in\{\mathrm{prog},\mathrm{strict},\mathrm{ans}\}\), let \(\mathcal{D}_a\) be its dataset, \(x_i\) the prompt, and \(y_i\) the target tokens. We minimize the target-only supervised fine-tuning objective
-\begin{equation}
-\mathcal{L}_a=-\frac{1}{|\mathcal{D}_a|}
-\sum_{(x_i,y_i)\in\mathcal{D}_a}
-\frac{1}{|y_i|}\sum_{k=1}^{|y_i|}
-\log P_{\theta,\phi_a}(y_{i,k}\mid y_{i,<k},x_i),
-\label{eq:sft}
-\end{equation}
-where \(\theta\) is the frozen base model and \(\phi_a\) is an adapter's QLoRA parameter set. Prompt tokens are masked from the loss. The adapters are trained and stored independently.
+Each adapter independently minimizes mean target-token cross entropy with the
+base weights frozen and its own QLoRA parameters; prompt tokens are masked.
 
 \subsection{Validation-Selected Execution Portfolio}
 Training loss ranks checkpoints within one target distribution, but it does not
@@ -397,6 +384,25 @@ cached current execution. Nine 155MB LoRA files occupy 1.4GB; deployment loads t
   \item[RQ5: Problem Generalization.] Does \tool retain an advantage on problems completely excluded from training?
   \item[RQ6: Robustness and Replication.] Are the conclusions robust to training seed, user overlap, problem-level dependence, policy ordering, and a student-held-out Java course dataset?
 \end{description}
+
+\begin{table}[t]
+\caption{Analysis provenance; none was externally preregistered.}
+\label{tab:analysis-provenance}
+\centering
+\small
+\begin{tabular}{p{.23\columnwidth}p{.69\columnwidth}}
+\toprule
+Status & Analyses \\
+\midrule
+Selection-frozen & Canonical tests, mechanism ladder, RQ2, and student-heldout Java \\
+Prospective additions & Hidden tests, 1.5B scale, exercise-heldout Java, and prompt control \\
+Post-hoc sensitivity & Disjoint/bootstrap selection, normalized TED, retention, user strata, and order replay \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+``Frozen'' excludes final-test outcomes from training and selection. Exact
+rules are fixed before each named final run; conformance audits are not effect tests.
 
 \subsection{Dataset Construction and Splits}
 
