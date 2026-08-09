@@ -48,8 +48,8 @@ def split_row(mixed: float, answer: float) -> dict:
 
 def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> dict:
     result = {
-        "mixed_target_9choose3": {"rr": mixed},
-        "answer_9choose3": {"rr": answer},
+        "mixed_target_9choose3": {"pr": mixed + 0.1, "rr": mixed, "ir": mixed + 0.05},
+        "answer_9choose3": {"pr": answer + 0.1, "rr": answer, "ir": answer + 0.05},
         key: {
             "paired": [
                 {
@@ -161,6 +161,11 @@ class ResultBridgeTest(unittest.TestCase):
                 "unseen": paired_row(0.65, 0.62),
             }
         }
+        for row in scale["splits"].values():
+            row["answer_3seed"] = {"pr": 0.61, "rr": 0.51, "ir": 0.56}
+            row["answer_1"] = {"pr": 0.55, "rr": 0.45, "ir": 0.50}
+            row["answer_3seed_minus_answer_1"] = row["mixed_minus_answer"]
+            row["answer_9choose3_minus_answer_3seed"] = row["mixed_minus_answer"]
         problem_holdout = paired_row(0.71, 0.68)
         problem_holdout["mixed_members"] = [
             "Progress2027",
@@ -172,6 +177,10 @@ class ResultBridgeTest(unittest.TestCase):
             "Answer2032",
             "Answer2035",
         ]
+        problem_holdout["answer_3seed"] = {"pr": 0.80, "rr": 0.70, "ir": 0.75}
+        problem_holdout["answer_1"] = {"pr": 0.73, "rr": 0.63, "ir": 0.68}
+        problem_holdout["answer_3seed_minus_answer_1"] = problem_holdout["mixed_minus_answer"]
+        problem_holdout["answer_9choose3_minus_answer_3seed"] = problem_holdout["mixed_minus_answer"]
         normalized_ted = {
             "examples_parseable_current": 966,
             "examples_excluded_unparseable_current": 31,
@@ -389,6 +398,9 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleAnswerThreeSeenRR}{51.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleAnswerOneSeenRR}{45.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleAnswerThreeMinusOneSeen}{2.0}", rendered)
         self.assertIn(
             r"\newcommand{\ScaleMixedMembers}{Progress2027--Strict2028--Answer2029}",
             rendered,
@@ -400,6 +412,8 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedRR}{71.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemAnswerThreeRR}{70.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemAnswerOneRR}{63.0}", rendered)
         self.assertIn(
             r"\newcommand{\CodeWorkoutProblemAnswerNineMembers}{Answer2030--Answer2032--Answer2035}",
             rendered,

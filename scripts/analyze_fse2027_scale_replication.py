@@ -44,11 +44,22 @@ def main() -> None:
     parser.add_argument("--eval-root", type=Path, required=True)
     parser.add_argument("--mixed-selection", type=Path, required=True)
     parser.add_argument("--answer-selection", type=Path, required=True)
+    parser.add_argument("--answer1-seen", type=Path)
+    parser.add_argument("--answer1-unseen", type=Path)
+    parser.add_argument("--answer3-seen", type=Path)
+    parser.add_argument("--answer3-unseen", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--samples", type=int, default=10_000)
     args = parser.parse_args()
     mixed_selection = json.loads(args.mixed_selection.read_text(encoding="utf-8"))
     answer_selection = json.loads(args.answer_selection.read_text(encoding="utf-8"))
+    ladder_paths = {
+        "seen": (args.answer1_seen, args.answer3_seen),
+        "unseen": (args.answer1_unseen, args.answer3_unseen),
+    }
+    ladder_supplied = [path is not None for pair in ladder_paths.values() for path in pair]
+    if any(ladder_supplied) and not all(ladder_supplied):
+        parser.error("A1/A3 evaluation paths must be supplied for both splits")
     result = {
         "base_model": "Qwen2.5-Coder-1.5B-Instruct",
         "selection_partition": "Seen validation, one trajectory per problem",
@@ -58,6 +69,7 @@ def main() -> None:
         ),
         "mixed_members": mixed_selection["best_unconstrained"]["members"],
         "answer_members": answer_selection["selected_unrestricted"]["members"],
+        "answer_3seed_members": ["Answer2027", "Answer2028", "Answer2029"],
         "splits": {},
     }
     for offset, split in enumerate(("seen", "unseen")):
@@ -75,7 +87,7 @@ def main() -> None:
             )
             for budget in BUDGETS
         }
-        result["splits"][split] = {
+        split_result = {
             "mixed_target_9choose3": summarize_method(mixed),
             "answer_9choose3": summarize_method(answer),
             "mixed_minus_answer": paired_suite_rows(
@@ -96,6 +108,30 @@ def main() -> None:
                 ),
             },
         }
+        if all(ladder_supplied):
+            answer1 = read_jsonl(ladder_paths[split][0])
+            answer3 = read_jsonl(ladder_paths[split][1])
+            split_result.update({
+                "answer_1": summarize_method(answer1),
+                "answer_3seed": summarize_method(answer3),
+                "answer_3seed_minus_answer_1": paired_suite_rows(
+                    answer3,
+                    answer1,
+                    left_label="Answer-3Seed",
+                    right_label="Answer-1",
+                    samples=args.samples,
+                    seed=2227 + offset,
+                ),
+                "answer_9choose3_minus_answer_3seed": paired_suite_rows(
+                    answer,
+                    answer3,
+                    left_label="Answer-9Choose3",
+                    right_label="Answer-3Seed",
+                    samples=args.samples,
+                    seed=2327 + offset,
+                ),
+            })
+        result["splits"][split] = split_result
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, sort_keys=True))

@@ -44,8 +44,8 @@ and records the exact source revision.
 | absolute-budget interpretation | current-program AST node counts and per-budget fractions in `analysis/fse2027-normalized-ted-frontier.json` |
 | source retention | `analysis/fse2027-patch-locality.json` |
 | `tab:codeworkout` | `analysis/fse2027-codeworkout-answer9.json`; `analysis/fse2027-codeworkout-answer9-selection.json` |
-| 1.5B scale replication | `analysis/fse2027-scale-1.5b.json`; `analysis/fse2027-scale-1.5b-{mixed,answer}-selection.json` |
-| exercise-held-out replication | `analysis/fse2027-codeworkout-problem-holdout.json`; `analysis/fse2027-codeworkout-problem-{mixed,answer}-selection.json` |
+| 1.5B scale replication | `analysis/fse2027-scale-1.5b.json`; `analysis/fse2027-scale-1.5b-{mixed,answer}-selection.json`; fixed Answer-1/3Seed completion in `scripts/run_fse2027_scale_a3_remote.sh` |
+| exercise-held-out replication | `analysis/fse2027-codeworkout-problem-holdout.json`; `analysis/fse2027-codeworkout-problem-{mixed,answer}-selection.json`; Answer-1/3Seed and matched nine-pool contrasts share the same test executions |
 
 All displayed aggregate values are consolidated in
 `analysis/fse2027-result-bridge.json`; its TeX companion is the paper-facing

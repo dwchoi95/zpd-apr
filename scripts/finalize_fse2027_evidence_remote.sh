@@ -63,6 +63,11 @@ for path in "${required_analysis[@]}"; do
   fi
 done
 
+if [[ ! -f "${RUN_ROOT}/eval/scale-1.5b/A3_COMPLETE" ]]; then
+  echo "missing completed 1.5B Answer mechanism ladder" >&2
+  exit 1
+fi
+
 required_external=(
   "${WORK_ROOT}/archive/external/tiktoc/source-provenance.json"
   "${WORK_ROOT}/archive/external/tiktoc/derived/trajectory-summary.json"

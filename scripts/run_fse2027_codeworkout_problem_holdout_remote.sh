@@ -21,7 +21,7 @@ exec >>"${LOG}" 2>&1
 export PYTHONPATH=. HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 
-while [[ ! -f "${RUN_ROOT}/eval/scale-1.5b/COMPLETE" ]]; do sleep 60; done
+while [[ ! -f "${RUN_ROOT}/eval/scale-1.5b/A3_COMPLETE" ]]; do sleep 60; done
 
 checkpoint_for() { printf '%s\n' "${CHECKPOINT_ROOT}/seed-$1/$2"; }
 
@@ -100,7 +100,7 @@ mapfile -t mixed_members < <("${PYTHON}" -c 'import json,sys; print("\n".join(js
 mapfile -t answer_members < <("${PYTHON}" -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1]))["selected_unrestricted"]["members"]))' "${ANSWER_SELECTION}")
 testset=${DATASETS}/test-final.jsonl
 test_n=$(wc -l < "${testset}")
-for name in $(printf '%s\n' "${mixed_members[@]}" "${answer_members[@]}" | sort -u); do
+for name in $(printf '%s\n' "${mixed_members[@]}" "${answer_members[@]}" Answer2027 Answer2028 Answer2029 | sort -u); do
   relation=${name%20??}; seed=${name: -4}
   evaluate_member "${name}" "${relation}" "${seed}" "${testset}" test "${test_n}"
 done
@@ -117,10 +117,18 @@ stages=()
 for name in "${answer_members[@]}"; do stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl"); done
 "${PYTHON}" scripts/compose_answer_seed_control.py "${testset}" \
   "${OUTPUT_ROOT}/answer9-test.evaluation.jsonl" --method Answer-ExerciseHoldout-9Choose3 "${stages[@]}"
+stages=()
+for name in Answer2027 Answer2028 Answer2029; do
+  stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
+done
+"${PYTHON}" scripts/compose_answer_seed_control.py "${testset}" \
+  "${OUTPUT_ROOT}/answer3-test.evaluation.jsonl" --method Answer-ExerciseHoldout-3Seed "${stages[@]}"
 
 "${PYTHON}" scripts/analyze_codeworkout_problem_holdout.py \
   --mixed "${OUTPUT_ROOT}/mixed-test.evaluation.jsonl" \
   --answer9 "${OUTPUT_ROOT}/answer9-test.evaluation.jsonl" \
+  --answer3 "${OUTPUT_ROOT}/answer3-test.evaluation.jsonl" \
+  --answer1 "${OUTPUT_ROOT}/test/Answer2027.evaluation.jsonl" \
   --mixed-selection "${MIXED_SELECTION}" --answer-selection "${ANSWER_SELECTION}" \
   --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"

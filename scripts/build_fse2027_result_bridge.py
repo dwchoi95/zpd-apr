@@ -238,8 +238,26 @@ def macros(result: dict[str, Any]) -> str:
     for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
         row = scale["splits"][split]
         scale_rr = metric(row["mixed_minus_answer"])
-        values[f"ScaleMixed{prefix}RR"] = pct(row["mixed_target_9choose3"]["rr"])
-        values[f"ScaleAnswerNine{prefix}RR"] = pct(row["answer_9choose3"]["rr"])
+        for method, method_prefix in (
+            ("mixed_target_9choose3", "Mixed"),
+            ("answer_9choose3", "AnswerNine"),
+            ("answer_3seed", "AnswerThree"),
+            ("answer_1", "AnswerOne"),
+        ):
+            for metric_name in ("pr", "rr", "ir"):
+                values[f"Scale{method_prefix}{prefix}{metric_name.upper()}"] = pct(
+                    row[method][metric_name]
+                )
+        scale_a3_a1 = metric(row["answer_3seed_minus_answer_1"])
+        scale_a9_a3 = metric(row["answer_9choose3_minus_answer_3seed"])
+        values[f"ScaleAnswerThreeMinusOne{prefix}"] = pct(
+            scale_a3_a1["left_minus_right_instance_weighted"]
+        )
+        values[f"ScaleAnswerThreeMinusOne{prefix}CI"] = ci(scale_a3_a1)
+        values[f"ScaleAnswerNineMinusThree{prefix}"] = pct(
+            scale_a9_a3["left_minus_right_instance_weighted"]
+        )
+        values[f"ScaleAnswerNineMinusThree{prefix}CI"] = ci(scale_a9_a3)
         values[f"ScaleMixedMinusAnswerNine{prefix}"] = pct(
             scale_rr["left_minus_right_instance_weighted"]
         )
@@ -263,8 +281,26 @@ def macros(result: dict[str, Any]) -> str:
         problem["answer_members"]
     )
     problem_rr = metric(problem["mixed_minus_answer"])
-    values["CodeWorkoutProblemMixedRR"] = pct(problem["mixed_target_9choose3"]["rr"])
-    values["CodeWorkoutProblemAnswerNineRR"] = pct(problem["answer_9choose3"]["rr"])
+    for method, method_prefix in (
+        ("mixed_target_9choose3", "Mixed"),
+        ("answer_9choose3", "AnswerNine"),
+        ("answer_3seed", "AnswerThree"),
+        ("answer_1", "AnswerOne"),
+    ):
+        for metric_name in ("pr", "rr", "ir"):
+            values[f"CodeWorkoutProblem{method_prefix}{metric_name.upper()}"] = pct(
+                problem[method][metric_name]
+            )
+    problem_a3_a1 = metric(problem["answer_3seed_minus_answer_1"])
+    problem_a9_a3 = metric(problem["answer_9choose3_minus_answer_3seed"])
+    values["CodeWorkoutProblemAnswerThreeMinusOne"] = pct(
+        problem_a3_a1["left_minus_right_instance_weighted"]
+    )
+    values["CodeWorkoutProblemAnswerThreeMinusOneCI"] = ci(problem_a3_a1)
+    values["CodeWorkoutProblemAnswerNineMinusThree"] = pct(
+        problem_a9_a3["left_minus_right_instance_weighted"]
+    )
+    values["CodeWorkoutProblemAnswerNineMinusThreeCI"] = ci(problem_a9_a3)
     values["CodeWorkoutProblemMixedMinusAnswerNine"] = pct(
         problem_rr["left_minus_right_instance_weighted"]
     )
