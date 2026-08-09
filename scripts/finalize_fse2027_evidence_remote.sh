@@ -28,6 +28,12 @@ fi
   --repo "${WORK_ROOT}" --head "${SOURCE_REVISION}" \
   --output "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
 
+"${PYTHON}" scripts/verify_prompt_current_only_datasets.py \
+  --pair "validation:${RUN_ROOT}/datasets/seen-valid-final.problem-balanced.jsonl:${RUN_ROOT}/datasets/prompt-distribution-current-only/validation.jsonl" \
+  --pair "seen:${RUN_ROOT}/datasets/seen-test-final.jsonl:${RUN_ROOT}/datasets/prompt-distribution-current-only/seen-test.jsonl" \
+  --pair "unseen:${RUN_ROOT}/datasets/unseen-test-final.jsonl:${RUN_ROOT}/datasets/prompt-distribution-current-only/unseen-test.jsonl" \
+  --output "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
+
 required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json"
   "${RUN_ROOT}/analysis/fse2027-selected-portfolios.json"
@@ -54,6 +60,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-verdict-order-token-audit.json"
   "${RUN_ROOT}/analysis/fse2027-effect-heterogeneity.json"
   "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
+  "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
