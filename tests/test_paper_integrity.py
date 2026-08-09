@@ -30,7 +30,8 @@ class PaperIntegrityTest(unittest.TestCase):
             r"\documentclass[acmsmall,screen,review,anonymous]{acmart}", tex
         )
         conclusion = tex.index(r"\section{Conclusion}")
-        availability = tex.index(r"\paragraph{Data availability.}")
+        availability = tex.index(r"\label{sec:data-availability}")
+        self.assertIn(r"\textbf{Data availability.}", tex[availability:])
         bibliography = tex.index(r"\bibliography{references}")
         self.assertLess(conclusion, availability)
         self.assertLess(availability, bibliography)
@@ -39,4 +40,3 @@ class PaperIntegrityTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

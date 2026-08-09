@@ -271,21 +271,26 @@ monotone, and submodular; exhaustive enumeration returns the exact validation
 optimum in each declared finite family; submodularity is a property, not the
 algorithm used here.
 
-\paragraph{Finite-family selection bound.}
+\paragraph{Finite-family selection guarantee.}
 For problem \(q\), let \(X_q(S)\in[0,1]\) be portfolio coverage,
 \(F(S)=\mathbb E[X_q(S)]\), and \(\widehat F_n\) its mean over \(n\) i.i.d.
-validation problems. If \(\widehat S\) maximizes \(\widehat F_n\) over finite
-family \(\mathcal F\) and \(S^*\) maximizes \(F\), then with probability at
-least \(1-\delta\),
+validation problems. Let an empirical selector return \(\widehat S\) satisfying
+\(\widehat F_n(\widehat S)\geq\alpha\max_{S\in\mathcal F}\widehat F_n(S)\)
+over finite family \(\mathcal F\), and let \(S^*\) maximize \(F\). With
+probability at least \(1-\delta\),
 \begin{equation}
- F(S^*)-F(\widehat S) \leq
- 2\sqrt{\frac{\log(2|\mathcal F|/\delta)}{2n}}.
- \label{eq:finite-family-bound}
+ F(S^*)-F(\widehat S) \leq (1-\alpha)F(S^*)+
+ (1+\alpha)\sqrt{\frac{\log(2|\mathcal F|/\delta)}{2n}}.
+\label{eq:finite-family-bound}
 \end{equation}
-Hoeffding's inequality plus a union bound controls every \(S\in\mathcal F\);
-empirical optimality inserts the two uniform deviations. This conditional
-bound does not justify overlapping identities or distribution shift; RQ6
-therefore audits bootstrap stability and problem-disjoint selection.
+Hoeffding plus a union bound controls every portfolio; inserting the
+\(\alpha\)-approximation between the two uniform deviations gives the result.
+Our enumerator has \(\alpha=1\), recovering regret at most twice the uniform
+deviation. For a larger pool under a size bound, greedy maximization of any of
+our monotone submodular coverage objectives has
+\(\alpha=1-(1-1/k)^k\geq1-1/e\)~\cite{nemhauser1978analysis}, so the same theorem
+separates optimization and sampling error. Its i.i.d. premise does not justify
+overlapping identities or shift; RQ6 audits both empirically.
 
 \paragraph{Mechanism-identification ladder.}
 Let \(r(P)\) be held-out RR for controller \(P\), \(A_1\) one Answer checkpoint,
@@ -850,15 +855,12 @@ but not an advantage over Answer-3Seed.
 
 \subsection{What Produces the Observed Improvement?}
 
-Adapter training matters because every trained portfolio beats a zero-shot model
-that already receives trajectory context, while composition beats every member.
-Answer-3Seed beating the original P--S--A portfolio on Seen and tying it on
-Unseen attributes coverage more strongly to checkpoint diversity; relation
-targets change patch scope but are not yet a coverage mechanism. Accordingly,
-validation may select any three checkpoints, and one-per-relation and
-selection-matched Answer pools are mandatory controls. Its two-Answer-plus-
-Progress winner rejects compulsory relation coverage; matched counterfactual
-histories remain necessary to identify when path information changes a repair.
+Every trained portfolio beats trajectory-prompted zero-shot and composition
+beats each member, yet Answer-3Seed beats P--S--A on Seen and ties it on Unseen.
+Thus checkpoint diversity explains coverage more strongly, while relation
+targets change patch scope. Validation may select any three checkpoints; the
+two-Answer-plus-Progress winner rejects compulsory relation coverage, and
+selection-matched Answer pools remain mandatory controls.
 
 \subsection{Coverage Versus Patch Size}
 
@@ -876,13 +878,13 @@ one authored suite with observed cases. TED is structural, not educational
 value; program outputs, observed reachability, and ZPD are not learner outcomes.
 
 \paragraph{Internal validity.}
-Construction and selection choices affect results. A shared runner, pairing,
-and repeated seeds control alternatives; other decoding remains untested.
+Shared execution, pairing, and repeated seeds control alternatives, but
+construction, selection, and other decoding choices may change results.
 
 \paragraph{Data leakage and dependence.}
 Unseen excludes training and retrieval problems, avoiding code
 duplication~\cite{allamanis2019adverse}. Seen may share problems and users;
-clustering handles dependence, not memorization. A prospective holdout is needed.
+clustering handles dependence, not memorization.
 
 \paragraph{External validity.}
 The study spans Python contest code and Java CS1 code after dataset-specific
@@ -894,21 +896,17 @@ Problem-clustered effects support the planned metrics, but TED intervals apply
 only to joint repairs. More architectures are needed for broader transfer.
 
 \paragraph{Ethical considerations.}
-Public code is analyzed without re-identification; the artifact minimizes
-authorship signals and follows source-dataset terms.
+Public code is used without re-identification; the artifact removes authorship
+signals and follows source-dataset terms.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-\tool mines auditable trajectory targets and selects an execution-guided repair
-portfolio. Its 61.5/74.8\% Seen/Unseen RR exceeds 30.7/62.0\% zero-shot but
-matches Answer-3Seed's 61.7/73.2\%, attributing coverage to checkpoint diversity,
-not compulsory relation heterogeneity. Frozen exhaustive selection makes this
-mechanism testable rather than a post-hoc seed comparison.
-
-\paragraph{Data availability.}
-\label{sec:data-availability}
-The anonymized artifact will provide code, splits, outputs, regeneration, and a SHA-256 manifest.
+\tool execution-selects repair portfolios from auditable trajectory targets.
+Its 61.5/74.8\% Seen/Unseen RR exceeds zero-shot's 30.7/62.0\% but matches
+Answer-3Seed's 61.7/73.2\%, isolating checkpoint diversity rather than compulsory
+relation heterogeneity. \label{sec:data-availability}\textbf{Data availability.}
+The anonymous artifact provides code, splits, outputs, scripts, and a SHA-256 manifest.
 
 \clearpage
 \bibliographystyle{ACM-Reference-Format}
