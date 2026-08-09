@@ -674,8 +674,13 @@ joint repairs and resample problems. On 350 Answer--Progress joint repairs,
 Progress is 1.84 TED smaller [0.50, 3.26]; on 361 Strict--Progress joint repairs,
 it is 1.67 smaller [0.53, 2.93]. Strict differs from Answer by only 0.29
 [--1.09, 1.64] across 358 joint repairs. Thus the supported specialization is
-Progress's narrower patch scope, not a fully ordered three-policy hierarchy;
-hard non-regression enters only through selection.
+Progress's narrower patch scope, not a fully ordered three-policy hierarchy.
+Two source-based measures corroborate rather than merely rename TED. On joint
+Progress--Answer repairs, Progress retains 1.29 more percentage points of buggy
+tokens [0.02, 2.57] and 2.89 more points of non-empty source lines [1.16, 4.71].
+Progress also retains 0.84 more token points than Strict [0.04, 1.67], while
+the line interval crosses zero. These are preservation measures, not learner
+outcomes; hard non-regression enters only through selection.
 
 \subsection{RQ4: Sequential Escalation}
 
@@ -687,9 +692,9 @@ always-three budget. Final selection returns the unchanged program 329 times,
 making certified abstention a substantial behavior rather than a corner case.
 
 \begin{table}[t]
-\caption{RQ4 sequential and validation-selected portfolios on 997 Seen
-instances. Selection uses one validation trajectory per problem; test outcomes
-are not used.}
+\caption{RQ4 mechanism ladder on 997 Seen instances. \(A_k\) uses only Answer
+targets; \(M_9\) selects from the nine mixed-target checkpoints. Both size-nine
+pools use the same validation executions, 84 triples, and three-call budget.}
 \label{tab:rq4}
 \centering
 \small
@@ -697,36 +702,36 @@ are not used.}
 \toprule
 Configuration & PR & RR & IR \\
 \midrule
+\(A_1\): one Answer checkpoint & 77.5 & 50.1 & 57.5 \\
 Answer$\times3$ & 84.1 & 55.2 & 62.4 \\
-Answer-3Seed & 87.0 & \textbf{61.7} & \textbf{69.1} \\
-Generated Feedback & 84.9 & 56.6 & 64.6 \\
 Fixed P--S--A & 86.5 & 59.5 & 67.0 \\
-Validation relation-constrained & 85.8 & 57.3 & 65.4 \\
-Validation unconstrained & \textbf{87.4} & 61.5 & 68.9 \\
+\(A_3\): fixed Answer seeds & 87.0 & \textbf{61.7} & \textbf{69.1} \\
+\(A_9\): Answer-9Choose3 & 85.9 & 59.8 & 68.0 \\
+\(M_9\): mixed-target Choose3 & \textbf{87.4} & 61.5 & 68.9 \\
+Relation-constrained \(M_9\) & 85.8 & 57.3 & 65.4 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Answer to RQ4.}
-Execution-guided escalation improves both complete repair and partial improvement over every single adapter. Repeating Answer with generated feedback reaches 55.2\% RR, so additional calls recover 5.0 points over Answer once but remain 4.31 points below the relation-heterogeneous portfolio. The stricter target-matched control reverses that comparison: three independently trained Answer adapters reach 61.7\% RR, exceeding Independent Policies by 2.21 points with a problem-cluster interval [0.11, 4.20] (67 Answer-3Seed-only versus 45 independent-policy-only repairs; McNemar \(p=0.0467\)). On jointly repaired programs, Independent Policies makes smaller patches by 1.56 TED [0.36, 2.79], but it does not recover the coverage difference.
+The complete ladder separates four mechanisms. Independent training diversity
+is the dominant unrestricted-coverage effect: \(A_3-A_1=+11.63\) points with a
+problem-cluster interval [9.54, 13.74]. Enlarging only the Answer pool does not
+improve it: \(A_9-A_3=-1.91\) [--4.30, 0.32]. With pool size and validation
+selection matched, \(M_9-A_9=+1.71\) [--0.79, 4.29] under the instance-weighted
+estimand; the equal-problem contrast is +3.29 [0.29, 6.43]. Thus mixed targets
+do not establish a robust unrestricted RR advantage. Repeating one checkpoint
+with generated feedback reaches only 55.2\%, and compulsory one-per-relation
+selection reduces RR to 57.3\%.
 
-Validation execution does not rescue the relation constraint on Seen test.
-The unrestricted relation-constrained winner obtains 57.3\% RR, 4.41 points
-below Answer-3Seed [--6.54, --2.24]. The unconstrained winner
-(Answer-2027, Answer-2028, Progress-2027) reaches 61.5\%, statistically
-indistinguishable from Answer-3Seed at --0.20 points [--1.83, 1.46]. This
-control is decisive: checkpoint complementarity transfers, but forcing one
-member from every relation reduces coverage. Early stopping still avoids a
-fixed three-generation cost, and Equation~\ref{eq:portfolio-objective} remains
-the test-independent mechanism for selecting the deployed checkpoints.
-
-Under the six predeclared budgets, choosing a separate validation winner for
-each declared budget gives the unconstrained family +0.75 mean points over
-Answer-3Seed [--0.29, 1.86] on Seen. The only individually conclusive budget is
-TED 20 (+1.81 [0.53, 3.16]); the relation-constrained family averages --0.70
-[--2.02, 0.71]. Thus the CodeNet evidence supports budget-indexed validation
-selection at a specific operating point, not a general coverage benefit from
-relation heterogeneity.
+Relation targets instead produce a constrained-repair effect. Across six
+predeclared TED budgets, budget-specific \(M_9\) portfolios improve mean Seen
+RR over selection-matched \(A_9\) by 1.22 points [0.02, 2.42], with TED 20 at
++1.61 [0.39, 2.85]. On 532 jointly repaired inputs, \(M_9\) preserves 2.57 more
+buggy-token points [1.56, 3.64] and 3.33 more non-empty-line points
+[1.89, 4.83]. The method contribution is therefore target-dependent patch
+scope under an executable deployment constraint, while checkpoint diversity
+explains most unrestricted coverage.
 
 \subsection{RQ5: Problem Generalization}
 
@@ -764,15 +769,13 @@ difference, which remains positive without same-problem training.
 With all prompt feedback and online selection recomputed from the observed
 partition, \tool repairs 192/250 inputs (76.8\%) and 189 of those same returned
 patches also pass every hidden test: joint RR 75.6\% [69.9, 80.5] and a 98.4\%
-[95.5, 99.5] hidden-confirmation rate. Answer-3Seed repairs 183 observed and
-182 jointly, for 72.8\% joint RR [67.0, 77.9] and 99.5\% [97.0, 99.9]
-confirmation. The paired counts are 11 \tool-only versus four
-Answer-3Seed-only joint repairs (exact McNemar \(p=.118\)); the equal-problem
-joint-RR difference is +3.83 points with problem-cluster interval
-[0.62, 7.62]. Thus the available-suite RR is not explained by choosing patches
-that fail the untouched half, and problem-balanced evidence favors the mixed
-portfolio in this confirmation, while the instance-level test remains
-inconclusive.
+[95.5, 99.5] hidden-confirmation rate. The selection-matched \(A_9\) control
+repairs 186 observed and 184 jointly, for 73.6\% joint RR [67.8, 78.7] and a
+98.9\% [96.2, 99.7] confirmation rate. The paired counts are 13
+\tool-only versus eight \(A_9\)-only joint repairs (exact McNemar \(p=.383\));
+the equal-problem joint-RR difference is +2.55 points [--0.86, 6.39].
+Therefore both methods' observed repairs almost always survive untouched
+tests, but this confirmation does not distinguish their coverage.
 
 \subsection{RQ6: Robustness and External Replication}
 
@@ -798,10 +801,19 @@ has the lowest mean breadth (1.391) and successful-patch TED (21.10).
 Of 461 selection problems, 323 overlap the 328-problem Seen test. The chosen
 A27--A28--P27 triple is unchanged in all 461 leave-one-problem-out fits, but
 appears in only 44.2\% of 2,000 problem-bootstrap fits. Excluding every test
-problem leaves 138 validation problems and selects P27--P29--A28; its Seen RR
-is 58.0\%, 3.51 points below the primary selector [1.88, 5.14] and 3.71 below
-Answer-3Seed [1.50, 5.88]. Thus Seen selection benefits partly from its problem
-distribution; the Unseen evaluation remains entirely problem-disjoint.
+problem leaves 138 validation problems. It selects P27--P29--A28 from the
+mixed pool and A27--A32--A35 from the Answer pool. Their Seen RRs are 58.0\%
+and 60.9\%, respectively; \(A_9-M_9=+2.91\) points [0.52, 5.34] with 91
+versus 62 exclusive repairs (McNemar \(p=.0233\)). The full-data \(A_9\)
+triple survives 98.5\% of leave-one-problem-out fits but only 25.4\% of
+problem-bootstrap fits, reinforcing that validation choice is not stable
+enough to attribute unrestricted coverage to relation targets.
+
+The constrained result is less selection-sensitive but operating-point
+specific. Under the disjoint selectors, \(M_9-A_9\) averages +1.09 points
+[--0.23, 2.42] across budgets; TED 10 is +2.61 [0.86, 4.36] and TED 40 is
++2.21 [0.21, 4.14], while the other four intervals include zero. The Unseen
+evaluation remains entirely problem-disjoint.
 
 \paragraph{Student-held-out Java replication.}
 Validation selects A29--P29--S28 under the relation constraint and
@@ -839,30 +851,23 @@ over same-target checkpoint diversity.
 
 Together, the RQs distinguish properties of the data construction from causes of
 test-time coverage. The execution-evidence orders are exactly satisfied by the
-materialized supervision, but neither the history ablation nor the Answer-3Seed
-control shows that relation heterogeneity causes the portfolio gain. What the
-experiments do establish is that independently trained checkpoints provide
-complementary candidates and that execution controls escalation, abstention, and
-the optional structural budget. The validation-execution selector converts that
-complementarity into a test-independent deployment choice. Its unconstrained
-winner matches Answer-3Seed on Seen and improves the mean Unseen budget
-frontier, while the explicit relation constraint is detrimental on Seen.
-CodeWorkout reproduces high portfolio coverage under a student holdout in a separately trained Java dataset,
-but not an advantage over Answer-3Seed.
+materialized supervision, but neither the history ablation nor the \(A_1\)--
+\(A_3\)--\(A_9\)--\(M_9\) ladder attributes unrestricted coverage to relation
+heterogeneity. Independent checkpoints provide complementary candidates, and
+execution controls escalation and abstention. Relation targets instead yield
+more source-preserving candidates and improve the Seen budget frontier, with
+problem-disjoint support at particular budgets. CodeWorkout tests whether this
+division transfers after Java-specific training.
 
 \section{Discussion}
 \label{sec:discussion}
 
-\subsection{What Produces the Observed Improvement?}
-
 Every trained portfolio beats trajectory-prompted zero-shot and composition
-beats each member, yet Answer-3Seed beats P--S--A on Seen and ties it on Unseen.
-Thus checkpoint diversity explains coverage more strongly, while relation
-targets change patch scope. Validation may select any three checkpoints; the
-two-Answer-plus-Progress winner rejects compulsory relation coverage, and
-selection-matched Answer pools remain mandatory controls.
-
-\subsection{Coverage Versus Patch Size}
+beats each member, but \(A_3-A_1\) is large whereas \(A_9-A_3\) and
+\(M_9-A_9\) are not robustly positive in unrestricted RR. Thus checkpoint
+diversity explains coverage. Relation targets change patch scope: the matched
+mixed pool preserves more source and improves the declared Seen budget frontier.
+Compulsory relation coverage is unsupported; matched Answer pools are mandatory.
 
 LSGen's same-problem programs yield higher unrestricted coverage with mean TED
 over four times \tool's. The gate operationalizes, rather than valorizes, edit
@@ -874,22 +879,22 @@ deployment frontier rather than a learner-outcome claim.
 
 \paragraph{Construct validity.}
 Tests can overfit~\cite{qi2014strength,smith2015cure}; the 310 hidden cases share
-one authored suite with observed cases. TED is structural, not educational
-value; program outputs, observed reachability, and ZPD are not learner outcomes.
+one authored suite. TED and source retention are structural, not educational
+value; reachability and ZPD are not measured learner outcomes.
 
 \paragraph{Internal validity.}
-Shared execution, pairing, and repeated seeds control alternatives, but
-construction, selection, and other decoding choices may change results.
+Shared execution, pairing, and seeds control alternatives, but construction and
+decoding choices may change results.
 
 \paragraph{Data leakage and dependence.}
 Unseen excludes training and retrieval problems, avoiding code
-duplication~\cite{allamanis2019adverse}. Seen may share problems and users;
-clustering handles dependence, not memorization.
+duplication~\cite{allamanis2019adverse}. Seen can share users and selection
+problems; clustering and disjoint-selection audits do not eliminate memorization.
 
 \paragraph{External validity.}
 The study spans Python contest code and Java CS1 code after dataset-specific
-retraining, but one 7B model and no multi-file projects. Student-held-out
-CodeWorkout shares exercises; CodeNet Unseen is not a random assignment sample.
+retraining, but no multi-file projects. CodeWorkout and CodeNet holdouts reflect
+different populations and are not random difficulty samples.
 
 \paragraph{Conclusion validity.}
 Problem-clustered effects support the planned metrics, but TED intervals apply
@@ -904,8 +909,9 @@ signals and follows source-dataset terms.
 
 \tool execution-selects repair portfolios from auditable trajectory targets.
 Its 61.5/74.8\% Seen/Unseen RR exceeds zero-shot's 30.7/62.0\% but matches
-Answer-3Seed's 61.7/73.2\%, isolating checkpoint diversity rather than compulsory
-relation heterogeneity. \label{sec:data-availability}\textbf{Data availability.}
+same-target controls in unrestricted coverage. The matched ladder identifies
+independent checkpoint diversity as the coverage mechanism and relation targets
+as a source of smaller, budget-feasible repairs. \label{sec:data-availability}\textbf{Data availability.}
 The anonymous artifact provides code, splits, outputs, scripts, and a SHA-256 manifest.
 
 \clearpage
