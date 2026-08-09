@@ -62,10 +62,21 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
         return [json.loads(line) for line in source if line.strip()]
 
 
+def require_all_valid(result: dict[str, Any], order_name: str) -> None:
+    invalid = {
+        name: row[order_name]
+        for name, row in result["datasets"].items()
+        if row[order_name]["valid"] != row[order_name]["total"]
+    }
+    if invalid:
+        raise ValueError(f"invalid labels under {order_name}: {invalid}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--require-order", choices=sorted(ORDERS))
     args = parser.parse_args()
     result: dict[str, Any] = {"orders": ORDERS, "datasets": {}}
     for partition in ("train", "valid"):
@@ -79,6 +90,11 @@ def main() -> None:
                 }
                 for name, order in ORDERS.items()
             }
+    if args.require_order:
+        try:
+            require_all_valid(result, args.require_order)
+        except ValueError as error:
+            parser.error(str(error))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, sort_keys=True))

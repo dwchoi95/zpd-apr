@@ -1,6 +1,11 @@
 import unittest
 
-from scripts.audit_verdict_order_sensitivity import ORDERS, pareto, valid
+from scripts.audit_verdict_order_sensitivity import (
+    ORDERS,
+    pareto,
+    require_all_valid,
+    valid,
+)
 
 
 class VerdictOrderSensitivityTest(unittest.TestCase):
@@ -16,6 +21,19 @@ class VerdictOrderSensitivityTest(unittest.TestCase):
         order = ORDERS["canonical"]
         self.assertTrue(pareto({"a": "WA", "b": "RE"}, {"a": "AC", "b": "RE"}, order))
         self.assertFalse(pareto({"a": "WA"}, {"a": "WA"}, order))
+
+    def test_required_order_rejects_any_invalid_label(self) -> None:
+        result = {
+            "datasets": {
+                "train-progress": {
+                    "accepted_vs_failure": {"valid": 3, "total": 3}
+                }
+            }
+        }
+        require_all_valid(result, "accepted_vs_failure")
+        result["datasets"]["train-progress"]["accepted_vs_failure"]["valid"] = 2
+        with self.assertRaisesRegex(ValueError, "invalid labels"):
+            require_all_valid(result, "accepted_vs_failure")
 
 
 if __name__ == "__main__":

@@ -58,6 +58,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-problem-crossfit.json"
   "${RUN_ROOT}/analysis/fse2027-verdict-order-model-sensitivity.json"
   "${RUN_ROOT}/analysis/fse2027-verdict-order-token-audit.json"
+  "${RUN_ROOT}/analysis/fse2027-verdict-order-label-audit.json"
   "${RUN_ROOT}/analysis/fse2027-effect-heterogeneity.json"
   "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"

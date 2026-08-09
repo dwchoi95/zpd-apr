@@ -14,6 +14,7 @@ CHECKPOINT_ROOT=${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-verdict-order/
 OUTCOME_CACHE=${RUN_ROOT}/outcomes/all-original-submissions.jsonl
 ANALYSIS=${RUN_ROOT}/analysis/fse2027-verdict-order-model-sensitivity.json
 TOKEN_AUDIT=${RUN_ROOT}/analysis/fse2027-verdict-order-token-audit.json
+LABEL_AUDIT=${RUN_ROOT}/analysis/fse2027-verdict-order-label-audit.json
 LOG=${RUN_ROOT}/logs/verdict-order-model-sensitivity.log
 
 cd "${WORK_ROOT}"
@@ -55,6 +56,10 @@ if [[ ! -s "${TOKEN_AUDIT}" ]]; then
     --output "${TOKEN_AUDIT}"
 fi
 "${PYTHON}" -c 'import json,sys; assert json.load(open(sys.argv[1]))["total_overlength_examples"] == 0' "${TOKEN_AUDIT}"
+
+"${PYTHON}" scripts/audit_verdict_order_sensitivity.py \
+  --dataset-root "${ALT_DATASET_ROOT}" --require-order accepted_vs_failure \
+  --output "${LABEL_AUDIT}"
 
 train_adapter() {
   local relation=$1 checkpoint=${CHECKPOINT_ROOT}/${relation}
