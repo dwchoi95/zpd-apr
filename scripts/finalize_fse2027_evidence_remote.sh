@@ -60,6 +60,14 @@ done
   --analysis "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json" \
   --analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json"
 
+"${PYTHON}" scripts/verify_fse2027_checkpoint_families.py \
+  --canonical-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5" \
+  --canonical-seed-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-seeds" \
+  --replication "codeworkout-student=${WORK_ROOT}/checkpoints/split-90-10/codeworkout" \
+  --replication "codebase-1.5b=${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-1.5b" \
+  --replication "codeworkout-exercise=${WORK_ROOT}/checkpoints/split-90-10/codeworkout-problem-holdout" \
+  --output "${RUN_ROOT}/analysis/fse2027-checkpoint-family-audit.json"
+
 checkpoint_args=(
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-rq2"
