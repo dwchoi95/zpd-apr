@@ -34,7 +34,7 @@ train_adapter() {
     --prompt D --base-model "${BASE_MODEL}" --epochs 1 --learning-rate 2e-4 \
     --edit-token-weight 1 --validation-dataset "${DATASETS}/valid-${mode}.jsonl" \
     --eval-steps 100 --early-stopping-patience 2 --seed "${seed}" \
-    --batch-size 4 --gradient-accumulation 4
+    --batch-size 8 --gradient-accumulation 2
 }
 
 complete() {
