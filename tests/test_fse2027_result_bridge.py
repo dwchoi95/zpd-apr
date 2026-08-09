@@ -7,6 +7,26 @@ def split_row(mixed: float, answer: float) -> dict:
     return {
         "zpdpatch": {"rr": mixed},
         "answer_9choose3": {"rr": answer},
+        "answer_3seed": {"rr": answer - 0.01},
+        "answer_1": {"rr": answer - 0.05},
+        "answer_3seed_minus_answer_1": {
+            "paired": [
+                {
+                    "metric": "rr",
+                    "left_minus_right_instance_weighted": 0.04,
+                    "cluster_bootstrap_95ci": [0.02, 0.06],
+                }
+            ]
+        },
+        "answer_9choose3_minus_answer_3seed": {
+            "paired": [
+                {
+                    "metric": "rr",
+                    "left_minus_right_instance_weighted": 0.01,
+                    "cluster_bootstrap_95ci": [-0.01, 0.03],
+                }
+            ]
+        },
         "zpdpatch_minus_answer_9choose3": {
             "paired": [
                 {
@@ -110,6 +130,8 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
+        self.assertIn(r"\newcommand{\AnswerThreeMinusOneSeen}{4.0}", rendered)
+        self.assertIn(r"\newcommand{\AnswerNineMinusThreeSeen}{1.0}", rendered)
         self.assertIn(r"\newcommand{\MixedMinusAnswerNineUnseen}{2.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointSeenRR}{58.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointAnswerNineRR}{57.0}", rendered)

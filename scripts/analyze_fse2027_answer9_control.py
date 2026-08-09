@@ -40,6 +40,16 @@ def main() -> None:
     for offset, split in enumerate(("seen", "unseen")):
         root = args.eval_root / "answer9-control"
         answer = read_jsonl(root / f"answer9-unrestricted-{split}-test.evaluation.jsonl")
+        answer3 = read_jsonl(
+            args.eval_root
+            / "selected-portfolios"
+            / f"answer-3seed-{split}-test.evaluation.jsonl"
+        )
+        answer1 = read_jsonl(
+            args.eval_root
+            / "selected-portfolios"
+            / f"Answer2027-{split}-test.evaluation.jsonl"
+        )
         zpd = read_jsonl(
             args.eval_root
             / "selected-portfolios"
@@ -62,6 +72,24 @@ def main() -> None:
         result["splits"][split] = {
             "zpdpatch": summarize_method(zpd),
             "answer_9choose3": summarize_method(answer),
+            "answer_3seed": summarize_method(answer3),
+            "answer_1": summarize_method(answer1),
+            "answer_3seed_minus_answer_1": paired_suite_rows(
+                answer3,
+                answer1,
+                left_label="Answer-3Seed",
+                right_label="Answer-1",
+                samples=args.samples,
+                seed=args.seed + 20 + offset,
+            ),
+            "answer_9choose3_minus_answer_3seed": paired_suite_rows(
+                answer,
+                answer3,
+                left_label="Answer-9Choose3",
+                right_label="Answer-3Seed",
+                samples=args.samples,
+                seed=args.seed + 30 + offset,
+            ),
             "zpdpatch_minus_answer_9choose3": paired_suite_rows(
                 zpd,
                 answer,

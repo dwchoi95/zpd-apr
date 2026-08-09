@@ -53,12 +53,22 @@ def build(
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
         rr = metric(row["zpdpatch_minus_answer_9choose3"])
+        a3_minus_a1 = metric(row["answer_3seed_minus_answer_1"])
+        a9_minus_a3 = metric(row["answer_9choose3_minus_answer_3seed"])
         budget = row["budget_indexed_zpdpatch_minus_answer_9choose3"][
             "mean_over_predeclared_budgets"
         ]
         result["canonical"][split] = {
             "mixed_rr": row["zpdpatch"]["rr"],
             "answer_rr": row["answer_9choose3"]["rr"],
+            "answer_3seed_rr": row["answer_3seed"]["rr"],
+            "answer_1_rr": row["answer_1"]["rr"],
+            "answer_3seed_minus_answer_1": a3_minus_a1[
+                "left_minus_right_instance_weighted"
+            ],
+            "answer_9choose3_minus_answer_3seed": a9_minus_a3[
+                "left_minus_right_instance_weighted"
+            ],
             "rr_difference": rr["left_minus_right_instance_weighted"],
             "rr_cluster_95ci": rr["cluster_bootstrap_95ci"],
             "rr_mcnemar_p": row["zpdpatch_minus_answer_9choose3"][
@@ -75,6 +85,14 @@ def macros(result: dict[str, Any]) -> str:
     for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
         row = result["canonical"][split]
         values[f"AnswerNine{prefix}RR"] = pct(row["answer_rr"])
+        values[f"AnswerThree{prefix}RR"] = pct(row["answer_3seed_rr"])
+        values[f"AnswerOne{prefix}RR"] = pct(row["answer_1_rr"])
+        values[f"AnswerThreeMinusOne{prefix}"] = pct(
+            row["answer_3seed_minus_answer_1"]
+        )
+        values[f"AnswerNineMinusThree{prefix}"] = pct(
+            row["answer_9choose3_minus_answer_3seed"]
+        )
         values[f"Mixed{prefix}RR"] = pct(row["mixed_rr"])
         values[f"MixedMinusAnswerNine{prefix}"] = pct(row["rr_difference"])
         values[f"MixedMinusAnswerNine{prefix}CI"] = (
