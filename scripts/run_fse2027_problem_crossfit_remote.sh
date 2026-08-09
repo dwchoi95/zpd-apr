@@ -20,7 +20,7 @@ exec >>"${LOG}" 2>&1
 export PYTHONPATH=. HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 
-while [[ ! -f "${EVAL_ROOT}/prompt-distribution-control/COMPLETE" ]]; do sleep 60; done
+while [[ ! -f "${EVAL_ROOT}/prompt-distribution-current-only/COMPLETE" ]]; do sleep 60; done
 
 DATASET=${DATASET_ROOT}/seen-test-final.jsonl
 EXPECTED=$(wc -l < "${DATASET}")
