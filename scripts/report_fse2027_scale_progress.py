@@ -22,6 +22,7 @@ HEADER = re.compile(
     r"\[([^\]]+)\] Training 1\.5B (progress|strict|answer) seed (\d+)"
 )
 UPDATE = re.compile(r"(\d+)/(\d+)")
+FIRST_ADAPTER = ("progress", 2027)
 
 
 def line_count(path: Path) -> int:
@@ -56,13 +57,27 @@ def summarize(
 
     normalized = log.read_text(encoding="utf-8", errors="replace").replace("\r", "\n")
     headers = list(HEADER.finditer(normalized))
+    run_start = next(
+        (
+            match
+            for match in reversed(headers)
+            if (match.group(2), int(match.group(3))) == FIRST_ADAPTER
+        ),
+        None,
+    )
+    run_headers = (
+        [match for match in headers if match.start() >= run_start.start()]
+        if run_start is not None
+        else headers
+    )
+    run_segment = normalized[run_start.start() :] if run_start is not None else normalized
     active: dict[str, Any] | None = None
     throughput: float | None = None
     eta: datetime | None = None
     chain_throughput: float | None = None
     chain_eta: datetime | None = None
-    if headers:
-        latest = headers[-1]
+    if run_headers:
+        latest = run_headers[-1]
         started_text, mode, seed_text = latest.groups()
         seed = int(seed_text)
         expected_updates = math.ceil(examples[mode] / EFFECTIVE_BATCH_SIZE)
@@ -95,7 +110,7 @@ def summarize(
                     seconds=(total_examples - completed_examples) / throughput
                 )
         logged_adapters = {
-            (match.group(2), int(match.group(3))) for match in headers
+            (match.group(2), int(match.group(3))) for match in run_headers
         }
         logged_examples = sum(
             examples[logged_mode]
@@ -103,7 +118,7 @@ def summarize(
         )
         if active is not None:
             logged_examples += active["examples_completed"]
-        first_started = datetime.fromisoformat(headers[0].group(1))
+        first_started = datetime.fromisoformat(run_headers[0].group(1))
         observed_at = now or datetime.now(tz=first_started.tzinfo)
         chain_elapsed = (observed_at - first_started).total_seconds()
         if chain_elapsed > 0 and logged_examples > 0:
@@ -136,10 +151,15 @@ def summarize(
             chain_eta.isoformat() if chain_eta else None
         ),
         "chain_eta_assumption": (
-            "throughput since the first training header remains constant"
+            "throughput since the final run boundary remains constant"
             if chain_eta
             else None
         ),
+        "run_start_time": run_start.group(1) if run_start is not None else None,
+        "run_diagnostics": {
+            "cuda_oom_count": run_segment.count("CUDA out of memory"),
+            "traceback_count": run_segment.count("Traceback (most recent call last):"),
+        },
     }
 
 

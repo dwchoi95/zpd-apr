@@ -22,6 +22,9 @@ class ScaleProgressReportTest(unittest.TestCase):
             summary.write_text("{}\n", encoding="utf-8")
             log = root / "train.log"
             log.write_text(
+                "[2026-08-09T09:50:00+00:00] Training 1.5B progress seed 2027\n"
+                "Traceback (most recent call last):\n"
+                "CUDA out of memory\n"
                 "[2026-08-09T10:00:00+00:00] Training 1.5B progress seed 2027\n"
                 "1/1\n"
                 "[2026-08-09T10:01:00+00:00] Training 1.5B strict seed 2027\n"
@@ -46,6 +49,11 @@ class ScaleProgressReportTest(unittest.TestCase):
                 result["chain_throughput_examples_per_second"], 8 / 660
             )
             self.assertIsNotNone(result["estimated_chain_completion_time"])
+            self.assertEqual(result["run_start_time"], "2026-08-09T10:00:00+00:00")
+            self.assertEqual(
+                result["run_diagnostics"],
+                {"cuda_oom_count": 0, "traceback_count": 0},
+            )
             self.assertEqual(
                 result["eta_assumption"],
                 "current active-adapter throughput remains constant",
