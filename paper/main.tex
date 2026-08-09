@@ -85,13 +85,22 @@ The motivation for using history is straightforward but unverified. Two students
 
 We introduce \tool, illustrated in Figure~\ref{fig:overview}. It automatically converts authentic submission trajectories into three supervised repair datasets. \progress retains verdict improvements and same-verdict transitions whose per-test outcomes improve monotonically. \strict retains only transitions that improve the online-judge verdict. \answer pairs every failed submission with the trajectory's final accepted program. Three seeds per target relation produce nine independently trained QLoRA checkpoints over the same code language model and prompt. Validation execution selects three complementary checkpoints, which are invoked from narrower to broader supervision. \tool executes each candidate, stops on an eligible acceptance, and otherwise selects a non-regressive candidate using test pass rate and AST tree edit distance (TED).
 
-Our evaluation separates three mechanisms that are easy to conflate: learned relational targets, heterogeneous policy composition, and the serialization of prior submissions. The complete system substantially improves over zero-shot on both seen and problem-held-out data, and sequential escalation outperforms each adapter alone. Target-matched retraining finds no stable causal benefit from serializing earlier submissions; both conditions still use targets mined from trajectories, so this null result neither establishes nor refutes relational supervision as the source of the complete-system gain. We therefore test policy heterogeneity directly against three independently trained Answer adapters that share examples, targets, and decoding but differ in training seed.
+Our evaluation separates mechanisms that are easy to conflate: repeated calls,
+independent training seeds, validation-selected pool breadth, relational target
+composition, and serialization of prior submissions. The
+\(A_1\!\rightarrow A_3\!\rightarrow A_9\!\rightarrow M_9\) ladder matches
+each successive opportunity. Target-matched retraining separately finds no
+stable causal benefit from serializing earlier submissions.
 
 This paper makes the following contributions:
 \begin{itemize}
   \item We formulate trajectory-mined repair as finite execution-evidence orders plus terminal closure, and audit every materialized supervision transition against those definitions.
   \item We pose size-three checkpoint choice as exact finite validation-coverage search, derive a problem-level finite-family selection bound, and design an execution controller with observed-test non-regression and structural edit-budget compliance by construction.
-  \item We empirically separate relation supervision from seed diversity using a mandatory same-target Answer-3Seed baseline, target-matched history ablations, relation-constrained selection, an observed/hidden-test confirmation, problem-clustered analyses, patch-budget curves, and a separately trained student-held-out Java replication.
+  \item We empirically separate relation targets from seed and selection
+  diversity using the full \(A_1\)--\(A_3\)--\(A_9\)--\(M_9\) ladder,
+  target-matched history ablations, hidden tests, problem-disjoint selection,
+  patch-budget and source-retention analyses, a second model scale, and
+  student- and exercise-held-out Java replications.
 \end{itemize}
 
 \section{Background and Related Work}
@@ -455,13 +464,13 @@ zero student overlap: 786/158/181 train/validation/test trajectories from
 157/34/33 students. Every split contains all 17 exercises. External training
 contains 3,470 Answer, 1,110 Strict, and 1,386 Progress examples; validation
 contains 730/230/276. We train the same model and hyperparameters from the same
-base checkpoint. For each relation, seeds 2027/2028/2029 create nine independent
-checkpoints. We execute all nine on the 158 student-disjoint validation states,
-exactly enumerate all 84 size-three and 27 one-per-relation portfolios under
-Equation~\ref{eq:portfolio-objective}, and freeze both winners before testing.
-The 181 student-held-out final states compare both with the mandatory
-same-target Answer-3Seed control; no CodeWorkout test outcome enters checkpoint
-or portfolio selection.
+base checkpoint. Seeds 2027/2028/2029 per relation create the mixed-target pool;
+Answer seeds 2030--2035 complete a selection-matched nine-Answer pool. We
+execute both pools on the 158 student-disjoint validation states, enumerate all
+84 size-three portfolios per pool plus 27 one-per-relation portfolios, and
+freeze every winner before testing. The 181 student-held-out final states
+compare \(M_9\), \(A_9\), and the fixed \(A_3\); no CodeWorkout test outcome
+enters checkpoint or portfolio selection.
 
 \subsection{Baselines}
 
@@ -492,6 +501,13 @@ same bound.
 \subsection{Implementation}
 
 We use Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2} and train each adapter for one epoch with 4-bit QLoRA~\cite{dettmers2023qlora}. The base weights use NF4 double quantization and BF16 computation. LoRA targets the \(q,k,v,o\) attention projections and gate/up/down MLP projections with rank 16, scaling 32, and dropout 0.05. Optimization uses paged 8-bit AdamW, learning rate \(2\times10^{-4}\), cosine scheduling, 0.03 warmup ratio, and gradient checkpointing. Both canonical and CodeWorkout training use micro-batches of 2 with eight accumulation steps, for an effective batch of 16. Seeds 2027/2028/2029 repeat every target; Answer-9Choose3 adds Answer seeds 2030--2035 without changing data, hyperparameters, or greedy decoding. We select the lowest validation-loss checkpoint and run on one NVIDIA RTX 5090.
+
+Two replications retain the same targets, selectors, and effective batch.
+The scale replication substitutes Qwen2.5-Coder-1.5B-Instruct and uses
+micro-batches of 8 with two accumulation steps. The assignment-held-out
+CodeWorkout split uses 10/3/4 disjoint train/validation/test exercises
+(605/216/304 trajectories) and retrains both nine-checkpoint pools; unlike the
+student holdout, users may cross these exercise partitions.
 
 OpenAI Codex was used interactively to propose control and validation-selection
 design alternatives, implement dataset builders, orchestrate experiments,
