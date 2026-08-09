@@ -211,6 +211,9 @@ def macros(result: dict[str, Any]) -> str:
         codeworkout_rr["left_minus_right_instance_weighted"]
     )
     values["CodeWorkoutStudentMixedMinusAnswerNineCI"] = ci(codeworkout_rr)
+    values["CodeWorkoutStudentMixedMinusAnswerNineExerciseCI"] = ci(
+        codeworkout_rr
+    )
     values["CodeWorkoutStudentMixedMinusAnswerNineStudentCI"] = interval(
         codeworkout["zpdpatch_minus_answer_9choose3"]["student_cluster_rr_95ci"]
     )
@@ -243,6 +246,7 @@ def macros(result: dict[str, Any]) -> str:
         problem_rr["left_minus_right_instance_weighted"]
     )
     values["CodeWorkoutProblemMixedMinusAnswerNineCI"] = ci(problem_rr)
+    values["CodeWorkoutProblemMixedMinusAnswerNineExerciseCI"] = ci(problem_rr)
     values["CodeWorkoutProblemMixedMinusAnswerNineStudentCI"] = interval(
         problem["mixed_minus_answer"]["student_cluster_rr_95ci"]
     )

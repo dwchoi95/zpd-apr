@@ -205,6 +205,10 @@ class ResultBridgeTest(unittest.TestCase):
             r"\newcommand{\CodeWorkoutStudentMixedMinusAnswerNineStudentCI}{[-2.00, 4.00]}",
             rendered,
         )
+        self.assertIn(
+            r"\newcommand{\CodeWorkoutStudentMixedMinusAnswerNineExerciseCI}{[-1.00, 3.00]}",
+            rendered,
+        )
         self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleBudgetMixedMinusAnswerNineSeen}{1.5}", rendered)
         self.assertIn(
@@ -214,6 +218,10 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedRR}{71.0}", rendered)
         self.assertIn(
             r"\newcommand{\CodeWorkoutProblemMixedMinusAnswerNineStudentCI}{[-2.00, 4.00]}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\CodeWorkoutProblemMixedMinusAnswerNineExerciseCI}{[-1.00, 3.00]}",
             rendered,
         )
 
