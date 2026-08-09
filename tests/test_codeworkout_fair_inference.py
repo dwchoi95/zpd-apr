@@ -35,8 +35,18 @@ class CodeWorkoutFairInferenceTest(unittest.TestCase):
             "feasible_portfolios": 84,
             "selected_unrestricted": {"members": ["A1", "A2", "A3"]},
         }
+        mixed_selection = {
+            "candidate_checkpoint_count": 9,
+            "feasible_unconstrained_size_three_portfolios": 84,
+            "best_unconstrained": {"members": ["M1", "M2", "M3"]},
+        }
         student = analyze_student(
-            mixed, answer, answer_selection, samples=100, seed=2027
+            mixed,
+            answer,
+            mixed_selection,
+            answer_selection,
+            samples=100,
+            seed=2027,
         )
         contrast = student["zpdpatch_minus_answer_9choose3"]
         self.assertEqual(len(contrast["student_cluster_rr_95ci"]), 2)
@@ -46,8 +56,10 @@ class CodeWorkoutFairInferenceTest(unittest.TestCase):
             ]),
             2,
         )
+        self.assertTrue(
+            student["selection_fairness_audit"]["candidate_pool_sizes_matched"]
+        )
 
-        mixed_selection = {"best_unconstrained": {"members": ["M1", "M2", "M3"]}}
         problem = analyze_problem(
             mixed,
             answer,
@@ -58,6 +70,11 @@ class CodeWorkoutFairInferenceTest(unittest.TestCase):
         )
         self.assertEqual(
             len(problem["mixed_minus_answer"]["student_cluster_rr_95ci"]), 2
+        )
+        self.assertTrue(
+            problem["selection_fairness_audit"][
+                "portfolio_search_spaces_matched"
+            ]
         )
 
 

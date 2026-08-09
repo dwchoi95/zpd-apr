@@ -124,6 +124,7 @@ done
 "${PYTHON}" scripts/analyze_codeworkout_answer9.py \
   --zpdpatch "${OUTPUT_ROOT}/zpdpatch-test.evaluation.jsonl" \
   --answer9 "${OUTPUT_ROOT}/answer9-test.evaluation.jsonl" \
+  --mixed-selection "${ZPD_SELECTION}" \
   --selection "${SELECTION}" --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] CodeWorkout Answer-9Choose3 complete"

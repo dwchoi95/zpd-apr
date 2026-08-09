@@ -9,6 +9,7 @@ from pathlib import Path
 
 from analyze_fse2027_robustness import paired_suite_rows, read_jsonl, summarize_method
 from analyze_codeworkout_portfolios import clustered_interval
+from analyze_fse2027_scale_replication import selection_audit
 
 
 def analyze(
@@ -35,6 +36,9 @@ def analyze(
         "dataset": "CodeWorkout exercise-held-out Java test",
         "split": {"train_exercises": 10, "validation_exercises": 3, "test_exercises": 4},
         "test_outcomes_used_for_selection": False,
+        "selection_fairness_audit": selection_audit(
+            mixed_selection, answer_selection
+        ),
         "mixed_members": mixed_selection["best_unconstrained"]["members"],
         "answer_members": answer_selection["selected_unrestricted"]["members"],
         "mixed_target_9choose3": summarize_method(mixed),

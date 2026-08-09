@@ -9,11 +9,13 @@ from pathlib import Path
 
 from analyze_fse2027_robustness import paired_suite_rows, read_jsonl, summarize_method
 from analyze_codeworkout_portfolios import clustered_interval
+from analyze_fse2027_scale_replication import selection_audit
 
 
 def analyze(
     zpdpatch: list[dict],
     answer9: list[dict],
+    mixed_selection: dict,
     selection: dict,
     *,
     samples: int,
@@ -34,6 +36,7 @@ def analyze(
         "dataset": "CodeWorkout student-held-out Java test",
         "selection_partition": "CodeWorkout student-held-out validation",
         "test_outcomes_used_for_selection": False,
+        "selection_fairness_audit": selection_audit(mixed_selection, selection),
         "answer_candidate_checkpoints": selection["candidate_checkpoint_count"],
         "answer_feasible_portfolios": selection["feasible_portfolios"],
         "answer_selected_members": selection["selected_unrestricted"]["members"],
@@ -47,6 +50,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--zpdpatch", type=Path, required=True)
     parser.add_argument("--answer9", type=Path, required=True)
+    parser.add_argument("--mixed-selection", type=Path)
     parser.add_argument("--selection", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--samples", type=int, default=10_000)
@@ -54,10 +58,15 @@ def main() -> None:
     args = parser.parse_args()
     zpdpatch = read_jsonl(args.zpdpatch)
     answer9 = read_jsonl(args.answer9)
+    mixed_selection_path = args.mixed_selection or args.selection.with_name(
+        "fse2027-codeworkout-selection.json"
+    )
+    mixed_selection = json.loads(mixed_selection_path.read_text(encoding="utf-8"))
     selection = json.loads(args.selection.read_text(encoding="utf-8"))
     result = analyze(
         zpdpatch,
         answer9,
+        mixed_selection,
         selection,
         samples=args.samples,
         seed=args.seed,
