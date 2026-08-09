@@ -398,8 +398,14 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleMixedSeenPR}{65.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleMixedSeenIR}{60.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleAnswerThreeSeenRR}{51.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleAnswerThreeSeenPR}{61.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleAnswerThreeSeenIR}{56.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleAnswerOneSeenRR}{45.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleAnswerOneSeenPR}{55.0}", rendered)
+        self.assertIn(r"\newcommand{\ScaleAnswerOneSeenIR}{50.0}", rendered)
         self.assertIn(r"\newcommand{\ScaleAnswerThreeMinusOneSeen}{2.0}", rendered)
         self.assertIn(
             r"\newcommand{\ScaleMixedMembers}{Progress2027--Strict2028--Answer2029}",
@@ -412,8 +418,14 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedRR}{71.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedPR}{81.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedIR}{76.0}", rendered)
         self.assertIn(r"\newcommand{\CodeWorkoutProblemAnswerThreeRR}{70.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemAnswerThreePR}{80.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemAnswerThreeIR}{75.0}", rendered)
         self.assertIn(r"\newcommand{\CodeWorkoutProblemAnswerOneRR}{63.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemAnswerOnePR}{73.0}", rendered)
+        self.assertIn(r"\newcommand{\CodeWorkoutProblemAnswerOneIR}{68.0}", rendered)
         self.assertIn(
             r"\newcommand{\CodeWorkoutProblemAnswerNineMembers}{Answer2030--Answer2032--Answer2035}",
             rendered,
