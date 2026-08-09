@@ -175,6 +175,23 @@ class ResultBridgeTest(unittest.TestCase):
         normalized_ted = {
             "examples_parseable_current": 966,
             "examples_excluded_unparseable_current": 31,
+            "current_ast_node_distribution": {
+                "p25": 74.0,
+                "median": 110.0,
+                "p75": 190.0,
+            },
+            "absolute_budget_context": {
+                str(budget): {
+                    "fraction_of_current_ast_median": budget / 110,
+                    "fraction_where_budget_is_at_most_10pct": fraction,
+                }
+                for budget, fraction in (
+                    (5, 0.919),
+                    (10, 0.568),
+                    (20, 0.228),
+                    (40, 0.033),
+                )
+            },
             "per_budget": {
                 "0.1": {
                     "mixed_minus_answer": 0.028,
@@ -400,6 +417,9 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(r"\newcommand{\NormalizedTEDExamples}{966}", rendered)
+        self.assertIn(r"\newcommand{\CurrentASTNodesMedian}{110}", rendered)
+        self.assertIn(r"\newcommand{\TED10MedianASTFraction}{9.1}", rendered)
+        self.assertIn(r"\newcommand{\TED5AtMostTenPercentInputs}{91.9}", rendered)
         self.assertIn(
             r"\newcommand{\NormalizedTEDTwentyMixedMinusAnswerNine}{3.8}",
             rendered,

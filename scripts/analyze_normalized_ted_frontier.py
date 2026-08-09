@@ -7,9 +7,13 @@ import argparse
 import ast
 import json
 import random
+import statistics
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
+
+
+ABSOLUTE_BUDGETS = (5, 10, 20, 40, 80, 160)
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -175,6 +179,33 @@ def analyze(
                 seed=seed + index,
             ),
         }
+    node_counts = [int(row["current_ast_nodes"]) for row in records]
+    ast_size_distribution = {
+        "minimum": min(node_counts),
+        "p10": percentile(node_counts, 0.10),
+        "p25": percentile(node_counts, 0.25),
+        "median": percentile(node_counts, 0.50),
+        "mean": statistics.fmean(node_counts),
+        "p75": percentile(node_counts, 0.75),
+        "p90": percentile(node_counts, 0.90),
+        "maximum": max(node_counts),
+    }
+    absolute_budget_context = {}
+    for budget in ABSOLUTE_BUDGETS:
+        fractions = [budget / nodes for nodes in node_counts]
+        absolute_budget_context[str(budget)] = {
+            "fraction_of_current_ast_p25": percentile(fractions, 0.25),
+            "fraction_of_current_ast_median": percentile(fractions, 0.50),
+            "fraction_of_current_ast_p75": percentile(fractions, 0.75),
+            "fraction_of_current_ast_p90": percentile(fractions, 0.90),
+            "examples_where_budget_is_at_most_10pct": sum(
+                fraction <= 0.10 for fraction in fractions
+            ),
+            "fraction_where_budget_is_at_most_10pct": sum(
+                fraction <= 0.10 for fraction in fractions
+            )
+            / len(fractions),
+        }
     return {
         "analysis_status": "post-hoc robustness audit",
         "estimand": "repair rate on parseable-current inputs with TED/current AST nodes at or below budget",
@@ -184,6 +215,8 @@ def analyze(
         "examples_total": len(dataset),
         "examples_parseable_current": len(records),
         "examples_excluded_unparseable_current": len(excluded),
+        "current_ast_node_distribution": ast_size_distribution,
+        "absolute_budget_context": absolute_budget_context,
         "budgets": budgets,
         "per_budget": per_budget,
         "bootstrap": {

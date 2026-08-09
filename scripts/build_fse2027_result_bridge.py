@@ -281,6 +281,18 @@ def macros(result: dict[str, Any]) -> str:
     values["NormalizedTEDExcluded"] = str(
         normalized["examples_excluded_unparseable_current"]
     )
+    ast_distribution = normalized["current_ast_node_distribution"]
+    values["CurrentASTNodesMedian"] = f"{ast_distribution['median']:.0f}"
+    values["CurrentASTNodesPFirst"] = f"{ast_distribution['p25']:.0f}"
+    values["CurrentASTNodesPThird"] = f"{ast_distribution['p75']:.0f}"
+    for budget in (5, 10, 20, 40):
+        context = normalized["absolute_budget_context"][str(budget)]
+        values[f"TED{budget}MedianASTFraction"] = pct(
+            context["fraction_of_current_ast_median"]
+        )
+        values[f"TED{budget}AtMostTenPercentInputs"] = pct(
+            context["fraction_where_budget_is_at_most_10pct"]
+        )
     for budget, suffix in (("0.1", "Ten"), ("0.2", "Twenty"), ("0.4", "Forty")):
         row = normalized["per_budget"][budget]
         values[f"NormalizedTED{suffix}MixedMinusAnswerNine"] = pct(

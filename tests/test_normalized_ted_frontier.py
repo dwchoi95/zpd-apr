@@ -60,6 +60,13 @@ class NormalizedTedFrontierTests(unittest.TestCase):
             )
         self.assertEqual(report["examples_parseable_current"], 1)
         self.assertEqual(report["examples_excluded_unparseable_current"], 1)
+        self.assertEqual(report["current_ast_node_distribution"]["median"], 5)
+        self.assertEqual(
+            report["absolute_budget_context"]["5"][
+                "fraction_of_current_ast_median"
+            ],
+            1.0,
+        )
         self.assertEqual(report["per_budget"]["0.2"]["mixed_rr"], 1.0)
         self.assertEqual(report["per_budget"]["0.2"]["answer_rr"], 0.0)
         self.assertEqual(report["per_budget"]["0.4"]["answer_rr"], 1.0)
