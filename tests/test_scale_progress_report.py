@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 from scripts.report_fse2027_scale_progress import summarize
@@ -21,19 +22,29 @@ class ScaleProgressReportTest(unittest.TestCase):
             summary.write_text("{}\n", encoding="utf-8")
             log = root / "train.log"
             log.write_text(
-                "Training 1.5B progress seed 2027\n"
+                "[2026-08-09T10:00:00+00:00] Training 1.5B progress seed 2027\n"
                 "5/5\n"
-                "Training 1.5B strict seed 2027\n"
+                "[2026-08-09T10:01:00+00:00] Training 1.5B strict seed 2027\n"
                 "1/3\n",
                 encoding="utf-8",
             )
-            result = summarize(log, checkpoints, datasets)
+            result = summarize(
+                log,
+                checkpoints,
+                datasets,
+                now=datetime(2026, 8, 9, 10, 11, tzinfo=timezone.utc),
+            )
             self.assertEqual(result["planned_adapters"], 15)
             self.assertEqual(result["completed_adapters"], 1)
             self.assertEqual(result["examples_total"], 5 * 3 + 3 * 3 + 7 * 9)
             self.assertEqual(result["examples_completed"], 5 + 3)
             self.assertEqual(result["active_adapter"]["mode"], "strict")
             self.assertEqual(result["active_adapter"]["examples_completed"], 3)
+            self.assertAlmostEqual(result["throughput_examples_per_second"], 3 / 600)
+            self.assertEqual(
+                result["eta_assumption"],
+                "current active-adapter throughput remains constant",
+            )
 
 
 if __name__ == "__main__":

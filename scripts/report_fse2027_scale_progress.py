@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -16,7 +17,9 @@ PLAN = {
     "answer": (2027, 2028, 2029, 2030, 2031, 2032, 2033, 2034, 2035),
 }
 EFFECTIVE_BATCH_SIZE = 16
-HEADER = re.compile(r"Training 1\.5B (progress|strict|answer) seed (\d+)")
+HEADER = re.compile(
+    r"\[([^\]]+)\] Training 1\.5B (progress|strict|answer) seed (\d+)"
+)
 UPDATE = re.compile(r"(\d+)/(\d+)")
 
 
@@ -29,7 +32,13 @@ def has_summary(path: Path) -> bool:
     return path.is_file() and path.stat().st_size > 0
 
 
-def summarize(log: Path, checkpoint_root: Path, dataset_root: Path) -> dict[str, Any]:
+def summarize(
+    log: Path,
+    checkpoint_root: Path,
+    dataset_root: Path,
+    *,
+    now: datetime | None = None,
+) -> dict[str, Any]:
     examples = {
         mode: line_count(dataset_root / f"train-{mode}.jsonl") for mode in PLAN
     }
@@ -47,9 +56,11 @@ def summarize(log: Path, checkpoint_root: Path, dataset_root: Path) -> dict[str,
     normalized = log.read_text(encoding="utf-8", errors="replace").replace("\r", "\n")
     headers = list(HEADER.finditer(normalized))
     active: dict[str, Any] | None = None
+    throughput: float | None = None
+    eta: datetime | None = None
     if headers:
         latest = headers[-1]
-        mode, seed_text = latest.groups()
+        started_text, mode, seed_text = latest.groups()
         seed = int(seed_text)
         updates = list(UPDATE.finditer(normalized[latest.end() :]))
         if (mode, seed) not in completed and updates:
@@ -64,6 +75,14 @@ def summarize(log: Path, checkpoint_root: Path, dataset_root: Path) -> dict[str,
                 "optimizer_updates_observed": done_updates,
                 "optimizer_updates_total": total_updates,
             }
+            started = datetime.fromisoformat(started_text)
+            observed_at = now or datetime.now(tz=started.tzinfo)
+            elapsed = (observed_at - started).total_seconds()
+            if elapsed > 0 and active_examples > 0:
+                throughput = active_examples / elapsed
+                eta = observed_at + timedelta(
+                    seconds=(total_examples - completed_examples) / throughput
+                )
 
     return {
         "planned_adapters": len(planned),
@@ -77,6 +96,13 @@ def summarize(log: Path, checkpoint_root: Path, dataset_root: Path) -> dict[str,
         "percent_complete": 100.0 * completed_examples / total_examples,
         "effective_batch_size": EFFECTIVE_BATCH_SIZE,
         "dataset_examples": examples,
+        "throughput_examples_per_second": throughput,
+        "estimated_completion_time": eta.isoformat() if eta else None,
+        "eta_assumption": (
+            "current active-adapter throughput remains constant"
+            if eta
+            else None
+        ),
     }
 
 
