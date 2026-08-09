@@ -246,12 +246,15 @@ test could turn a regression into apparent Pareto progress.
 
 \subsection{Prompt and Adapter Training}
 
-All adapters share one role-neutral prompt: statement and limits,
-chronologically retained complete submissions with verdict/outcome/edit summaries,
-and the current submission requesting one complete solution in the dataset's
-language and format. No instruction names a policy or asks for a particular edit
-size, so specialization can arise only from supervision. Only assistant target
-tokens contribute to loss.
+All adapters share one role-neutral prompt renderer: statement and limits,
+followed by every submission stored in that training record in chronological
+order, with verdict/outcome/edit summaries, and a request for one complete
+solution in the dataset's language and format. The construction rule therefore
+determines the training context: Answer records contain only the current failed
+submission, whereas Strict and Progress records contain the retained prefix
+through that submission. No instruction names a policy or asks for a particular
+edit size, so specialization can arise only from the input--target distribution.
+Only assistant target tokens contribute to loss.
 
 For adapter \(a\in\{\mathrm{prog},\mathrm{strict},\mathrm{ans}\}\), let \(\mathcal{D}_a\) be its dataset, \(x_i\) the prompt, and \(y_i\) the target tokens. We minimize the target-only supervised fine-tuning objective
 \begin{equation}
@@ -341,11 +344,14 @@ null or negative result attributes coverage to seed diversity and selection.
 
 At inference, we invoke the three validation-selected checkpoints in
 fine-to-broad relation order, breaking same-relation ties by their frozen member
-order. Each checkpoint receives the same observed student trajectory and
-produces one complete program; generated candidates are never inserted into
-another checkpoint's prompt. This independence makes the outputs a policy
-portfolio rather than a synthetic trajectory whose later states may lie outside
-the training distribution. In unrestricted mode, an accepted candidate stops
+order. Each checkpoint receives the same complete observed evaluation trajectory,
+including Answer checkpoints whose SFT records contained only one submission,
+and produces one complete program. This common-context inference rule holds the
+available evidence fixed across policies; it does not claim that Answer was
+history-trained. Generated candidates are never inserted into another
+checkpoint's prompt. This independence makes the outputs a policy portfolio
+rather than a synthetic trajectory whose later states may lie outside the
+training distribution. In unrestricted mode, an accepted candidate stops
 the sequence; otherwise executed candidates are compared by the certified
 selector below. The budgeted mode additionally continues past accepted
 candidates that exceed the declared structural limit. The order is fixed before
@@ -477,7 +483,11 @@ base model, hyperparameters, greedy decoding, and maximum three-generation
 budget as \tool, differing only in training seed. Answer-9Choose3 is the
 selection-matched control: nine independently seeded Answer adapters receive
 the identical exhaustive \(\binom{9}{3}=84\)-portfolio validation search as
-the nine-checkpoint mixed-target pool. Both receive no earlier submissions.
+the nine-checkpoint mixed-target pool. Their SFT records contain no earlier
+submissions, but at validation and test time they receive the same complete
+evaluation trajectory as every mixed-pool checkpoint. Thus prompt information,
+decoding, and portfolio opportunity are matched; the compared difference is
+the learned checkpoint pool induced by the training relations.
 Answer-9Choose3, rather than Zero-shot or Answer-3Seed, isolates whether mixed
 trajectory targets add coverage beyond ordinary checkpoint diversity and
 validation selection opportunity.
@@ -529,7 +539,7 @@ evaluation.
 
 For RQ2, we construct adapter-specific \strict and \progress examples for both Seen and Unseen tests. \emph{Full Trajectory} uses each retained prefix. \emph{Current Code Only} retrains an adapter on identical examples and targets after removing every submission before the current one; its displayed position is reset to \(S_1\) to prevent index leakage. \answer is excluded because its inputs already contain one submission. This design isolates the presence of history while holding targets, counts, model, and hyperparameters fixed.
 
-For RQ3, each adapter independently generates one candidate for the same 997 Seen instances. For RQ4, we first compose the seed-2027 candidates with \progress--\strict--\answer early stopping and fallback selection, then evaluate the final validation-selected size-three portfolio. Five controls separate target heterogeneity from repeated calls, prompt-state effects, training randomness, pool size, and the relation constraint. \emph{Answer$\times3$} invokes the same Answer adapter up to three times with generated execution feedback; repeating the identical prompt would collapse to Answer once. \emph{Generated Feedback} applies that update protocol to heterogeneous P--S--A. \emph{Answer-3Seed} uses identical Answer data and targets with seeds 2027/2028/2029. \emph{Answer-9Choose3} uses seeds 2027--2035 and the same 461-problem validation executions, exhaustive 84 triples, objectives, tie breaking, and frozen testing as the mixed-target pool. \emph{Validation Relation-Constrained} selects one checkpoint per relation; the primary \emph{Validation Execution Portfolio} selects any three of the nine mixed-target checkpoints. Every member receives the same authentic evaluation trajectory without generated feedback, and all configurations share a maximum three-generation budget, execution limits, early stopping, and fallback selector. We audit matching Answer metadata and distinct adapter hashes. Effectiveness-only controls may omit AST TED when failed pass-rate ties use the earliest candidate; Answer ensembles and validation-selected portfolios use the complete production selector.
+For RQ3, each adapter independently generates one candidate for the same 997 Seen instances. For RQ4, we first compose the seed-2027 candidates with \progress--\strict--\answer early stopping and fallback selection, then evaluate the final validation-selected size-three portfolio. Five controls separate target heterogeneity from repeated calls, prompt-state effects, training randomness, pool size, and the relation constraint. \emph{Answer$\times3$} invokes the same Answer adapter up to three times with generated execution feedback; repeating the identical prompt would collapse to Answer once. \emph{Generated Feedback} applies that update protocol to heterogeneous P--S--A. \emph{Answer-3Seed} uses identical Answer data and targets with seeds 2027/2028/2029. \emph{Answer-9Choose3} uses seeds 2027--2035 and the same 461-problem validation executions, exhaustive 84 triples, objectives, tie breaking, and frozen testing as the mixed-target pool. \emph{Validation Relation-Constrained} selects one checkpoint per relation; the primary \emph{Validation Execution Portfolio} selects any three of the nine mixed-target checkpoints. Every member receives the same complete authentic evaluation trajectory without generated feedback, even though Answer SFT used single-submission records, and all configurations share a maximum three-generation budget, execution limits, early stopping, and fallback selector. We audit matching Answer metadata and distinct adapter hashes. Effectiveness-only controls may omit AST TED when failed pass-rate ties use the earliest candidate; Answer ensembles and validation-selected portfolios use the complete production selector.
 
 \paragraph{Independent-test confirmation.}
 To separate candidate selection from success assessment, a post-review
