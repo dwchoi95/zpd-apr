@@ -947,11 +947,24 @@ signals and follows source-dataset terms.
 
 \tool raises Seen/Unseen RR over zero-shot to 61.5/74.8\%, but matched controls
 attribute unrestricted coverage to checkpoint diversity; relation targets
-improve edit-constrained coverage and source retention. \label{sec:data-availability}\textbf{Data availability.}
-The artifact provides splits, checkpoints, raw executions, replay scripts, and
-a revision-bound SHA-256 manifest.
+improve edit-constrained coverage and source retention.
 
-\clearpage
+\section{Data Availability}
+\label{sec:data-availability}
+
+An anonymized replication package is supplied through the FSE submission
+system; no author-revealing public URL is used during review. The package
+contains derived split metadata, training configurations and checkpoints, raw
+generation and execution JSONL, analysis outputs, replay scripts, and tests.
+\texttt{ARTIFACT.md} maps every paper table and claim family to its source
+files and verification command. \texttt{requirements.txt} and the Java runner
+container specification fix the software environments. Running
+\texttt{scripts/finalize\_fse2027\_evidence\_remote.sh} rebuilds the result
+bridge, verifies the matched checkpoint families and all tests, and seals file
+sizes, row counts, SHA-256 digests, and the source revision in
+\texttt{analysis/evidence-manifest.json}. Subject to source-dataset terms, we
+intend to make the curated package public upon acceptance.
+
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{references}
 

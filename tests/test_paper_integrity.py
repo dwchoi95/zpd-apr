@@ -30,11 +30,14 @@ class PaperIntegrityTest(unittest.TestCase):
             r"\documentclass[acmsmall,screen,review,anonymous]{acmart}", tex
         )
         conclusion = tex.index(r"\section{Conclusion}")
+        availability_heading = tex.index(r"\section{Data Availability}")
         availability = tex.index(r"\label{sec:data-availability}")
-        self.assertIn(r"\textbf{Data availability.}", tex[availability:])
         bibliography = tex.index(r"\bibliography{references}")
-        self.assertLess(conclusion, availability)
+        self.assertLess(conclusion, availability_heading)
+        self.assertLess(availability_heading, availability)
         self.assertLess(availability, bibliography)
+        self.assertIn("anonymized replication package", tex[availability:])
+        self.assertIn(r"\texttt{ARTIFACT.md}", tex[availability:])
         self.assertIn("OpenAI Codex was used interactively", tex)
 
 
