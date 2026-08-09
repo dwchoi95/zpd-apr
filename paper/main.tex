@@ -125,10 +125,11 @@ Submission sequences also support knowledge tracing, which estimates latent mast
 
 Unlike reference alignment and LSGen, \tool does not require a same-problem solution repository; unlike prior LLM and iterative repair, its targets are mined as ordered transitions from the same user's authentic submissions. Its multi-checkpoint control must also be distinguished from deep ensembles and model soups, which aggregate predictive distributions or weights~\cite{lakshminarayanan2017simple,wortsman2022model}. We instead execute complete programs, measure set-union repair coverage on validation problems, and retain separate checkpoints for conditional early stopping and structural gating. Because seed diversity alone can create complementary candidates, our evaluation gives a same-target Answer pool the identical number of trained checkpoints, exhaustive size-three choices, and test-time generation budget as the mixed-target pool.
 
-Prior scores are not directly portable because information and query budgets
-differ (Table~\ref{tab:functional-comparison}). We instead use matched causal
-controls: Zero-shot for adaptation, Answer for target/checkpoint diversity, and
-LSGen for same-problem retrieval under the common runner.
+A direct numerical port would either grant held-out tasks the method-only
+evidence in Table~\ref{tab:functional-comparison} or remove a defining
+component; query budgets also differ. We instead use matched controls:
+Zero-shot for adaptation, Answer for target/checkpoint diversity, and LSGen for
+same-problem retrieval under the common runner.
 
 \begin{table}[t]
 \caption{Functional comparison with execution-aware educational and neural APR.
