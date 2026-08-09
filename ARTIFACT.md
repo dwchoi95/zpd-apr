@@ -38,6 +38,7 @@ and records the exact source revision.
 | five-fold problem cross-fitting | `analysis/fse2027-problem-crossfit.json`; fold construction and frozen test replay in `scripts/analyze_problem_crossfit_portfolios.py` |
 | prompt-distribution control | `analysis/fse2027-prompt-distribution-control.json`; regenerated candidates under `eval/prompt-distribution-current-only/` |
 | verdict-order sensitivity | `analysis/fse2027-verdict-order-model-sensitivity.json`; `analysis/fse2027-verdict-order-token-audit.json`; alternative datasets under `datasets/accepted-vs-failure/` |
+| post-review protocol provenance | `analysis_protocols/fse2027-postreview.json`; final seal regenerates `analysis/fse2027-protocol-provenance-audit.json` and rejects any changed frozen runner or analyzer blob |
 | exploratory effect heterogeneity | `analysis/fse2027-effect-heterogeneity.json`; fixed strata and paired problem-cluster analysis in `scripts/analyze_fse2027_effect_heterogeneity.py` |
 | normalized edit frontier | `analysis/fse2027-normalized-ted-frontier.json` |
 | absolute-budget interpretation | current-program AST node counts and per-budget fractions in `analysis/fse2027-normalized-ted-frontier.json` |

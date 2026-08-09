@@ -23,6 +23,11 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 1
 fi
 
+"${PYTHON}" scripts/verify_fse2027_protocol_provenance.py \
+  --manifest analysis_protocols/fse2027-postreview.json \
+  --repo "${WORK_ROOT}" --head "${SOURCE_REVISION}" \
+  --output "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
+
 required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json"
   "${RUN_ROOT}/analysis/fse2027-selected-portfolios.json"
@@ -48,6 +53,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-verdict-order-model-sensitivity.json"
   "${RUN_ROOT}/analysis/fse2027-verdict-order-token-audit.json"
   "${RUN_ROOT}/analysis/fse2027-effect-heterogeneity.json"
+  "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do

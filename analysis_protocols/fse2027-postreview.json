@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "scope": "Post-review robustness analyses; this is repository provenance, not external preregistration.",
+  "experiments": {
+    "scale_1_5b": {
+      "files": {
+        "scripts/run_fse2027_scale_replication_remote.sh": "509ec37dc6d235ca2458abe979d845b43b2215c1",
+        "scripts/analyze_fse2027_scale_replication.py": "50eeb477048e14cbfba9b567e1c461fed41d7176"
+      }
+    },
+    "codeworkout_exercise_holdout": {
+      "files": {
+        "scripts/run_fse2027_codeworkout_problem_holdout_remote.sh": "a0d15fb6a82f39c65b3004b5e04a2486e2531a08",
+        "scripts/analyze_codeworkout_problem_holdout.py": "ecd660e341b0ab5144a532dfc2a0b42c88d555ab"
+      }
+    },
+    "prompt_distribution": {
+      "files": {
+        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "2da17bc91793b5bdfc49040cbffd93164b77295f",
+        "scripts/analyze_prompt_distribution_control.py": "2da17bc91793b5bdfc49040cbffd93164b77295f"
+      }
+    },
+    "problem_crossfit": {
+      "files": {
+        "scripts/run_fse2027_problem_crossfit_remote.sh": "dc4eacc6596551231f7b134f8023f6bf4f52507f",
+        "scripts/analyze_problem_crossfit_portfolios.py": "0ca3ea0c3ceb51ba70017803371cc291e11472d9"
+      }
+    },
+    "verdict_order_retraining": {
+      "files": {
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "d1a4368fe79dbdc22e72f70b7d3d614e6b7b959d",
+        "scripts/analyze_verdict_order_model_sensitivity.py": "0d6a5af14dc1a8b80fcb0a6ac1f2a6291e23ff2b"
+      }
+    }
+  }
+}
