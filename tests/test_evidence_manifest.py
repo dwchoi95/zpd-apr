@@ -89,12 +89,35 @@ class EvidenceManifestTest(unittest.TestCase):
                     str(checkpoints),
                     "--external-root",
                     str(external),
+                    "--expected-source-revision",
+                    "fixture-revision",
                 ],
                 check=True,
                 capture_output=True,
                 text=True,
             )
             self.assertEqual(json.loads(verified.stdout)["verified"], 5)
+
+            mismatch = subprocess.run(
+                [
+                    sys.executable,
+                    str(VERIFY),
+                    "--manifest",
+                    str(manifest),
+                    "--run-root",
+                    str(run_root),
+                    "--checkpoint-root",
+                    str(checkpoints),
+                    "--external-root",
+                    str(external),
+                    "--expected-source-revision",
+                    "different-revision",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(mismatch.returncode, 0)
+            self.assertIn("source revision mismatch", mismatch.stderr)
 
 
 if __name__ == "__main__":

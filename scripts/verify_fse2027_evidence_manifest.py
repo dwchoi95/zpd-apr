@@ -57,9 +57,19 @@ def main() -> None:
     parser.add_argument("--run-root", type=Path, required=True)
     parser.add_argument("--checkpoint-root", type=Path, action="append", default=[])
     parser.add_argument("--external-root", type=Path, action="append", default=[])
+    parser.add_argument("--expected-source-revision")
     args = parser.parse_args()
 
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    if (
+        args.expected_source_revision is not None
+        and manifest.get("source_revision") != args.expected_source_revision
+    ):
+        raise SystemExit(
+            "source revision mismatch: "
+            f"manifest={manifest.get('source_revision')!r}, "
+            f"expected={args.expected_source_revision!r}"
+        )
     roots = {"run": args.run_root.expanduser().resolve()}
     roots.update(named_roots(args.checkpoint_root, "checkpoints"))
     roots.update(named_roots(args.external_root, "external"))

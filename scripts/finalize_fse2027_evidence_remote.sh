@@ -114,6 +114,7 @@ done
 
 "${PYTHON}" scripts/verify_fse2027_evidence_manifest.py \
   --manifest "${MANIFEST}" --run-root "${RUN_ROOT}" \
+  --expected-source-revision "${SOURCE_REVISION}" \
   "${checkpoint_args[@]}" "${external_args[@]}"
 
 CUDA_VISIBLE_DEVICES="" PYTHONPATH=. "${PYTHON}" -m unittest discover \
