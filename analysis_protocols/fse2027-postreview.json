@@ -29,7 +29,7 @@
     },
     "verdict_order_retraining": {
       "files": {
-        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "d1a4368fe79dbdc22e72f70b7d3d614e6b7b959d",
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "4752a6c55bb7be21a305419ab13e352608e2b582",
         "scripts/analyze_verdict_order_model_sensitivity.py": "0d6a5af14dc1a8b80fcb0a6ac1f2a6291e23ff2b"
       }
     }
