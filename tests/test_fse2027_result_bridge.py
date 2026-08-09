@@ -218,6 +218,45 @@ class ResultBridgeTest(unittest.TestCase):
                 },
             }
         }
+        prompt_distribution = {
+            "current_only_mixed_members": [
+                "Progress2027",
+                "Strict2028",
+                "Answer2029",
+            ],
+            "current_only_answer_members": [
+                "Answer2030",
+                "Answer2032",
+                "Answer2035",
+            ],
+            "splits": {},
+        }
+        for split in ("seen", "unseen"):
+            prompt_distribution["splits"][split] = {
+                "current_only_reselected": paired_row(0.64, 0.60),
+                "full_history_selected_members": {
+                    "prompt_context_effect": {
+                        "mixed_current_only_minus_full_history": {
+                            "paired": [
+                                {
+                                    "metric": "rr",
+                                    "left_minus_right_instance_weighted": -0.01,
+                                    "cluster_bootstrap_95ci": [-0.03, 0.01],
+                                }
+                            ]
+                        },
+                        "answer_current_only_minus_full_history": {
+                            "paired": [
+                                {
+                                    "metric": "rr",
+                                    "left_minus_right_instance_weighted": 0.03,
+                                    "cluster_bootstrap_95ci": [0.01, 0.05],
+                                }
+                            ]
+                        },
+                    }
+                },
+            }
         result = build(
             answer9,
             hidden,
@@ -232,6 +271,7 @@ class ResultBridgeTest(unittest.TestCase):
             patch_locality,
             normalized_ted,
             operational_cost,
+            prompt_distribution,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
@@ -310,6 +350,19 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\CostA9TrainHours}{52.6}", rendered)
         self.assertIn(r"\newcommand{\CostM9ValidationExecutions}{4149}", rendered)
         self.assertIn(r"\newcommand{\CostM9MeanCalls}{1.98}", rendered)
+        self.assertIn(r"\newcommand{\PromptCurrentMixedSeenRR}{64.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\PromptCurrentMixedMinusAnswerNineSeenCI}{[-1.00, 3.00]}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\PromptFrozenAnswerNineCurrentMinusFullSeen}{3.0}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\PromptFrozenMixedCurrentMinusFullUnseenCI}{[-3.00, 1.00]}",
+            rendered,
+        )
 
 
 if __name__ == "__main__":

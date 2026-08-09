@@ -49,6 +49,7 @@ def build(
     patch_locality: dict[str, Any],
     normalized_ted: dict[str, Any],
     operational_cost: dict[str, Any],
+    prompt_distribution: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -64,6 +65,7 @@ def build(
         "patch_locality": patch_locality,
         "normalized_ted_frontier": normalized_ted,
         "operational_cost": operational_cost,
+        "prompt_distribution": prompt_distribution,
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -291,6 +293,41 @@ def macros(result: dict[str, Any]) -> str:
         )
         values[f"Cost{name}SeenRR"] = pct(row["repair_rate"])
         values[f"Cost{name}MeanCalls"] = f"{row['mean_candidates_invoked']:.2f}"
+
+    prompt = result["prompt_distribution"]
+    values["PromptCurrentMixedMembers"] = members(
+        prompt["current_only_mixed_members"]
+    )
+    values["PromptCurrentAnswerNineMembers"] = members(
+        prompt["current_only_answer_members"]
+    )
+    for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+        row = prompt["splits"][split]
+        reselected = row["current_only_reselected"]
+        reselected_rr = metric(reselected["mixed_minus_answer"])
+        values[f"PromptCurrentMixed{prefix}RR"] = pct(
+            reselected["mixed_target_9choose3"]["rr"]
+        )
+        values[f"PromptCurrentAnswerNine{prefix}RR"] = pct(
+            reselected["answer_9choose3"]["rr"]
+        )
+        values[f"PromptCurrentMixedMinusAnswerNine{prefix}"] = pct(
+            reselected_rr["left_minus_right_instance_weighted"]
+        )
+        values[f"PromptCurrentMixedMinusAnswerNine{prefix}CI"] = ci(
+            reselected_rr
+        )
+        effects = row["full_history_selected_members"]["prompt_context_effect"]
+        for method, method_prefix in (("mixed", "Mixed"), ("answer", "AnswerNine")):
+            effect = metric(
+                effects[f"{method}_current_only_minus_full_history"]
+            )
+            values[f"PromptFrozen{method_prefix}CurrentMinusFull{prefix}"] = pct(
+                effect["left_minus_right_instance_weighted"]
+            )
+            values[f"PromptFrozen{method_prefix}CurrentMinusFull{prefix}CI"] = ci(
+                effect
+            )
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )
@@ -311,6 +348,7 @@ def main() -> None:
     parser.add_argument("--patch-locality", type=Path, required=True)
     parser.add_argument("--normalized-ted", type=Path, required=True)
     parser.add_argument("--operational-cost", type=Path, required=True)
+    parser.add_argument("--prompt-distribution", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -328,6 +366,7 @@ def main() -> None:
         read(args.patch_locality),
         read(args.normalized_ted),
         read(args.operational_cost),
+        read(args.prompt_distribution),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)
