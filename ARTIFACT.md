@@ -24,6 +24,7 @@ and records the exact source revision.
 
 | Paper label or claim | Primary evidence |
 |---|---|
+| `tab:functional-comparison` | cited primary systems in `paper/references.bib`; input/control dimensions encoded in `paper/main.tex` |
 | `tab:data` | `split-summary.json`; `datasets/*-final.summary.json`; `datasets/*-final.filter-summary.json` |
 | `tab:adapter-data` | `datasets/train-*.jsonl`; `datasets/valid-*.jsonl`; `analysis/fse2027-supervision-audit.json` |
 | `tab:patch-budget` | `analysis/fse2027-lsgen-budget-controller.json`; budgeted evaluations under `eval/selected-portfolios/` |
@@ -31,7 +32,7 @@ and records the exact source revision.
 | `tab:rq2` | `eval/rq2-*-comparison/`; `analysis/fse2027-robustness.json` |
 | `tab:rq3` | `eval/progress-seen-test.evaluation.jsonl`; `eval/strict-seen-test.evaluation.jsonl`; `eval/answer-seen-test.evaluation.jsonl` |
 | `tab:rq4` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-operational-cost.json` |
-| analysis-provenance table | selection rules in `scripts/select_execution_portfolio.py` and `scripts/select_answer_seed_portfolio.py`; frozen-selection analyses listed below |
+| `tab:analysis-provenance` | selection rules in `scripts/select_execution_portfolio.py` and `scripts/select_answer_seed_portfolio.py`; frozen-selection analyses listed below |
 | hidden-test confirmation | `analysis/fse2027-answer9-independent-hidden.json` |
 | problem-disjoint selection | `analysis/fse2027-problem-disjoint-selection.json`; `analysis/fse2027-answer9-problem-disjoint-selection.json`; `analysis/fse2027-problem-disjoint-budget-fair-pools.json` |
 | five-fold problem cross-fitting | `analysis/fse2027-problem-crossfit.json`; fold construction and frozen test replay in `scripts/analyze_problem_crossfit_portfolios.py` |
@@ -81,5 +82,6 @@ After all controls finish, seal the complete evidence graph with:
 bash scripts/finalize_fse2027_evidence_remote.sh <source-revision>
 ```
 
-Finalization intentionally fails if any required control, checkpoint family,
+Finalization intentionally fails if the checkout is dirty or differs from the
+declared source revision, or if any required control, checkpoint family,
 token-cap audit, row count, or manifest hash is missing or inconsistent.

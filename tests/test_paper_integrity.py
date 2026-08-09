@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PAPER = ROOT / "paper" / "main.tex"
 BIBLIOGRAPHY = ROOT / "paper" / "references.bib"
+ARTIFACT = ROOT / "ARTIFACT.md"
 
 
 class PaperIntegrityTest(unittest.TestCase):
@@ -39,6 +40,14 @@ class PaperIntegrityTest(unittest.TestCase):
         self.assertIn("anonymized replication package", tex[availability:])
         self.assertIn(r"\texttt{ARTIFACT.md}", tex[availability:])
         self.assertIn("OpenAI Codex was used interactively", tex)
+
+    def test_every_paper_table_has_an_artifact_mapping(self) -> None:
+        tex = PAPER.read_text(encoding="utf-8")
+        artifact = ARTIFACT.read_text(encoding="utf-8")
+        table_labels = set(re.findall(r"\\label\{(tab:[^}]+)\}", tex))
+        self.assertGreaterEqual(len(table_labels), 10)
+        missing = {label for label in table_labels if f"`{label}`" not in artifact}
+        self.assertEqual(missing, set(), "paper tables missing artifact mappings")
 
 
 if __name__ == "__main__":
