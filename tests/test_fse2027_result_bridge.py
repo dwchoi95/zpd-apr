@@ -290,6 +290,32 @@ class ResultBridgeTest(unittest.TestCase):
                 }
             },
         }
+        verdict_order = {
+            "dataset_summaries": {
+                "train-progress": {"written_examples": 12000},
+                "valid-progress": {"written_examples": 1400},
+                "train-strict": {"written_examples": 10000},
+                "valid-strict": {"written_examples": 1200},
+            },
+            "relations": {},
+        }
+        for relation in ("progress", "strict"):
+            verdict_order["relations"][relation] = {"splits": {}}
+            for split in ("seen", "unseen"):
+                verdict_order["relations"][relation]["splits"][split] = {
+                    "canonical": {"rr": 0.52},
+                    "alternative": {"rr": 0.50},
+                    "canonical_minus_alternative": {
+                        "paired": [
+                            {
+                                "metric": "rr",
+                                "left_minus_right_instance_weighted": 0.02,
+                                "cluster_bootstrap_95ci": [-0.01, 0.05],
+                            }
+                        ]
+                    },
+                    "repair_agreement": {"decision_agreement": 0.88},
+                }
         result = build(
             answer9,
             hidden,
@@ -306,6 +332,7 @@ class ResultBridgeTest(unittest.TestCase):
             operational_cost,
             prompt_distribution,
             problem_crossfit,
+            verdict_order,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
@@ -410,6 +437,16 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(
             r"\newcommand{\CrossFitTED40MixedMinusAnswerNineSeenCI}{[0.20, 4.00]}",
             rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\VerdictOrderProgressTrainExamples}{12000}", rendered
+        )
+        self.assertIn(
+            r"\newcommand{\VerdictOrderStrictCanonicalMinusAlternativeSeenCI}{[-1.00, 5.00]}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\VerdictOrderProgressAgreementUnseen}{88.0}", rendered
         )
 
 

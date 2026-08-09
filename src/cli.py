@@ -42,6 +42,7 @@ from .repair import (
     sample_repair_examples,
     train_qlora,
 )
+from .repair.dataset import VERDICT_ORDERS
 
 
 DEFAULT_CODENET_ROOT = Path("/Users/cdw/VSCode/aria/data/Project_CodeNet")
@@ -186,6 +187,12 @@ def main() -> None:
     )
     repair_data.add_argument("--output", type=Path, default=None)
     repair_data.add_argument("--outcome-cache", type=Path, default=None)
+    repair_data.add_argument(
+        "--verdict-order",
+        choices=tuple(VERDICT_ORDERS),
+        default="canonical",
+        help="Verdict severity order used to materialize Strict/Progress chains",
+    )
 
     current_only_data = commands.add_parser(
         "make-current-code-only",
@@ -627,6 +634,7 @@ def main() -> None:
             target_mode=args.target_mode,
             exclude_accepted_targets=args.exclude_accepted_targets,
             outcome_cache_path=args.outcome_cache,
+            verdict_order=args.verdict_order,
         )
         print(json.dumps(asdict(summary), ensure_ascii=False, indent=2, default=str))
         return

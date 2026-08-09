@@ -35,6 +35,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-operational-cost.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-distribution-control.json"
   "${RUN_ROOT}/analysis/fse2027-problem-crossfit.json"
+  "${RUN_ROOT}/analysis/fse2027-verdict-order-model-sensitivity.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
@@ -77,6 +78,7 @@ done
   --operational-cost "${RUN_ROOT}/analysis/fse2027-operational-cost.json" \
   --prompt-distribution "${RUN_ROOT}/analysis/fse2027-prompt-distribution-control.json" \
   --problem-crossfit "${RUN_ROOT}/analysis/fse2027-problem-crossfit.json" \
+  --verdict-order "${RUN_ROOT}/analysis/fse2027-verdict-order-model-sensitivity.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 
@@ -102,9 +104,10 @@ checkpoint_args=(
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/codeworkout"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-1.5b"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/codeworkout-problem-holdout"
+  --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-verdict-order/accepted-vs-failure"
 )
 external_args=(--external-root "${WORK_ROOT}/archive/external/tiktoc")
-for index in 1 3 5 7 9 11; do
+for index in 1 3 5 7 9 11 13; do
   if [[ ! -d "${checkpoint_args[index]}" ]]; then
     echo "missing checkpoint root: ${checkpoint_args[index]}" >&2
     exit 1

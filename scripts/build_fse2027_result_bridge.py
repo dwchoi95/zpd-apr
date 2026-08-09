@@ -51,6 +51,7 @@ def build(
     operational_cost: dict[str, Any],
     prompt_distribution: dict[str, Any],
     problem_crossfit: dict[str, Any],
+    verdict_order: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -68,6 +69,7 @@ def build(
         "operational_cost": operational_cost,
         "prompt_distribution": prompt_distribution,
         "problem_crossfit": problem_crossfit,
+        "verdict_order_model_sensitivity": verdict_order,
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -358,6 +360,30 @@ def macros(result: dict[str, Any]) -> str:
         values[f"CrossFitTED{budget}MixedMinusAnswerNineSeenCI"] = interval(
             budget_row["problem_cluster_95ci"]
         )
+
+    verdict = result["verdict_order_model_sensitivity"]
+    for relation, relation_prefix in (("progress", "Progress"), ("strict", "Strict")):
+        values[f"VerdictOrder{relation_prefix}TrainExamples"] = str(
+            verdict["dataset_summaries"][f"train-{relation}"]["written_examples"]
+        )
+        for split, split_prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+            row = verdict["relations"][relation]["splits"][split]
+            effect = metric(row["canonical_minus_alternative"])
+            values[f"VerdictOrder{relation_prefix}Canonical{split_prefix}RR"] = pct(
+                row["canonical"]["rr"]
+            )
+            values[f"VerdictOrder{relation_prefix}Alternative{split_prefix}RR"] = pct(
+                row["alternative"]["rr"]
+            )
+            values[f"VerdictOrder{relation_prefix}CanonicalMinusAlternative{split_prefix}"] = pct(
+                effect["left_minus_right_instance_weighted"]
+            )
+            values[f"VerdictOrder{relation_prefix}CanonicalMinusAlternative{split_prefix}CI"] = ci(
+                effect
+            )
+            values[f"VerdictOrder{relation_prefix}Agreement{split_prefix}"] = pct(
+                row["repair_agreement"]["decision_agreement"]
+            )
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )
@@ -380,6 +406,7 @@ def main() -> None:
     parser.add_argument("--operational-cost", type=Path, required=True)
     parser.add_argument("--prompt-distribution", type=Path, required=True)
     parser.add_argument("--problem-crossfit", type=Path, required=True)
+    parser.add_argument("--verdict-order", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -399,6 +426,7 @@ def main() -> None:
         read(args.operational_cost),
         read(args.prompt_distribution),
         read(args.problem_crossfit),
+        read(args.verdict_order),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)

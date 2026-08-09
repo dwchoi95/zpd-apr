@@ -23,11 +23,36 @@ _VERDICT_SEVERITY = {
     "Internal error": 5,
 }
 
+VERDICT_ORDERS = {
+    "canonical": dict(_VERDICT_SEVERITY),
+    "runtime-before-wrong": {
+        "Accepted": 0,
+        "Runtime Error": 1,
+        "Wrong Answer": 2,
+        "Time Limit Exceeded": 3,
+        "Memory Limit Exceeded": 3,
+        "Compilation Error": 4,
+        "Compile Error": 4,
+        "Internal error": 5,
+    },
+    "accepted-vs-failure": {
+        "Accepted": 0,
+        "Wrong Answer": 1,
+        "Time Limit Exceeded": 1,
+        "Memory Limit Exceeded": 1,
+        "Runtime Error": 1,
+        "Compilation Error": 1,
+        "Compile Error": 1,
+        "Internal error": 1,
+    },
+}
+
 
 @dataclass(frozen=True)
 class RepairDatasetSummary:
     split: str
     target_mode: str
+    verdict_order: str
     exclude_accepted_targets: bool
     outcome_cache_used: bool
     outcome_cache_complete: bool
@@ -97,6 +122,7 @@ def build_repair_dataset(
     target_mode: str | None = None,
     exclude_accepted_targets: bool = False,
     outcome_cache_path: Path | None = None,
+    verdict_order: str = "canonical",
 ) -> RepairDatasetSummary:
     """Materialize all-prefix train examples or final-step evaluation examples."""
 
@@ -115,6 +141,9 @@ def build_repair_dataset(
     target_mode = target_mode or (
         "productive" if split in {"train", "seen_train"} else "final"
     )
+    if verdict_order not in VERDICT_ORDERS:
+        raise ValueError(f"Unsupported verdict order: {verdict_order}")
+    severity_map = VERDICT_ORDERS[verdict_order]
     if target_mode not in {
         "all",
         "non-worsening",
@@ -183,6 +212,7 @@ def build_repair_dataset(
                         problem_id=problem_id,
                         outcomes=outcomes,
                         counts=counts,
+                        severity_map=severity_map,
                     )
                 else:
                     target_indexes = (
@@ -222,12 +252,12 @@ def build_repair_dataset(
                         counts["excluded_accepted_targets"] += 1
                         continue
                     if target_mode == "non-worsening" and not _is_non_worsening(
-                        current.get("verdict"), target.get("verdict")
+                        current.get("verdict"), target.get("verdict"), severity_map
                     ):
                         counts["excluded_worsening_transitions"] += 1
                         continue
                     if target_mode == "strict-improvement" and not _is_strict_improvement(
-                        current.get("verdict"), target.get("verdict")
+                        current.get("verdict"), target.get("verdict"), severity_map
                     ):
                         counts["excluded_non_productive_transitions"] += 1
                         continue
@@ -244,35 +274,36 @@ def build_repair_dataset(
                         if current_outcome is None or target_outcome is None:
                             counts["excluded_missing_outcomes"] += 1
                             continue
-                        if not _is_productive(current_outcome, target_outcome):
+                        if not _is_productive(current_outcome, target_outcome, severity_map):
                             counts["excluded_non_productive_transitions"] += 1
                             continue
                     if target_mode == "productive":
                         if current_outcome is None or target_outcome is None:
                             counts["excluded_missing_outcomes"] += 1
                             continue
-                        if not _is_productive(current_outcome, target_outcome):
+                        if not _is_productive(current_outcome, target_outcome, severity_map):
                             counts["excluded_non_productive_transitions"] += 1
                             continue
                     if target_mode == "same-severity-productive":
                         if not _has_same_verdict_severity(
                             current.get("verdict"),
                             target.get("verdict"),
+                            severity_map,
                         ):
                             counts["excluded_non_productive_transitions"] += 1
                             continue
                         if current_outcome is None or target_outcome is None:
                             counts["excluded_missing_outcomes"] += 1
                             continue
-                        if not _is_productive(current_outcome, target_outcome):
+                        if not _is_productive(current_outcome, target_outcome, severity_map):
                             counts["excluded_non_productive_transitions"] += 1
                             continue
                     if target_mode == "hybrid-productive":
                         strict = _is_strict_improvement(
-                            current.get("verdict"), target.get("verdict")
+                            current.get("verdict"), target.get("verdict"), severity_map
                         )
                         if not strict and not _is_non_worsening(
-                            current.get("verdict"), target.get("verdict")
+                            current.get("verdict"), target.get("verdict"), severity_map
                         ):
                             counts["excluded_non_productive_transitions"] += 1
                             continue
@@ -280,7 +311,7 @@ def build_repair_dataset(
                             if current_outcome is None or target_outcome is None:
                                 counts["excluded_missing_outcomes"] += 1
                                 continue
-                            if not _is_productive(current_outcome, target_outcome):
+                            if not _is_productive(current_outcome, target_outcome, severity_map):
                                 counts["excluded_non_productive_transitions"] += 1
                                 continue
                     if target_mode in {"progress", "strict"}:
@@ -361,6 +392,7 @@ def build_repair_dataset(
     return RepairDatasetSummary(
         split=split,
         target_mode=target_mode,
+        verdict_order=verdict_order,
         exclude_accepted_targets=exclude_accepted_targets,
         outcome_cache_used=outcome_cache_path is not None,
         outcome_cache_complete=outcome_cache_complete,
@@ -400,6 +432,7 @@ def _build_adapter_examples(
     problem_id: str,
     outcomes: dict[tuple[str, str], dict[str, Any]],
     counts: Counter[str],
+    severity_map: dict[str, int] = _VERDICT_SEVERITY,
 ) -> list[
     tuple[
         list[tuple[int, dict[str, Any]]],
@@ -434,6 +467,7 @@ def _build_adapter_examples(
         if _is_strict_improvement(
             current.get("verdict"),
             target.get("verdict"),
+            severity_map,
         ):
             retained.append(candidate)
             continue
@@ -442,6 +476,7 @@ def _build_adapter_examples(
             if not _is_non_worsening(
                 current.get("verdict"),
                 target.get("verdict"),
+                severity_map,
             ):
                 counts["excluded_worsening_transitions"] += 1
                 counts["removed_worsening_trajectory_submissions"] += 1
@@ -456,6 +491,7 @@ def _build_adapter_examples(
             if not _is_non_worsening(
                 current.get("verdict"),
                 target.get("verdict"),
+                severity_map,
             ):
                 counts["excluded_worsening_transitions"] += 1
                 counts["removed_worsening_trajectory_submissions"] += 1
@@ -474,7 +510,9 @@ def _build_adapter_examples(
             counts["excluded_missing_outcomes"] += 1
             counts["removed_non_productive_trajectory_submissions"] += 1
             continue
-        if _is_testcase_verdict_improvement(current_outcome, target_outcome):
+        if _is_testcase_verdict_improvement(
+            current_outcome, target_outcome, severity_map
+        ):
             retained.append(candidate)
         else:
             counts["excluded_non_productive_transitions"] += 1
@@ -648,21 +686,33 @@ def _load_problem_context(problem_dir: Path) -> dict[str, Any]:
     }
 
 
-def _is_non_worsening(current: Any, target: Any) -> bool:
-    current_score = _VERDICT_SEVERITY.get(str(current), 5)
-    target_score = _VERDICT_SEVERITY.get(str(target), 5)
+def _is_non_worsening(
+    current: Any,
+    target: Any,
+    severity_map: dict[str, int] = _VERDICT_SEVERITY,
+) -> bool:
+    current_score = severity_map.get(str(current), max(severity_map.values()) + 1)
+    target_score = severity_map.get(str(target), max(severity_map.values()) + 1)
     return target_score <= current_score
 
 
-def _has_same_verdict_severity(current: Any, target: Any) -> bool:
-    current_score = _VERDICT_SEVERITY.get(str(current), 5)
-    target_score = _VERDICT_SEVERITY.get(str(target), 5)
+def _has_same_verdict_severity(
+    current: Any,
+    target: Any,
+    severity_map: dict[str, int] = _VERDICT_SEVERITY,
+) -> bool:
+    current_score = severity_map.get(str(current), max(severity_map.values()) + 1)
+    target_score = severity_map.get(str(target), max(severity_map.values()) + 1)
     return current_score == target_score
 
 
-def _is_strict_improvement(current: Any, target: Any) -> bool:
-    current_score = _VERDICT_SEVERITY.get(str(current), 5)
-    target_score = _VERDICT_SEVERITY.get(str(target), 5)
+def _is_strict_improvement(
+    current: Any,
+    target: Any,
+    severity_map: dict[str, int] = _VERDICT_SEVERITY,
+) -> bool:
+    current_score = severity_map.get(str(current), max(severity_map.values()) + 1)
+    target_score = severity_map.get(str(target), max(severity_map.values()) + 1)
     return target_score < current_score
 
 
@@ -721,6 +771,7 @@ def _has_execution_evidence(submission: dict[str, Any]) -> bool:
 def _is_productive(
     current: dict[str, Any],
     target: dict[str, Any],
+    severity_map: dict[str, int] = _VERDICT_SEVERITY,
 ) -> bool:
     """Require monotonic test progress or strict verdict progress at equal coverage."""
 
@@ -730,11 +781,12 @@ def _is_productive(
         return True
     if current_passed != target_passed:
         return False
-    current_score = _VERDICT_SEVERITY.get(
-        _display_execution_verdict(current.get("execution_verdict")), 5
+    unknown = max(severity_map.values()) + 1
+    current_score = severity_map.get(
+        _display_execution_verdict(current.get("execution_verdict")), unknown
     )
-    target_score = _VERDICT_SEVERITY.get(
-        _display_execution_verdict(target.get("execution_verdict")), 5
+    target_score = severity_map.get(
+        _display_execution_verdict(target.get("execution_verdict")), unknown
     )
     return target_score < current_score
 
@@ -742,6 +794,7 @@ def _is_productive(
 def _is_testcase_verdict_improvement(
     current: dict[str, Any],
     target: dict[str, Any],
+    severity_map: dict[str, int] = _VERDICT_SEVERITY,
 ) -> bool:
     """Require Pareto improvement over the same non-empty testcase set."""
 
@@ -754,13 +807,14 @@ def _is_testcase_verdict_improvement(
 
     improved = False
     for case_id, current_verdict in current_outcomes.items():
-        current_score = _VERDICT_SEVERITY.get(
+        unknown = max(severity_map.values()) + 1
+        current_score = severity_map.get(
             _display_execution_verdict(current_verdict),
-            5,
+            unknown,
         )
-        target_score = _VERDICT_SEVERITY.get(
+        target_score = severity_map.get(
             _display_execution_verdict(target_outcomes[case_id]),
-            5,
+            unknown,
         )
         if target_score > current_score:
             return False

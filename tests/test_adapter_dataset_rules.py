@@ -7,6 +7,7 @@ from types import SimpleNamespace
 
 from src.repair.candidates import generate_candidate_repairs
 from src.repair.dataset import (
+    VERDICT_ORDERS,
     _build_adapter_examples,
     _is_testcase_verdict_improvement,
     build_repair_dataset,
@@ -172,6 +173,43 @@ class AdapterDatasetRulesTest(unittest.TestCase):
                 ["s1", "s2", "s3", "s5", "s6", "s8"],
             ],
         )
+
+    def test_accepted_vs_failure_order_rebuilds_retained_chains(self) -> None:
+        submissions = [
+            _submission(1, "Runtime Error"),
+            _submission(2, "Runtime Error"),
+            _submission(3, "Time Limit Exceeded"),
+            _submission(4, "Wrong Answer"),
+            _submission(5, "Accepted"),
+        ]
+        outcomes = {
+            ("p1", "s1"): _outcome("RE", "RE"),
+            ("p1", "s2"): _outcome("AC", "RE"),
+            ("p1", "s3"): _outcome("TLE", "TLE"),
+            ("p1", "s4"): _outcome("WA", "WA"),
+            ("p1", "s5"): _outcome("AC", "AC"),
+        }
+        order = VERDICT_ORDERS["accepted-vs-failure"]
+        strict = _build_adapter_examples(
+            submissions,
+            target_mode="strict",
+            problem_id="p1",
+            outcomes=outcomes,
+            counts=Counter(),
+            severity_map=order,
+        )
+        progress = _build_adapter_examples(
+            submissions,
+            target_mode="progress",
+            problem_id="p1",
+            outcomes=outcomes,
+            counts=Counter(),
+            severity_map=order,
+        )
+        self.assertEqual(_target_ids(strict), ["s5"])
+        self.assertEqual(_history_ids(strict), [["s1"]])
+        self.assertEqual(_target_ids(progress), ["s2", "s5"])
+        self.assertEqual(_history_ids(progress), [["s1"], ["s1", "s2"]])
 
     def test_testcase_improvement_rejects_regression_or_coverage_change(self) -> None:
         self.assertTrue(
