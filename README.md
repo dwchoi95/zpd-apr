@@ -217,3 +217,4 @@ bash -n scripts/run_fse2027_lsgen_budget_remote.sh
 
 FSE 2027 원고는 `paper/main.tex`이며 현재 PDF는 본문 18쪽 이내와 참고문헌 3쪽으로
 빌드된다. 최종 결과 반영 후에도 18+4 제한과 시각 레이아웃을 다시 검사한다.
+독립 심사는 `paper/reviews/PROTOCOL.ko.md`의 무이력·새 리뷰어 절차를 따른다.
