@@ -49,6 +49,20 @@ class PaperIntegrityTest(unittest.TestCase):
         missing = {label for label in table_labels if f"`{label}`" not in artifact}
         self.assertEqual(missing, set(), "paper tables missing artifact mappings")
 
+    def test_submission_sources_do_not_expose_local_identity(self) -> None:
+        text = "\n".join(
+            (ROOT / relative).read_text(encoding="utf-8")
+            for relative in ("paper/main.tex", "ARTIFACT.md")
+        )
+        self.assertIn(r"\author{Anonymous Author(s)}", text)
+        for forbidden in (
+            "github.com/dwchoi",
+            "/home/cdw",
+            "/Users/cdw",
+            "UbuntuServer",
+        ):
+            self.assertNotIn(forbidden, text)
+
 
 if __name__ == "__main__":
     unittest.main()
