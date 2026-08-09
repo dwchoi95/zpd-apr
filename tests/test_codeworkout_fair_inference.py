@@ -75,6 +75,8 @@ class CodeWorkoutFairInferenceTest(unittest.TestCase):
         problem = analyze_problem(
             mixed,
             answer,
+            None,
+            None,
             mixed_selection,
             answer_selection,
             samples=100,
