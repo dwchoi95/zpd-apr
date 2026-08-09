@@ -8,7 +8,10 @@ from pathlib import Path
 SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
-from analyze_codeworkout_answer9 import analyze as analyze_student  # noqa: E402
+from analyze_codeworkout_answer9 import (  # noqa: E402
+    analyze as analyze_student,
+    resolve_mixed_selection_path,
+)
 from analyze_codeworkout_problem_holdout import analyze as analyze_problem  # noqa: E402
 
 
@@ -27,6 +30,15 @@ def rows(repaired: tuple[bool, ...]) -> list[dict]:
 
 
 class CodeWorkoutFairInferenceTest(unittest.TestCase):
+    def test_running_service_invocation_resolves_legacy_mixed_selection(self) -> None:
+        answer = Path("analysis/fse2027-codeworkout-answer9-selection.json")
+        self.assertEqual(
+            resolve_mixed_selection_path(answer, None),
+            Path("analysis/fse2027-codeworkout-selection.json"),
+        )
+        explicit = Path("other/mixed.json")
+        self.assertEqual(resolve_mixed_selection_path(answer, explicit), explicit)
+
     def test_student_and_exercise_cluster_intervals_are_both_reported(self) -> None:
         mixed = rows((True, True, False, True))
         answer = rows((True, False, True, False))

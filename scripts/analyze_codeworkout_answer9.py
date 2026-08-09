@@ -12,6 +12,14 @@ from analyze_codeworkout_portfolios import clustered_interval
 from analyze_fse2027_scale_replication import selection_audit
 
 
+def resolve_mixed_selection_path(
+    answer_selection_path: Path, explicit_path: Path | None
+) -> Path:
+    return explicit_path or answer_selection_path.with_name(
+        "fse2027-codeworkout-selection.json"
+    )
+
+
 def analyze(
     zpdpatch: list[dict],
     answer9: list[dict],
@@ -58,8 +66,8 @@ def main() -> None:
     args = parser.parse_args()
     zpdpatch = read_jsonl(args.zpdpatch)
     answer9 = read_jsonl(args.answer9)
-    mixed_selection_path = args.mixed_selection or args.selection.with_name(
-        "fse2027-codeworkout-selection.json"
+    mixed_selection_path = resolve_mixed_selection_path(
+        args.selection, args.mixed_selection
     )
     mixed_selection = json.loads(mixed_selection_path.read_text(encoding="utf-8"))
     selection = json.loads(args.selection.read_text(encoding="utf-8"))
