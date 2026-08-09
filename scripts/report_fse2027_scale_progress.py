@@ -59,6 +59,8 @@ def summarize(
     active: dict[str, Any] | None = None
     throughput: float | None = None
     eta: datetime | None = None
+    chain_throughput: float | None = None
+    chain_eta: datetime | None = None
     if headers:
         latest = headers[-1]
         started_text, mode, seed_text = latest.groups()
@@ -92,6 +94,23 @@ def summarize(
                 eta = observed_at + timedelta(
                     seconds=(total_examples - completed_examples) / throughput
                 )
+        logged_adapters = {
+            (match.group(2), int(match.group(3))) for match in headers
+        }
+        logged_examples = sum(
+            examples[logged_mode]
+            for logged_mode, logged_seed in completed & logged_adapters
+        )
+        if active is not None:
+            logged_examples += active["examples_completed"]
+        first_started = datetime.fromisoformat(headers[0].group(1))
+        observed_at = now or datetime.now(tz=first_started.tzinfo)
+        chain_elapsed = (observed_at - first_started).total_seconds()
+        if chain_elapsed > 0 and logged_examples > 0:
+            chain_throughput = logged_examples / chain_elapsed
+            chain_eta = observed_at + timedelta(
+                seconds=(total_examples - completed_examples) / chain_throughput
+            )
 
     return {
         "planned_adapters": len(planned),
@@ -110,6 +129,15 @@ def summarize(
         "eta_assumption": (
             "current active-adapter throughput remains constant"
             if eta
+            else None
+        ),
+        "chain_throughput_examples_per_second": chain_throughput,
+        "estimated_chain_completion_time": (
+            chain_eta.isoformat() if chain_eta else None
+        ),
+        "chain_eta_assumption": (
+            "throughput since the first training header remains constant"
+            if chain_eta
             else None
         ),
     }

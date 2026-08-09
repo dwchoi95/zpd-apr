@@ -42,6 +42,10 @@ class ScaleProgressReportTest(unittest.TestCase):
             self.assertEqual(result["active_adapter"]["mode"], "strict")
             self.assertEqual(result["active_adapter"]["examples_completed"], 3)
             self.assertAlmostEqual(result["throughput_examples_per_second"], 3 / 600)
+            self.assertAlmostEqual(
+                result["chain_throughput_examples_per_second"], 8 / 660
+            )
+            self.assertIsNotNone(result["estimated_chain_completion_time"])
             self.assertEqual(
                 result["eta_assumption"],
                 "current active-adapter throughput remains constant",
