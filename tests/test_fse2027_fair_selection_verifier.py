@@ -5,7 +5,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.verify_fse2027_fair_selection import verify, verify_external_split
+from scripts.verify_fse2027_fair_selection import (
+    verify,
+    verify_external_split,
+    verify_mechanism_ladder,
+)
 
 
 def report() -> dict:
@@ -66,6 +70,27 @@ class FairSelectionVerifierTest(unittest.TestCase):
             path = self.write(Path(directory), value)
             with self.assertRaisesRegex(ValueError, "problem_overlap_counts"):
                 verify_external_split(path)
+
+    def test_requires_complete_answer_mechanism_ladder(self) -> None:
+        method = {"pr": 0.8, "rr": 0.7, "ir": 0.75}
+        contrast = {
+            "paired": [{"metric": "rr", "cluster_bootstrap_95ci": [-0.1, 0.1]}]
+        }
+        value = {
+            "answer_3seed_members": ["Answer2027", "Answer2028", "Answer2029"],
+            "mixed_target_9choose3": method,
+            "answer_9choose3": method,
+            "answer_3seed": method,
+            "answer_1": method,
+            "answer_3seed_minus_answer_1": contrast,
+            "answer_9choose3_minus_answer_3seed": contrast,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            verify_mechanism_ladder(self.write(root, value))
+            del value["answer_3seed"]
+            with self.assertRaisesRegex(ValueError, "missing answer_3seed"):
+                verify_mechanism_ladder(self.write(root, value))
 
 
 if __name__ == "__main__":

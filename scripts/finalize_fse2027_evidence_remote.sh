@@ -107,8 +107,8 @@ done
 
 "${PYTHON}" scripts/verify_fse2027_fair_selection.py \
   --analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json" \
-  --analysis "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json" \
-  --analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json" \
+  --ladder-analysis "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json" \
+  --ladder-analysis "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json" \
   --external-split-summary \
   "${WORK_ROOT}/archive/external/tiktoc/derived/problem-holdout/split-summary.json"
 

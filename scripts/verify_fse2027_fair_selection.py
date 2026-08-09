@@ -56,18 +56,59 @@ def verify(path: Path) -> None:
             )
 
 
+def verify_mechanism_ladder(path: Path) -> None:
+    result = json.loads(path.read_text(encoding="utf-8"))
+    expected_members = ["Answer2027", "Answer2028", "Answer2029"]
+    if result.get("answer_3seed_members") != expected_members:
+        raise ValueError(f"{path}: missing fixed Answer-3Seed members")
+    nodes = result.get("splits")
+    if isinstance(nodes, dict):
+        if set(nodes) != {"seen", "unseen"}:
+            raise ValueError(f"{path}: scale ladder must contain Seen and Unseen")
+        labeled = list(nodes.items())
+    else:
+        labeled = [("test", result)]
+    for label, node in labeled:
+        for method in (
+            "mixed_target_9choose3", "answer_9choose3", "answer_3seed", "answer_1"
+        ):
+            summary = node.get(method)
+            if not isinstance(summary, dict):
+                raise ValueError(f"{path}: {label} missing {method}")
+            for metric_name in ("pr", "rr", "ir"):
+                value = summary.get(metric_name)
+                if not isinstance(value, (int, float)):
+                    raise ValueError(
+                        f"{path}: {label} {method} missing numeric {metric_name}"
+                    )
+        for contrast in (
+            "answer_3seed_minus_answer_1", "answer_9choose3_minus_answer_3seed"
+        ):
+            paired = node.get(contrast, {}).get("paired")
+            rr = next(
+                (row for row in paired or [] if row.get("metric") == "rr"), None
+            )
+            if rr is None or len(rr.get("cluster_bootstrap_95ci", [])) != 2:
+                raise ValueError(f"{path}: {label} missing clustered RR {contrast}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--analysis", action="append", type=Path, required=True)
+    parser.add_argument("--ladder-analysis", action="append", type=Path, default=[])
     parser.add_argument("--external-split-summary", type=Path, required=True)
     args = parser.parse_args()
     for path in args.analysis:
         verify(path)
+    for path in args.ladder_analysis:
+        verify(path)
+        verify_mechanism_ladder(path)
     verify_external_split(args.external_split_summary)
     print(
         json.dumps(
             {
-                "verified_analyses": len(args.analysis),
+                "verified_analyses": len(args.analysis) + len(args.ladder_analysis),
+                "verified_mechanism_ladders": len(args.ladder_analysis),
                 "candidate_checkpoints_per_pool": EXPECTED_CANDIDATES,
                 "feasible_size_three_portfolios_per_pool": EXPECTED_PORTFOLIOS,
                 "external_split_summary_verified": True,
