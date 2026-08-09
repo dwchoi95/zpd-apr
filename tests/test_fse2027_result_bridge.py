@@ -59,6 +59,7 @@ def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> 
                 }
             ],
             "student_cluster_rr_95ci": [-0.02, 0.04],
+            "exact_mcnemar_two_sided_p": 0.5,
         },
     }
     if key == "mixed_minus_answer":
@@ -153,12 +154,24 @@ class ResultBridgeTest(unittest.TestCase):
         codeworkout = paired_row(0.84, 0.85, "zpdpatch_minus_answer_9choose3")
         codeworkout["zpdpatch"] = {"rr": 0.84}
         scale = {
+            "mixed_members": ["Progress2027", "Strict2028", "Answer2029"],
+            "answer_members": ["Answer2030", "Answer2032", "Answer2035"],
             "splits": {
                 "seen": paired_row(0.55, 0.53),
                 "unseen": paired_row(0.65, 0.62),
             }
         }
         problem_holdout = paired_row(0.71, 0.68)
+        problem_holdout["mixed_members"] = [
+            "Progress2027",
+            "Strict2028",
+            "Answer2029",
+        ]
+        problem_holdout["answer_members"] = [
+            "Answer2030",
+            "Answer2032",
+            "Answer2035",
+        ]
         normalized_ted = {
             "examples_parseable_current": 966,
             "examples_excluded_unparseable_current": 31,
@@ -258,12 +271,25 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeen}{2.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\ScaleMixedMembers}{Progress2027--Strict2028--Answer2029}",
+            rendered,
+        )
+        self.assertIn(r"\newcommand{\ScaleMixedMinusAnswerNineSeenP}{0.5}", rendered)
         self.assertIn(r"\newcommand{\ScaleBudgetMixedMinusAnswerNineSeen}{1.5}", rendered)
         self.assertIn(
             r"\newcommand{\ScaleBudgetMixedMinusAnswerNineSeenCI}{[-0.50, 3.50]}",
             rendered,
         )
         self.assertIn(r"\newcommand{\CodeWorkoutProblemMixedRR}{71.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\CodeWorkoutProblemAnswerNineMembers}{Answer2030--Answer2032--Answer2035}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\CodeWorkoutProblemMixedMinusAnswerNineP}{0.5}",
+            rendered,
+        )
         self.assertIn(
             r"\newcommand{\CodeWorkoutProblemMixedMinusAnswerNineStudentCI}{[-2.00, 4.00]}",
             rendered,

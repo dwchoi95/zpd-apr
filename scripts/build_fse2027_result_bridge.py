@@ -31,6 +31,10 @@ def interval(values: list[float]) -> str:
     return f"[{100 * lo:.2f}, {100 * hi:.2f}]"
 
 
+def members(values: list[str]) -> str:
+    return "--".join(values)
+
+
 def build(
     answer9: dict[str, Any],
     hidden: dict[str, Any],
@@ -223,6 +227,8 @@ def macros(result: dict[str, Any]) -> str:
     )
 
     scale = result["scale_1_5b"]
+    values["ScaleMixedMembers"] = members(scale["mixed_members"])
+    values["ScaleAnswerNineMembers"] = members(scale["answer_members"])
     for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
         row = scale["splits"][split]
         scale_rr = metric(row["mixed_minus_answer"])
@@ -232,6 +238,9 @@ def macros(result: dict[str, Any]) -> str:
             scale_rr["left_minus_right_instance_weighted"]
         )
         values[f"ScaleMixedMinusAnswerNine{prefix}CI"] = ci(scale_rr)
+        values[f"ScaleMixedMinusAnswerNine{prefix}P"] = (
+            f"{row['mixed_minus_answer']['exact_mcnemar_two_sided_p']:.4g}"
+        )
         scale_budget = row["budget_indexed_mixed_minus_answer"][
             "mean_over_predeclared_budgets"
         ]
@@ -243,6 +252,10 @@ def macros(result: dict[str, Any]) -> str:
         )
 
     problem = result["codeworkout_problem"]
+    values["CodeWorkoutProblemMixedMembers"] = members(problem["mixed_members"])
+    values["CodeWorkoutProblemAnswerNineMembers"] = members(
+        problem["answer_members"]
+    )
     problem_rr = metric(problem["mixed_minus_answer"])
     values["CodeWorkoutProblemMixedRR"] = pct(problem["mixed_target_9choose3"]["rr"])
     values["CodeWorkoutProblemAnswerNineRR"] = pct(problem["answer_9choose3"]["rr"])
@@ -250,6 +263,9 @@ def macros(result: dict[str, Any]) -> str:
         problem_rr["left_minus_right_instance_weighted"]
     )
     values["CodeWorkoutProblemMixedMinusAnswerNineCI"] = ci(problem_rr)
+    values["CodeWorkoutProblemMixedMinusAnswerNineP"] = (
+        f"{problem['mixed_minus_answer']['exact_mcnemar_two_sided_p']:.4g}"
+    )
     values["CodeWorkoutProblemMixedMinusAnswerNineExerciseCI"] = ci(problem_rr)
     values["CodeWorkoutProblemMixedMinusAnswerNineStudentCI"] = interval(
         problem["mixed_minus_answer"]["student_cluster_rr_95ci"]
