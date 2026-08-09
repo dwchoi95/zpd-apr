@@ -276,10 +276,10 @@ relation-constrained triples for unrestricted, budget-agnostic, and each
 budget-indexed objective. The three Answer checkpoints form the prespecified
 same-target control. Final test-split outcomes never enter selection.
 
-Set-union coverage \(f\), each \(f_B\), and their mean are normalized,
-monotone, and submodular~\cite{nemhauser1978analysis}; exhaustive enumeration returns the exact validation
-optimum in each declared finite family; submodularity is a property, not the
-algorithm used here.
+The objectives \(f\), \(f_B\), and their mean are normalized and monotone. They
+are also submodular~\cite{nemhauser1978analysis}. Enumeration returns the exact
+validation optimum in each declared finite family; submodularity is a property,
+not the algorithm used here.
 
 \paragraph{Finite-family selection guarantee.}
 For problem \(q\), let \(X_q(S)\in[0,1]\) be portfolio coverage,
@@ -801,7 +801,11 @@ mean successful-patch TED from 17.46 to 11.40. Among 122 jointly repaired
 parseable instances, its patch is 6.41 TED units smaller on average (95\% CI
 [3.43, 9.89]).
 
-Against the weaker repeated-Answer-with-feedback control on Unseen data, Independent Policies reaches 73.2\% versus 68.4\% RR, with 15 portfolio-only and three control-only repairs (McNemar \(p=0.00754\)). The independent Answer-3Seed control, however, also reaches 73.2\%; its problem-clustered difference from Independent Policies is 0.0 points [--3.2, 3.1] and McNemar \(p=1.0\). The problem-held-out result therefore supports execution-selected checkpoint diversity but does not identify target-relation heterogeneity as its source.
+On Unseen, Independent Policies exceeds repeated Answer-with-feedback, 73.2\%
+versus 68.4\% RR (15 versus three exclusive repairs; McNemar
+\(p=.00754\)), but matches independent Answer-3Seed: 73.2\%, difference 0.0
+[--3.2, 3.1], \(p=1.0\). Thus problem-held-out evidence supports checkpoint
+diversity, not relation heterogeneity.
 
 The frozen unrestricted \(M_9\) and selection-matched \(A_9\) winners both
 reach 74.8\% Unseen RR. Their paired difference is 0.0 points
@@ -812,14 +816,11 @@ interval also includes zero. The problem-held-out evidence therefore supports
 portfolio coverage over zero-shot, not relation-specific coverage or a
 generalized constrained advantage.
 
-The 45 favorable versus 13 unfavorable discordant pairs against Zero-shot show
-complementary successes rather than dominance. Absolute Unseen RR is higher for
-both methods, but the split was defined by trajectory availability rather than
-randomized difficulty. The valid estimand is the paired within-Unseen
-difference, which remains positive without same-problem training.
-
 \paragraph{Answer to RQ5.}
-\tool's advantage over Zero-shot persists on problems completely excluded from adapter training. Because the Unseen group deliberately contains lower-resource problems, its higher absolute RR must not be interpreted as evidence that unseen problems are easier or that familiarity harms repair.
+The 45 versus 13 discordant pairs establish \tool's paired advantage over
+Zero-shot without same-problem training. Because trajectory availability, not
+randomized difficulty, defines Unseen, its higher absolute RR does not imply
+that novelty helps repair.
 
 \paragraph{Independent-test confirmation.}
 With all prompt feedback and online selection recomputed from the observed
@@ -835,23 +836,17 @@ tests, but this confirmation does not distinguish their coverage.
 
 \subsection{RQ6: Robustness and External Replication}
 
-\paragraph{Implementation conformance.}
-An artifact audit finds zero construction-predicate or pass-rate-regression
-violations. The fallback covers 31/23 unparsable Seen/Unseen inputs; all 687/199
-selected changes parse and every budgeted return has finite TED. These are
-specification checks, not evidence about learned behavior.
-
-Because users may cross CodeNet splits, we stratify by training-user overlap.
-Among 155 Seen instances from 150 training-disjoint users, \tool gains 40.0 RR
-points over Zero-shot [30.7, 48.8]; the 842-instance overlap stratum gains 26.7
-[22.6, 31.0]. The 69 Unseen disjoint-user instances retain +11.6 points, but
-their interval [--1.5, 25.4] includes zero. These observational strata do not
-identify a memorization effect.
-
-Complete P--S--A retraining with seeds 2027/2028/2029 gives Seen RR
-59.5/57.6/59.0\% (SD 1.0 points) and Unseen RR 73.2/74.0/70.4\% (SD 1.9).
-Replaying all six policy orders leaves fixed-candidate RR unchanged; P--S--A
-has the lowest mean breadth (1.391) and successful-patch TED (21.10).
+\paragraph{Conformance, dependence, and seeds.}
+The artifact audit finds zero construction-predicate, pass-rate-regression, or
+budget violations; all 687/199 selected Seen/Unseen changes parse. These are
+specification checks, not learned-behavior evidence. For 155 Seen instances
+from training-disjoint users, \tool gains 40.0 RR points over Zero-shot [30.7,
+48.8], versus 26.7 [22.6, 31.0] on 842 overlap instances; the 69-instance
+Unseen disjoint-user estimate is +11.6 [--1.5, 25.4]. These observational
+strata do not identify memorization. Three complete P--S--A runs give Seen RR
+59.5/57.6/59.0\% (SD 1.0) and Unseen RR 73.2/74.0/70.4\% (SD 1.9). All six
+orders preserve fixed-candidate RR; P--S--A minimizes breadth (1.391) and
+successful-patch TED (21.10).
 
 \paragraph{Selection stability and problem identity.}
 Of 461 selection problems, 323 overlap the 328-problem Seen test. The chosen
@@ -899,22 +894,19 @@ Relation-constrained & 95.5 & 81.8 & 86.2 \\
 \end{table}
 
 \paragraph{Answer to RQ6.}
-Problem-clustered inference preserves the CodeNet effects and three full runs
-bound training-seed variation. The problem-disjoint selector quantifies the
-cost of removing Seen problem overlap. Student-held-out Java evaluation
-replicates high coverage after Java-specific training, but not an advantage
-over same-target checkpoint diversity.
+Problem clustering and full reruns preserve the CodeNet portfolio effect. A
+problem-disjoint selector reverses unrestricted target-composition rankings,
+while separately trained student-held-out Java models replicate high coverage
+but not an advantage over same-target diversity.
 
 \section{Discussion}
 \label{sec:discussion}
 
-The RQs separate construction correctness from causes of test-time coverage.
-Every trained portfolio beats trajectory-prompted zero-shot, but the history
-ablation is null, \(A_3-A_1\) is large, and neither \(A_9-A_3\) nor
-\(M_9-A_9\) is robustly positive in unrestricted RR. Thus independent
-checkpoint diversity explains coverage; execution controls escalation and
-abstention. Relation targets instead preserve more source and improve the Seen
-budget frontier, with problem-disjoint support at particular budgets.
+The history ablation is null, \(A_3-A_1\) is large, and neither \(A_9-A_3\)
+nor \(M_9-A_9\) is robustly positive in unrestricted RR: checkpoint diversity
+explains coverage, while execution controls escalation and abstention. Relation
+targets preserve more source and improve the Seen budget frontier, with
+problem-disjoint support only at particular budgets.
 
 LSGen's same-problem programs yield higher unrestricted coverage with mean TED
 over four times \tool's. The gate operationalizes, rather than valorizes, edit
