@@ -806,12 +806,31 @@ buggy-token points [1.56, 3.64] and 3.33 more non-empty-line points
 scope under an executable deployment constraint, while checkpoint diversity
 explains most unrestricted coverage.
 
-For auditability, using relation initial plus the last two seed digits, the
-validation-frozen \(M_9/A_9\) triples at \(B=5,10,20,40,80,160\) are,
-respectively: A29--P27--S27/A30--A33--A35,
-A27--P29--S27/A28--A33--A34, A27--A29--P27/A27--A29--A33,
-A27--A28--P29/A27--A31--A33, A27--A28--P27/A28--A32--A33, and
-A27--A28--P27/A32--A33--A34. Test outcomes did not choose any member.
+Table~\ref{tab:budget-mechanism} exposes every predeclared operating point.
+Using relation initial plus the last two seed digits, it reports the
+validation-frozen triples and their paired test contrast; test outcomes did
+not choose any member.
+
+\begin{table}[t]
+\caption{Seen budget-indexed mechanism contrast. The last column is
+\(M_9-A_9\) RR in points with a problem-cluster 95\% CI.}
+\label{tab:budget-mechanism}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{rlll}
+\toprule
+\(B\) & \(M_9\) triple & \(A_9\) triple & Difference [95\% CI] \\
+\midrule
+5   & A29--P27--S27 & A30--A33--A35 & +0.00 [--1.59, 1.59] \\
+10  & A27--P29--S27 & A28--A33--A34 & +0.70 [--1.04, 2.49] \\
+20  & A27--A29--P27 & A27--A29--A33 & +1.60 [0.39, 2.85] \\
+40  & A27--A28--P29 & A27--A31--A33 & +1.91 [0.00, 3.74] \\
+80  & A27--A28--P27 & A28--A32--A33 & +1.30 [--0.77, 3.43] \\
+160 & A27--A28--P27 & A32--A33--A34 & +1.81 [--0.61, 4.27] \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 A post-hoc size-normalized audit applies the same gate to the validation-frozen
 unrestricted triples on 966 parseable-current inputs. At
@@ -904,17 +923,6 @@ specific. Under the disjoint selectors, \(M_9-A_9\) averages +1.09 points
 +2.21 [0.21, 4.14], while the other four intervals include zero. The Unseen
 evaluation remains entirely problem-disjoint.
 
-\paragraph{Student-held-out Java replication.}
-Validation selects A29--P29--S28 under the relation constraint and
-A28--A29--S28 without it; the independently selected Answer pool chooses
-A28--A29--A31. Table~\ref{tab:codeworkout} reports the prospective
-181-trajectory CodeWorkout test. Selection-matched \(M_9\) reaches 84.0\% RR
-versus 83.4\% for \(A_9\): +0.55 points, with exercise/student-cluster CIs
-[--1.24, 2.37]/[--1.20, 2.59]. Their exclusive repairs are two versus one
-(exact McNemar $p=1.0$). The relation-constrained portfolio reaches 81.8\%; the
-matched test therefore provides no evidence that target composition changes
-unrestricted Java coverage.
-
 \begin{table}[t]
 \caption{Student-held-out CodeWorkout Java test (181 trajectories; percentages).}
 \label{tab:codeworkout}
@@ -931,56 +939,53 @@ Relation-constrained & 95.5 & 81.8 & 86.2 \\
 \end{tabular}
 \end{table}
 
-\paragraph{Answer to RQ6.}
-Problem clustering and full reruns preserve the CodeNet portfolio effect. A
-problem-disjoint selector reverses unrestricted target-composition rankings,
-while separately trained student-held-out Java models replicate high coverage
-but not an advantage over same-target diversity.
+\paragraph{Student-held-out Java replication.}
+Validation selects A29--P29--S28 under the relation constraint and
+A28--A29--S28 without it; the independently selected Answer pool chooses
+A28--A29--A31. Table~\ref{tab:codeworkout} reports the prospective
+181-trajectory CodeWorkout test. Selection-matched \(M_9\) reaches 84.0\% RR
+versus 83.4\% for \(A_9\): +0.55 points, with exercise/student-cluster CIs
+[--1.24, 2.37]/[--1.20, 2.59]. Their exclusive repairs are two versus one
+(exact McNemar $p=1.0$). The relation-constrained portfolio reaches 81.8\%; the
+matched test therefore provides no evidence that target composition changes
+unrestricted Java coverage.
+
+\emph{Answer to RQ6.} Problem clustering preserves the CodeNet portfolio
+effect, but problem-disjoint selection reverses the unrestricted
+target-composition ranking; student-held-out Java replicates high coverage,
+not an advantage over same-target diversity.
 
 \section{Discussion}
 \label{sec:discussion}
 
-The history ablation is null, \(A_3-A_1\) is large, and neither \(A_9-A_3\)
-nor \(M_9-A_9\) is robustly positive in unrestricted RR: checkpoint diversity
-explains coverage, while execution controls escalation and abstention. Relation
-targets preserve more source and improve the Seen budget frontier, with
-problem-disjoint support only at particular budgets.
-
-LSGen's same-problem programs yield higher unrestricted coverage with mean TED
-over four times \tool's. The gate operationalizes, rather than valorizes, edit
-size: \tool leads through TED 80 and LSGen when broad changes are allowed, a
-deployment frontier rather than a learner-outcome claim.
+The null history ablation and large \(A_3-A_1\), beside non-robust unrestricted
+\(A_9-A_3\) and \(M_9-A_9\), identify checkpoint diversity as the coverage
+mechanism; execution controls escalation and abstention. Relation targets
+preserve more source and improve the Seen budget frontier, with
+problem-disjoint support only at particular budgets. LSGen's same-problem
+programs yield higher unrestricted coverage with mean TED over four times
+\tool's: the gate operationalizes edit size, producing a deployment frontier
+rather than a learner-outcome claim.
 
 \section{Threats to Validity}
 \label{sec:threats}
 
-\paragraph{Construct validity.}
-Tests can overfit~\cite{qi2014strength,smith2015cure}; the 310 hidden cases share
-one authored suite. TED and source retention are structural, not educational
-value; reachability and ZPD are not measured learner outcomes.
-
-\paragraph{Internal validity.}
-Shared execution, pairing, and seeds control alternatives, but construction and
-decoding choices may change results.
-
-\paragraph{Data leakage and dependence.}
-Unseen excludes training and retrieval problems, avoiding code
-duplication~\cite{allamanis2019adverse}. Seen can share users and selection
-problems; clustering and disjoint-selection audits do not eliminate memorization.
-
-\paragraph{External validity.}
-The study spans Python contest code and Java CS1 code after dataset-specific
-retraining, but no multi-file projects. CodeWorkout and CodeNet holdouts reflect
-different populations and are not random difficulty samples. CodeWorkout holds
-out students or exercises separately, not both simultaneously.
-
-\paragraph{Conclusion validity.}
+\noindent\emph{Construct validity.} Tests can overfit~\cite{qi2014strength,smith2015cure};
+the 310 hidden cases share one authored suite. TED and retention are structural,
+not educational value; reachability and ZPD are not learner outcomes.
+\emph{Internal validity.} Shared execution, pairing, and seeds control
+alternatives, but construction and decoding choices may change results.
+\emph{Data leakage and dependence.} Unseen excludes training and retrieval
+problems, avoiding code duplication~\cite{allamanis2019adverse}; Seen can share
+users and selection problems, and clustering and disjoint-selection audits do
+not eliminate memorization. \emph{External validity.} Dataset-specific
+retraining spans Python contest and Java CS1 code, but no multi-file projects;
+the holdouts represent different, non-random populations, and CodeWorkout holds
+out students or exercises separately. \emph{Conclusion validity.}
 Problem-clustered effects support the planned metrics, but TED intervals apply
-only to joint repairs. More architectures are needed for broader transfer.
-
-\paragraph{Ethical considerations.}
-Public code is used without re-identification; the artifact removes authorship
-signals and follows source-dataset terms.
+only to joint repairs and more architectures are needed. \emph{Ethics.} Public
+code is used without re-identification; the artifact removes authorship signals
+and follows source-dataset terms.
 
 \section{Conclusion}
 \label{sec:conclusion}
