@@ -41,6 +41,10 @@ fi
   --analysis "${RUN_ROOT}/analysis/fse2027-answer9-control.json" \
   --output "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
 
+"${PYTHON}" scripts/verify_fse2027_pdf_page_limit.py \
+  --pdf "${WORK_ROOT}/paper/main.pdf" \
+  --output "${RUN_ROOT}/analysis/fse2027-pdf-page-limit-audit.json"
+
 required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json"
   "${RUN_ROOT}/analysis/fse2027-answer9-validation-selection.json"
@@ -71,6 +75,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
   "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
+  "${RUN_ROOT}/analysis/fse2027-pdf-page-limit-audit.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do

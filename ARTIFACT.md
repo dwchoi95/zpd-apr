@@ -25,6 +25,7 @@ and records the exact source revision.
 | Paper label or claim | Primary evidence |
 |---|---|
 | `tab:functional-comparison` | cited primary systems in `paper/references.bib`; input/control dimensions encoded in `paper/main.tex` |
+| FSE 18+4 page boundary | `analysis/fse2027-pdf-page-limit-audit.json`; rendered-page boundary checked by `scripts/verify_fse2027_pdf_page_limit.py` using Poppler text extraction |
 | `tab:data` | `split-summary.json`; `datasets/*-final.summary.json`; `datasets/*-final.filter-summary.json` |
 | `tab:adapter-data` | `datasets/train-*.jsonl`; `datasets/valid-*.jsonl`; `analysis/fse2027-supervision-audit.json` |
 | `tab:patch-budget` | `analysis/fse2027-lsgen-budget-controller.json`; budgeted evaluations under `eval/selected-portfolios/` |
