@@ -35,7 +35,7 @@ and records the exact source revision.
 | `tab:analysis-provenance` | selection rules in `scripts/select_execution_portfolio.py` and `scripts/select_answer_seed_portfolio.py`; frozen-selection analyses listed below |
 | hidden-test confirmation | `analysis/fse2027-answer9-independent-hidden.json` |
 | problem-disjoint selection | `analysis/fse2027-problem-disjoint-selection.json`; `analysis/fse2027-answer9-problem-disjoint-selection.json`; `analysis/fse2027-problem-disjoint-budget-fair-pools.json` |
-| five-fold problem cross-fitting | `analysis/fse2027-problem-crossfit.json`; fold construction and frozen test replay in `scripts/analyze_problem_crossfit_portfolios.py` |
+| five-fold problem cross-fitting | `analysis/fse2027-problem-crossfit.json`; fold construction and frozen test replay in `scripts/analyze_problem_crossfit_portfolios.py`; exact 5-fold, 461-validation/997-test cohort identity, 328-problem coverage, and zero fold overlap are sealed by `scripts/verify_fse2027_fair_selection.py` |
 | prompt-distribution control | `analysis/fse2027-prompt-distribution-control.json`; regenerated candidates under `eval/prompt-distribution-current-only/` |
 | verdict-order sensitivity | `analysis/fse2027-verdict-order-model-sensitivity.json`; `analysis/fse2027-verdict-order-token-audit.json`; alternative datasets under `datasets/accepted-vs-failure/` |
 | post-review protocol provenance | `analysis_protocols/fse2027-postreview.json`; final seal regenerates `analysis/fse2027-protocol-provenance-audit.json` and rejects any changed frozen runner or analyzer blob |
