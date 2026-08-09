@@ -34,6 +34,15 @@ def split_problems(problems: list[str], seed: int) -> dict[str, str]:
 def apply_split(rows: list[Row], seed: int) -> tuple[list[Row], Row]:
     assignment = split_problems(sorted({str(row["problem_id"]) for row in rows}), seed)
     result = [{**row, "split": assignment[str(row["problem_id"])]} for row in rows]
+    problems_by_split = {
+        split: {str(row["problem_id"]) for row in result if row["split"] == split}
+        for split in ("train", "valid", "test")
+    }
+    students_by_split = {
+        split: {str(row["user_id"]) for row in result if row["split"] == split}
+        for split in ("train", "valid", "test")
+    }
+    pairs = (("train", "valid"), ("train", "test"), ("valid", "test"))
     summary = {
         "schema_version": 1,
         "seed": seed,
@@ -44,10 +53,24 @@ def apply_split(rows: list[Row], seed: int) -> tuple[list[Row], Row]:
             for split in ("train", "valid", "test")
         },
         "trajectories_by_split": dict(Counter(row["split"] for row in result)),
+        "students_by_split": {
+            split: len(students_by_split[split])
+            for split in ("train", "valid", "test")
+        },
+        "problem_overlap_counts": {
+            f"{left}-{right}": len(problems_by_split[left] & problems_by_split[right])
+            for left, right in pairs
+        },
+        "student_overlap_counts": {
+            f"{left}-{right}": len(students_by_split[left] & students_by_split[right])
+            for left, right in pairs
+        },
         "problem_assignment": dict(sorted(assignment.items())),
     }
     if min(summary["problems_by_split"].values()) < 1:
         raise ValueError("every split must contain at least one problem")
+    if any(summary["problem_overlap_counts"].values()):
+        raise ValueError("problem-held-out partitions overlap")
     return result, summary
 
 

@@ -18,6 +18,16 @@ class CodeWorkoutProblemHoldoutTest(unittest.TestCase):
             assignment.setdefault(row["problem_id"], set()).add(row["split"])
         self.assertTrue(all(len(splits) == 1 for splits in assignment.values()))
         self.assertEqual(set(summary["problems_by_split"]), {"train", "valid", "test"})
+        self.assertEqual(summary["problem_overlap_counts"], {
+            "train-valid": 0,
+            "train-test": 0,
+            "valid-test": 0,
+        })
+        self.assertEqual(set(summary["students_by_split"]), {"train", "valid", "test"})
+        self.assertEqual(
+            set(summary["student_overlap_counts"]),
+            {"train-valid", "train-test", "valid-test"},
+        )
 
 
 if __name__ == "__main__":
