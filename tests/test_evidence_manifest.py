@@ -23,6 +23,8 @@ class EvidenceManifestTest(unittest.TestCase):
             external = root / "tiktoc"
             analysis.mkdir(parents=True)
             checkpoints.mkdir()
+            alternative = run_root / "datasets" / "accepted-vs-failure"
+            alternative.mkdir(parents=True)
             external_dataset = external / "derived" / "datasets"
             external_dataset.mkdir(parents=True)
             (external / "source-provenance.json").write_text(
@@ -35,6 +37,12 @@ class EvidenceManifestTest(unittest.TestCase):
             (analysis / "fixture.json").write_text(
                 '{"metric": 1}\n',
                 encoding="utf-8",
+            )
+            (alternative / "train-progress.jsonl").write_text(
+                '{"example_id": "e1"}\n', encoding="utf-8"
+            )
+            (alternative / "train-progress.build-summary.json").write_text(
+                '{"verdict_order": "accepted-vs-failure"}\n', encoding="utf-8"
             )
             (external_dataset / "summary.json").write_text(
                 '{"trajectories": 3}\n', encoding="utf-8"
@@ -68,7 +76,7 @@ class EvidenceManifestTest(unittest.TestCase):
             first.pop("created_utc")
             second.pop("created_utc")
             self.assertEqual(first, second)
-            self.assertEqual(second["file_count"], 5)
+            self.assertEqual(second["file_count"], 7)
             self.assertEqual(second["external_root_names"], ["tiktoc"])
             paths = {item["path"] for item in second["files"]}
             self.assertNotIn(
@@ -77,6 +85,9 @@ class EvidenceManifestTest(unittest.TestCase):
             )
             self.assertIn("derived/datasets/token-audit-4k.json", paths)
             self.assertNotIn("derived/datasets/token-audit.json", paths)
+            self.assertIn(
+                "datasets/accepted-vs-failure/train-progress.jsonl", paths
+            )
             verified = subprocess.run(
                 [
                     sys.executable,
@@ -96,7 +107,7 @@ class EvidenceManifestTest(unittest.TestCase):
                 capture_output=True,
                 text=True,
             )
-            self.assertEqual(json.loads(verified.stdout)["verified"], 5)
+            self.assertEqual(json.loads(verified.stdout)["verified"], 7)
 
             mismatch = subprocess.run(
                 [

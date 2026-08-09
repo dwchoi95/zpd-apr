@@ -13,6 +13,7 @@ OUTPUT_ROOT=${EVAL_ROOT}/verdict-order-accepted-vs-failure
 CHECKPOINT_ROOT=${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-verdict-order/accepted-vs-failure
 OUTCOME_CACHE=${RUN_ROOT}/outcomes/all-original-submissions.jsonl
 ANALYSIS=${RUN_ROOT}/analysis/fse2027-verdict-order-model-sensitivity.json
+TOKEN_AUDIT=${RUN_ROOT}/analysis/fse2027-verdict-order-token-audit.json
 LOG=${RUN_ROOT}/logs/verdict-order-model-sensitivity.log
 
 cd "${WORK_ROOT}"
@@ -43,6 +44,17 @@ build_dataset() {
 for partition in train valid; do
   for relation in progress strict; do build_dataset "${partition}" "${relation}"; done
 done
+
+if [[ ! -s "${TOKEN_AUDIT}" ]]; then
+  "${PYTHON}" scripts/audit_repair_dataset_tokens.py \
+    "${ALT_DATASET_ROOT}/train-progress.jsonl" \
+    "${ALT_DATASET_ROOT}/train-strict.jsonl" \
+    "${ALT_DATASET_ROOT}/valid-progress.jsonl" \
+    "${ALT_DATASET_ROOT}/valid-strict.jsonl" \
+    --base-model "${BASE_MODEL}" --prompt D --max-total-tokens 4096 \
+    --output "${TOKEN_AUDIT}"
+fi
+"${PYTHON}" -c 'import json,sys; assert json.load(open(sys.argv[1]))["total_overlength_examples"] == 0' "${TOKEN_AUDIT}"
 
 train_adapter() {
   local relation=$1 checkpoint=${CHECKPOINT_ROOT}/${relation}

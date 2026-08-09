@@ -49,6 +49,8 @@ def selected_files(run_root: Path, checkpoint_roots: list[Path]) -> list[tuple[P
         "datasets/train-*.jsonl",
         "datasets/valid-*.jsonl",
         "datasets/*-test-final.jsonl",
+        "datasets/accepted-vs-failure/*.build-summary.json",
+        "datasets/accepted-vs-failure/*.jsonl",
         "outcomes/all-original-submissions.summary.json",
         "outcomes/all-original-submissions.jsonl",
         "eval/*.evaluation.jsonl",
