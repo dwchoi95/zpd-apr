@@ -23,9 +23,10 @@ class ScaleProgressReportTest(unittest.TestCase):
             log = root / "train.log"
             log.write_text(
                 "[2026-08-09T10:00:00+00:00] Training 1.5B progress seed 2027\n"
-                "5/5\n"
+                "1/1\n"
                 "[2026-08-09T10:01:00+00:00] Training 1.5B strict seed 2027\n"
-                "1/3\n",
+                "1/1\n"
+                "9/42\n",
                 encoding="utf-8",
             )
             result = summarize(

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -62,7 +63,15 @@ def summarize(
         latest = headers[-1]
         started_text, mode, seed_text = latest.groups()
         seed = int(seed_text)
-        updates = list(UPDATE.finditer(normalized[latest.end() :]))
+        expected_updates = math.ceil(examples[mode] / EFFECTIVE_BATCH_SIZE)
+        # Trainer emits nested tqdm bars for validation after the training bar.
+        # Only accept the denominator implied by the training example count so
+        # that a validation bar cannot make a finished epoch look restarted.
+        updates = [
+            match
+            for match in UPDATE.finditer(normalized[latest.end() :])
+            if int(match.group(2)) == expected_updates
+        ]
         if (mode, seed) not in completed and updates:
             done_updates, total_updates = map(int, updates[-1].groups())
             active_examples = min(done_updates * EFFECTIVE_BATCH_SIZE, examples[mode])
