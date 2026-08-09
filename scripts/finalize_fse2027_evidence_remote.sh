@@ -27,6 +27,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-portfolio-selection-stability.json"
   "${RUN_ROOT}/analysis/fse2027-answer9-selection-stability.json"
   "${RUN_ROOT}/analysis/fse2027-problem-disjoint-selection.json"
+  "${RUN_ROOT}/analysis/fse2027-answer9-problem-disjoint-selection.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
@@ -45,6 +46,7 @@ done
   --selection-stability "${RUN_ROOT}/analysis/fse2027-portfolio-selection-stability.json" \
   --answer-selection-stability "${RUN_ROOT}/analysis/fse2027-answer9-selection-stability.json" \
   --problem-disjoint "${RUN_ROOT}/analysis/fse2027-problem-disjoint-selection.json" \
+  --answer-problem-disjoint "${RUN_ROOT}/analysis/fse2027-answer9-problem-disjoint-selection.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 

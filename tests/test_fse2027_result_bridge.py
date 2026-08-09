@@ -51,6 +51,20 @@ class ResultBridgeTest(unittest.TestCase):
             "selection": {"validation_problems": 138},
             "summary": {"rr": 0.58},
         }
+        answer_problem_disjoint = {
+            "summary": {"rr": 0.57},
+            "problem_disjoint_minus_references": {
+                "Mixed-target-problem-disjoint": {
+                    "paired": [
+                        {
+                            "metric": "rr",
+                            "left_minus_right_instance_weighted": -0.01,
+                            "cluster_bootstrap_95ci": [-0.03, 0.01],
+                        }
+                    ]
+                }
+            },
+        }
         hidden = {
             "methods": {
                 "ZPDPatch": {"joint_repair_rate": 0.75},
@@ -76,12 +90,15 @@ class ResultBridgeTest(unittest.TestCase):
             stability,
             answer_stability,
             problem_disjoint,
+            answer_problem_disjoint,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
         self.assertIn(r"\newcommand{\MixedMinusAnswerNineUnseen}{2.0}", rendered)
         self.assertIn(r"\newcommand{\ProblemDisjointSeenRR}{58.0}", rendered)
+        self.assertIn(r"\newcommand{\ProblemDisjointAnswerNineRR}{57.0}", rendered)
+        self.assertIn(r"\newcommand{\ProblemDisjointMixedMinusAnswerNine}{1.0}", rendered)
         self.assertIn(r"\newcommand{\AnswerNineSelectionBootstrapFrequency}{25.0}", rendered)
         self.assertIn(r"\newcommand{\HiddenMixedJointRR}{75.0}", rendered)
         self.assertIn(r"\newcommand{\CodeWorkoutStudentAnswerNineRR}{85.0}", rendered)

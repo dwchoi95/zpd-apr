@@ -35,6 +35,7 @@ def build(
     selection_stability: dict[str, Any],
     answer_selection_stability: dict[str, Any],
     problem_disjoint: dict[str, Any],
+    answer_problem_disjoint: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -45,6 +46,7 @@ def build(
         "selection_stability": selection_stability,
         "answer_selection_stability": answer_selection_stability,
         "problem_disjoint_selection": problem_disjoint,
+        "answer_problem_disjoint_selection": answer_problem_disjoint,
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -95,6 +97,16 @@ def macros(result: dict[str, Any]) -> str:
         disjoint["selection"]["validation_problems"]
     )
     values["ProblemDisjointSeenRR"] = pct(disjoint["summary"]["rr"])
+    answer_disjoint = result["answer_problem_disjoint_selection"]
+    values["ProblemDisjointAnswerNineRR"] = pct(answer_disjoint["summary"]["rr"])
+    fair_pool_rr = metric(
+        answer_disjoint["problem_disjoint_minus_references"][
+            "Mixed-target-problem-disjoint"
+        ]
+    )
+    values["ProblemDisjointMixedMinusAnswerNine"] = pct(
+        -fair_pool_rr["left_minus_right_instance_weighted"]
+    )
 
     hidden = result["hidden"]
     values["HiddenMixedJointRR"] = pct(
@@ -149,6 +161,7 @@ def main() -> None:
     parser.add_argument("--selection-stability", type=Path, required=True)
     parser.add_argument("--answer-selection-stability", type=Path, required=True)
     parser.add_argument("--problem-disjoint", type=Path, required=True)
+    parser.add_argument("--answer-problem-disjoint", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -161,6 +174,7 @@ def main() -> None:
         read(args.selection_stability),
         read(args.answer_selection_stability),
         read(args.problem_disjoint),
+        read(args.answer_problem_disjoint),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)
