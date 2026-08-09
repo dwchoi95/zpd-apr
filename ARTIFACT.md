@@ -32,7 +32,7 @@ and records the exact source revision.
 | `tab:rq2` | `eval/rq2-*-comparison/`; `analysis/fse2027-robustness.json` |
 | `tab:rq3` | `eval/progress-seen-test.evaluation.jsonl`; `eval/strict-seen-test.evaluation.jsonl`; `eval/answer-seen-test.evaluation.jsonl` |
 | `tab:rq4` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-operational-cost.json` |
-| `tab:budget-mechanism` | per-budget members in `analysis/fse2027-portfolio-validation-selection.json` and `analysis/fse2027-answer9-validation-selection.json`; paired Seen contrasts in `analysis/fse2027-answer9-control.json` |
+| `tab:budget-mechanism` | per-budget members in `analysis/fse2027-portfolio-validation-selection.json` and `analysis/fse2027-answer9-validation-selection.json`; paired Seen contrasts in `analysis/fse2027-answer9-control.json`; exact paper transcription sealed by `analysis/fse2027-paper-budget-table-audit.json` and `scripts/verify_paper_budget_table.py` |
 | `tab:analysis-provenance` | selection rules in `scripts/select_execution_portfolio.py` and `scripts/select_answer_seed_portfolio.py`; frozen-selection analyses listed below |
 | hidden-test confirmation | `analysis/fse2027-answer9-independent-hidden.json` |
 | problem-disjoint selection | `analysis/fse2027-problem-disjoint-selection.json`; `analysis/fse2027-answer9-problem-disjoint-selection.json`; `analysis/fse2027-problem-disjoint-budget-fair-pools.json` |

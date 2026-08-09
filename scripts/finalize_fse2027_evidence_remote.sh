@@ -34,8 +34,16 @@ fi
   --pair "unseen:${RUN_ROOT}/datasets/unseen-test-final.jsonl:${RUN_ROOT}/datasets/prompt-distribution-current-only/unseen-test.jsonl" \
   --output "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
 
+"${PYTHON}" scripts/verify_paper_budget_table.py \
+  --paper "${WORK_ROOT}/paper/main.tex" \
+  --mixed-selection "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json" \
+  --answer-selection "${RUN_ROOT}/analysis/fse2027-answer9-validation-selection.json" \
+  --analysis "${RUN_ROOT}/analysis/fse2027-answer9-control.json" \
+  --output "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
+
 required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json"
+  "${RUN_ROOT}/analysis/fse2027-answer9-validation-selection.json"
   "${RUN_ROOT}/analysis/fse2027-selected-portfolios.json"
   "${RUN_ROOT}/analysis/fse2027-codeworkout-selection.json"
   "${RUN_ROOT}/analysis/fse2027-codeworkout.json"
@@ -62,6 +70,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-effect-heterogeneity.json"
   "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
+  "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
   "${RUN_ROOT}/analysis/generation-token-cap-audit.json"
 )
 for path in "${required_analysis[@]}"; do
