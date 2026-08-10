@@ -26,6 +26,19 @@ def rows(repaired: tuple[bool, ...]) -> list[dict]:
 
 
 class PromptDistributionControlTest(unittest.TestCase):
+    def test_remote_runner_rebuilds_and_verifies_each_current_only_dataset(self) -> None:
+        runner = (
+            Path(__file__).resolve().parents[1]
+            / "scripts/run_fse2027_prompt_distribution_control_remote.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'run.py make-current-code-only "${source}" "${output}"',
+            runner,
+        )
+        self.assertIn("verify_prompt_current_only_datasets.py", runner)
+        self.assertIn('--pair "${name}:${source}:${output}"', runner)
+        self.assertNotIn('if [[ ! -s "${output}" ]]', runner)
+
     def test_reports_reselection_and_same_member_prompt_effects(self) -> None:
         result = analyze_split(
             current_mixed_reselected=rows((True, True, False, False)),

@@ -48,12 +48,14 @@ checkpoint_for() {
 }
 
 current_dataset() {
-  local name=$1 source=$2 output=${CONTROL_DATASET_ROOT}/${name}.jsonl expected
+  local name=$1 source=$2 output=${CONTROL_DATASET_ROOT}/${name}.jsonl expected audit
   expected=$(wc -l < "${source}")
-  if [[ ! -s "${output}" ]] || [[ "$(wc -l < "${output}")" -ne "${expected}" ]]; then
-    "${PYTHON}" run.py make-current-code-only "${source}" "${output}" >&2
-  fi
+  audit=${CONTROL_DATASET_ROOT}/${name}.audit.json
+  "${PYTHON}" run.py make-current-code-only "${source}" "${output}" >&2
   test "$(wc -l < "${output}")" -eq "${expected}"
+  "${PYTHON}" scripts/verify_prompt_current_only_datasets.py \
+    --pair "${name}:${source}:${output}" --output "${audit}" >&2
+  test -s "${audit}"
   printf '%s\n' "${output}"
 }
 
