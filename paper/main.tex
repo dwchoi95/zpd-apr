@@ -256,6 +256,13 @@ through that submission. No instruction names a policy or asks for a particular
 edit size, so specialization can arise only from the input--target distribution.
 Only assistant target tokens contribute to loss.
 
+Canonical validation and test use one common prompt distribution: every
+checkpoint, including Answer, receives the complete authentic prefix available
+at the query. Answer therefore has a deliberate train--inference context shift,
+not privileged input. RQ6 separately replays the frozen full-prefix members and
+reselects both nine-checkpoint pools using current-code-only validation prompts,
+so prompt distribution and target composition are not inferred from one contrast.
+
 Each adapter independently minimizes mean target-token cross entropy with the
 base weights frozen and its own QLoRA parameters; prompt tokens are masked.
 
