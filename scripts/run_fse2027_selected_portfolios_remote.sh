@@ -20,7 +20,10 @@ export PYTHONPATH=. HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELI
 while [[ ! -s "${SELECTION}" ]]; do sleep 30; done
 
 checkpoint_for() {
-  local name=$1 relation=${name%202?} seed=${name: -4} lower
+  local name=$1
+  local relation=${name%202?}
+  local seed=${name: -4}
+  local lower
   lower=${relation,,}
   if [[ "${seed}" == 2027 ]]; then
     printf '%s\n' "${CHECKPOINT_ROOT}/${lower}"

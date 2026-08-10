@@ -36,7 +36,10 @@ for relation in Progress Strict Answer; do
 done
 
 checkpoint_for() {
-  local name=$1 relation=${name%202?} seed=${name: -4} lower
+  local name=$1
+  local relation=${name%202?}
+  local seed=${name: -4}
+  local lower
   lower=${relation,,}
   printf '%s\n' "${CHECKPOINT_ROOT}/seed-${seed}/${lower}"
 }

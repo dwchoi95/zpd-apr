@@ -59,7 +59,8 @@ done
   --output "${LABEL_AUDIT}"
 
 train_adapter() {
-  local relation=$1 checkpoint=${CHECKPOINT_ROOT}/${relation}
+  local relation=$1
+  local checkpoint=${CHECKPOINT_ROOT}/${relation}
   if [[ -s "${checkpoint}/adapter_model.safetensors" ]] \
       && [[ -s "${checkpoint}/training_summary.json" ]]; then return; fi
   echo "[$(date --iso-8601=seconds)] Training 7B ${relation} accepted-vs-failure seed 2027"

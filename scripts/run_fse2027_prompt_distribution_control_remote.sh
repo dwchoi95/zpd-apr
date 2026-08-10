@@ -48,7 +48,10 @@ checkpoint_for() {
 }
 
 current_dataset() {
-  local name=$1 source=$2 output=${CONTROL_DATASET_ROOT}/${name}.jsonl expected audit
+  local name=$1
+  local source=$2
+  local output=${CONTROL_DATASET_ROOT}/${name}.jsonl
+  local expected audit
   expected=$(wc -l < "${source}")
   audit=${CONTROL_DATASET_ROOT}/${name}.audit.json
   "${PYTHON}" run.py make-current-code-only "${source}" "${output}" >&2
