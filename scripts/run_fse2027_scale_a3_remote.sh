@@ -13,6 +13,7 @@ MIXED_SELECTION=${RUN_ROOT}/analysis/fse2027-scale-1.5b-mixed-selection.json
 ANSWER_SELECTION=${RUN_ROOT}/analysis/fse2027-scale-1.5b-answer-selection.json
 ANALYSIS=${RUN_ROOT}/analysis/fse2027-scale-1.5b.json
 LOG=${RUN_ROOT}/logs/scale-1.5b-a3.log
+GENERATION_BATCH_SIZE=${ZPD_SCALE_GENERATION_BATCH_SIZE:-8}
 
 cd "${WORK_ROOT}"
 mkdir -p "$(dirname "${LOG}")"
@@ -58,7 +59,7 @@ ensure_split_member() {
   "${PYTHON}" run.py generate "${dataset}" "${generations}" \
     --method "1.5B-${name}" --prompt D --base-model "${BASE_MODEL}" \
     --adapter "${CHECKPOINT_ROOT}/seed-${seed}/${relation,,}" \
-    --batch-size 4 --max-new-tokens 4096
+    --batch-size "${GENERATION_BATCH_SIZE}" --max-new-tokens 4096
   "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
     --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
