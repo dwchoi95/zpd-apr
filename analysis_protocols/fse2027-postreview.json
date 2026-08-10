@@ -1,11 +1,37 @@
 {
   "schema_version": 1,
   "scope": "Post-review robustness analyses; this is repository provenance, not external preregistration.",
+  "amendments": [
+    {
+      "id": "cached-current-baseline-conformance",
+      "kind": "protocol-conformance-fix",
+      "timing": "Scale Seen candidates had been executed, but no scale portfolio analysis or Unseen candidate evaluation had completed; every downstream experiment was still waiting.",
+      "rationale": "The frozen protocol and manuscript bind every policy to the cached current-program baseline, but four new Python runners repeated that execution. Load-sensitive timeout outcomes then made identical baselines disagree. The fix reuses the pre-existing split cache and recomputes only baseline-dependent fields and summaries.",
+      "impact": "Training, generated programs, generated-program execution outcomes, TED values, split membership, selectors, and analysis code are unchanged. Validation and test baseline pass rates, improvement labels, and fallback composition are deterministically rebound before selection or final analysis.",
+      "original_files": {
+        "scripts/normalize_evaluation_baseline.py": "2e2cc7cedc565d02d6df60fdf2fd859967720e66",
+        "scripts/run_fse2027_scale_replication_remote.sh": "e605575192d31487b36e58c8dc83757402cd5399",
+        "scripts/run_fse2027_scale_a3_remote.sh": "e605575192d31487b36e58c8dc83757402cd5399",
+        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "da2b53e9ded05371346c2f1d548d8a439332684b",
+        "scripts/run_fse2027_problem_crossfit_remote.sh": "dc4eacc6596551231f7b134f8023f6bf4f52507f",
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "740b1c0d48a47ec677436f9dd720974dd43a64b7"
+      },
+      "replacement_files": {
+        "scripts/normalize_evaluation_baseline.py": "b6aa11b1cd8bd3ec256d9842df7526e1a3749e99",
+        "scripts/run_fse2027_scale_replication_remote.sh": "b6aa11b1cd8bd3ec256d9842df7526e1a3749e99",
+        "scripts/run_fse2027_scale_a3_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
+        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
+        "scripts/run_fse2027_problem_crossfit_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa"
+      }
+    }
+  ],
   "experiments": {
     "scale_1_5b": {
       "files": {
-        "scripts/run_fse2027_scale_replication_remote.sh": "e605575192d31487b36e58c8dc83757402cd5399",
-        "scripts/run_fse2027_scale_a3_remote.sh": "e605575192d31487b36e58c8dc83757402cd5399",
+        "scripts/normalize_evaluation_baseline.py": "b6aa11b1cd8bd3ec256d9842df7526e1a3749e99",
+        "scripts/run_fse2027_scale_replication_remote.sh": "b6aa11b1cd8bd3ec256d9842df7526e1a3749e99",
+        "scripts/run_fse2027_scale_a3_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
         "scripts/analyze_fse2027_scale_replication.py": "704789a8368457459ed7813b6add553d5b7a7c62"
       }
     },
@@ -17,19 +43,19 @@
     },
     "prompt_distribution": {
       "files": {
-        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "da2b53e9ded05371346c2f1d548d8a439332684b",
+        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
         "scripts/analyze_prompt_distribution_control.py": "2da17bc91793b5bdfc49040cbffd93164b77295f"
       }
     },
     "problem_crossfit": {
       "files": {
-        "scripts/run_fse2027_problem_crossfit_remote.sh": "dc4eacc6596551231f7b134f8023f6bf4f52507f",
+        "scripts/run_fse2027_problem_crossfit_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
         "scripts/analyze_problem_crossfit_portfolios.py": "c23a62685fc78a5e01e7bc1bcfb72c07ba692c1e"
       }
     },
     "verdict_order_retraining": {
       "files": {
-        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "740b1c0d48a47ec677436f9dd720974dd43a64b7",
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
         "scripts/analyze_verdict_order_model_sensitivity.py": "0d6a5af14dc1a8b80fcb0a6ac1f2a6291e23ff2b"
       }
     }

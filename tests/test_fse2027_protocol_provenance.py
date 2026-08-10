@@ -42,6 +42,47 @@ class ProtocolProvenanceTest(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "differs from frozen"):
                 verify(manifest, repo)
 
+    def test_verifies_declared_conformance_amendment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "test@example.invalid"],
+                cwd=repo, check=True,
+            )
+            subprocess.run(
+                ["git", "config", "user.name", "Test"], cwd=repo, check=True
+            )
+            script = repo / "runner.sh"
+            script.write_text("echo frozen\n", encoding="utf-8")
+            subprocess.run(["git", "add", "runner.sh"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-qm", "freeze"], cwd=repo, check=True)
+            original = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=repo, check=True,
+                text=True, stdout=subprocess.PIPE,
+            ).stdout.strip()
+            script.write_text("echo conforming\n", encoding="utf-8")
+            subprocess.run(["git", "add", "runner.sh"], cwd=repo, check=True)
+            subprocess.run(["git", "commit", "-qm", "amend"], cwd=repo, check=True)
+            replacement = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=repo, check=True,
+                text=True, stdout=subprocess.PIPE,
+            ).stdout.strip()
+            manifest = repo / "protocol.json"
+            manifest.write_text(json.dumps({
+                "schema_version": 1,
+                "scope": "test",
+                "amendments": [{
+                    "id": "conformance",
+                    "original_files": {"runner.sh": original},
+                    "replacement_files": {"runner.sh": replacement},
+                }],
+                "experiments": {"control": {"files": {"runner.sh": replacement}}},
+            }), encoding="utf-8")
+            result = verify(manifest, repo)
+            self.assertTrue(result["all_declared_amendments_verified"])
+            self.assertEqual(result["verified_amended_files"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

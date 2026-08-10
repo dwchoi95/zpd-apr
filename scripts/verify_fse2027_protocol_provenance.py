@@ -27,6 +27,45 @@ def verify(manifest_path: Path, repo: Path, head: str = "HEAD") -> dict[str, Any
     if manifest.get("schema_version") != 1:
         raise ValueError("unsupported protocol manifest schema")
     resolved_head = git("rev-parse", head, cwd=repo).stdout.strip()
+    amendment_rows: list[dict[str, Any]] = []
+    for amendment in manifest.get("amendments", []):
+        original = amendment.get("original_files", {})
+        replacement = amendment.get("replacement_files", {})
+        if not original or set(original) != set(replacement):
+            raise ValueError("protocol amendment file maps must be non-empty and identical")
+        for relative in sorted(original):
+            original_revision = str(original[relative])
+            replacement_revision = str(replacement[relative])
+            for revision in (original_revision, replacement_revision):
+                ancestry = git(
+                    "merge-base", "--is-ancestor", revision, resolved_head,
+                    cwd=repo, check=False,
+                )
+                if ancestry.returncode != 0:
+                    raise RuntimeError(
+                        f"amendment revision {revision} is not an ancestor of {resolved_head}"
+                    )
+            before = subprocess.run(
+                ["git", "show", f"{original_revision}:{relative}"], cwd=repo,
+                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            ).stdout
+            after = subprocess.run(
+                ["git", "show", f"{replacement_revision}:{relative}"], cwd=repo,
+                check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            ).stdout
+            if (repo / relative).read_bytes() != after:
+                raise RuntimeError(
+                    f"amended file {relative} differs from replacement revision {replacement_revision}"
+                )
+            amendment_rows.append({
+                "amendment": amendment["id"],
+                "path": relative,
+                "original_revision": original_revision,
+                "replacement_revision": replacement_revision,
+                "original_sha256": sha256(before),
+                "replacement_sha256": sha256(after),
+                "content_changed": before != after,
+            })
     rows: list[dict[str, Any]] = []
     for experiment, spec in manifest["experiments"].items():
         files = spec.get("files")
@@ -70,6 +109,10 @@ def verify(manifest_path: Path, repo: Path, head: str = "HEAD") -> dict[str, Any
         "head_revision": resolved_head,
         "verified_files": len(rows),
         "all_frozen_blobs_unchanged": True,
+        "declared_amendments": len(manifest.get("amendments", [])),
+        "verified_amended_files": len(amendment_rows),
+        "all_declared_amendments_verified": True,
+        "amendments": amendment_rows,
         "files": rows,
     }
 
