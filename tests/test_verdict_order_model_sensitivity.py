@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 from scripts.analyze_verdict_order_model_sensitivity import analyze, repair_agreement
 
@@ -20,6 +21,19 @@ def rows(repaired: list[bool]) -> list[dict]:
 
 
 class VerdictOrderModelSensitivityTest(unittest.TestCase):
+    def test_remote_runner_rebuilds_alternative_data_and_token_audit(self) -> None:
+        runner = (
+            Path(__file__).resolve().parents[1]
+            / "scripts/run_fse2027_verdict_order_retraining_remote.sh"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn(
+            'if [[ -s "${output}" ]] && [[ -s "${summary}" ]]',
+            runner,
+        )
+        self.assertNotIn('if [[ ! -s "${TOKEN_AUDIT}" ]]', runner)
+        self.assertIn("audit_repair_dataset_tokens.py", runner)
+        self.assertIn("audit_verdict_order_sensitivity.py", runner)
+
     def test_reports_paired_retraining_effect_and_agreement(self) -> None:
         evaluations = {}
         for relation in ("progress", "strict"):

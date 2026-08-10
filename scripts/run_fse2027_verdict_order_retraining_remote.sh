@@ -30,7 +30,6 @@ build_dataset() {
   split=seen_${partition}
   output=${ALT_DATASET_ROOT}/${partition}-${relation}.jsonl
   summary=${output%.jsonl}.build-summary.json
-  if [[ -s "${output}" ]] && [[ -s "${summary}" ]]; then return; fi
   echo "[$(date --iso-8601=seconds)] Building ${partition} ${relation} with accepted-vs-failure order"
   args=(run.py build-repair-data --data-root "${DATA_ROOT}" --split "${split}" \
     --target-mode "${relation}" --verdict-order accepted-vs-failure --output "${output}")
@@ -46,15 +45,13 @@ for partition in train valid; do
   for relation in progress strict; do build_dataset "${partition}" "${relation}"; done
 done
 
-if [[ ! -s "${TOKEN_AUDIT}" ]]; then
-  "${PYTHON}" scripts/audit_repair_dataset_tokens.py \
-    "${ALT_DATASET_ROOT}/train-progress.jsonl" \
-    "${ALT_DATASET_ROOT}/train-strict.jsonl" \
-    "${ALT_DATASET_ROOT}/valid-progress.jsonl" \
-    "${ALT_DATASET_ROOT}/valid-strict.jsonl" \
-    --base-model "${BASE_MODEL}" --prompt D --max-total-tokens 4096 \
-    --output "${TOKEN_AUDIT}"
-fi
+"${PYTHON}" scripts/audit_repair_dataset_tokens.py \
+  "${ALT_DATASET_ROOT}/train-progress.jsonl" \
+  "${ALT_DATASET_ROOT}/train-strict.jsonl" \
+  "${ALT_DATASET_ROOT}/valid-progress.jsonl" \
+  "${ALT_DATASET_ROOT}/valid-strict.jsonl" \
+  --base-model "${BASE_MODEL}" --prompt D --max-total-tokens 4096 \
+  --output "${TOKEN_AUDIT}"
 "${PYTHON}" -c 'import json,sys; assert json.load(open(sys.argv[1]))["total_overlength_examples"] == 0' "${TOKEN_AUDIT}"
 
 "${PYTHON}" scripts/audit_verdict_order_sensitivity.py \
