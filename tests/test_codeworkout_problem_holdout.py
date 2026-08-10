@@ -10,6 +10,28 @@ from analyze_codeworkout_problem_holdout import analyze  # noqa: E402
 
 
 class CodeWorkoutProblemHoldoutTest(unittest.TestCase):
+    def test_remote_runner_audits_every_exercise_holdout_dataset_at_4k(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        runner = (
+            root / "scripts/run_fse2027_codeworkout_problem_holdout_remote.sh"
+        ).read_text(encoding="utf-8")
+        finalizer = (
+            root / "scripts/finalize_fse2027_evidence_remote.sh"
+        ).read_text(encoding="utf-8")
+        for name in (
+            "train-answer",
+            "train-strict",
+            "train-progress",
+            "valid-answer",
+            "valid-strict",
+            "valid-progress",
+            "test-final",
+        ):
+            self.assertIn(f'"${{DATASETS}}/{name}.jsonl"', runner)
+        self.assertIn("--max-total-tokens 4096", runner)
+        self.assertIn('"total_overlength_examples"] == 0', runner)
+        self.assertIn("fse2027-codeworkout-problem-token-audit.json", finalizer)
+
     def test_problem_assignment_is_disjoint_and_deterministic(self) -> None:
         rows = [
             {"problem_id": f"p{problem}", "user_id": f"u{user}", "split": "old"}

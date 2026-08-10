@@ -12,6 +12,7 @@ CHECKPOINT_ROOT=${WORK_ROOT}/checkpoints/split-90-10/codeworkout-problem-holdout
 MIXED_SELECTION=${RUN_ROOT}/analysis/fse2027-codeworkout-problem-mixed-selection.json
 ANSWER_SELECTION=${RUN_ROOT}/analysis/fse2027-codeworkout-problem-answer-selection.json
 ANALYSIS=${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json
+TOKEN_AUDIT=${RUN_ROOT}/analysis/fse2027-codeworkout-problem-token-audit.json
 LOG=${RUN_ROOT}/logs/codeworkout-problem-holdout.log
 IMAGE=oj:java-21-e5acbd8e27
 
@@ -22,6 +23,20 @@ export PYTHONPATH=. HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 
 while [[ ! -f "${RUN_ROOT}/eval/scale-1.5b/A3_COMPLETE" ]]; do sleep 60; done
+
+"${PYTHON}" scripts/audit_repair_dataset_tokens.py \
+  "${DATASETS}/train-answer.jsonl" \
+  "${DATASETS}/train-strict.jsonl" \
+  "${DATASETS}/train-progress.jsonl" \
+  "${DATASETS}/valid-answer.jsonl" \
+  "${DATASETS}/valid-strict.jsonl" \
+  "${DATASETS}/valid-progress.jsonl" \
+  "${DATASETS}/test-final.jsonl" \
+  --base-model "${BASE_MODEL}" --prompt D --max-total-tokens 4096 \
+  --output "${TOKEN_AUDIT}"
+"${PYTHON}" -c \
+  'import json,sys; assert json.load(open(sys.argv[1]))["total_overlength_examples"] == 0' \
+  "${TOKEN_AUDIT}"
 
 checkpoint_for() { printf '%s\n' "${CHECKPOINT_ROOT}/seed-$1/$2"; }
 

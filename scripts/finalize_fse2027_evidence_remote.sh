@@ -63,6 +63,7 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-codeworkout-answer9.json"
   "${RUN_ROOT}/analysis/fse2027-scale-1.5b.json"
   "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-holdout.json"
+  "${RUN_ROOT}/analysis/fse2027-codeworkout-problem-token-audit.json"
   "${RUN_ROOT}/analysis/fse2027-portfolio-selection-stability.json"
   "${RUN_ROOT}/analysis/fse2027-answer9-selection-stability.json"
   "${RUN_ROOT}/analysis/fse2027-problem-disjoint-selection.json"
