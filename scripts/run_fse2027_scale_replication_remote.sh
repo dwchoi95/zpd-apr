@@ -97,6 +97,7 @@ mapfile -t answer_members < <(
 for split in seen unseen; do
   dataset=${DATASETS}/${split}-test-final.jsonl
   expected=$(wc -l < "${dataset}")
+  mkdir -p "${OUTPUT_ROOT}/test/${split}"
   mapfile -t test_members < <(
     "${PYTHON}" -c 'import json,sys
 m=json.load(open(sys.argv[1])); a=json.load(open(sys.argv[2]))
@@ -107,19 +108,19 @@ print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
   )
   for name in "${test_members[@]}"; do
     relation=${name%20??}; seed=${name: -4}
-    evaluate_member "${name}" "${relation}" "${seed}" "${dataset}" test "${expected}"
+    evaluate_member "${name}" "${relation}" "${seed}" "${dataset}" "test/${split}" "${expected}"
   done
   stages=()
   for relation in Progress Strict Answer; do
     for name in "${mixed_members[@]}"; do
-      [[ "${name}" == ${relation}* ]] && stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
+      [[ "${name}" == ${relation}* ]] && stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl")
     done
   done
   "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/mixed-${split}-test.evaluation.jsonl" --method Mixed-1.5B-9Choose3 "${stages[@]}"
   stages=()
   for name in "${answer_members[@]}"; do
-    stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
+    stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl")
   done
   "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/answer9-${split}-test.evaluation.jsonl" --method Answer-1.5B-9Choose3 "${stages[@]}"
@@ -131,7 +132,7 @@ print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
     stages=()
     for relation in Progress Strict Answer; do
       for name in "${selected[@]}"; do
-        [[ "${name}" == ${relation}* ]] && stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
+        [[ "${name}" == ${relation}* ]] && stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl")
       done
     done
     "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
@@ -143,7 +144,7 @@ print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
     )
     stages=()
     for name in "${selected[@]}"; do
-      stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
+      stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl")
     done
     "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
       "${OUTPUT_ROOT}/answer9-budget-${budget}-${split}-test.evaluation.jsonl" \

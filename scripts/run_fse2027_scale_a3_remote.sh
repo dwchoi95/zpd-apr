@@ -46,13 +46,12 @@ ensure_split_member() {
   generations=${OUTPUT_ROOT}/members/${split}/${name}.generations.jsonl
   evaluation=${OUTPUT_ROOT}/members/${split}/${name}.evaluation.jsonl
   if complete "${evaluation}" "${expected}"; then return; fi
-  if [[ "${split}" == unseen ]] \
-      && complete "${OUTPUT_ROOT}/test/${name}.evaluation.jsonl" "${expected}"; then
-    cp "${OUTPUT_ROOT}/test/${name}.evaluation.jsonl" "${evaluation}"
-    cp "${OUTPUT_ROOT}/test/${name}.evaluation.summary.json" \
+  if complete "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl" "${expected}"; then
+    cp "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl" "${evaluation}"
+    cp "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.summary.json" \
       "${evaluation%.jsonl}.summary.json"
-    if [[ -s "${OUTPUT_ROOT}/test/${name}.generations.jsonl" ]]; then
-      cp "${OUTPUT_ROOT}/test/${name}.generations.jsonl" "${generations}"
+    if [[ -s "${OUTPUT_ROOT}/test/${split}/${name}.generations.jsonl" ]]; then
+      cp "${OUTPUT_ROOT}/test/${split}/${name}.generations.jsonl" "${generations}"
     fi
     return
   fi

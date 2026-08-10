@@ -19,6 +19,21 @@ class ScaleReplicationFairSelectionTest(unittest.TestCase):
         self.assertIn('--batch-size "${GENERATION_BATCH_SIZE}"', main_script)
         self.assertIn('--batch-size "${GENERATION_BATCH_SIZE}"', a3_script)
 
+    def test_seen_and_unseen_member_outputs_are_split_scoped(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        main_script = (root / "scripts/run_fse2027_scale_replication_remote.sh").read_text()
+        a3_script = (root / "scripts/run_fse2027_scale_a3_remote.sh").read_text()
+        split_member = '${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl'
+        unsplit_member = '${OUTPUT_ROOT}/test/${name}.evaluation.jsonl'
+        self.assertIn(
+            'evaluate_member "${name}" "${relation}" "${seed}" "${dataset}" "test/${split}"',
+            main_script,
+        )
+        self.assertIn(split_member, main_script)
+        self.assertNotIn(unsplit_member, main_script)
+        self.assertIn(split_member, a3_script)
+        self.assertNotIn(unsplit_member, a3_script)
+
     def test_accepts_matched_nine_choose_three_search_spaces(self) -> None:
         mixed = {
             "candidate_checkpoint_count": 9,
