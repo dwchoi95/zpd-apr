@@ -4,20 +4,20 @@
   "experiments": {
     "scale_1_5b": {
       "files": {
-        "scripts/run_fse2027_scale_replication_remote.sh": "509ec37dc6d235ca2458abe979d845b43b2215c1",
-        "scripts/run_fse2027_scale_a3_remote.sh": "890a145731de88a9ebf0e387662ab8096f2b5ab8",
+        "scripts/run_fse2027_scale_replication_remote.sh": "e605575192d31487b36e58c8dc83757402cd5399",
+        "scripts/run_fse2027_scale_a3_remote.sh": "e605575192d31487b36e58c8dc83757402cd5399",
         "scripts/analyze_fse2027_scale_replication.py": "704789a8368457459ed7813b6add553d5b7a7c62"
       }
     },
     "codeworkout_exercise_holdout": {
       "files": {
-        "scripts/run_fse2027_codeworkout_problem_holdout_remote.sh": "704789a8368457459ed7813b6add553d5b7a7c62",
+        "scripts/run_fse2027_codeworkout_problem_holdout_remote.sh": "a95391f21833e1a50eb0ab7f31c99313967e8b42",
         "scripts/analyze_codeworkout_problem_holdout.py": "704789a8368457459ed7813b6add553d5b7a7c62"
       }
     },
     "prompt_distribution": {
       "files": {
-        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "2da17bc91793b5bdfc49040cbffd93164b77295f",
+        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "da2b53e9ded05371346c2f1d548d8a439332684b",
         "scripts/analyze_prompt_distribution_control.py": "2da17bc91793b5bdfc49040cbffd93164b77295f"
       }
     },
@@ -29,7 +29,7 @@
     },
     "verdict_order_retraining": {
       "files": {
-        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "4752a6c55bb7be21a305419ab13e352608e2b582",
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "740b1c0d48a47ec677436f9dd720974dd43a64b7",
         "scripts/analyze_verdict_order_model_sensitivity.py": "0d6a5af14dc1a8b80fcb0a6ac1f2a6291e23ff2b"
       }
     }
