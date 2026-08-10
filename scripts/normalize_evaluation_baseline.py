@@ -23,6 +23,23 @@ def read_jsonl(path: Path) -> list[Row]:
         return [json.loads(line) for line in source if line.strip()]
 
 
+def canonical_baseline(reference: Row) -> tuple[float, Any, str]:
+    """Read a baseline from either an evaluation or a cached dataset row."""
+    if reference.get("buggy_pass_rate") is not None:
+        return (
+            float(reference["buggy_pass_rate"]),
+            reference.get("buggy_verdict"),
+            "canonical-split-baseline",
+        )
+    if reference.get("current_pass_rate") is not None:
+        return (
+            float(reference["current_pass_rate"]),
+            reference.get("current_execution_verdict"),
+            "canonical-dataset-cache",
+        )
+    raise ValueError("reference row has no canonical baseline pass rate")
+
+
 def normalize(rows: list[Row], references: list[Row]) -> tuple[list[Row], int]:
     reference_by_id = {str(row["example_id"]): row for row in references}
     if len(reference_by_id) != len(references):
@@ -34,14 +51,13 @@ def normalize(rows: list[Row], references: list[Row]) -> tuple[list[Row], int]:
     for row in rows:
         updated = dict(row)
         reference = reference_by_id[str(row["example_id"])]
-        baseline = float(reference["buggy_pass_rate"])
-        verdict = reference.get("buggy_verdict")
+        baseline, verdict, provenance = canonical_baseline(reference)
         if float(row["buggy_pass_rate"]) != baseline or row.get("buggy_verdict") != verdict:
             changed += 1
         updated["buggy_pass_rate"] = baseline
         updated["buggy_verdict"] = verdict
         updated["improved"] = float(updated["fixed_pass_rate"]) > baseline
-        updated["buggy_baseline_reused_from"] = "canonical-split-baseline"
+        updated["buggy_baseline_reused_from"] = provenance
         result.append(updated)
     result.sort(key=lambda row: str(row["example_id"]))
     return result, changed

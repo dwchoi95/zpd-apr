@@ -52,13 +52,16 @@ evaluate_member() {
   checkpoint=$(checkpoint_for "${seed}" "${relation,,}")
   generations=${OUTPUT_ROOT}/${split}/${name}.generations.jsonl
   evaluation=${OUTPUT_ROOT}/${split}/${name}.evaluation.jsonl
-  if complete "${evaluation}" "${expected}"; then return; fi
-  "${PYTHON}" run.py generate "${dataset}" "${generations}" \
-    --method "1.5B-${name}" --prompt D --base-model "${BASE_MODEL}" \
-    --adapter "${checkpoint}" --batch-size "${GENERATION_BATCH_SIZE}" --max-new-tokens 4096
-  "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
-    --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  if ! complete "${evaluation}" "${expected}"; then
+    "${PYTHON}" run.py generate "${dataset}" "${generations}" \
+      --method "1.5B-${name}" --prompt D --base-model "${BASE_MODEL}" \
+      --adapter "${checkpoint}" --batch-size "${GENERATION_BATCH_SIZE}" --max-new-tokens 4096
+    "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
+      --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  fi
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
+  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+    --reference "${dataset}"
 }
 
 for seed in 2027 2028 2029; do

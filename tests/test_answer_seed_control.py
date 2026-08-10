@@ -26,7 +26,10 @@ from compose_answer_seed_control import compose, summarize  # noqa: E402
 from extract_answer_generations import extract  # noqa: E402
 from seed_policy_generations import seed_rows  # noqa: E402
 from seed_policy_evaluations import seed_rows as seed_evaluation_rows  # noqa: E402
-from normalize_evaluation_baseline import normalize as normalize_baseline  # noqa: E402
+from normalize_evaluation_baseline import (  # noqa: E402
+    canonical_baseline,
+    normalize as normalize_baseline,
+)
 from seed_lsgen_always_three import (  # noqa: E402
     preserve_complete_rows,
     seed_rows as seed_lsgen_rows,
@@ -918,6 +921,14 @@ class AnswerSeedControlAnalysisTest(unittest.TestCase):
                 dataset,
                 [("a", [row(0.25)]), ("b", [row(0.5)]), ("c", [row(0.25)])],
             )
+
+    def test_normalizer_accepts_cached_dataset_baseline_schema(self) -> None:
+        baseline, verdict, provenance = canonical_baseline(
+            {"current_pass_rate": 0.75, "current_execution_verdict": "WA"}
+        )
+        self.assertEqual(baseline, 0.75)
+        self.assertEqual(verdict, "WA")
+        self.assertEqual(provenance, "canonical-dataset-cache")
 
 
 if __name__ == "__main__":
