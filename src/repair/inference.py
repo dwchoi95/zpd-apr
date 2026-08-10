@@ -66,11 +66,7 @@ def generate_repairs(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     requested_ids = {str(record["example_id"]) for record in records}
     existing = (
-        {
-            str(item["example_id"]): item
-            for item in _iter_jsonl(output_path)
-            if str(item["example_id"]) in requested_ids
-        }
+        _load_resumable_generations(output_path, requested_ids)
         if resume and output_path.exists()
         else {}
     )
@@ -185,3 +181,24 @@ def _iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:
         for line in source:
             if line.strip():
                 yield json.loads(line)
+
+
+def _load_resumable_generations(
+    output_path: Path,
+    requested_ids: set[str],
+) -> dict[str, dict[str, Any]]:
+    rows = list(_iter_jsonl(output_path))
+    row_ids = [str(item.get("example_id", "")) for item in rows]
+    if any(not example_id for example_id in row_ids):
+        raise ValueError(f"Generation output contains an empty example_id: {output_path}")
+    if len(set(row_ids)) != len(row_ids):
+        raise ValueError(f"Duplicate example_id in generation output: {output_path}")
+    foreign_ids = sorted(set(row_ids) - requested_ids)
+    if foreign_ids:
+        preview = ", ".join(foreign_ids[:3])
+        raise ValueError(
+            "Generation output belongs to a different dataset; "
+            f"found {len(foreign_ids)} foreign example_id(s) in {output_path}: "
+            f"{preview}"
+        )
+    return {example_id: item for example_id, item in zip(row_ids, rows, strict=True)}
