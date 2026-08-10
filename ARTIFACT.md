@@ -44,7 +44,7 @@ suite, and records the exact source revision.
 | five-fold problem cross-fitting | `analysis/fse2027-problem-crossfit.json`; fold construction and frozen test replay in `scripts/analyze_problem_crossfit_portfolios.py`; exact 5-fold, 461-validation/997-test cohort identity, 328-problem coverage, and zero fold overlap are sealed by `scripts/verify_fse2027_fair_selection.py` |
 | prompt-distribution control | `analysis/fse2027-prompt-distribution-control.json`; regenerated candidates under `eval/prompt-distribution-current-only/`; exact preservation of every non-history field is checked in `analysis/fse2027-prompt-current-only-dataset-audit.json` by `scripts/verify_prompt_current_only_datasets.py` |
 | verdict-order sensitivity | `analysis/fse2027-verdict-order-model-sensitivity.json`; `analysis/fse2027-verdict-order-token-audit.json`; `analysis/fse2027-verdict-order-label-audit.json` verifies every alternative label under the binary order; alternative datasets under `datasets/accepted-vs-failure/` |
-| post-review protocol provenance | `analysis_protocols/fse2027-postreview.json`; final seal regenerates `analysis/fse2027-protocol-provenance-audit.json` and rejects any changed frozen runner or analyzer blob |
+| post-review protocol provenance | `analysis_protocols/fse2027-postreview.json`; final seal regenerates `analysis/fse2027-protocol-provenance-audit.json`, rejects changed frozen blobs, and verifies the original and replacement revisions of every declared conformance amendment |
 | exploratory effect heterogeneity | `analysis/fse2027-effect-heterogeneity.json`; fixed strata and paired problem-cluster analysis in `scripts/analyze_fse2027_effect_heterogeneity.py` |
 | normalized edit frontier | `analysis/fse2027-normalized-ted-frontier.json` |
 | absolute-budget interpretation | current-program AST node counts and per-budget fractions in `analysis/fse2027-normalized-ted-frontier.json` |
@@ -85,6 +85,11 @@ new 7B adapters, and compares their decisions with the canonical-order models;
 it is not a post-hoc relabeling of evaluation rows. The prompt control likewise
 regenerates candidates under the current-only prompt before selection and test
 replay.
+
+The declared cached-baseline conformance amendment binds each member evaluation
+to the split's pre-existing current-program cache before selection or analysis.
+It preserves generated programs, their execution outcomes, and TED values; the
+protocol manifest records both the original and replacement Git blobs.
 
 After all controls finish, seal the complete evidence graph with:
 
