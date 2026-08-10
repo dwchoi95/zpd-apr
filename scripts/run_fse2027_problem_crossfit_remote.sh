@@ -62,6 +62,8 @@ ensure_mixed_test() {
       --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5 1>&2
     test "$(wc -l < "${evaluation}")" -eq "${EXPECTED}"
   fi
+  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+    --reference "${DATASET}" 1>&2
   printf '%s\n' "${evaluation}"
 }
 

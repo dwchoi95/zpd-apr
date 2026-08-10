@@ -83,14 +83,17 @@ evaluate_adapter() {
   expected=$(wc -l < "${dataset}")
   generations=${OUTPUT_ROOT}/${relation}-${split}.generations.jsonl
   evaluation=${OUTPUT_ROOT}/${relation}-${split}.evaluation.jsonl
-  if complete "${evaluation}" "${expected}"; then return; fi
-  echo "[$(date --iso-8601=seconds)] Evaluating ${relation} accepted-vs-failure on ${split}"
-  "${PYTHON}" run.py generate "${dataset}" "${generations}" \
-    --method "${relation}-AcceptedVsFailure" --prompt D --base-model "${BASE_MODEL}" \
-    --adapter "${CHECKPOINT_ROOT}/${relation}" --batch-size 4 --max-new-tokens 4096
-  "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
-    --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  if ! complete "${evaluation}" "${expected}"; then
+    echo "[$(date --iso-8601=seconds)] Evaluating ${relation} accepted-vs-failure on ${split}"
+    "${PYTHON}" run.py generate "${dataset}" "${generations}" \
+      --method "${relation}-AcceptedVsFailure" --prompt D --base-model "${BASE_MODEL}" \
+      --adapter "${CHECKPOINT_ROOT}/${relation}" --batch-size 4 --max-new-tokens 4096
+    "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
+      --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  fi
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
+  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+    --reference "${dataset}"
 }
 
 for relation in progress strict; do

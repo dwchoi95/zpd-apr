@@ -45,23 +45,26 @@ ensure_split_member() {
   mkdir -p "${OUTPUT_ROOT}/members/${split}"
   generations=${OUTPUT_ROOT}/members/${split}/${name}.generations.jsonl
   evaluation=${OUTPUT_ROOT}/members/${split}/${name}.evaluation.jsonl
-  if complete "${evaluation}" "${expected}"; then return; fi
-  if complete "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl" "${expected}"; then
-    cp "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl" "${evaluation}"
-    cp "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.summary.json" \
-      "${evaluation%.jsonl}.summary.json"
-    if [[ -s "${OUTPUT_ROOT}/test/${split}/${name}.generations.jsonl" ]]; then
-      cp "${OUTPUT_ROOT}/test/${split}/${name}.generations.jsonl" "${generations}"
+  if ! complete "${evaluation}" "${expected}"; then
+    if complete "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl" "${expected}"; then
+      cp "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl" "${evaluation}"
+      cp "${OUTPUT_ROOT}/test/${split}/${name}.evaluation.summary.json" \
+        "${evaluation%.jsonl}.summary.json"
+      if [[ -s "${OUTPUT_ROOT}/test/${split}/${name}.generations.jsonl" ]]; then
+        cp "${OUTPUT_ROOT}/test/${split}/${name}.generations.jsonl" "${generations}"
+      fi
+    else
+      "${PYTHON}" run.py generate "${dataset}" "${generations}" \
+        --method "1.5B-${name}" --prompt D --base-model "${BASE_MODEL}" \
+        --adapter "${CHECKPOINT_ROOT}/seed-${seed}/${relation,,}" \
+        --batch-size "${GENERATION_BATCH_SIZE}" --max-new-tokens 4096
+      "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
+        --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
     fi
-    return
   fi
-  "${PYTHON}" run.py generate "${dataset}" "${generations}" \
-    --method "1.5B-${name}" --prompt D --base-model "${BASE_MODEL}" \
-    --adapter "${CHECKPOINT_ROOT}/seed-${seed}/${relation,,}" \
-    --batch-size "${GENERATION_BATCH_SIZE}" --max-new-tokens 4096
-  "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
-    --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
+  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+    --reference "${dataset}"
 }
 
 for split in unseen seen; do

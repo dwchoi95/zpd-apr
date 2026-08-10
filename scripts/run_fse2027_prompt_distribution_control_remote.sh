@@ -66,14 +66,17 @@ evaluate_member() {
   checkpoint=$(checkpoint_for "${relation}" "${seed}")
   local generations=${OUTPUT_ROOT}/${split}/${name}.generations.jsonl
   local evaluation=${OUTPUT_ROOT}/${split}/${name}.evaluation.jsonl
-  if complete "${evaluation}" "${expected}"; then return; fi
-  echo "[$(date --iso-8601=seconds)] Generating current-only ${name} ${split}"
-  "${PYTHON}" run.py generate "${dataset}" "${generations}" \
-    --method "CurrentOnly-${name}" --prompt D --base-model "${BASE_MODEL}" \
-    --adapter "${checkpoint}" --batch-size "${BATCH_SIZE}" --max-new-tokens 4096
-  "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
-    --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  if ! complete "${evaluation}" "${expected}"; then
+    echo "[$(date --iso-8601=seconds)] Generating current-only ${name} ${split}"
+    "${PYTHON}" run.py generate "${dataset}" "${generations}" \
+      --method "CurrentOnly-${name}" --prompt D --base-model "${BASE_MODEL}" \
+      --adapter "${checkpoint}" --batch-size "${BATCH_SIZE}" --max-new-tokens 4096
+    "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
+      --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  fi
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
+  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+    --reference "${dataset}"
 }
 
 validation=$(current_dataset \
