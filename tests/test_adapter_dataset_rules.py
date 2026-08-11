@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from pathlib import Path
 import unittest
 from collections import Counter
 from types import SimpleNamespace
@@ -309,6 +310,11 @@ class AdapterDatasetRulesTest(unittest.TestCase):
         self.assertNotEqual(first, _example_sampling_seed(3101, "example-b"))
         self.assertGreaterEqual(first, 0)
         self.assertLess(first, 2**63 - 1)
+
+    def test_stochastic_runner_restarts_complete_batched_seed_pass(self) -> None:
+        runner = Path("scripts/run_fse2027_stochastic_candidate_control_remote.sh").read_text()
+        self.assertIn("--batch-size 4", runner)
+        self.assertIn("--no-resume", runner)
 
     def test_dynamic_stage_feedback_omits_only_generated_code_on_overflow(self) -> None:
         class CharacterTokenizer:

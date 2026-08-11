@@ -73,6 +73,13 @@ def generate_repairs(
             raise ValueError("temperature must be positive for stochastic decoding")
         if not 0 < top_p <= 1:
             raise ValueError("top_p must be in (0, 1]")
+        if batch_size > 1 and resume:
+            raise ValueError(
+                "batched stochastic decoding requires resume=False; a retry must "
+                "regenerate the complete fixed-seed pass"
+            )
+        torch.manual_seed(sampling_seed)
+        torch.cuda.manual_seed_all(sampling_seed)
 
     records = list(_iter_jsonl(dataset_path))
     output_path = output_path.expanduser().resolve()
@@ -108,16 +115,12 @@ def generate_repairs(
             torch.cuda.synchronize()
             started = time.perf_counter()
             if sampling_seed is not None:
-                if len(batch) != 1:
-                    raise ValueError(
-                        "stochastic decoding requires batch_size=1 so every example "
-                        "has a resume-stable independent RNG seed"
+                if batch_size == 1:
+                    example_seed = _example_sampling_seed(
+                        sampling_seed, str(batch[0]["example_id"])
                     )
-                example_seed = _example_sampling_seed(
-                    sampling_seed, str(batch[0]["example_id"])
-                )
-                torch.manual_seed(example_seed)
-                torch.cuda.manual_seed_all(example_seed)
+                    torch.manual_seed(example_seed)
+                    torch.cuda.manual_seed_all(example_seed)
             with torch.inference_mode():
                 sampling_kwargs = (
                     {"temperature": temperature, "top_p": top_p}
@@ -155,7 +158,7 @@ def generate_repairs(
                     "sampling_seed": sampling_seed,
                     "example_sampling_seed": (
                         _example_sampling_seed(sampling_seed, str(record["example_id"]))
-                        if sampling_seed is not None
+                        if sampling_seed is not None and batch_size == 1
                         else None
                     ),
                     "temperature": temperature if sampling_seed is not None else None,

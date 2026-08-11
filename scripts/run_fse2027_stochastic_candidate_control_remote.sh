@@ -35,9 +35,9 @@ for split in seen unseen; do
       echo "[$(date --iso-8601=seconds)] ${split} stochastic seed ${sampling_seed}"
       "${PYTHON}" run.py generate "${dataset}" "${generations}" \
         --method "Answer2027-Sample${sampling_seed}" --prompt D \
-        --base-model "${BASE_MODEL}" --adapter "${CHECKPOINT}" --batch-size 1 \
+        --base-model "${BASE_MODEL}" --adapter "${CHECKPOINT}" --batch-size 4 \
         --max-new-tokens 4096 --sampling-seed "${sampling_seed}" \
-        --temperature 0.8 --top-p 0.95
+        --temperature 0.8 --top-p 0.95 --no-resume
       "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
         --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
     fi
