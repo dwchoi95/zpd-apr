@@ -86,6 +86,25 @@
         "scripts/run_fse2027_verdict_order_retraining_remote.sh": "0dbc504dffbb0f5d2b96daadc8f0b5aace5a4eea",
         "scripts/analyze_verdict_order_model_sensitivity.py": "0d6a5af14dc1a8b80fcb0a6ac1f2a6291e23ff2b"
       }
+    },
+    "stochastic_candidate_breadth": {
+      "files": {
+        "src/repair/inference.py": "dd1be28696b60c53f6e0588fe438094f102e11cb",
+        "src/cli.py": "dd1be28696b60c53f6e0588fe438094f102e11cb",
+        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "dd1be28696b60c53f6e0588fe438094f102e11cb",
+        "scripts/analyze_stochastic_candidate_control.py": "dd1be28696b60c53f6e0588fe438094f102e11cb"
+      }
+    },
+    "current_only_deployment_ladder": {
+      "files": {
+        "scripts/run_fse2027_current_only_deployment_ladder_remote.sh": "c139a4ba5f7861192250c103624128c515819c01",
+        "scripts/analyze_current_only_deployment_ladder.py": "c139a4ba5f7861192250c103624128c515819c01"
+      }
+    },
+    "codeworkout_exercise_sensitivity": {
+      "files": {
+        "scripts/analyze_codeworkout_exercise_sensitivity.py": "c139a4ba5f7861192250c103624128c515819c01"
+      }
     }
   }
 }
