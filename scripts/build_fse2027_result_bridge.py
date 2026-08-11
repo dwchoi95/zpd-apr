@@ -35,6 +35,16 @@ def members(values: list[str]) -> str:
     return "--".join(values)
 
 
+NUMBER_WORDS = {
+    5: "Five",
+    10: "Ten",
+    20: "Twenty",
+    40: "Forty",
+    80: "Eighty",
+    160: "OneSixty",
+}
+
+
 def build(
     answer9: dict[str, Any],
     hidden: dict[str, Any],
@@ -177,12 +187,13 @@ def macros(result: dict[str, Any]) -> str:
     )
     for budget in (10, 40):
         budget_row = disjoint_budget["per_budget"][str(budget)]
-        values[f"ProblemDisjointTED{budget}MixedMinusAnswerNine"] = pct(
+        budget_name = NUMBER_WORDS[budget]
+        values[f"ProblemDisjointTED{budget_name}MixedMinusAnswerNine"] = pct(
             budget_row["difference"]
         )
-        values[f"ProblemDisjointTED{budget}MixedMinusAnswerNineCI"] = interval(
-            budget_row["problem_cluster_95ci"]
-        )
+        values[
+            f"ProblemDisjointTED{budget_name}MixedMinusAnswerNineCI"
+        ] = interval(budget_row["problem_cluster_95ci"])
     locality = result["patch_locality"]["comparisons"]
     for comparison, prefix in (
         ("Progress_minus_Answer", "ProgressMinusAnswer"),
@@ -323,10 +334,11 @@ def macros(result: dict[str, Any]) -> str:
     values["CurrentASTNodesPThird"] = f"{ast_distribution['p75']:.0f}"
     for budget in (5, 10, 20, 40):
         context = normalized["absolute_budget_context"][str(budget)]
-        values[f"TED{budget}MedianASTFraction"] = pct(
+        budget_name = NUMBER_WORDS[budget]
+        values[f"TED{budget_name}MedianASTFraction"] = pct(
             context["fraction_of_current_ast_median"]
         )
-        values[f"TED{budget}AtMostTenPercentInputs"] = pct(
+        values[f"TED{budget_name}AtMostTenPercentInputs"] = pct(
             context["fraction_where_budget_is_at_most_10pct"]
         )
     for budget, suffix in (("0.1", "Ten"), ("0.2", "Twenty"), ("0.4", "Forty")):
@@ -337,14 +349,19 @@ def macros(result: dict[str, Any]) -> str:
         values[f"NormalizedTED{suffix}MixedMinusAnswerNineCI"] = interval(
             row["problem_cluster_95ci"]
         )
-    for name in ("A1", "A3", "A9", "M9"):
+    for name, macro_name in (
+        ("A1", "AnswerOne"),
+        ("A3", "AnswerThree"),
+        ("A9", "AnswerNine"),
+        ("M9", "MixedNine"),
+    ):
         row = result["operational_cost"]["mechanism_ladder_seen"][name]
-        values[f"Cost{name}TrainHours"] = f"{row['train_gpu_hours']:.1f}"
-        values[f"Cost{name}ValidationExecutions"] = str(
+        values[f"Cost{macro_name}TrainHours"] = f"{row['train_gpu_hours']:.1f}"
+        values[f"Cost{macro_name}ValidationExecutions"] = str(
             row["portfolio_selection_validation_executions"]
         )
-        values[f"Cost{name}SeenRR"] = pct(row["repair_rate"])
-        values[f"Cost{name}MeanCalls"] = f"{row['mean_candidates_invoked']:.2f}"
+        values[f"Cost{macro_name}SeenRR"] = pct(row["repair_rate"])
+        values[f"Cost{macro_name}MeanCalls"] = f"{row['mean_candidates_invoked']:.2f}"
 
     prompt = result["prompt_distribution"]
     values["PromptCurrentMixedMembers"] = members(
@@ -402,12 +419,13 @@ def macros(result: dict[str, Any]) -> str:
     )
     for budget in (10, 40):
         budget_row = crossfit_budget["per_budget"][str(budget)]
-        values[f"CrossFitTED{budget}MixedMinusAnswerNineSeen"] = pct(
+        budget_name = NUMBER_WORDS[budget]
+        values[f"CrossFitTED{budget_name}MixedMinusAnswerNineSeen"] = pct(
             budget_row["difference"]
         )
-        values[f"CrossFitTED{budget}MixedMinusAnswerNineSeenCI"] = interval(
-            budget_row["problem_cluster_95ci"]
-        )
+        values[
+            f"CrossFitTED{budget_name}MixedMinusAnswerNineSeenCI"
+        ] = interval(budget_row["problem_cluster_95ci"])
 
     verdict = result["verdict_order_model_sensitivity"]
     for relation, relation_prefix in (("progress", "Progress"), ("strict", "Strict")):

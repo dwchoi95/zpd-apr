@@ -362,6 +362,7 @@ class ResultBridgeTest(unittest.TestCase):
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
+        self.assertNotRegex(rendered, r"\\newcommand\{\\[A-Za-z]*\d")
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
         self.assertIn(r"\newcommand{\AnswerThreeMinusOneSeen}{4.0}", rendered)
         self.assertIn(r"\newcommand{\AnswerThreeMinusOneSeenCI}{[2.00, 6.00]}", rendered)
@@ -375,7 +376,10 @@ class ResultBridgeTest(unittest.TestCase):
             r"\newcommand{\ProblemDisjointBudgetMixedMinusAnswerNineCI}{[-0.20, 2.40]}",
             rendered,
         )
-        self.assertIn(r"\newcommand{\ProblemDisjointTED10MixedMinusAnswerNine}{2.6}", rendered)
+        self.assertIn(
+            r"\newcommand{\ProblemDisjointTEDTenMixedMinusAnswerNine}{2.6}",
+            rendered,
+        )
         self.assertIn(r"\newcommand{\ProgressMinusAnswerTokenRetention}{1.3}", rendered)
         self.assertIn(
             r"\newcommand{\ProgressMinusAnswerTokenRetentionCI}{[0.10, 2.60]}",
@@ -444,8 +448,8 @@ class ResultBridgeTest(unittest.TestCase):
         )
         self.assertIn(r"\newcommand{\NormalizedTEDExamples}{966}", rendered)
         self.assertIn(r"\newcommand{\CurrentASTNodesMedian}{110}", rendered)
-        self.assertIn(r"\newcommand{\TED10MedianASTFraction}{9.1}", rendered)
-        self.assertIn(r"\newcommand{\TED5AtMostTenPercentInputs}{91.9}", rendered)
+        self.assertIn(r"\newcommand{\TEDTenMedianASTFraction}{9.1}", rendered)
+        self.assertIn(r"\newcommand{\TEDFiveAtMostTenPercentInputs}{91.9}", rendered)
         self.assertIn(
             r"\newcommand{\NormalizedTEDTwentyMixedMinusAnswerNine}{3.8}",
             rendered,
@@ -454,9 +458,15 @@ class ResultBridgeTest(unittest.TestCase):
             r"\newcommand{\NormalizedTEDFortyMixedMinusAnswerNineCI}{[0.61, 5.23]}",
             rendered,
         )
-        self.assertIn(r"\newcommand{\CostA9TrainHours}{52.6}", rendered)
-        self.assertIn(r"\newcommand{\CostM9ValidationExecutions}{4149}", rendered)
-        self.assertIn(r"\newcommand{\CostM9MeanCalls}{1.98}", rendered)
+        self.assertIn(
+            r"\newcommand{\CostAnswerNineTrainHours}{52.6}", rendered
+        )
+        self.assertIn(
+            r"\newcommand{\CostMixedNineValidationExecutions}{4149}", rendered
+        )
+        self.assertIn(
+            r"\newcommand{\CostMixedNineMeanCalls}{1.98}", rendered
+        )
         self.assertIn(r"\newcommand{\PromptCurrentMixedSeenRR}{64.0}", rendered)
         self.assertIn(
             r"\newcommand{\PromptCurrentMixedMinusAnswerNineSeenCI}{[-1.00, 3.00]}",
@@ -481,7 +491,7 @@ class ResultBridgeTest(unittest.TestCase):
             rendered,
         )
         self.assertIn(
-            r"\newcommand{\CrossFitTED40MixedMinusAnswerNineSeenCI}{[0.20, 4.00]}",
+            r"\newcommand{\CrossFitTEDFortyMixedMinusAnswerNineSeenCI}{[0.20, 4.00]}",
             rendered,
         )
         self.assertIn(
