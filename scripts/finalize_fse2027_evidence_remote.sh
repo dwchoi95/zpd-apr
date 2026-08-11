@@ -78,6 +78,9 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-verdict-order-model-sensitivity.json"
   "${RUN_ROOT}/analysis/fse2027-verdict-order-token-audit.json"
   "${RUN_ROOT}/analysis/fse2027-verdict-order-label-audit.json"
+  "${RUN_ROOT}/analysis/fse2027-current-only-deployment-ladder.json"
+  "${RUN_ROOT}/analysis/fse2027-codeworkout-exercise-sensitivity.json"
+  "${RUN_ROOT}/analysis/fse2027-stochastic-candidate-control.json"
   "${RUN_ROOT}/analysis/fse2027-effect-heterogeneity.json"
   "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
@@ -140,6 +143,9 @@ done
   --prompt-distribution "${RUN_ROOT}/analysis/fse2027-prompt-distribution-control.json" \
   --problem-crossfit "${RUN_ROOT}/analysis/fse2027-problem-crossfit.json" \
   --verdict-order "${RUN_ROOT}/analysis/fse2027-verdict-order-model-sensitivity.json" \
+  --current-only-ladder "${RUN_ROOT}/analysis/fse2027-current-only-deployment-ladder.json" \
+  --exercise-sensitivity "${RUN_ROOT}/analysis/fse2027-codeworkout-exercise-sensitivity.json" \
+  --stochastic-control "${RUN_ROOT}/analysis/fse2027-stochastic-candidate-control.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 

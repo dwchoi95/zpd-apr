@@ -16,6 +16,9 @@ REQUIRED_RESULT_PREFIXES = (
     "Prompt",
     "CrossFit",
     "VerdictOrder",
+    "CurrentOnly",
+    "ExerciseSensitivity",
+    "Stochastic",
 )
 
 

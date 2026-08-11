@@ -344,6 +344,45 @@ class ResultBridgeTest(unittest.TestCase):
                     },
                     "repair_agreement": {"decision_agreement": 0.88},
                 }
+        current_only_ladder = {"splits": {}}
+        for split in ("seen", "unseen"):
+            current_only_ladder["splits"][split] = {
+                "methods": {
+                    "answer_1": {"rr": 0.58},
+                    "answer_3seed": {"rr": 0.72},
+                    "answer_9choose3": {"rr": 0.70},
+                    "mixed_target_9choose3": {"rr": 0.72},
+                }
+            }
+        exercise_sensitivity = {
+            "test_exercises": 4,
+            "per_exercise": [
+                {"mixed_minus_answer_rr": value} for value in (0.025, 0.055)
+            ],
+            "leave_one_exercise_out": [
+                {"mixed_minus_answer_rr": value} for value in (0.036, 0.044)
+            ],
+        }
+        stochastic_control = {"splits": {}}
+        for split in ("seen", "unseen"):
+            stochastic_control["splits"][split] = {
+                "same_checkpoint_stochastic_3": {"rr": 0.60},
+                "generation_diversity": {"mean_unique_candidates": 2.5},
+                "stochastic_3_minus_greedy_1": {
+                    "paired": [{
+                        "metric": "rr",
+                        "left_minus_right_instance_weighted": 0.10,
+                        "cluster_bootstrap_95ci": [0.08, 0.12],
+                    }]
+                },
+                "checkpoint_3_minus_stochastic_3": {
+                    "paired": [{
+                        "metric": "rr",
+                        "left_minus_right_instance_weighted": 0.02,
+                        "cluster_bootstrap_95ci": [0.00, 0.04],
+                    }]
+                },
+            }
         result = build(
             answer9,
             hidden,
@@ -361,6 +400,9 @@ class ResultBridgeTest(unittest.TestCase):
             prompt_distribution,
             problem_crossfit,
             verdict_order,
+            current_only_ladder,
+            exercise_sensitivity,
+            stochastic_control,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
@@ -513,6 +555,14 @@ class ResultBridgeTest(unittest.TestCase):
         )
         self.assertIn(
             r"\newcommand{\VerdictOrderProgressAgreementUnseen}{88.0}", rendered
+        )
+        self.assertIn(r"\newcommand{\CurrentOnlyAnswerThreeSeenRR}{72.0}", rendered)
+        self.assertIn(r"\newcommand{\ExerciseSensitivityLOOMinimum}{3.6}", rendered)
+        self.assertIn(r"\newcommand{\ExerciseSensitivityPerMaximum}{5.5}", rendered)
+        self.assertIn(r"\newcommand{\StochasticThreeSeenRR}{60.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\AnswerThreeMinusStochasticThreeSeenCI}{[0.00, 4.00]}",
+            rendered,
         )
 
 

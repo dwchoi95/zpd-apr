@@ -62,6 +62,9 @@ def build(
     prompt_distribution: dict[str, Any],
     problem_crossfit: dict[str, Any],
     verdict_order: dict[str, Any],
+    current_only_ladder: dict[str, Any],
+    exercise_sensitivity: dict[str, Any],
+    stochastic_control: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -80,6 +83,9 @@ def build(
         "prompt_distribution": prompt_distribution,
         "problem_crossfit": problem_crossfit,
         "verdict_order_model_sensitivity": verdict_order,
+        "current_only_deployment_ladder": current_only_ladder,
+        "codeworkout_exercise_sensitivity": exercise_sensitivity,
+        "stochastic_candidate_control": stochastic_control,
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -398,6 +404,49 @@ def macros(result: dict[str, Any]) -> str:
                 effect
             )
 
+    current_only = result["current_only_deployment_ladder"]
+    for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+        methods = current_only["splits"][split]["methods"]
+        for method, method_prefix in (
+            ("answer_1", "AnswerOne"),
+            ("answer_3seed", "AnswerThree"),
+            ("answer_9choose3", "AnswerNine"),
+            ("mixed_target_9choose3", "Mixed"),
+        ):
+            values[f"CurrentOnly{method_prefix}{prefix}RR"] = pct(
+                methods[method]["rr"]
+            )
+
+    exercise = result["codeworkout_exercise_sensitivity"]
+    per_effects = [row["mixed_minus_answer_rr"] for row in exercise["per_exercise"]]
+    loo_effects = [
+        row["mixed_minus_answer_rr"] for row in exercise["leave_one_exercise_out"]
+    ]
+    values["ExerciseSensitivityClusters"] = str(exercise["test_exercises"])
+    values["ExerciseSensitivityPerMinimum"] = pct(min(per_effects))
+    values["ExerciseSensitivityPerMaximum"] = pct(max(per_effects))
+    values["ExerciseSensitivityLOOMinimum"] = pct(min(loo_effects))
+    values["ExerciseSensitivityLOOMaximum"] = pct(max(loo_effects))
+
+    stochastic = result["stochastic_candidate_control"]
+    for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+        row = stochastic["splits"][split]
+        values[f"StochasticThree{prefix}RR"] = pct(
+            row["same_checkpoint_stochastic_3"]["rr"]
+        )
+        values[f"StochasticMeanUnique{prefix}"] = (
+            f"{row['generation_diversity']['mean_unique_candidates']:.2f}"
+        )
+        for contrast, contrast_prefix in (
+            ("stochastic_3_minus_greedy_1", "StochasticThreeMinusAnswerOne"),
+            ("checkpoint_3_minus_stochastic_3", "AnswerThreeMinusStochasticThree"),
+        ):
+            effect = metric(row[contrast])
+            values[f"{contrast_prefix}{prefix}"] = pct(
+                effect["left_minus_right_instance_weighted"]
+            )
+            values[f"{contrast_prefix}{prefix}CI"] = ci(effect)
+
     crossfit = result["problem_crossfit"]
     crossfit_rr = metric(crossfit["mixed_minus_answer"])
     values["CrossFitFolds"] = str(crossfit["folds"])
@@ -479,6 +528,9 @@ def main() -> None:
     parser.add_argument("--prompt-distribution", type=Path, required=True)
     parser.add_argument("--problem-crossfit", type=Path, required=True)
     parser.add_argument("--verdict-order", type=Path, required=True)
+    parser.add_argument("--current-only-ladder", type=Path, required=True)
+    parser.add_argument("--exercise-sensitivity", type=Path, required=True)
+    parser.add_argument("--stochastic-control", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -499,6 +551,9 @@ def main() -> None:
         read(args.prompt_distribution),
         read(args.problem_crossfit),
         read(args.verdict_order),
+        read(args.current_only_ladder),
+        read(args.exercise_sensitivity),
+        read(args.stochastic_control),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)

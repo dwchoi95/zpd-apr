@@ -14,6 +14,9 @@ BRIDGE = """\
 \\newcommand{\\PromptCurrentMixedSeenRR}{64.0}
 \\newcommand{\\CrossFitMixedSeenRR}{60.0}
 \\newcommand{\\VerdictOrderProgressCanonicalSeenRR}{45.0}
+\\newcommand{\\CurrentOnlyAnswerThreeSeenRR}{72.0}
+\\newcommand{\\ExerciseSensitivityLOOMinimum}{3.6}
+\\newcommand{\\StochasticThreeSeenRR}{60.0}
 """
 
 
@@ -39,8 +42,8 @@ class PaperResultBridgeTest(unittest.TestCase):
             expected, checked_in, paper = self.materialize(Path(directory))
             result = verify(expected, checked_in, paper)
             self.assertTrue(result["byte_identical"])
-            self.assertEqual(result["commands"], 5)
-            self.assertEqual(result["referenced_commands"], 5)
+            self.assertEqual(result["commands"], 8)
+            self.assertEqual(result["referenced_commands"], 8)
 
     def test_rejects_stale_checked_in_bridge(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
