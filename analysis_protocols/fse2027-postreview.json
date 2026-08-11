@@ -67,6 +67,19 @@
         "src/repair/inference.py": "b287a898352073ad192afaa3634aaad06269923f",
         "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "b287a898352073ad192afaa3634aaad06269923f"
       }
+    },
+    {
+      "id": "stochastic-continuous-batching",
+      "kind": "pre-result-throughput-fix",
+      "timing": "The synchronous batch runner had generated 264 of 997 Seen candidates for its first seed. It was stopped before any candidate execution, composed controller output, statistical analysis, or generated-text inspection.",
+      "rationale": "Synchronous generation forced short completions to wait for the longest completion in each batch. The installed vLLM engine supports the same local 4-bit base model, LoRA adapter, per-example deterministic seeds, and sampling parameters while continuously scheduling requests of different lengths.",
+      "impact": "Checkpoint, prompt rendering, three seed identities, temperature, top-p, token/context limits, datasets, candidate budget, execution, composition, endpoints, and analysis are unchanged. The incomplete generation file is overwritten. The engine can realize different pseudorandom samples under the same seeds, but the change was fixed before any program execution or outcome inspection.",
+      "original_files": {
+        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "b287a898352073ad192afaa3634aaad06269923f"
+      },
+      "replacement_files": {
+        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "2eec779294e9126247ba6a401827023de5f06987"
+      }
     }
   ],
   "experiments": {
@@ -106,7 +119,8 @@
       "files": {
         "src/repair/inference.py": "b287a898352073ad192afaa3634aaad06269923f",
         "src/cli.py": "dd1be28696b60c53f6e0588fe438094f102e11cb",
-        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "b287a898352073ad192afaa3634aaad06269923f",
+        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "2eec779294e9126247ba6a401827023de5f06987",
+        "scripts/generate_vllm_stochastic_candidates.py": "2eec779294e9126247ba6a401827023de5f06987",
         "scripts/analyze_stochastic_candidate_control.py": "dd1be28696b60c53f6e0588fe438094f102e11cb"
       }
     },
