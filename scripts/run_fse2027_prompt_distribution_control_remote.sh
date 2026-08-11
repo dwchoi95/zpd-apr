@@ -150,14 +150,6 @@ for split in seen unseen; do
     "${OUTPUT_ROOT}/${split}/answer-reselected.evaluation.jsonl" \
     --method CurrentOnly-Answer-Reselected "${answer_stages[@]}"
 
-  answer3_stages=()
-  for name in Answer2027 Answer2028 Answer2029; do
-    answer3_stages+=(--stage "${name}=${OUTPUT_ROOT}/${split}/${name}.evaluation.jsonl")
-  done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
-    "${OUTPUT_ROOT}/${split}/answer-3seed.evaluation.jsonl" \
-    --method CurrentOnly-Answer-3Seed "${answer3_stages[@]}"
-
   mixed_stages=()
   for relation in Progress Strict Answer; do
     for name in "${full_mixed[@]}"; do

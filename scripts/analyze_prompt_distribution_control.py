@@ -46,12 +46,10 @@ def analyze_split(
     current_answer_frozen: Rows,
     full_mixed_frozen: Rows,
     full_answer_frozen: Rows,
-    current_answer3: Rows | None = None,
-    current_answer1: Rows | None = None,
     samples: int,
     seed: int,
 ) -> dict[str, Any]:
-    result = {
+    return {
         "current_only_reselected": {
             "mixed_target_9choose3": summarize_method(current_mixed_reselected),
             "answer_9choose3": summarize_method(current_answer_reselected),
@@ -109,40 +107,6 @@ def analyze_split(
             },
         },
     }
-    if (current_answer3 is None) != (current_answer1 is None):
-        raise ValueError("current-only Answer-1 and Answer-3 must be supplied together")
-    if current_answer3 is not None and current_answer1 is not None:
-        result["current_only_deployment_ladder"] = {
-            "answer_1": summarize_method(current_answer1),
-            "answer_3seed": summarize_method(current_answer3),
-            "answer_9choose3": summarize_method(current_answer_reselected),
-            "mixed_target_9choose3": summarize_method(current_mixed_reselected),
-            "answer_3seed_minus_answer_1": contrast(
-                current_answer3,
-                current_answer1,
-                left_label="Current-only-Answer-3Seed",
-                right_label="Current-only-Answer-1",
-                seed=seed + 50,
-                samples=samples,
-            ),
-            "answer_9choose3_minus_answer_3seed": contrast(
-                current_answer_reselected,
-                current_answer3,
-                left_label="Current-only-Answer-9Choose3",
-                right_label="Current-only-Answer-3Seed",
-                seed=seed + 60,
-                samples=samples,
-            ),
-            "mixed_minus_answer_3seed": contrast(
-                current_mixed_reselected,
-                current_answer3,
-                left_label="Current-only-Mixed-9Choose3",
-                right_label="Current-only-Answer-3Seed",
-                seed=seed + 70,
-                samples=samples,
-            ),
-        }
-    return result
 
 
 def main() -> None:
@@ -196,12 +160,6 @@ def main() -> None:
                 full
                 / "answer9-control"
                 / f"answer9-unrestricted-{split}-test.evaluation.jsonl"
-            ),
-            current_answer3=read_jsonl(
-                current / "answer-3seed.evaluation.jsonl"
-            ),
-            current_answer1=read_jsonl(
-                current / "Answer2027.evaluation.jsonl"
             ),
             samples=args.samples,
             seed=2027 + offset * 100,

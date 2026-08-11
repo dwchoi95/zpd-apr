@@ -47,8 +47,6 @@ class PromptDistributionControlTest(unittest.TestCase):
             current_answer_frozen=rows((True, False, False, False)),
             full_mixed_frozen=rows((True, True, True, False)),
             full_answer_frozen=rows((True, True, False, False)),
-            current_answer3=rows((True, True, False, False)),
-            current_answer1=rows((True, False, False, False)),
             samples=100,
             seed=2027,
         )
@@ -67,10 +65,6 @@ class PromptDistributionControlTest(unittest.TestCase):
         )
         self.assertAlmostEqual(
             answer_rr["left_minus_right_instance_weighted"], -0.25
-        )
-        self.assertEqual(
-            result["current_only_deployment_ladder"]["answer_3seed"]["rr"],
-            0.5,
         )
 
 
