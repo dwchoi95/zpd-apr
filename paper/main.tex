@@ -24,6 +24,7 @@
 \newcommand{\progress}{\textsc{Progress}\xspace}
 \newcommand{\strict}{\textsc{Strict}\xspace}
 \newcommand{\answer}{\textsc{Answer}\xspace}
+\input{fse2027-result-bridge}
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
 
@@ -49,16 +50,19 @@ plus separately trained student-held-out Java models. On Seen, \tool raises
 repair rate from 30.7\% for trajectory-prompted Zero-shot to 61.5\%. A matched
 \(A_1\!\rightarrow A_3\!\rightarrow A_9\!\rightarrow M_9\) ladder shows that
 independent checkpoint diversity explains the dominant unrestricted gain
-(\(A_3-A_1=+11.63\) points), while selection-matched mixed-target coverage is
-uncertain. Relation targets instead affect patch scope: across six edit budgets,
-\(M_9\) gains 1.22 mean Seen points [0.02, 2.42] over \(A_9\) and preserves more
-buggy tokens and lines. Problem-disjoint selection reverses their unrestricted
-ranking but retains two budget-specific gains; held-out-problem and Java tests
-show no matched coverage advantage. Serializing earlier submissions has no
-stable target-matched effect. LSGen repairs more without an edit limit, whereas
-\tool leads its mean edit-budget frontier by 14.68 points. Thus checkpoint
-diversity explains coverage, while trajectory-mined targets change the
-executable locality frontier rather than establishing a history effect.
+(\(A_3-A_1=+11.63\) points). Five-fold problem-cross-fitted selection estimates
+\(M_9-A_9=\CrossFitMixedMinusAnswerNineSeen\) unrestricted Seen points
+\CrossFitMixedMinusAnswerNineSeenCI, but its mean over six fixed edit budgets is
+\CrossFitBudgetMixedMinusAnswerNineSeen{} points
+\CrossFitBudgetMixedMinusAnswerNineSeenCI. A 1.5B replication again attributes
+coverage to checkpoint breadth, whereas an exercise-heldout Java replication
+finds a \CodeWorkoutProblemMixedMinusAnswerNine-point matched mixed-target gain.
+Serializing earlier submissions has no stable target-matched effect and, for
+frozen portfolios, removing them improves Seen RR by 8.8--11.1 points. LSGen
+repairs more without an edit limit, while \tool leads its mean edit-budget
+frontier by 14.68 points. Thus checkpoint diversity explains unrestricted
+coverage; trajectory-mined targets have context-dependent, independently
+replicated effects on executable locality and held-out-exercise coverage.
 \end{abstract}
 
 \ccsdesc[500]{Software and its engineering~Software testing and debugging}
@@ -93,9 +97,10 @@ This paper makes the following contributions:
   \item We pose size-three checkpoint choice as exact finite validation-coverage search, derive a problem-level finite-family selection bound, and design an execution controller with observed-test non-regression and structural edit-budget compliance by construction.
   \item We empirically separate relation targets from seed and selection
   diversity using the full \(A_1\)--\(A_3\)--\(A_9\)--\(M_9\) ladder,
-  target-matched history ablations, hidden tests, problem-disjoint selection,
-  patch-budget and source-retention analyses, a second model scale, and
-  student- and exercise-held-out Java replications.
+  target-matched history ablations, hidden tests, complete five-fold
+  problem-cross-fitted selection, patch-budget and source-retention analyses,
+  a second model scale, two orthogonal Java holdouts, prompt-distribution
+  controls, and model-level verdict-order retraining.
 \end{itemize}
 
 \section{Background and Related Work}
@@ -564,6 +569,15 @@ For RQ2, we construct adapter-specific \strict and \progress examples for both S
 
 For RQ3, each adapter independently generates one candidate for the same 997 Seen instances. For RQ4, we first compose the seed-2027 candidates with \progress--\strict--\answer early stopping and fallback selection, then evaluate the final validation-selected size-three portfolio. Five controls separate target heterogeneity from repeated calls, prompt-state effects, training randomness, pool size, and the relation constraint. \emph{Answer$\times3$} invokes the same Answer adapter up to three times with generated execution feedback; repeating the identical prompt would collapse to Answer once. \emph{Generated Feedback} applies that update protocol to heterogeneous P--S--A. \emph{Answer-3Seed} uses identical Answer data and targets with seeds 2027/2028/2029. \emph{Answer-9Choose3} uses seeds 2027--2035 and the same 461-problem validation executions, exhaustive 84 triples, objectives, tie breaking, and frozen testing as the mixed-target pool. \emph{Validation Relation-Constrained} selects one checkpoint per relation; the primary \emph{Validation Execution Portfolio} selects any three of the nine mixed-target checkpoints. Every member receives the same complete authentic evaluation trajectory without generated feedback, even though Answer SFT used single-submission records, and all configurations share a maximum three-generation budget, execution limits, early stopping, and fallback selector. We audit matching Answer metadata and distinct adapter hashes. Effectiveness-only controls may omit AST TED when failed pass-rate ties use the earliest candidate; Answer ensembles and validation-selected portfolios use the complete production selector.
 
+Three repository-frozen controls address remaining identification choices.
+The \emph{prompt control} removes prior submissions and reports both reselected
+and frozen-member contrasts. The \emph{problem cross-fit} hashes Seen problems
+into five folds and excludes each test fold's identities during selection. The
+\emph{verdict-order control} collapses all non-AC verdicts, rematerializes
+Progress/Strict pairs, and retrains both 7B adapters from the same base and
+seed. Endpoints, folds, selectors, budgets, and 10,000 problem-bootstrap draws
+were fixed before test generation; none is externally registered.
+
 \paragraph{Independent-test confirmation.}
 To separate candidate selection from success assessment, a post-review
 confirmatory audit partitions every Unseen problem's tests by a fixed
@@ -886,114 +900,132 @@ tests, but this confirmation does not distinguish their coverage.
 \paragraph{Conformance, dependence, and seeds.}
 The artifact audit finds zero construction-predicate, pass-rate-regression, or
 budget violations; all 687/199 selected Seen/Unseen changes parse. These are
-specification checks, not learned-behavior evidence. For 155 Seen instances
-from training-disjoint users, \tool gains 40.0 RR points over Zero-shot [30.7,
-48.8], versus 26.7 [22.6, 31.0] on 842 overlap instances; the 69-instance
-Unseen disjoint-user estimate is +11.6 [--1.5, 25.4]; these strata do not
-identify memorization. An outcome-blind exploratory audit by verdict, current
-pass rate, history length, and fixed AST-size bins finds every $M_9-A_9$
-clustered interval includes zero, revealing no concentrated subgroup advantage.
-Three complete P--S--A runs give Seen RR
-59.5/57.6/59.0\% (SD 1.0) and Unseen RR 73.2/74.0/70.4\% (SD 1.9). All six
-orders preserve fixed-candidate RR; P--S--A minimizes breadth (1.391) and
-successful-patch TED (21.10).
-
-\paragraph{Selection stability and problem identity.}
-Of 461 selection problems, 323 overlap the 328-problem Seen test. The chosen
-A27--A28--P27 triple is unchanged in all 461 leave-one-problem-out fits, but
-appears in only 44.2\% of 2,000 problem-bootstrap fits. Excluding every test
-problem leaves 138 validation problems. It selects P27--P29--A28 from the
-mixed pool and A27--A32--A35 from the Answer pool. Their Seen RRs are 58.0\%
-and 60.9\%, respectively; \(A_9-M_9=+2.91\) points [0.52, 5.34] with 91
-versus 62 exclusive repairs (McNemar \(p=.0233\)). The full-data \(A_9\)
-triple survives 98.5\% of leave-one-problem-out fits but only 25.4\% of
-problem-bootstrap fits, reinforcing that validation choice is not stable
-enough to attribute unrestricted coverage to relation targets.
-
-The constrained result is less selection-sensitive but operating-point
-specific. Under the disjoint selectors, \(M_9-A_9\) averages +1.09 points
-[--0.23, 2.42] across budgets; TED 10 is +2.61 [0.86, 4.36] and TED 40 is
-+2.21 [0.21, 4.14], while the other four intervals include zero. The Unseen
-evaluation remains entirely problem-disjoint.
+specification checks, not learned-behavior evidence. Three complete P--S--A
+runs give Seen/Unseen RR SD 1.0/1.9. All six orders preserve fixed-candidate
+RR; P--S--A minimizes breadth (1.391) and TED (21.10). User and outcome-blind
+strata neither identify a relation-target subgroup nor eliminate memorization.
 
 \begin{table}[t]
-\caption{Student-held-out CodeWorkout Java test (181 trajectories; percentages).}
-\label{tab:codeworkout}
+\caption{Matched mechanism ladder across independently trained settings
+(validation-frozen RR, percent).}
+\label{tab:replication-ladder}
 \centering
-\small
-\begin{tabular}{lrrr}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lrrrrl}
 \toprule
-Validation-frozen portfolio & PR & RR & IR \\
+Test setting & $A_1$ & $A_3$ & $A_9$ & $M_9$ & $M_9-A_9$ [95\% CI] \\
 \midrule
-Relation-constrained & 95.5 & 81.8 & 86.2 \\
-\(M_9\): mixed-target Choose3 & 96.3 & \textbf{84.0} & 87.8 \\
-\(A_9\): Answer-9Choose3 & \textbf{96.4} & 83.4 & \textbf{88.4} \\
+CodeNet 7B Seen
+ & \AnswerOneSeenRR & \AnswerThreeSeenRR & \AnswerNineSeenRR
+ & \MixedSeenRR & \MixedMinusAnswerNineSeen~\MixedMinusAnswerNineSeenCI \\
+CodeNet 1.5B Seen
+ & \ScaleAnswerOneSeenRR & \ScaleAnswerThreeSeenRR & \ScaleAnswerNineSeenRR
+ & \ScaleMixedSeenRR & \ScaleMixedMinusAnswerNineSeen~\ScaleMixedMinusAnswerNineSeenCI \\
+CodeWorkout exercise-heldout
+ & \CodeWorkoutProblemAnswerOneRR & \CodeWorkoutProblemAnswerThreeRR
+ & \CodeWorkoutProblemAnswerNineRR & \CodeWorkoutProblemMixedRR
+ & \CodeWorkoutProblemMixedMinusAnswerNine~\CodeWorkoutProblemMixedMinusAnswerNineCI \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Student-held-out Java replication.}
-Validation selects A29--P29--S28 under the relation constraint and
-A28--A29--S28 without it; the independently selected Answer pool chooses
-A28--A29--A31. Table~\ref{tab:codeworkout} reports the prospective
-181-trajectory CodeWorkout test. Selection-matched \(M_9\) reaches 84.0\% RR
-versus 83.4\% for \(A_9\): +0.55 points, with exercise/student-cluster CIs
-[--1.24, 2.37]/[--1.20, 2.59]. Their exclusive repairs are two versus one
-(exact McNemar $p=1.0$). The relation-constrained portfolio reaches 81.8\%; the
-matched test therefore provides no evidence that target composition changes
-unrestricted Java coverage.
+\paragraph{Scale and independent-domain replication.}
+At 1.5B, Table~\ref{tab:replication-ladder} again gives
+\(A_3-A_1=\ScaleAnswerThreeMinusOneSeen\) points
+\ScaleAnswerThreeMinusOneSeenCI, whereas adding six Answer checkpoints and
+mixed targets gives no further unrestricted coverage:
+\(M_9-A_9=\ScaleMixedMinusAnswerNineSeen\)
+\ScaleMixedMinusAnswerNineSeenCI. On 304 Java trajectories from four exercises
+excluded from training and selection, checkpoint breadth remains positive and
+the mixed pool instead gains
+\CodeWorkoutProblemMixedMinusAnswerNine{} points over $A_9$, with
+exercise- and student-cluster intervals
+\CodeWorkoutProblemMixedMinusAnswerNineExerciseCI/
+\CodeWorkoutProblemMixedMinusAnswerNineStudentCI
+($p=\CodeWorkoutProblemMixedMinusAnswerNineP$). The separate 181-trajectory
+student-heldout test remains near-null:
+\CodeWorkoutStudentMixedMinusAnswerNine{} points, with exercise/student CIs
+\CodeWorkoutStudentMixedMinusAnswerNineExerciseCI/
+\CodeWorkoutStudentMixedMinusAnswerNineStudentCI. Breadth thus replicates
+across scale/language; mixed-target coverage is population-dependent.
 
-\emph{Answer to RQ6.} Problem clustering preserves the CodeNet portfolio
-effect, but problem-disjoint selection reverses the unrestricted
-target-composition ranking; student-held-out Java replicates high coverage,
-not an advantage over same-target diversity.
+\paragraph{Problem-cross-fitted primary mechanism estimate.}
+Five fixed folds exclude each test fold's problem identities during selection
+and pool every test once (323/461 original validation problems overlapped Seen).
+This gives
+$M_9=\CrossFitMixedSeenRR\%$ and $A_9=\CrossFitAnswerNineSeenRR\%$ RR. The
+instance-weighted difference is \CrossFitMixedMinusAnswerNineSeen{} points
+\CrossFitMixedMinusAnswerNineSeenCI (77 versus 55 exclusive repairs, exact
+McNemar $p=\CrossFitMixedMinusAnswerNineSeenP$); the equal-problem estimate is
+\CrossFitMixedMinusAnswerNineProblemBalancedSeen{} points
+\CrossFitMixedMinusAnswerNineProblemBalancedSeenCI. Across six TED budgets,
+the mean is
+\CrossFitBudgetMixedMinusAnswerNineSeen{} points
+\CrossFitBudgetMixedMinusAnswerNineSeenCI; TED 10 is
+\CrossFitTEDTenMixedMinusAnswerNineSeen{}
+\CrossFitTEDTenMixedMinusAnswerNineSeenCI, preserving the constrained effect
+under complete out-of-fold selection.
+
+\paragraph{Prompt-distribution control.}
+Removing history while holding budget and execution fixed improves frozen
+mixed/Answer RR by
+\PromptFrozenMixedCurrentMinusFullSeen/\PromptFrozenAnswerNineCurrentMinusFullSeen{}
+points on Seen and
+\PromptFrozenMixedCurrentMinusFullUnseen/\PromptFrozenAnswerNineCurrentMinusFullUnseen{}
+on Unseen (all CIs exclude zero). Current-only reselection reaches
+\PromptCurrentMixedSeenRR/\PromptCurrentAnswerNineSeenRR\% Seen RR. Its nominal
+mixed winner is \PromptCurrentMixedMembers---three Answer checkpoints---so the
+gain is prompt simplification, not relational heterogeneity.
+
+\paragraph{Verdict-order model sensitivity.}
+After collapsing all non-AC verdicts and retraining both 7B adapters,
+canonical-minus-collapsed Progress RR is
+\VerdictOrderProgressCanonicalMinusAlternativeSeen{} points
+\VerdictOrderProgressCanonicalMinusAlternativeSeenCI{} on Seen and
+\VerdictOrderProgressCanonicalMinusAlternativeUnseen{}
+\VerdictOrderProgressCanonicalMinusAlternativeUnseenCI{} on Unseen. Strict is
+\VerdictOrderStrictCanonicalMinusAlternativeSeen{}
+\VerdictOrderStrictCanonicalMinusAlternativeSeenCI{} and
+\VerdictOrderStrictCanonicalMinusAlternativeUnseen{}
+\VerdictOrderStrictCanonicalMinusAlternativeUnseenCI. The canonical order has
+a Seen-only Progress effect, not a portable model-level benefit.
 
 \section{Discussion}
 \label{sec:discussion}
 
-The null history ablation and large \(A_3-A_1\), beside non-robust unrestricted
-\(A_9-A_3\) and \(M_9-A_9\), identify checkpoint diversity as the coverage
-mechanism; execution controls escalation and abstention. Relation targets
-preserve more source and improve the Seen budget frontier, with
-problem-disjoint support only at particular budgets. LSGen's same-problem
-programs yield higher unrestricted coverage with mean TED over four times
-\tool's: the gate operationalizes edit size, producing a deployment frontier
-rather than a learner-outcome claim.
+The \(A_3-A_1\) effects identify checkpoint diversity as the stable unrestricted
+mechanism; mixed targets improve exercise-heldout Java and the cross-fitted edit
+frontier. Frozen portfolios improve without history, so we mine trajectories
+offline and validate prompt context. LSGen retains higher unrestricted coverage
+at over four times \tool's mean TED; our gate is a deployment frontier, not a
+learner-outcome claim.
 
 \section{Threats to Validity}
 \label{sec:threats}
 
 \noindent\emph{Construct validity.} Tests can overfit~\cite{qi2014strength,smith2015cure};
-the 310 hidden cases share one authored suite. TED and retention are structural,
-not educational value; reachability and ZPD are not learner outcomes.
-\emph{Internal validity.} Shared execution, pairing, and seeds control
-alternatives, but construction and decoding choices may change results.
-\emph{Data leakage and dependence.} Unseen excludes training and retrieval
-problems, avoiding code duplication~\cite{allamanis2019adverse}; Seen can share
-users and selection problems, and clustering and disjoint-selection audits do
-not eliminate memorization. \emph{External validity.} Dataset-specific
-retraining spans Python contest and Java CS1 code, but no multi-file projects;
-the holdouts represent different, non-random populations, and CodeWorkout holds
-out students or exercises separately. \emph{Conclusion validity.}
-Problem-clustered effects support the planned metrics, but TED intervals apply
-only to joint repairs and more architectures are needed. \emph{Ethics.} Public
-code is used without re-identification; the artifact removes authorship signals
-and follows source-dataset terms.
+one hidden suite and structural metrics do not establish learner outcomes.
+\emph{Internal validity.} Order/prompt controls span two orders and one model.
+\emph{Leakage and dependence.} Unseen excludes training/retrieval problems
+~\cite{allamanis2019adverse}, but Seen overlap and memorization remain despite
+cross-fitting. \emph{External/conclusion validity.} Python contest and Java CS1
+exclude multi-file work; holdouts are non-random, exercise-heldout has four
+clusters, TED CIs condition on joint repair, and more architectures are needed.
+\emph{Ethics.} We remove authorship signals and follow public-dataset terms.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-\tool raises Seen/Unseen RR over zero-shot to 61.5/74.8\%, but matched controls
-attribute unrestricted coverage to checkpoint diversity; relation targets
-improve edit-constrained coverage and source retention.
+\tool reaches 61.5/74.8\% Seen/Unseen RR; matched ladders attribute stable gains
+to checkpoint diversity, while mixed targets improve only the cross-fitted edit
+frontier and exercise-heldout Java and histories support mining, not prompting.
 
 \section{Data Availability}
 \label{sec:data-availability}
-
-The anonymized replication package supplies splits, checkpoints, raw JSONL, code,
-tests, and pinned environments. \texttt{ARTIFACT.md} maps claims and seals
-counts, digests, and revision; release follows acceptance subject to dataset
-terms.
+The anonymized replication package supplies splits, checkpoints, JSONL, code,
+tests, pinned environments, and \texttt{ARTIFACT.md} claim/digest mapping;
+release follows acceptance subject to dataset terms.
 
 \clearpage
 \bibliographystyle{ACM-Reference-Format}

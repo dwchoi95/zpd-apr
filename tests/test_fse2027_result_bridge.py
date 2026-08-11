@@ -293,6 +293,8 @@ class ResultBridgeTest(unittest.TestCase):
                         "metric": "rr",
                         "left_minus_right_instance_weighted": 0.02,
                         "cluster_bootstrap_95ci": [-0.01, 0.05],
+                        "left_minus_right_problem_balanced": 0.03,
+                        "problem_bootstrap_95ci": [-0.02, 0.06],
                     }
                 ],
                 "exact_mcnemar_two_sided_p": 0.4,
@@ -484,6 +486,14 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\CrossFitMixedSeenRR}{61.0}", rendered)
         self.assertIn(
             r"\newcommand{\CrossFitMixedMinusAnswerNineSeenCI}{[-1.00, 5.00]}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\CrossFitMixedMinusAnswerNineProblemBalancedSeen}{3.0}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\CrossFitMixedMinusAnswerNineProblemBalancedSeenCI}{[-2.00, 6.00]}",
             rendered,
         )
         self.assertIn(

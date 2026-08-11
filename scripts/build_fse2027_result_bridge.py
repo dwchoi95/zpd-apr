@@ -407,6 +407,12 @@ def macros(result: dict[str, Any]) -> str:
         crossfit_rr["left_minus_right_instance_weighted"]
     )
     values["CrossFitMixedMinusAnswerNineSeenCI"] = ci(crossfit_rr)
+    values["CrossFitMixedMinusAnswerNineProblemBalancedSeen"] = pct(
+        crossfit_rr["left_minus_right_problem_balanced"]
+    )
+    values["CrossFitMixedMinusAnswerNineProblemBalancedSeenCI"] = interval(
+        crossfit_rr["problem_bootstrap_95ci"]
+    )
     values["CrossFitMixedMinusAnswerNineSeenP"] = (
         f"{crossfit['mixed_minus_answer']['exact_mcnemar_two_sided_p']:.4g}"
     )
