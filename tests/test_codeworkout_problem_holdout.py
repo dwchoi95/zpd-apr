@@ -92,6 +92,11 @@ class CodeWorkoutProblemHoldoutTest(unittest.TestCase):
         self.assertEqual(result["answer_3seed"]["rr"], 0.5)
         self.assertIn("answer_3seed_minus_answer_1", result)
         self.assertIn("answer_9choose3_minus_answer_3seed", result)
+        sensitivity = result["exercise_sensitivity"]
+        self.assertEqual(len(sensitivity["per_exercise"]), 1)
+        self.assertEqual(
+            sensitivity["per_exercise"][0]["mixed_minus_answer_rr"], 0.5
+        )
 
 
 if __name__ == "__main__":

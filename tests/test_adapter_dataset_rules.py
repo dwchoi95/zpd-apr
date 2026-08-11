@@ -12,7 +12,11 @@ from src.repair.dataset import (
     _is_testcase_verdict_improvement,
     build_repair_dataset,
 )
-from src.repair.inference import _generation_token_budget, generate_repairs
+from src.repair.inference import (
+    _example_sampling_seed,
+    _generation_token_budget,
+    generate_repairs,
+)
 from src.repair.lsgen import generate_lsgen_repairs
 from src.repair.outcomes import build_outcome_cache
 from src.repair.prompts import build_messages
@@ -297,6 +301,14 @@ class AdapterDatasetRulesTest(unittest.TestCase):
         self.assertEqual(_generation_token_budget(model, 30, 40), 40)
         with self.assertRaisesRegex(ValueError, "input is not truncated"):
             _generation_token_budget(model, 100)
+
+    def test_stochastic_generation_seed_is_resume_stable_and_example_specific(self) -> None:
+        first = _example_sampling_seed(3101, "example-a")
+        self.assertEqual(first, _example_sampling_seed(3101, "example-a"))
+        self.assertNotEqual(first, _example_sampling_seed(3102, "example-a"))
+        self.assertNotEqual(first, _example_sampling_seed(3101, "example-b"))
+        self.assertGreaterEqual(first, 0)
+        self.assertLess(first, 2**63 - 1)
 
     def test_dynamic_stage_feedback_omits_only_generated_code_on_overflow(self) -> None:
         class CharacterTokenizer:

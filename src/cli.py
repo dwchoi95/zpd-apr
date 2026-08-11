@@ -290,6 +290,14 @@ def main() -> None:
     generate.add_argument("--adapter", type=Path, default=None)
     generate.add_argument("--batch-size", type=int, default=1)
     generate.add_argument("--max-new-tokens", type=int, default=None)
+    generate.add_argument(
+        "--sampling-seed",
+        type=int,
+        default=None,
+        help="Enable stochastic decoding with a resume-stable per-example seed.",
+    )
+    generate.add_argument("--temperature", type=float, default=0.8)
+    generate.add_argument("--top-p", type=float, default=0.95)
     generate.add_argument("--no-resume", action="store_true")
 
     zero_shot = commands.add_parser(
@@ -720,6 +728,9 @@ def main() -> None:
             batch_size=args.batch_size,
             resume=not args.no_resume,
             max_new_tokens=args.max_new_tokens,
+            sampling_seed=args.sampling_seed,
+            temperature=args.temperature,
+            top_p=args.top_p,
         )
         print(json.dumps(asdict(summary), ensure_ascii=False, indent=2, default=str))
         return

@@ -12,6 +12,66 @@ from analyze_codeworkout_portfolios import clustered_interval
 from analyze_fse2027_scale_replication import selection_audit
 
 
+def exercise_sensitivity(
+    mixed: list[dict], answer: list[dict], *, samples: int, seed: int
+) -> dict:
+    mixed_by_id = {str(row["example_id"]): row for row in mixed}
+    answer_by_id = {str(row["example_id"]): row for row in answer}
+    if set(mixed_by_id) != set(answer_by_id):
+        raise ValueError("mixed and Answer rows must cover identical examples")
+    exercises = sorted({str(row["problem_id"]) for row in mixed})
+    per_exercise = []
+    leave_one_out = []
+    for offset, exercise in enumerate(exercises):
+        ids = [
+            example_id
+            for example_id, row in mixed_by_id.items()
+            if str(row["problem_id"]) == exercise
+        ]
+        left_only = sum(
+            bool(mixed_by_id[i]["repaired"]) and not bool(answer_by_id[i]["repaired"])
+            for i in ids
+        )
+        right_only = sum(
+            bool(answer_by_id[i]["repaired"]) and not bool(mixed_by_id[i]["repaired"])
+            for i in ids
+        )
+        mixed_rr = sum(bool(mixed_by_id[i]["repaired"]) for i in ids) / len(ids)
+        answer_rr = sum(bool(answer_by_id[i]["repaired"]) for i in ids) / len(ids)
+        per_exercise.append({
+            "exercise": exercise,
+            "examples": len(ids),
+            "mixed_rr": mixed_rr,
+            "answer_rr": answer_rr,
+            "mixed_minus_answer_rr": mixed_rr - answer_rr,
+            "mixed_only_repairs": left_only,
+            "answer_only_repairs": right_only,
+        })
+        kept_mixed = [row for row in mixed if str(row["problem_id"]) != exercise]
+        kept_answer = [row for row in answer if str(row["problem_id"]) != exercise]
+        if not kept_mixed:
+            continue
+        contrast = paired_suite_rows(
+            kept_mixed,
+            kept_answer,
+            left_label="Mixed-target-9Choose3",
+            right_label="Answer-9Choose3",
+            samples=samples,
+            seed=seed + offset,
+        )
+        rr = next(row for row in contrast["paired"] if row["metric"] == "rr")
+        leave_one_out.append({
+            "excluded_exercise": exercise,
+            "examples": len(kept_mixed),
+            "mixed_minus_answer_rr": rr["left_minus_right_instance_weighted"],
+            "exercise_cluster_bootstrap_95ci": rr["cluster_bootstrap_95ci"],
+            "mixed_only_repairs": contrast["rr_contingency"]["left_only"],
+            "answer_only_repairs": contrast["rr_contingency"]["right_only"],
+            "exact_mcnemar_two_sided_p": contrast["exact_mcnemar_two_sided_p"],
+        })
+    return {"per_exercise": per_exercise, "leave_one_exercise_out": leave_one_out}
+
+
 def analyze(
     mixed: list[dict],
     answer: list[dict],
@@ -47,6 +107,9 @@ def analyze(
         "mixed_target_9choose3": summarize_method(mixed),
         "answer_9choose3": summarize_method(answer),
         "mixed_minus_answer": comparison,
+        "exercise_sensitivity": exercise_sensitivity(
+            mixed, answer, samples=samples, seed=seed + 300
+        ),
     }
     if (answer3 is None) != (answer1 is None):
         raise ValueError("Answer-1 and Answer-3Seed must be supplied together")

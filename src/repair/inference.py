@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import re
 import time
 from dataclasses import asdict, dataclass
@@ -15,6 +16,9 @@ class GenerationSummary:
     base_model: str
     adapter_path: str | None
     max_new_tokens: int | None
+    sampling_seed: int | None
+    temperature: float | None
+    top_p: float | None
     examples: int
     generated: int
     mean_generation_time_sec: float
@@ -32,6 +36,9 @@ def generate_repairs(
     batch_size: int = 1,
     resume: bool = True,
     max_new_tokens: int | None = None,
+    sampling_seed: int | None = None,
+    temperature: float = 0.8,
+    top_p: float = 0.95,
 ) -> GenerationSummary:
     import torch
     from peft import PeftModel
@@ -60,6 +67,12 @@ def generate_repairs(
     if adapter_path is not None:
         model = PeftModel.from_pretrained(model, str(adapter_path))
     model.eval()
+
+    if sampling_seed is not None:
+        if temperature <= 0:
+            raise ValueError("temperature must be positive for stochastic decoding")
+        if not 0 < top_p <= 1:
+            raise ValueError("top_p must be in (0, 1]")
 
     records = list(_iter_jsonl(dataset_path))
     output_path = output_path.expanduser().resolve()
@@ -94,15 +107,32 @@ def generate_repairs(
             ).to(model.device)
             torch.cuda.synchronize()
             started = time.perf_counter()
+            if sampling_seed is not None:
+                if len(batch) != 1:
+                    raise ValueError(
+                        "stochastic decoding requires batch_size=1 so every example "
+                        "has a resume-stable independent RNG seed"
+                    )
+                example_seed = _example_sampling_seed(
+                    sampling_seed, str(batch[0]["example_id"])
+                )
+                torch.manual_seed(example_seed)
+                torch.cuda.manual_seed_all(example_seed)
             with torch.inference_mode():
+                sampling_kwargs = (
+                    {"temperature": temperature, "top_p": top_p}
+                    if sampling_seed is not None
+                    else {}
+                )
                 generated = model.generate(
                     **encoded,
                     max_new_tokens=_generation_token_budget(
                         model, encoded["input_ids"].shape[1], max_new_tokens
                     ),
-                    do_sample=False,
+                    do_sample=sampling_seed is not None,
                     pad_token_id=tokenizer.pad_token_id,
                     eos_token_id=tokenizer.eos_token_id,
+                    **sampling_kwargs,
                 )
             torch.cuda.synchronize()
             elapsed = time.perf_counter() - started
@@ -122,6 +152,14 @@ def generate_repairs(
                     "generation_time_sec": per_example_elapsed,
                     "generated_code": code,
                     "raw_generation": raw_text,
+                    "sampling_seed": sampling_seed,
+                    "example_sampling_seed": (
+                        _example_sampling_seed(sampling_seed, str(record["example_id"]))
+                        if sampling_seed is not None
+                        else None
+                    ),
+                    "temperature": temperature if sampling_seed is not None else None,
+                    "top_p": top_p if sampling_seed is not None else None,
                 }
                 output.write(json.dumps(payload, ensure_ascii=False) + "\n")
                 output.flush()
@@ -133,6 +171,9 @@ def generate_repairs(
         base_model=base_model,
         adapter_path=str(adapter_path) if adapter_path is not None else None,
         max_new_tokens=max_new_tokens,
+        sampling_seed=sampling_seed,
+        temperature=temperature if sampling_seed is not None else None,
+        top_p=top_p if sampling_seed is not None else None,
         examples=len(requested_ids),
         generated=len(elapsed_values),
         mean_generation_time_sec=(
@@ -145,6 +186,12 @@ def generate_repairs(
         encoding="utf-8",
     )
     return summary
+
+
+def _example_sampling_seed(sampling_seed: int, example_id: str) -> int:
+    """Derive a stable per-example RNG seed independent of order and resume state."""
+    digest = hashlib.sha256(f"{sampling_seed}:{example_id}".encode()).digest()
+    return int.from_bytes(digest[:8], "big") % (2**63 - 1)
 
 
 def extract_python_code(text: str) -> str:
