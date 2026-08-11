@@ -26,18 +26,26 @@ for split in seen unseen; do
   if [[ "${split}" == unseen ]]; then
     baseline=${EVAL_ROOT}/answer-seed-control/answer2027-unseen-test.evaluation.jsonl
   fi
+  needs_generation=false
+  for sampling_seed in 3101 3102 3103; do
+    generations=${OUTPUT_ROOT}/${split}/sample-${sampling_seed}.generations.jsonl
+    [[ -s "${generations}" ]] && [[ "$(wc -l < "${generations}")" -eq "${expected}" ]] \
+      || needs_generation=true
+  done
+  if [[ "${needs_generation}" == true ]]; then
+    "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+      "${dataset}" "${OUTPUT_ROOT}/${split}" --base-model "${BASE_MODEL}" \
+      --adapter "${CHECKPOINT}" --sampling-seed 3101 --sampling-seed 3102 \
+      --sampling-seed 3103 --temperature 0.8 --top-p 0.95 \
+      --max-new-tokens 4096 --max-model-len 8192
+  fi
   stages=()
   for sampling_seed in 3101 3102 3103; do
     prefix=${OUTPUT_ROOT}/${split}/sample-${sampling_seed}
     generations=${prefix}.generations.jsonl
     evaluation=${prefix}.evaluation.jsonl
     if [[ ! -s "${evaluation}" ]] || [[ "$(wc -l < "${evaluation}")" -ne "${expected}" ]]; then
-      echo "[$(date --iso-8601=seconds)] ${split} stochastic seed ${sampling_seed}"
-      "${PYTHON}" run.py generate "${dataset}" "${generations}" \
-        --method "Answer2027-Sample${sampling_seed}" --prompt D \
-        --base-model "${BASE_MODEL}" --adapter "${CHECKPOINT}" --batch-size 4 \
-        --max-new-tokens 4096 --sampling-seed "${sampling_seed}" \
-        --temperature 0.8 --top-p 0.95 --no-resume
+      echo "[$(date --iso-8601=seconds)] evaluating ${split} stochastic seed ${sampling_seed}"
       "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
         --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
     fi
