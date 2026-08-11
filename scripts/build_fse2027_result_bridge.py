@@ -431,8 +431,15 @@ def macros(result: dict[str, Any]) -> str:
     stochastic = result["stochastic_candidate_control"]
     for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
         row = stochastic["splits"][split]
+        stochastic_summary = row["same_checkpoint_stochastic_3"]
+        values[f"StochasticThree{prefix}PR"] = pct(
+            stochastic_summary.get("pr", stochastic_summary["rr"])
+        )
         values[f"StochasticThree{prefix}RR"] = pct(
-            row["same_checkpoint_stochastic_3"]["rr"]
+            stochastic_summary["rr"]
+        )
+        values[f"StochasticThree{prefix}IR"] = pct(
+            stochastic_summary.get("ir", stochastic_summary["rr"])
         )
         values[f"StochasticMeanUnique{prefix}"] = (
             f"{row['generation_diversity']['mean_unique_candidates']:.2f}"
@@ -446,6 +453,9 @@ def macros(result: dict[str, Any]) -> str:
                 effect["left_minus_right_instance_weighted"]
             )
             values[f"{contrast_prefix}{prefix}CI"] = ci(effect)
+            values[f"{contrast_prefix}{prefix}P"] = (
+                f"{row[contrast].get('exact_mcnemar_two_sided_p', 1.0):.4g}"
+            )
 
     crossfit = result["problem_crossfit"]
     crossfit_rr = metric(crossfit["mixed_minus_answer"])
