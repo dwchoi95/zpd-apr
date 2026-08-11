@@ -39,6 +39,19 @@
         "scripts/run_fse2027_prompt_distribution_control_remote.sh": "0dbc504dffbb0f5d2b96daadc8f0b5aace5a4eea",
         "scripts/run_fse2027_verdict_order_retraining_remote.sh": "0dbc504dffbb0f5d2b96daadc8f0b5aace5a4eea"
       }
+    },
+    {
+      "id": "crossfit-reused-cache-conformance",
+      "kind": "protocol-conformance-fix",
+      "timing": "The first problem-cross-fit attempt stopped during its pre-analysis baseline-consistency check; no cross-fit result file had been produced. The scale, CodeWorkout, and prompt-distribution experiments had completed, while verdict-order retraining was independent of this runner.",
+      "rationale": "The cross-fit runner reused previously generated mixed and Answer validation/test caches. Although downstream generated candidates were normalized, the reused caches themselves still contained load-sensitive current-program baseline executions, so the frozen equality check rejected them. The fix applies the already declared deterministic cached-baseline normalization to both reused families before selection and analysis.",
+      "impact": "No training, generated program, generated-program execution outcome, TED value, split, fold, selector, endpoint, or analysis formula changed. Only current-program baseline-dependent fields in the reused mixed and Answer caches are rebound to the canonical split cache before the previously failing consistency check.",
+      "original_files": {
+        "scripts/run_fse2027_problem_crossfit_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa"
+      },
+      "replacement_files": {
+        "scripts/run_fse2027_problem_crossfit_remote.sh": "c406cb71b73f544825e2504112776e267d4a1eec"
+      }
     }
   ],
   "experiments": {
@@ -64,7 +77,7 @@
     },
     "problem_crossfit": {
       "files": {
-        "scripts/run_fse2027_problem_crossfit_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
+        "scripts/run_fse2027_problem_crossfit_remote.sh": "c406cb71b73f544825e2504112776e267d4a1eec",
         "scripts/analyze_problem_crossfit_portfolios.py": "c23a62685fc78a5e01e7bc1bcfb72c07ba692c1e"
       }
     },
