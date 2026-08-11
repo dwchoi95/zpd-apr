@@ -90,6 +90,11 @@ The declared cached-baseline conformance amendment binds each member evaluation
 to the split's pre-existing current-program cache before selection or analysis.
 It preserves generated programs, their execution outcomes, and TED values; the
 protocol manifest records both the original and replacement Git blobs.
+The later nounset-safe runner amendment occurred after CodeWorkout completed
+but before prompt-control candidate generation or verdict-order retraining. It
+only splits dependent Bash `local` initializers into sequential declarations;
+the manifest records the ordered revision chain, and the provenance verifier
+checks every intermediate blob as well as the final frozen runner.
 
 After all controls finish, seal the complete evidence graph with:
 
