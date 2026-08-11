@@ -52,6 +52,21 @@
       "replacement_files": {
         "scripts/run_fse2027_problem_crossfit_remote.sh": "c406cb71b73f544825e2504112776e267d4a1eec"
       }
+    },
+    {
+      "id": "stochastic-fixed-pass-batching",
+      "kind": "pre-result-throughput-fix",
+      "timing": "The batch-one pilot had generated 45 of 997 Seen candidates for its first sampling seed. It was stopped before any candidate execution, composed controller output, statistical analysis, or result inspection.",
+      "rationale": "Batch-one sampling used only about 59 percent GPU utilization. The replacement evaluates a fixed seed pass in batches of four and forbids resume for batched sampling, so interruption regenerates the entire pass from the same global seed rather than changing batch membership or RNG state.",
+      "impact": "The fixed Answer2027 checkpoint, three sampling seeds, temperature, top-p, prompt, datasets, candidate budget, execution limits, composition, endpoints, and analysis are unchanged. The incomplete pilot file is overwritten; batching changes the realized pseudorandom draws but was fixed before any execution outcome was observed.",
+      "original_files": {
+        "src/repair/inference.py": "dd1be28696b60c53f6e0588fe438094f102e11cb",
+        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "dd1be28696b60c53f6e0588fe438094f102e11cb"
+      },
+      "replacement_files": {
+        "src/repair/inference.py": "b287a898352073ad192afaa3634aaad06269923f",
+        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "b287a898352073ad192afaa3634aaad06269923f"
+      }
     }
   ],
   "experiments": {
@@ -89,9 +104,9 @@
     },
     "stochastic_candidate_breadth": {
       "files": {
-        "src/repair/inference.py": "dd1be28696b60c53f6e0588fe438094f102e11cb",
+        "src/repair/inference.py": "b287a898352073ad192afaa3634aaad06269923f",
         "src/cli.py": "dd1be28696b60c53f6e0588fe438094f102e11cb",
-        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "dd1be28696b60c53f6e0588fe438094f102e11cb",
+        "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "b287a898352073ad192afaa3634aaad06269923f",
         "scripts/analyze_stochastic_candidate_control.py": "dd1be28696b60c53f6e0588fe438094f102e11cb"
       }
     },
