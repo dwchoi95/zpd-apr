@@ -23,6 +23,7 @@ export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 while [[ ! -f "${EVAL_ROOT}/prompt-distribution-current-only/COMPLETE" ]]; do sleep 60; done
 
 DATASET=${DATASET_ROOT}/seen-test-final.jsonl
+VALIDATION_DATASET=${DATASET_ROOT}/seen-valid-final.problem-balanced.jsonl
 EXPECTED=$(wc -l < "${DATASET}")
 
 complete() {
@@ -46,6 +47,8 @@ ensure_mixed_test() {
   name=${relation}${seed}
   existing=${EVAL_ROOT}/selected-portfolios/${name}-seen-test.evaluation.jsonl
   if complete "${existing}"; then
+    "${PYTHON}" scripts/normalize_evaluation_baseline.py "${existing}" \
+      --reference "${DATASET}" 1>&2
     printf '%s\n' "${existing}"
     return
   fi
@@ -72,7 +75,10 @@ mixed_test_args=()
 for relation in Progress Strict Answer; do
   for seed in 2027 2028 2029; do
     name=${relation}${seed}
-    mixed_validation_args+=(--mixed-validation "${name}=${EVAL_ROOT}/portfolio-validation/${name}.evaluation.jsonl")
+    validation_path=${EVAL_ROOT}/portfolio-validation/${name}.evaluation.jsonl
+    "${PYTHON}" scripts/normalize_evaluation_baseline.py "${validation_path}" \
+      --reference "${VALIDATION_DATASET}"
+    mixed_validation_args+=(--mixed-validation "${name}=${validation_path}")
     test_path=$(ensure_mixed_test "${relation}" "${seed}")
     mixed_test_args+=(--mixed-test "${name}=${test_path}")
   done
@@ -82,8 +88,14 @@ answer_validation_args=()
 answer_test_args=()
 for seed in 2027 2028 2029 2030 2031 2032 2033 2034 2035; do
   name=Answer${seed}
-  answer_validation_args+=(--answer-validation "${name}=${EVAL_ROOT}/answer9-control/${name}-validation.evaluation.jsonl")
-  answer_test_args+=(--answer-test "${name}=${EVAL_ROOT}/answer9-control/${name}-seen-test.evaluation.jsonl")
+  validation_path=${EVAL_ROOT}/answer9-control/${name}-validation.evaluation.jsonl
+  test_path=${EVAL_ROOT}/answer9-control/${name}-seen-test.evaluation.jsonl
+  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${validation_path}" \
+    --reference "${VALIDATION_DATASET}"
+  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${test_path}" \
+    --reference "${DATASET}"
+  answer_validation_args+=(--answer-validation "${name}=${validation_path}")
+  answer_test_args+=(--answer-test "${name}=${test_path}")
 done
 
 "${PYTHON}" scripts/analyze_problem_crossfit_portfolios.py \

@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 
 from scripts.analyze_problem_crossfit_portfolios import analyze
 
@@ -34,6 +35,21 @@ def candidates(names: list[str], problems: list[str]) -> dict[str, list[dict]]:
 
 
 class ProblemCrossFitTest(unittest.TestCase):
+    def test_remote_runner_normalizes_reused_candidate_baselines(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        runner = (
+            root / "scripts/run_fse2027_problem_crossfit_remote.sh"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            'normalize_evaluation_baseline.py "${existing}"', runner
+        )
+        self.assertIn(
+            'normalize_evaluation_baseline.py "${validation_path}"', runner
+        )
+        self.assertIn(
+            'normalize_evaluation_baseline.py "${test_path}"', runner
+        )
+
     def test_every_fold_excludes_its_test_problem_identities(self) -> None:
         mixed_names = [
             f"{relation}{seed}"
