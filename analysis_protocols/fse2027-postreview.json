@@ -24,6 +24,21 @@
         "scripts/run_fse2027_problem_crossfit_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
         "scripts/run_fse2027_verdict_order_retraining_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa"
       }
+    },
+    {
+      "id": "nounset-safe-runner-locals",
+      "kind": "operational-runner-fix",
+      "timing": "The exercise-heldout CodeWorkout analysis had completed. Prompt-distribution control exited while materializing its first current-only dataset, before any prompt-control candidate generation or evaluation; problem cross-fitting and verdict-order retraining were still waiting on completion markers.",
+      "rationale": "Under Bash set -u, the prompt runner assigned a local name and expanded that name for another local initializer in the same command. Bash expands all initializers before completing the assignments, so the runner exited with an unbound-variable error. The same latent declaration pattern in the still-waiting verdict-order runner was corrected before it executed.",
+      "impact": "Only local declarations were split into sequential statements. Dataset definitions, checkpoints, prompts, decoding, generation budget, execution, selectors, endpoints, and analysis code are unchanged. Prompt control restarted from zero completed candidates; no partial generation or evaluation was reused.",
+      "original_files": {
+        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa"
+      },
+      "replacement_files": {
+        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "0dbc504dffbb0f5d2b96daadc8f0b5aace5a4eea",
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "0dbc504dffbb0f5d2b96daadc8f0b5aace5a4eea"
+      }
     }
   ],
   "experiments": {
@@ -43,7 +58,7 @@
     },
     "prompt_distribution": {
       "files": {
-        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
+        "scripts/run_fse2027_prompt_distribution_control_remote.sh": "0dbc504dffbb0f5d2b96daadc8f0b5aace5a4eea",
         "scripts/analyze_prompt_distribution_control.py": "2da17bc91793b5bdfc49040cbffd93164b77295f"
       }
     },
@@ -55,7 +70,7 @@
     },
     "verdict_order_retraining": {
       "files": {
-        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "4c7085253277c20b7cbb732073db06bed39e3cfa",
+        "scripts/run_fse2027_verdict_order_retraining_remote.sh": "0dbc504dffbb0f5d2b96daadc8f0b5aace5a4eea",
         "scripts/analyze_verdict_order_model_sensitivity.py": "0d6a5af14dc1a8b80fcb0a6ac1f2a6291e23ff2b"
       }
     }

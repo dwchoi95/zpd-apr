@@ -28,6 +28,7 @@ def verify(manifest_path: Path, repo: Path, head: str = "HEAD") -> dict[str, Any
         raise ValueError("unsupported protocol manifest schema")
     resolved_head = git("rev-parse", head, cwd=repo).stdout.strip()
     amendment_rows: list[dict[str, Any]] = []
+    final_replacement: dict[str, tuple[str, bytes]] = {}
     for amendment in manifest.get("amendments", []):
         original = amendment.get("original_files", {})
         replacement = amendment.get("replacement_files", {})
@@ -36,6 +37,13 @@ def verify(manifest_path: Path, repo: Path, head: str = "HEAD") -> dict[str, Any
         for relative in sorted(original):
             original_revision = str(original[relative])
             replacement_revision = str(replacement[relative])
+            if relative in final_replacement:
+                preceding_revision, preceding_blob = final_replacement[relative]
+                if original_revision != preceding_revision:
+                    raise RuntimeError(
+                        f"amendment chain for {relative} starts at "
+                        f"{original_revision}, expected {preceding_revision}"
+                    )
             for revision in (original_revision, replacement_revision):
                 ancestry = git(
                     "merge-base", "--is-ancestor", revision, resolved_head,
@@ -53,10 +61,9 @@ def verify(manifest_path: Path, repo: Path, head: str = "HEAD") -> dict[str, Any
                 ["git", "show", f"{replacement_revision}:{relative}"], cwd=repo,
                 check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             ).stdout
-            if (repo / relative).read_bytes() != after:
-                raise RuntimeError(
-                    f"amended file {relative} differs from replacement revision {replacement_revision}"
-                )
+            if relative in final_replacement and before != preceding_blob:
+                raise RuntimeError(f"amendment chain blob mismatch for {relative}")
+            final_replacement[relative] = (replacement_revision, after)
             amendment_rows.append({
                 "amendment": amendment["id"],
                 "path": relative,
@@ -66,6 +73,12 @@ def verify(manifest_path: Path, repo: Path, head: str = "HEAD") -> dict[str, Any
                 "replacement_sha256": sha256(after),
                 "content_changed": before != after,
             })
+    for relative, (replacement_revision, final_blob) in final_replacement.items():
+        if (repo / relative).read_bytes() != final_blob:
+            raise RuntimeError(
+                f"amended file {relative} differs from final replacement "
+                f"revision {replacement_revision}"
+            )
     rows: list[dict[str, Any]] = []
     for experiment, spec in manifest["experiments"].items():
         files = spec.get("files")

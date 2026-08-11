@@ -83,6 +83,54 @@ class ProtocolProvenanceTest(unittest.TestCase):
             self.assertTrue(result["all_declared_amendments_verified"])
             self.assertEqual(result["verified_amended_files"], 1)
 
+    def test_verifies_ordered_amendment_chain(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "test@example.invalid"],
+                cwd=repo, check=True,
+            )
+            subprocess.run(
+                ["git", "config", "user.name", "Test"], cwd=repo, check=True
+            )
+            script = repo / "runner.sh"
+            revisions = []
+            for index, content in enumerate(("frozen", "conforming", "operational")):
+                script.write_text(f"echo {content}\n", encoding="utf-8")
+                subprocess.run(["git", "add", "runner.sh"], cwd=repo, check=True)
+                subprocess.run(
+                    ["git", "commit", "-qm", f"revision-{index}"],
+                    cwd=repo, check=True,
+                )
+                revisions.append(subprocess.run(
+                    ["git", "rev-parse", "HEAD"], cwd=repo, check=True,
+                    text=True, stdout=subprocess.PIPE,
+                ).stdout.strip())
+            manifest = repo / "protocol.json"
+            manifest.write_text(json.dumps({
+                "schema_version": 1,
+                "scope": "test",
+                "amendments": [
+                    {
+                        "id": "conformance",
+                        "original_files": {"runner.sh": revisions[0]},
+                        "replacement_files": {"runner.sh": revisions[1]},
+                    },
+                    {
+                        "id": "operational",
+                        "original_files": {"runner.sh": revisions[1]},
+                        "replacement_files": {"runner.sh": revisions[2]},
+                    },
+                ],
+                "experiments": {
+                    "control": {"files": {"runner.sh": revisions[2]}}
+                },
+            }), encoding="utf-8")
+            result = verify(manifest, repo)
+            self.assertTrue(result["all_declared_amendments_verified"])
+            self.assertEqual(result["verified_amended_files"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()
