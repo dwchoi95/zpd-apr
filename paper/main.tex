@@ -189,17 +189,19 @@ We call a later state \emph{reachable} when it occurs in the same student's obse
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\linewidth]{Figures/zpdpatch_overview_v5.png}
-  \caption{Overview of trajectory supervision and execution control. The
-  displayed P--S--A route is the one-per-relation control; the deployed system
-  trains three seeds per relation and uses validation execution to select any
-  three checkpoints, so a relation may repeat. Execution outcomes determine
-  early stopping and final selection.}
-  \Description{The ZPDPatch pipeline converts student submission trajectories
-  and cached test outcomes into Progress, Strict, and Answer training pairs.
-  Three seeds per relation form a nine-checkpoint pool; validation execution
-  selects three checkpoints for execution-based early stopping and final
-  candidate selection. The drawing shows the one-per-relation control route.}
+  \includegraphics[width=\linewidth]{Figures/zpdpatch_overview_v6.png}
+  \caption{Final identification and deployment design. Histories mine
+  relation-specific SFT pairs offline. The matched
+  $A_1\!\rightarrow S_3\!\rightarrow A_3\!\rightarrow A_9\!\rightarrow M_9$
+  ladder separates candidate breadth, checkpoint effects, pool selection, and
+  relation targets. Recommended current-only $A_3$ generates up to three
+  candidates; execution stops on AC and otherwise applies non-regressive,
+  TED-aware selection.}
+  \Description{Four panels show offline trajectory mining, Progress, Strict,
+  and Answer supervision, the matched A1-S3-A3-A9-M9 mechanism ladder, and the
+  current-only A3 deployment. The deployment executes up to three candidates,
+  stops after an accepted candidate, and otherwise selects a candidate or the
+  current code by pass rate and tree edit distance.}
   \label{fig:overview}
 \end{figure}
 
