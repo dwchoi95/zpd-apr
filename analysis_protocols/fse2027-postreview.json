@@ -80,6 +80,21 @@
       "replacement_files": {
         "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "2eec779294e9126247ba6a401827023de5f06987"
       }
+    },
+    {
+      "id": "stochastic-one-vllm-memory-headroom",
+      "kind": "pre-result-runtime-fix",
+      "timing": "The first same-draw decomposition attempt terminated while vLLM was rendering requests, before producing any generation file, candidate execution, composed portfolio, statistical analysis, or result inspection.",
+      "rationale": "vLLM 0.18 allocated 92 percent of device memory to model and KV cache, leaving insufficient temporary memory for a bitsandbytes matrix multiplication. Reducing the requested cache fraction to 82 percent preserves several GiB of operator workspace.",
+      "impact": "Checkpoint, prompts, datasets, three seed identities, sampling parameters, token limits, candidate budget, execution, composition, endpoints, and analysis are unchanged. No candidate from the failed attempt exists or is reused.",
+      "original_files": {
+        "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "7ee25d0383659bbf91cb78d518272aae4a434883",
+        "tests/test_stochastic_one_decomposition.py": "7ee25d0383659bbf91cb78d518272aae4a434883"
+      },
+      "replacement_files": {
+        "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "9a01a103d2a67169733ded2388711ffa2ccbacb1",
+        "tests/test_stochastic_one_decomposition.py": "9a01a103d2a67169733ded2388711ffa2ccbacb1"
+      }
     }
   ],
   "experiments": {
@@ -129,8 +144,8 @@
       "files": {
         "scripts/generate_vllm_stochastic_candidates.py": "2eec779294e9126247ba6a401827023de5f06987",
         "scripts/analyze_stochastic_one_decomposition.py": "7ee25d0383659bbf91cb78d518272aae4a434883",
-        "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "7ee25d0383659bbf91cb78d518272aae4a434883",
-        "tests/test_stochastic_one_decomposition.py": "7ee25d0383659bbf91cb78d518272aae4a434883"
+        "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "9a01a103d2a67169733ded2388711ffa2ccbacb1",
+        "tests/test_stochastic_one_decomposition.py": "9a01a103d2a67169733ded2388711ffa2ccbacb1"
       }
     },
     "current_only_deployment_ladder": {
