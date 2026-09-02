@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
 from scripts.analyze_stochastic_one_decomposition import analyze_split
 
@@ -16,6 +17,13 @@ def row(example: str, problem: str, repaired: bool) -> dict:
 
 
 class StochasticOneDecompositionTest(unittest.TestCase):
+    def test_runner_uses_fixed_lower_memory_fraction(self) -> None:
+        runner = Path(
+            "scripts/run_fse2027_stochastic_one_decomposition_remote.sh"
+        ).read_text()
+        self.assertIn("--sampling-seed 4101 --sampling-seed 4102", runner)
+        self.assertIn("--gpu-memory-utilization 0.82", runner)
+
     def test_same_draw_union_decomposes_candidate_breadth(self) -> None:
         singles = [
             [row("a", "p", True), row("b", "q", False)],

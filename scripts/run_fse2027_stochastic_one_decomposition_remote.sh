@@ -37,7 +37,7 @@ for split in seen unseen; do
       "${dataset}" "${OUTPUT_ROOT}/${split}" --base-model "${BASE_MODEL}" \
       --adapter "${CHECKPOINT}" --sampling-seed 4101 --sampling-seed 4102 \
       --sampling-seed 4103 --temperature 0.8 --top-p 0.95 \
-      --max-new-tokens 4096 --max-model-len 8192
+      --max-new-tokens 4096 --max-model-len 8192 --gpu-memory-utilization 0.82
   fi
   stages=()
   for sampling_seed in 4101 4102 4103; do
