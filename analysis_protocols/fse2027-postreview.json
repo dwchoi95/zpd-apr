@@ -140,6 +140,23 @@
         "scripts/analyze_stochastic_one_decomposition.py": "a109e5025380f5df7cd24340700ae022237fae66",
         "tests/test_stochastic_one_decomposition.py": "a109e5025380f5df7cd24340700ae022237fae66"
       }
+    },
+    {
+      "id": "seen-hidden-cached-baseline-rebind",
+      "kind": "pre-composition-conformance-fix",
+      "timing": "All candidate generations and observed/hidden candidate executions were complete. Composition stopped at its baseline-agreement invariant before either portfolio, overlap audit, comparative bootstrap, or aggregate analysis was produced. During diagnosis, per-adapter evaluation summaries existed and one hidden per-adapter repair rate was visible; no choice in this amendment depends on that rate.",
+      "rationale": "Repeated evaluation of the same current program on an observed testcase subset produced timeout-boundary pass-rate variation across adapter files. The frozen design requires every adapter to share the testcase-partition dataset's cached current-program baseline. In addition, a current program that passes every observed test must win the selector's TED tie as the zero-edit fallback rather than be replaced by a tied generated candidate.",
+      "impact": "No prompt, generated candidate, generated-program execution, hidden outcome, adapter, split, seed, endpoint, or analysis is changed. Completed evaluation files are rebound to the already frozen cached observed baseline; complete files are reused. Composition applies the predeclared lexicographic fallback rule when the cached observed baseline is one.",
+      "original_files": {
+        "scripts/compose_answer_seed_control.py": "f0668b771109f40ff14d34c422ea990172ed60ee",
+        "scripts/run_fse2027_seen_hidden_remote.sh": "f0668b771109f40ff14d34c422ea990172ed60ee",
+        "tests/test_answer_seed_control.py": "f0668b771109f40ff14d34c422ea990172ed60ee"
+      },
+      "replacement_files": {
+        "scripts/compose_answer_seed_control.py": "0f97c44d4a07d8844808282bef8d794c0ea0770b",
+        "scripts/run_fse2027_seen_hidden_remote.sh": "0f97c44d4a07d8844808282bef8d794c0ea0770b",
+        "tests/test_answer_seed_control.py": "0f97c44d4a07d8844808282bef8d794c0ea0770b"
+      }
     }
   ],
   "experiments": {
@@ -198,10 +215,10 @@
       "files": {
         "scripts/build_observed_hidden_evaluation.py": "21443be012a015e4f46aaecf0107fa73938386b7",
         "scripts/analyze_observed_hidden_evaluation.py": "21443be012a015e4f46aaecf0107fa73938386b7",
-        "scripts/compose_answer_seed_control.py": "bdec5836120c3114fc9d4f4169131dbebc4044d2",
+        "scripts/compose_answer_seed_control.py": "0f97c44d4a07d8844808282bef8d794c0ea0770b",
         "scripts/generate_vllm_greedy_adapters.py": "afd25f0eb79ba4898434ef259ca7b55f3de13786",
         "scripts/analyze_seen_training_overlap.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
-        "scripts/run_fse2027_seen_hidden_remote.sh": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
+        "scripts/run_fse2027_seen_hidden_remote.sh": "0f97c44d4a07d8844808282bef8d794c0ea0770b",
         "tests/test_seen_training_overlap.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
         "tests/test_vllm_greedy_adapters.py": "afd25f0eb79ba4898434ef259ca7b55f3de13786"
       }
