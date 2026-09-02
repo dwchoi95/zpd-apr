@@ -75,12 +75,17 @@ def compose(
         selected_name = "current-fallback"
         selected: Row | None = None
         early_stop_stage: str | None = None
-        for name, candidate in eligible:
-            if bool(candidate["repaired"]):
-                selected_name = name
-                selected = candidate
-                early_stop_stage = name
-                break
+        # A current program that already passes every observed test is the
+        # zero-edit lexicographic winner.  This case can occur after an
+        # observed/hidden test partition even though the full-suite current
+        # program is buggy.
+        if baseline < 1.0:
+            for name, candidate in eligible:
+                if bool(candidate["repaired"]):
+                    selected_name = name
+                    selected = candidate
+                    early_stop_stage = name
+                    break
         if selected is None:
             best_pass_rate = max(
                 [baseline] + [float(row["fixed_pass_rate"]) for _name, row in eligible]

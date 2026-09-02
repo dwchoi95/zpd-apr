@@ -922,6 +922,32 @@ class AnswerSeedControlAnalysisTest(unittest.TestCase):
                 [("a", [row(0.25)]), ("b", [row(0.5)]), ("c", [row(0.25)])],
             )
 
+    def test_observed_passing_current_program_wins_as_zero_edit_fallback(self) -> None:
+        dataset = [{"example_id": "e"}]
+
+        def repaired_candidate() -> dict:
+            return {
+                "example_id": "e",
+                "problem_id": "p",
+                "user_id": "u",
+                "buggy_pass_rate": 1.0,
+                "fixed_pass_rate": 1.0,
+                "repaired": True,
+                "ted_buggy_fixed": 4,
+            }
+
+        result = compose(
+            dataset,
+            [
+                ("a", [repaired_candidate()]),
+                ("b", [repaired_candidate()]),
+                ("c", [repaired_candidate()]),
+            ],
+        )
+        self.assertEqual(result[0]["selected_source"], "current-fallback")
+        self.assertFalse(result[0]["repaired"])
+        self.assertEqual(result[0]["fixed_pass_rate"], 1.0)
+
     def test_normalizer_accepts_cached_dataset_baseline_schema(self) -> None:
         baseline, verdict, provenance = canonical_baseline(
             {"current_pass_rate": 0.75, "current_execution_verdict": "WA"}

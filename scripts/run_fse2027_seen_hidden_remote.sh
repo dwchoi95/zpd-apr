@@ -59,10 +59,16 @@ for name in "${members[@]}"; do
   generations=${OUTPUT_ROOT}/${name}.generations.jsonl
   observed=${OUTPUT_ROOT}/${name}.observed.evaluation.jsonl
   hidden=${OUTPUT_ROOT}/${name}.hidden.evaluation.jsonl
-  "${PYTHON}" run.py evaluate "${DATASET}" "${generations}" "${observed}" \
-    --data-root "${OBSERVED_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
-  "${PYTHON}" run.py evaluate "${DATASET}" "${generations}" "${hidden}" \
-    --data-root "${HIDDEN_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  if [[ ! -s "${observed}" ]] || [[ "$(wc -l < "${observed}")" -ne 997 ]]; then
+    "${PYTHON}" run.py evaluate "${DATASET}" "${generations}" "${observed}" \
+      --data-root "${OBSERVED_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  fi
+  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${observed}" \
+    --reference "${DATASET}"
+  if [[ ! -s "${hidden}" ]] || [[ "$(wc -l < "${hidden}")" -ne 997 ]]; then
+    "${PYTHON}" run.py evaluate "${DATASET}" "${generations}" "${hidden}" \
+      --data-root "${HIDDEN_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
+  fi
 done
 
 "${PYTHON}" scripts/compose_answer_seed_control.py "${DATASET}" \
