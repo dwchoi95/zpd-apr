@@ -95,6 +95,21 @@
         "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "9a01a103d2a67169733ded2388711ffa2ccbacb1",
         "tests/test_stochastic_one_decomposition.py": "9a01a103d2a67169733ded2388711ffa2ccbacb1"
       }
+    },
+    {
+      "id": "stochastic-one-aggregate-decoding-contrast",
+      "kind": "pre-analysis-estimand-completion",
+      "timing": "Generation had completed and the first candidate-execution file was still incomplete. No evaluation summary, composed union, analysis output, or outcome statistic had been inspected.",
+      "rationale": "The frozen design names the expected one-stochastic-draw versus greedy-one contrast, but the analyzer emitted only three seed-specific paired contrasts. It now also averages the same three fixed one-draw outcomes within each example and applies the declared problem-cluster bootstrap to that expected one-draw contrast.",
+      "impact": "No generation, execution, candidate, seed, sampling setting, union, dataset, or primary same-draw breadth estimand changes. The modification adds the missing aggregate decoding-mode estimate promised by the frozen design.",
+      "original_files": {
+        "scripts/analyze_stochastic_one_decomposition.py": "7ee25d0383659bbf91cb78d518272aae4a434883",
+        "tests/test_stochastic_one_decomposition.py": "9a01a103d2a67169733ded2388711ffa2ccbacb1"
+      },
+      "replacement_files": {
+        "scripts/analyze_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a",
+        "tests/test_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a"
+      }
     }
   ],
   "experiments": {
@@ -143,9 +158,9 @@
       "design": "Generate three newly fixed Answer2027 samples with seeds 4101, 4102, and 4103 at temperature 0.8 and top-p 0.95. Evaluate each sample as a one-candidate policy and evaluate the execution-selected union of those identical three draws. The primary breadth estimand is union RR minus the mean one-draw RR, with problem-cluster bootstrap intervals. Greedy Answer2027 is retained only to estimate the decoding-mode contrast. Seen and Unseen test outcomes are not used to choose seeds, candidates, or analysis.",
       "files": {
         "scripts/generate_vllm_stochastic_candidates.py": "2eec779294e9126247ba6a401827023de5f06987",
-        "scripts/analyze_stochastic_one_decomposition.py": "7ee25d0383659bbf91cb78d518272aae4a434883",
+        "scripts/analyze_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a",
         "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "9a01a103d2a67169733ded2388711ffa2ccbacb1",
-        "tests/test_stochastic_one_decomposition.py": "9a01a103d2a67169733ded2388711ffa2ccbacb1"
+        "tests/test_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a"
       }
     },
     "seen_hidden_and_training_overlap": {
