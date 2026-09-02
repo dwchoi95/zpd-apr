@@ -32,7 +32,10 @@ class StochasticOneDecompositionTest(unittest.TestCase):
         ]
         union = [row("a", "p", True), row("b", "q", True)]
         greedy = [row("a", "p", False), row("b", "q", False)]
-        result = analyze_split(union, singles, greedy, samples=50, seed=7)
+        checkpoint3 = [row("a", "p", True), row("b", "q", False)]
+        result = analyze_split(
+            union, singles, greedy, checkpoint3, samples=50, seed=7
+        )
         self.assertAlmostEqual(result["stochastic_one_expectation"]["mean_rr"], 1 / 3)
         rr = next(
             item
@@ -49,6 +52,14 @@ class StochasticOneDecompositionTest(unittest.TestCase):
             decoding_rr["mean_single_minus_right_instance_weighted"], 1 / 3
         )
         self.assertEqual(len(result["stochastic_one_minus_greedy_one"]), 3)
+        checkpoint_rr = next(
+            item
+            for item in result[
+                "checkpoint_three_minus_same_draw_stochastic_three"
+            ]["paired"]
+            if item["metric"] == "rr"
+        )
+        self.assertAlmostEqual(checkpoint_rr["left_minus_right_instance_weighted"], -0.5)
 
 
 if __name__ == "__main__":

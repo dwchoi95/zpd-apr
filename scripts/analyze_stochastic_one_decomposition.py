@@ -194,6 +194,7 @@ def analyze_split(
     stochastic3: list[Row],
     stochastic1: list[list[Row]],
     greedy1: list[Row],
+    checkpoint3: list[Row],
     *,
     samples: int,
     seed: int,
@@ -202,6 +203,7 @@ def analyze_split(
         "stochastic_three_union": summarize_method(stochastic3),
         "stochastic_one_expectation": mean_single_summary(stochastic1),
         "greedy_one": summarize_method(greedy1),
+        "independent_checkpoint_three": summarize_method(checkpoint3),
         "three_minus_same_draw_one": contrast_against_mean_single(
             stochastic3, stochastic1, samples=samples, seed=seed
         ),
@@ -219,6 +221,14 @@ def analyze_split(
             )
             for index, rows in enumerate(stochastic1)
         ],
+        "checkpoint_three_minus_same_draw_stochastic_three": paired_suite_rows(
+            checkpoint3,
+            stochastic3,
+            left_label="Independent-checkpoint-greedy-3",
+            right_label="Same-draw-stochastic-3",
+            samples=samples,
+            seed=seed + 2000,
+        ),
     }
 
 
@@ -254,6 +264,11 @@ def main() -> None:
             read_jsonl(split_root / "stochastic3.evaluation.jsonl"),
             [read_jsonl(split_root / f"sample-{seed}.evaluation.jsonl") for seed in seeds],
             read_jsonl(greedy_path),
+            read_jsonl(
+                args.reference_root
+                / "selected-portfolios"
+                / f"answer-3seed-{split}-test.evaluation.jsonl"
+            ),
             samples=args.samples,
             seed=2027 + offset * 100,
         )
