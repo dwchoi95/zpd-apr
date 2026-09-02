@@ -124,6 +124,15 @@
         "scripts/analyze_stochastic_candidate_control.py": "dd1be28696b60c53f6e0588fe438094f102e11cb"
       }
     },
+    "stochastic_one_decomposition": {
+      "design": "Generate three newly fixed Answer2027 samples with seeds 4101, 4102, and 4103 at temperature 0.8 and top-p 0.95. Evaluate each sample as a one-candidate policy and evaluate the execution-selected union of those identical three draws. The primary breadth estimand is union RR minus the mean one-draw RR, with problem-cluster bootstrap intervals. Greedy Answer2027 is retained only to estimate the decoding-mode contrast. Seen and Unseen test outcomes are not used to choose seeds, candidates, or analysis.",
+      "files": {
+        "scripts/generate_vllm_stochastic_candidates.py": "2eec779294e9126247ba6a401827023de5f06987",
+        "scripts/analyze_stochastic_one_decomposition.py": "7ee25d0383659bbf91cb78d518272aae4a434883",
+        "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "7ee25d0383659bbf91cb78d518272aae4a434883",
+        "tests/test_stochastic_one_decomposition.py": "7ee25d0383659bbf91cb78d518272aae4a434883"
+      }
+    },
     "current_only_deployment_ladder": {
       "files": {
         "scripts/run_fse2027_current_only_deployment_ladder_remote.sh": "c139a4ba5f7861192250c103624128c515819c01",
