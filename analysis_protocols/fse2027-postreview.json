@@ -125,6 +125,21 @@
         "scripts/generate_vllm_greedy_adapters.py": "afd25f0eb79ba4898434ef259ca7b55f3de13786",
         "tests/test_vllm_greedy_adapters.py": "afd25f0eb79ba4898434ef259ca7b55f3de13786"
       }
+    },
+    {
+      "id": "stochastic-one-complete-checkpoint-ladder",
+      "kind": "pre-analysis-estimand-completion",
+      "timing": "All candidate text had been generated and two of three Seen execution files were complete. No composed union, analysis output, evaluation summary, or outcome statistic had been inspected.",
+      "rationale": "The same-draw experiment identifies decoding and breadth, but the paper's mechanism ladder also requires the adjacent A3 minus S3 contrast. The analyzer now loads the pre-existing fixed A3 evaluation and compares it with the newly fixed same-draw S3 union under the same problem-cluster procedure.",
+      "impact": "No generated candidate, execution, seed, sampling setting, union, dataset, or existing endpoint changes. This adds the missing adjacent ladder contrast after the two newly identified components.",
+      "original_files": {
+        "scripts/analyze_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a",
+        "tests/test_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a"
+      },
+      "replacement_files": {
+        "scripts/analyze_stochastic_one_decomposition.py": "a109e5025380f5df7cd24340700ae022237fae66",
+        "tests/test_stochastic_one_decomposition.py": "a109e5025380f5df7cd24340700ae022237fae66"
+      }
     }
   ],
   "experiments": {
@@ -173,9 +188,9 @@
       "design": "Generate three newly fixed Answer2027 samples with seeds 4101, 4102, and 4103 at temperature 0.8 and top-p 0.95. Evaluate each sample as a one-candidate policy and evaluate the execution-selected union of those identical three draws. The primary breadth estimand is union RR minus the mean one-draw RR, with problem-cluster bootstrap intervals. Greedy Answer2027 is retained only to estimate the decoding-mode contrast. Seen and Unseen test outcomes are not used to choose seeds, candidates, or analysis.",
       "files": {
         "scripts/generate_vllm_stochastic_candidates.py": "2eec779294e9126247ba6a401827023de5f06987",
-        "scripts/analyze_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a",
+        "scripts/analyze_stochastic_one_decomposition.py": "a109e5025380f5df7cd24340700ae022237fae66",
         "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "9a01a103d2a67169733ded2388711ffa2ccbacb1",
-        "tests/test_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a"
+        "tests/test_stochastic_one_decomposition.py": "a109e5025380f5df7cd24340700ae022237fae66"
       }
     },
     "seen_hidden_and_training_overlap": {
