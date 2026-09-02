@@ -81,6 +81,10 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-current-only-deployment-ladder.json"
   "${RUN_ROOT}/analysis/fse2027-codeworkout-exercise-sensitivity.json"
   "${RUN_ROOT}/analysis/fse2027-stochastic-candidate-control.json"
+  "${RUN_ROOT}/analysis/fse2027-stochastic-one-decomposition.json"
+  "${RUN_ROOT}/analysis/fse2027-independent-hidden-seen.json"
+  "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-zpdpatch.json"
+  "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-answer9.json"
   "${RUN_ROOT}/analysis/fse2027-effect-heterogeneity.json"
   "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
@@ -146,6 +150,10 @@ done
   --current-only-ladder "${RUN_ROOT}/analysis/fse2027-current-only-deployment-ladder.json" \
   --exercise-sensitivity "${RUN_ROOT}/analysis/fse2027-codeworkout-exercise-sensitivity.json" \
   --stochastic-control "${RUN_ROOT}/analysis/fse2027-stochastic-candidate-control.json" \
+  --stochastic-decomposition "${RUN_ROOT}/analysis/fse2027-stochastic-one-decomposition.json" \
+  --seen-hidden "${RUN_ROOT}/analysis/fse2027-independent-hidden-seen.json" \
+  --seen-overlap-zpdpatch "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-zpdpatch.json" \
+  --seen-overlap-answer9 "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-answer9.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 

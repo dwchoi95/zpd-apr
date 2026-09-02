@@ -19,6 +19,8 @@ REQUIRED_RESULT_PREFIXES = (
     "CurrentOnly",
     "ExerciseSensitivity",
     "Stochastic",
+    "SeenHidden",
+    "SeenOverlap",
 )
 
 

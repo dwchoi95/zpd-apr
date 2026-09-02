@@ -17,6 +17,10 @@ def metric(contrast: dict[str, Any], name: str = "rr") -> dict[str, Any]:
     return next(row for row in contrast["paired"] if row["metric"] == name)
 
 
+def named_metric(rows: list[dict[str, Any]], name: str = "rr") -> dict[str, Any]:
+    return next(row for row in rows if row["metric"] == name)
+
+
 def pct(value: float) -> str:
     return f"{100 * value:.1f}"
 
@@ -65,6 +69,10 @@ def build(
     current_only_ladder: dict[str, Any],
     exercise_sensitivity: dict[str, Any],
     stochastic_control: dict[str, Any],
+    stochastic_decomposition: dict[str, Any],
+    seen_hidden: dict[str, Any],
+    seen_overlap_zpdpatch: dict[str, Any],
+    seen_overlap_answer9: dict[str, Any],
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -86,6 +94,12 @@ def build(
         "current_only_deployment_ladder": current_only_ladder,
         "codeworkout_exercise_sensitivity": exercise_sensitivity,
         "stochastic_candidate_control": stochastic_control,
+        "stochastic_one_decomposition": stochastic_decomposition,
+        "seen_hidden": seen_hidden,
+        "seen_training_overlap": {
+            "zpdpatch": seen_overlap_zpdpatch,
+            "answer9": seen_overlap_answer9,
+        },
     }
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
@@ -457,6 +471,78 @@ def macros(result: dict[str, Any]) -> str:
                 f"{row[contrast].get('exact_mcnemar_two_sided_p', 1.0):.4g}"
             )
 
+    decomposition = result["stochastic_one_decomposition"]
+    for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+        row = decomposition["splits"][split]
+        single = row["stochastic_one_expectation"]
+        union = row["stochastic_three_union"]
+        values[f"StochasticOne{prefix}PR"] = pct(single["mean_pr"])
+        values[f"StochasticOne{prefix}RR"] = pct(single["mean_rr"])
+        values[f"StochasticOne{prefix}IR"] = pct(single["mean_ir"])
+        values[f"SameDrawStochasticThree{prefix}PR"] = pct(union["pr"])
+        values[f"SameDrawStochasticThree{prefix}RR"] = pct(union["rr"])
+        values[f"SameDrawStochasticThree{prefix}IR"] = pct(union["ir"])
+        breadth = named_metric(row["three_minus_same_draw_one"]["metrics"])
+        decoding = named_metric(
+            row["stochastic_one_minus_greedy_one_expected"]["metrics"]
+        )
+        checkpoint = metric(
+            row["checkpoint_three_minus_same_draw_stochastic_three"]
+        )
+        values[f"SameDrawThreeMinusOne{prefix}"] = pct(
+            breadth["left_minus_mean_single_instance_weighted"]
+        )
+        values[f"SameDrawThreeMinusOne{prefix}CI"] = ci(breadth)
+        values[f"StochasticOneMinusGreedyOne{prefix}"] = pct(
+            decoding["mean_single_minus_right_instance_weighted"]
+        )
+        values[f"StochasticOneMinusGreedyOne{prefix}CI"] = ci(decoding)
+        values[f"SameDrawAnswerThreeMinusStochasticThree{prefix}"] = pct(
+            checkpoint["left_minus_right_instance_weighted"]
+        )
+        values[f"SameDrawAnswerThreeMinusStochasticThree{prefix}CI"] = ci(
+            checkpoint
+        )
+
+    seen_hidden = result["seen_hidden"]
+    for method, prefix in (("ZPDPatch", "SeenHiddenMixed"), ("Answer-9Choose3", "SeenHiddenAnswerNine")):
+        row = seen_hidden["methods"][method]
+        values[f"{prefix}ObservedRR"] = pct(row["observed_repair_rate"])
+        values[f"{prefix}JointRR"] = pct(row["joint_repair_rate"])
+        values[f"{prefix}HiddenConfirmation"] = pct(
+            row["hidden_confirmation_given_observed"]
+        )
+        values[f"{prefix}HiddenConfirmationCI"] = interval(
+            row["hidden_confirmation_wilson_95_ci"]
+        )
+    values["SeenHiddenMixedMinusAnswerNine"] = pct(
+        seen_hidden["comparison"]["left_minus_right"]
+    )
+    values["SeenHiddenMixedMinusAnswerNineCI"] = interval(
+        seen_hidden["comparison"]["problem_cluster_95_ci"]
+    )
+    for key, prefix in (("zpdpatch", "SeenOverlapMixed"), ("answer9", "SeenOverlapAnswerNine")):
+        row = result["seen_training_overlap"][key]["selected_generated"]
+        values[f"{prefix}Generated"] = str(row["examples"])
+        values[f"{prefix}ExactRate"] = pct(
+            row["exact_same_problem_train_target_rate"]
+        )
+        values[f"{prefix}ExactOtherUserRate"] = pct(
+            row["exact_other_user_train_target"] / row["examples"]
+        )
+        values[f"{prefix}OwnOracleRate"] = pct(
+            row["exact_own_heldout_oracle"] / row["examples"]
+        )
+        values[f"{prefix}NearNinetyRate"] = pct(
+            row["token_similarity_at_least_0_90"] / row["examples"]
+        )
+        values[f"{prefix}NearNinetyFiveRate"] = pct(
+            row["token_similarity_at_least_0_95"] / row["examples"]
+        )
+        values[f"{prefix}MedianSimilarity"] = pct(
+            row["median_max_same_problem_token_similarity"]
+        )
+
     crossfit = result["problem_crossfit"]
     crossfit_rr = metric(crossfit["mixed_minus_answer"])
     values["CrossFitFolds"] = str(crossfit["folds"])
@@ -541,6 +627,10 @@ def main() -> None:
     parser.add_argument("--current-only-ladder", type=Path, required=True)
     parser.add_argument("--exercise-sensitivity", type=Path, required=True)
     parser.add_argument("--stochastic-control", type=Path, required=True)
+    parser.add_argument("--stochastic-decomposition", type=Path, required=True)
+    parser.add_argument("--seen-hidden", type=Path, required=True)
+    parser.add_argument("--seen-overlap-zpdpatch", type=Path, required=True)
+    parser.add_argument("--seen-overlap-answer9", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -564,6 +654,10 @@ def main() -> None:
         read(args.current_only_ladder),
         read(args.exercise_sensitivity),
         read(args.stochastic_control),
+        read(args.stochastic_decomposition),
+        read(args.seen_hidden),
+        read(args.seen_overlap_zpdpatch),
+        read(args.seen_overlap_answer9),
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)

@@ -383,6 +383,68 @@ class ResultBridgeTest(unittest.TestCase):
                     }]
                 },
             }
+        stochastic_decomposition = {"splits": {}}
+        for split in ("seen", "unseen"):
+            stochastic_decomposition["splits"][split] = {
+                "stochastic_three_union": {"rr": 0.61, "pr": 0.70, "ir": 0.65},
+                "stochastic_one_expectation": {
+                    "mean_rr": 0.52,
+                    "mean_pr": 0.62,
+                    "mean_ir": 0.56,
+                },
+                "three_minus_same_draw_one": {
+                    "metrics": [{
+                        "metric": "rr",
+                        "left_minus_mean_single_instance_weighted": 0.09,
+                        "cluster_bootstrap_95ci": [0.07, 0.11],
+                    }]
+                },
+                "stochastic_one_minus_greedy_one_expected": {
+                    "metrics": [{
+                        "metric": "rr",
+                        "mean_single_minus_right_instance_weighted": 0.02,
+                        "cluster_bootstrap_95ci": [-0.01, 0.05],
+                    }]
+                },
+                "checkpoint_three_minus_same_draw_stochastic_three": {
+                    "paired": [{
+                        "metric": "rr",
+                        "left_minus_right_instance_weighted": 0.01,
+                        "cluster_bootstrap_95ci": [-0.01, 0.03],
+                    }]
+                },
+            }
+        seen_hidden = {
+            "methods": {
+                "ZPDPatch": {
+                    "observed_repair_rate": 0.62,
+                    "joint_repair_rate": 0.60,
+                    "hidden_confirmation_given_observed": 0.97,
+                    "hidden_confirmation_wilson_95_ci": [0.95, 0.98],
+                },
+                "Answer-9Choose3": {
+                    "observed_repair_rate": 0.60,
+                    "joint_repair_rate": 0.58,
+                    "hidden_confirmation_given_observed": 0.96,
+                    "hidden_confirmation_wilson_95_ci": [0.94, 0.98],
+                },
+            },
+            "comparison": {
+                "left_minus_right": 0.02,
+                "problem_cluster_95_ci": [-0.01, 0.05],
+            },
+        }
+        overlap = {
+            "selected_generated": {
+                "examples": 600,
+                "exact_same_problem_train_target_rate": 0.01,
+                "exact_other_user_train_target": 4,
+                "exact_own_heldout_oracle": 3,
+                "token_similarity_at_least_0_90": 90,
+                "token_similarity_at_least_0_95": 30,
+                "median_max_same_problem_token_similarity": 0.64,
+            }
+        }
         result = build(
             answer9,
             hidden,
@@ -403,11 +465,29 @@ class ResultBridgeTest(unittest.TestCase):
             current_only_ladder,
             exercise_sensitivity,
             stochastic_control,
+            stochastic_decomposition,
+            seen_hidden,
+            overlap,
+            overlap,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
         rendered = macros(result)
         self.assertNotRegex(rendered, r"\\newcommand\{\\[A-Za-z]*\d")
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
+        self.assertIn(r"\newcommand{\SameDrawThreeMinusOneSeen}{9.0}", rendered)
+        self.assertIn(r"\newcommand{\StochasticOneMinusGreedyOneSeen}{2.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\SameDrawAnswerThreeMinusStochasticThreeSeen}{1.0}",
+            rendered,
+        )
+        self.assertIn(r"\newcommand{\SeenHiddenMixedJointRR}{60.0}", rendered)
+        self.assertIn(r"\newcommand{\SeenOverlapMixedExactRate}{1.0}", rendered)
+        self.assertIn(
+            r"\newcommand{\SeenOverlapMixedExactOtherUserRate}{0.7}", rendered
+        )
+        self.assertIn(
+            r"\newcommand{\SeenOverlapMixedMedianSimilarity}{64.0}", rendered
+        )
         self.assertIn(r"\newcommand{\AnswerThreeMinusOneSeen}{4.0}", rendered)
         self.assertIn(r"\newcommand{\AnswerThreeMinusOneSeenCI}{[2.00, 6.00]}", rendered)
         self.assertIn(r"\newcommand{\AnswerNineMinusThreeSeen}{1.0}", rendered)
