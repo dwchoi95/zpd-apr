@@ -110,6 +110,21 @@
         "scripts/analyze_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a",
         "tests/test_stochastic_one_decomposition.py": "12848f69453b7017f83322a5454794889b87dd5a"
       }
+    },
+    {
+      "id": "seen-hidden-sequential-lora-cache",
+      "kind": "pre-run-runtime-fix",
+      "timing": "The Seen hidden-test runner was queued behind the still-running stochastic decomposition and had not built its testcase split, loaded a model, generated a candidate, or executed an outcome.",
+      "rationale": "The generator reuses one vLLM engine for six sequential adapters. Explicitly retaining six CPU LoRA slots while allowing one active GPU LoRA prevents implementation-dependent eviction or capacity errors without increasing simultaneous GPU adapters.",
+      "impact": "Datasets, partitions, checkpoints, member order, prompts, greedy decoding, token limits, execution, selectors, endpoints, and overlap analysis are unchanged.",
+      "original_files": {
+        "scripts/generate_vllm_greedy_adapters.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
+        "tests/test_vllm_greedy_adapters.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e"
+      },
+      "replacement_files": {
+        "scripts/generate_vllm_greedy_adapters.py": "afd25f0eb79ba4898434ef259ca7b55f3de13786",
+        "tests/test_vllm_greedy_adapters.py": "afd25f0eb79ba4898434ef259ca7b55f3de13786"
+      }
     }
   ],
   "experiments": {
@@ -169,11 +184,11 @@
         "scripts/build_observed_hidden_evaluation.py": "21443be012a015e4f46aaecf0107fa73938386b7",
         "scripts/analyze_observed_hidden_evaluation.py": "21443be012a015e4f46aaecf0107fa73938386b7",
         "scripts/compose_answer_seed_control.py": "bdec5836120c3114fc9d4f4169131dbebc4044d2",
-        "scripts/generate_vllm_greedy_adapters.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
+        "scripts/generate_vllm_greedy_adapters.py": "afd25f0eb79ba4898434ef259ca7b55f3de13786",
         "scripts/analyze_seen_training_overlap.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
         "scripts/run_fse2027_seen_hidden_remote.sh": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
         "tests/test_seen_training_overlap.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
-        "tests/test_vllm_greedy_adapters.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e"
+        "tests/test_vllm_greedy_adapters.py": "afd25f0eb79ba4898434ef259ca7b55f3de13786"
       }
     },
     "current_only_deployment_ladder": {
