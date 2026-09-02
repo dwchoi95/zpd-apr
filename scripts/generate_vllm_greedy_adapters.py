@@ -76,6 +76,8 @@ def main() -> None:
         dtype="bfloat16",
         enable_lora=True,
         max_lora_rank=64,
+        max_loras=1,
+        max_cpu_loras=len(adapters),
         max_model_len=args.max_model_len,
         gpu_memory_utilization=args.gpu_memory_utilization,
         seed=2027,
