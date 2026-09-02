@@ -148,6 +148,19 @@
         "tests/test_stochastic_one_decomposition.py": "9a01a103d2a67169733ded2388711ffa2ccbacb1"
       }
     },
+    "seen_hidden_and_training_overlap": {
+      "design": "Partition every Seen problem testcase by SHA-256 with seed 52027, expose only the observed half in prompts and selection, and require selected patches to pass both observed and untouched hidden halves. Evaluate the already validation-frozen unrestricted mixed portfolio (Answer2028, Progress2027, Strict2028) and Answer-9Choose3 control (Answer2032, Answer2033, Answer2034). Separately compare each selected returned program with every same-problem Answer training target using exact normalized AST and maximum lexical-token similarity. Report overlap separately for repaired and unrepaired generated selections; overlap is treated as compatible with, but not proof of, memorization.",
+      "files": {
+        "scripts/build_observed_hidden_evaluation.py": "21443be012a015e4f46aaecf0107fa73938386b7",
+        "scripts/analyze_observed_hidden_evaluation.py": "21443be012a015e4f46aaecf0107fa73938386b7",
+        "scripts/compose_answer_seed_control.py": "bdec5836120c3114fc9d4f4169131dbebc4044d2",
+        "scripts/generate_vllm_greedy_adapters.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
+        "scripts/analyze_seen_training_overlap.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
+        "scripts/run_fse2027_seen_hidden_remote.sh": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
+        "tests/test_seen_training_overlap.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e",
+        "tests/test_vllm_greedy_adapters.py": "7c2b496141a73724f6d2ee545b3a0a234af7dd3e"
+      }
+    },
     "current_only_deployment_ladder": {
       "files": {
         "scripts/run_fse2027_current_only_deployment_ladder_remote.sh": "c139a4ba5f7861192250c103624128c515819c01",
