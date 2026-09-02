@@ -40,6 +40,14 @@ class StochasticOneDecompositionTest(unittest.TestCase):
             if item["metric"] == "rr"
         )
         self.assertAlmostEqual(rr["left_minus_mean_single_instance_weighted"], 2 / 3)
+        decoding_rr = next(
+            item
+            for item in result["stochastic_one_minus_greedy_one_expected"]["metrics"]
+            if item["metric"] == "rr"
+        )
+        self.assertAlmostEqual(
+            decoding_rr["mean_single_minus_right_instance_weighted"], 1 / 3
+        )
         self.assertEqual(len(result["stochastic_one_minus_greedy_one"]), 3)
 
 

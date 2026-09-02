@@ -128,6 +128,68 @@ def contrast_against_mean_single(
     return result
 
 
+def contrast_mean_single_against_right(
+    single_replicates: list[list[Row]],
+    right: list[Row],
+    *,
+    samples: int,
+    seed: int,
+) -> dict[str, Any]:
+    right_map = keyed(right)
+    single_maps = [keyed(rows) for rows in single_replicates]
+    ids = set(right_map)
+    if not single_maps or any(set(rows) != ids for rows in single_maps):
+        raise ValueError("contrast inputs cover different examples")
+    by_problem: dict[str, list[str]] = defaultdict(list)
+    for item, row in right_map.items():
+        by_problem[str(row["problem_id"])].append(item)
+    problems = sorted(by_problem)
+    result: dict[str, Any] = {
+        "left": "mean of three fixed stochastic one-candidate draws",
+        "right": "greedy one-candidate output",
+        "metrics": [],
+    }
+    rng = random.Random(seed)
+    for metric_name in ("rr", "ir", "pr"):
+        differences = {
+            item: sum(metric(rows[item], metric_name) for rows in single_maps)
+            / len(single_maps)
+            - metric(right_map[item], metric_name)
+            for item in ids
+        }
+        problem_means = {
+            problem: sum(differences[item] for item in members) / len(members)
+            for problem, members in by_problem.items()
+        }
+        instance_draws: list[float] = []
+        problem_draws: list[float] = []
+        for _ in range(samples):
+            sampled = [rng.choice(problems) for _ in problems]
+            values = [differences[item] for problem in sampled for item in by_problem[problem]]
+            instance_draws.append(sum(values) / len(values))
+            problem_draws.append(
+                sum(problem_means[problem] for problem in sampled) / len(sampled)
+            )
+        result["metrics"].append(
+            {
+                "metric": metric_name,
+                "mean_single_minus_right_instance_weighted": sum(differences.values())
+                / len(differences),
+                "cluster_bootstrap_95ci": [
+                    percentile(instance_draws, 0.025),
+                    percentile(instance_draws, 0.975),
+                ],
+                "mean_single_minus_right_problem_balanced": sum(problem_means.values())
+                / len(problem_means),
+                "problem_bootstrap_95ci": [
+                    percentile(problem_draws, 0.025),
+                    percentile(problem_draws, 0.975),
+                ],
+            }
+        )
+    return result
+
+
 def analyze_split(
     stochastic3: list[Row],
     stochastic1: list[list[Row]],
@@ -142,6 +204,9 @@ def analyze_split(
         "greedy_one": summarize_method(greedy1),
         "three_minus_same_draw_one": contrast_against_mean_single(
             stochastic3, stochastic1, samples=samples, seed=seed
+        ),
+        "stochastic_one_minus_greedy_one_expected": contrast_mean_single_against_right(
+            stochastic1, greedy1, samples=samples, seed=seed + 500
         ),
         "stochastic_one_minus_greedy_one": [
             paired_suite_rows(
