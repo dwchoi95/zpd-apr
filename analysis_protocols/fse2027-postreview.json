@@ -195,6 +195,19 @@
         "scripts/run_fse2027_breadth_controls_remote.sh": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
         "tests/test_evaluate_streaming.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2"
       }
+    },
+    {
+      "id": "breadth-control-parallel-sample-execution",
+      "kind": "post-execution-throughput-fix",
+      "timing": "Temperature 0.2 and 0.4 Seen families were complete and temperature 0.6 execution was incomplete. No repair-rate value, paired contrast, temperature comparison, checkpoint comparison, base-model comparison, or analysis JSON had been inspected.",
+      "rationale": "Sequentially assigning 64 execution threads to each sample left a long timeout tail before the next sample began. The runner now evaluates the three fixed sample files concurrently with 22 threads each, keeping nearly the same maximum host concurrency while overlapping their tails.",
+      "impact": "Generated programs, per-program timeout and memory limits, frozen baselines, testcases, seeds, repair definitions, composition, analysis, and endpoints are unchanged. Only scheduling across independent sample files changes; each file remains streamed and restart-safe.",
+      "original_files": {
+        "scripts/run_fse2027_breadth_controls_remote.sh": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2"
+      },
+      "replacement_files": {
+        "scripts/run_fse2027_breadth_controls_remote.sh": "11e88a1115904ef9c489a0d333df42a4990663a1"
+      }
     }
   ],
   "experiments": {
@@ -277,7 +290,7 @@
       "files": {
         "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f",
         "scripts/analyze_fse2027_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f",
-        "scripts/run_fse2027_breadth_controls_remote.sh": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
+        "scripts/run_fse2027_breadth_controls_remote.sh": "11e88a1115904ef9c489a0d333df42a4990663a1",
         "src/cli.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
         "src/repair/evaluate.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
         "scripts/prefetch_fse2027_breadth_generations_remote.sh": "651e65160df0d48d6164b2e64c58fe2b6beafdfa",
