@@ -157,6 +157,25 @@
         "scripts/run_fse2027_seen_hidden_remote.sh": "0f97c44d4a07d8844808282bef8d794c0ea0770b",
         "tests/test_answer_seed_control.py": "0f97c44d4a07d8844808282bef8d794c0ea0770b"
       }
+    },
+    {
+      "id": "breadth-control-execution-only-evaluation",
+      "kind": "post-execution-throughput-fix",
+      "timing": "Temperature 0.2 and the first temperature-0.4 Seen sample had completed execution and TED postprocessing. No repair-rate aggregate, paired contrast, temperature comparison, checkpoint comparison, base-model comparison, or analysis JSON had been inspected. Remaining evaluation files were incomplete or absent.",
+      "rationale": "The breadth-control analyzer uses only execution repair indicators, while generic evaluation additionally computes two exact AST tree-edit distances for every repaired program. A new opt-in flag skips only that unused postprocessing; the default evaluator remains unchanged.",
+      "impact": "Datasets, prompts, checkpoints, generated programs, execution, timeouts, pass rates, repair indicators, composition, fixed seeds, temperatures, selectors, bootstrap procedure, and all declared endpoints are unchanged. Already complete files retain their TED values; later files leave them null. The breadth analyzer never reads TED.",
+      "original_files": {
+        "src/cli.py": "dd1be28696b60c53f6e0588fe438094f102e11cb",
+        "src/repair/evaluate.py": "2e2cc7cedc565d02d6df60fdf2fd859967720e66",
+        "scripts/run_fse2027_breadth_controls_remote.sh": "61085dceae32ab58625b0356874ef2cf59b38810",
+        "tests/test_evaluate_streaming.py": "5237da5367cb300634c312f1f9a01fdeda6b1b11"
+      },
+      "replacement_files": {
+        "src/cli.py": "f89820f1007e7588c90ea942c41684570112ecde",
+        "src/repair/evaluate.py": "f89820f1007e7588c90ea942c41684570112ecde",
+        "scripts/run_fse2027_breadth_controls_remote.sh": "f89820f1007e7588c90ea942c41684570112ecde",
+        "tests/test_evaluate_streaming.py": "f89820f1007e7588c90ea942c41684570112ecde"
+      }
     }
   ],
   "experiments": {
@@ -239,7 +258,9 @@
       "files": {
         "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f",
         "scripts/analyze_fse2027_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f",
-        "scripts/run_fse2027_breadth_controls_remote.sh": "61085dceae32ab58625b0356874ef2cf59b38810",
+        "scripts/run_fse2027_breadth_controls_remote.sh": "f89820f1007e7588c90ea942c41684570112ecde",
+        "src/cli.py": "f89820f1007e7588c90ea942c41684570112ecde",
+        "src/repair/evaluate.py": "f89820f1007e7588c90ea942c41684570112ecde",
         "scripts/prefetch_fse2027_breadth_generations_remote.sh": "651e65160df0d48d6164b2e64c58fe2b6beafdfa",
         "tests/test_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f"
       }
