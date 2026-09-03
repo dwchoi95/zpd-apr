@@ -54,16 +54,16 @@ def budget_frontier(
         )
         relation = read_jsonl(
             reference_root / "selected-portfolios"
-            / f"budget-indexed-relation-{split}-test.max-ted-{budget}.evaluation.jsonl"
+            / f"budget-indexed-unconstrained-{split}-test.max-ted-{budget}.evaluation.jsonl"
         )
         row: dict[str, Any] = {
             "budget": budget,
             "current_only_answer_3seed": summarize_method(current),
-            "budget_selected_relation": summarize_method(relation),
-            "current_only_minus_relation": paired_suite_rows(
+            "budget_selected_zpdpatch": summarize_method(relation),
+            "current_only_minus_zpdpatch": paired_suite_rows(
                 current, relation,
                 left_label="Current-only-Answer-3Seed",
-                right_label="Budget-selected-mixed-target",
+                right_label="Budget-selected-ZPDPatch",
                 samples=samples, seed=seed + offset * 10,
             ),
         }

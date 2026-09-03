@@ -73,6 +73,8 @@ def build(
     seen_hidden: dict[str, Any],
     seen_overlap_zpdpatch: dict[str, Any],
     seen_overlap_answer9: dict[str, Any],
+    breadth_controls: dict[str, Any] | None = None,
+    difficulty_match: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -101,6 +103,10 @@ def build(
             "answer9": seen_overlap_answer9,
         },
     }
+    if breadth_controls is not None:
+        result["breadth_controls"] = breadth_controls
+    if difficulty_match is not None:
+        result["difficulty_matched_holdout"] = difficulty_match
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
         rr = metric(row["zpdpatch_minus_answer_9choose3"])
@@ -430,6 +436,65 @@ def macros(result: dict[str, Any]) -> str:
             values[f"CurrentOnly{method_prefix}{prefix}RR"] = pct(
                 methods[method]["rr"]
             )
+        answer_three = methods["answer_3seed"]
+        if "pr" in answer_three:
+            values[f"CurrentOnlyAnswerThree{prefix}PR"] = pct(answer_three["pr"])
+            values[f"CurrentOnlyAnswerThree{prefix}IR"] = pct(answer_three["ir"])
+            values[f"CurrentOnlyAnswerThree{prefix}TEDBuggyFixed"] = (
+                f"{answer_three['mean_ted_buggy_fixed_on_repaired']:.2f}"
+            )
+            values[f"CurrentOnlyAnswerThree{prefix}TEDFixedOracle"] = (
+                f"{answer_three['mean_ted_fixed_oracle_on_repaired']:.2f}"
+            )
+        for row in current_only["splits"][split].get("budget_frontier", []):
+            suffix = NUMBER_WORDS[int(row["budget"])]
+            values[f"CurrentOnlyAnswerThreeTED{suffix}{prefix}RR"] = pct(
+                row["current_only_answer_3seed"]["rr"]
+            )
+
+    if "breadth_controls" in result:
+        breadth = result["breadth_controls"]
+        for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+            row = breadth["splits"][split]
+            for temperature, summary in row["temperature_sweep"].items():
+                suffix = "T" + temperature.replace(".", "")
+                values[f"Sweep{suffix}{prefix}RR"] = pct(summary["union"]["rr"])
+                values[f"Sweep{suffix}{prefix}SingleRR"] = pct(
+                    summary["single_draw_expectation"]["mean_rr"]
+                )
+            checkpoint = row["decoding_matched_checkpoint_diversity"]
+            values[f"CheckpointStochasticThree{prefix}RR"] = pct(
+                checkpoint["three_checkpoint_stochastic"]["rr"]
+            )
+            effect = metric(checkpoint["three_checkpoint_minus_one_checkpoint"])
+            values[f"CheckpointStochasticMinusSameCheckpoint{prefix}"] = pct(
+                effect["left_minus_right_instance_weighted"]
+            )
+            values[f"CheckpointStochasticMinusSameCheckpoint{prefix}CI"] = ci(effect)
+            base = row["sft_free_breadth"]
+            values[f"BaseStochasticThree{prefix}RR"] = pct(
+                base["base_three_draw_union"]["rr"]
+            )
+            effect = metric(base["answer_minus_base_three_draw"])
+            values[f"AnswerStochasticMinusBase{prefix}"] = pct(
+                effect["left_minus_right_instance_weighted"]
+            )
+            values[f"AnswerStochasticMinusBase{prefix}CI"] = ci(effect)
+
+    if "difficulty_matched_holdout" in result:
+        matched = result["difficulty_matched_holdout"]
+        values["DifficultyMatchedSeenRR"] = pct(
+            matched["matched_seen_problem_balanced_rr"]
+        )
+        values["DifficultyMatchedUnseenRR"] = pct(
+            matched["unseen_problem_balanced_rr"]
+        )
+        values["DifficultyMatchedUnseenMinusSeen"] = pct(
+            matched["unseen_minus_matched_seen"]
+        )
+        values["DifficultyMatchedUnseenMinusSeenCI"] = interval(
+            matched["paired_problem_bootstrap_95ci"]
+        )
 
     exercise = result["codeworkout_exercise_sensitivity"]
     per_effects = [row["mixed_minus_answer_rr"] for row in exercise["per_exercise"]]
@@ -631,6 +696,8 @@ def main() -> None:
     parser.add_argument("--seen-hidden", type=Path, required=True)
     parser.add_argument("--seen-overlap-zpdpatch", type=Path, required=True)
     parser.add_argument("--seen-overlap-answer9", type=Path, required=True)
+    parser.add_argument("--breadth-controls", type=Path)
+    parser.add_argument("--difficulty-match", type=Path)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -658,6 +725,8 @@ def main() -> None:
         read(args.seen_hidden),
         read(args.seen_overlap_zpdpatch),
         read(args.seen_overlap_answer9),
+        read(args.breadth_controls) if args.breadth_controls else None,
+        read(args.difficulty_match) if args.difficulty_match else None,
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)
