@@ -54,7 +54,7 @@ for split in seen unseen; do
     if [[ "${temperature}" == 0.8 ]]; then
       for sampling_seed in 4101 4102 4103; do
         source=${EVAL_ROOT}/stochastic-one-decomposition/${split}/sample-${sampling_seed}
-        [[ -e "${family}/sample-${sampling_seed}.generations.jsonl" ]] || ln -s "${source}.generations.jsonl" "${family}/sample-${sampling_seed}.generations.jsonl"
+        [[ -e "${family}/sample-${sampling_seed}.generations.jsonl" ]] || cp "${source}.generations.jsonl" "${family}/sample-${sampling_seed}.generations.jsonl"
         [[ -e "${family}/sample-${sampling_seed}.evaluation.jsonl" ]] || cp "${source}.evaluation.jsonl" "${family}/sample-${sampling_seed}.evaluation.jsonl"
       done
     elif ! complete_jsonl "${family}/sample-4103.generations.jsonl" "${expected}"; then
