@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the paper's budget-mechanism table against sealed JSON evidence."""
+"""Verify the paper's deployment-frontier table against sealed JSON evidence."""
 
 from __future__ import annotations
 
@@ -11,84 +11,62 @@ from typing import Any
 
 
 BUDGETS = (5, 10, 20, 40, 80, 160)
-PREFIXES = {"Answer": "A", "Progress": "P", "Strict": "S"}
 
 
 def read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text())
 
 
-def short_member(name: str) -> str:
-    for prefix, short in PREFIXES.items():
-        if name.startswith(prefix):
-            return f"{short}{name.removeprefix(prefix)[-2:]}"
-    raise ValueError(f"unsupported checkpoint name: {name}")
-
-
-def members(names: list[str]) -> str:
-    return "--".join(short_member(name) for name in names)
-
-
 def number(value: float, *, signed: bool = False) -> str:
-    rendered = f"{100 * value:+.2f}" if signed else f"{100 * value:.2f}"
+    rendered = f"{100 * value:+.1f}" if signed else f"{100 * value:.1f}"
     return rendered.replace("-", "--")
 
 
-def expected_rows(
-    mixed_selection: dict[str, Any],
-    answer_selection: dict[str, Any],
-    analysis: dict[str, Any],
-) -> list[str]:
-    contrast = analysis["splits"]["seen"][
-        "budget_indexed_zpdpatch_minus_answer_9choose3"
-    ]["per_budget"]
+def expected_rows(lsgen: dict[str, Any], current_only: dict[str, Any]) -> list[str]:
+    current = {
+        int(row["budget"]): row["current_only_answer_3seed"]["rr"]
+        for row in current_only["splits"]["seen"]["budget_frontier"]
+    }
     rows = []
     for budget in BUDGETS:
-        key = str(budget)
-        row = contrast[key]
-        ci = row["problem_cluster_95ci"]
+        row = lsgen["per_budget"][str(budget)]
+        effect = row["budget_indexed_unconstrained_minus_lsgen"]
+        lo, hi = effect["problem_cluster_95ci"]
         rows.append(
             f"{budget} & "
-            f"{members(mixed_selection['selected_unconstrained_by_budget'][key]['members'])} & "
-            f"{members(answer_selection['selected_by_budget'][key]['members'])} & "
-            f"{number(row['difference'], signed=True)} "
-            f"[{number(ci[0])}, {number(ci[1])}] \\\\"
+            f"{number(row['budget_indexed_unconstrained']['repair_rate'])} & "
+            f"{number(current[budget])} & "
+            f"{number(row['lsgen']['repair_rate'])} & "
+            f"{number(effect['rr_difference'], signed=True)} "
+            f"[{number(lo)}, {number(hi)}] \\\\"
         )
     return rows
 
 
-def verify(
-    paper: Path,
-    mixed_selection_path: Path,
-    answer_selection_path: Path,
-    analysis_path: Path,
-) -> dict[str, Any]:
-    text = paper.read_text()
-    rows = expected_rows(
-        read_json(mixed_selection_path),
-        read_json(answer_selection_path),
-        read_json(analysis_path),
-    )
-    paper_rows = {
-        re.sub(r"\s+", " ", line.strip()) for line in text.splitlines()
-    }
+def normalize_tex_row(value: str) -> str:
+    """Ignore TeX math delimiters while preserving every displayed number."""
+    value = value.replace("$", "").replace("--", "-")
+    return re.sub(r"\s+", " ", value.strip())
+
+
+def verify(paper: Path, lsgen_path: Path, current_only_path: Path) -> dict[str, Any]:
+    rows = expected_rows(read_json(lsgen_path), read_json(current_only_path))
+    paper_rows = {normalize_tex_row(line) for line in paper.read_text().splitlines()}
     missing = [
-        row
-        for row in rows
-        if re.sub(r"\s+", " ", row.strip()) not in paper_rows
+        row for row in rows
+        if normalize_tex_row(row) not in paper_rows
     ]
     if missing:
         raise ValueError("paper budget table differs from evidence: " + repr(missing))
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "paper": str(paper),
         "budgets": list(BUDGETS),
         "verified_rows": len(rows),
         "missing_rows": 0,
         "evidence": {
-            "mixed_selection": str(mixed_selection_path),
-            "answer_selection": str(answer_selection_path),
-            "analysis": str(analysis_path),
+            "lsgen": str(lsgen_path),
+            "current_only": str(current_only_path),
         },
     }
 
@@ -96,14 +74,11 @@ def verify(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--paper", type=Path, required=True)
-    parser.add_argument("--mixed-selection", type=Path, required=True)
-    parser.add_argument("--answer-selection", type=Path, required=True)
-    parser.add_argument("--analysis", type=Path, required=True)
+    parser.add_argument("--lsgen", type=Path, required=True)
+    parser.add_argument("--current-only", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    result = verify(
-        args.paper, args.mixed_selection, args.answer_selection, args.analysis
-    )
+    result = verify(args.paper, args.lsgen, args.current_only)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps(result, sort_keys=True))

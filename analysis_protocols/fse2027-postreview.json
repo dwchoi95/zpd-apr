@@ -233,6 +233,29 @@
       "files": {
         "scripts/analyze_codeworkout_exercise_sensitivity.py": "c139a4ba5f7861192250c103624128c515819c01"
       }
+    },
+    "decoding_matched_breadth_controls": {
+      "design": "On Seen and Unseen, use current-only prompts and fixed seeds 4101, 4102, and 4103. Report three-draw Answer2027 unions at temperatures 0.2, 0.4, 0.6, 0.8, and 1.0 with top-p 0.95; compare the temperature-0.8 union with one stochastic draw from each of Answer2027, Answer2028, and Answer2029; and compare it with three identically decoded draws from the untuned base model. Report all split-by-temperature cells without selecting a temperature on test outcomes. Use the identical execution selector and problem-cluster bootstrap throughout.",
+      "files": {
+        "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f",
+        "scripts/analyze_fse2027_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f",
+        "scripts/run_fse2027_breadth_controls_remote.sh": "61085dceae32ab58625b0356874ef2cf59b38810",
+        "tests/test_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f"
+      }
+    },
+    "pre_repair_difficulty_match": {
+      "design": "Match every Unseen problem to one distinct Seen problem using only pre-repair covariates: current pass rate, statement length, current-code length, current AST size, trajectory length, and testcase count. Standardize over the combined pool, solve the exact rectangular assignment, and compare problem-balanced current-only Answer-3Seed repair rates with paired bootstrap intervals. Repair outcomes do not enter matching.",
+      "files": {
+        "scripts/analyze_difficulty_matched_holdout.py": "e95041cb6e8566d1ad42168cdd5cf18704bb3566",
+        "tests/test_difficulty_matched_holdout.py": "e95041cb6e8566d1ad42168cdd5cf18704bb3566"
+      }
+    },
+    "qualitative_patch_locality_case": {
+      "design": "After quantitative analyses, select the largest Answer-minus-Progress TED gap among examples repaired by both policies whose displayed programs are each no longer than 900 characters. Preserve the deterministic candidate census and exclude the example from all estimates.",
+      "files": {
+        "scripts/export_patch_locality_case.py": "2b8f4e6010203a27a883e0a9136cbb49ac4d8266",
+        "tests/test_patch_locality_case.py": "2b8f4e6010203a27a883e0a9136cbb49ac4d8266"
+      }
     }
   }
 }

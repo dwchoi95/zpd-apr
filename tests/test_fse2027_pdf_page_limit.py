@@ -13,6 +13,10 @@ class FSE2027PDFPageLimitTest(unittest.TestCase):
         text = "\n  ZPDPatch: Separating Trajectory Supervision from Checkpoint Diversity\n19\n883   References\n"
         self.assertEqual(first_content_line(text), "References")
 
+    def test_first_content_line_ignores_identification_title(self) -> None:
+        text = "\n  Disentangling Candidate Breadth and Trajectory Supervision in Execution-Guided Program Repair  19\n883 References\n"
+        self.assertEqual(first_content_line(text), "References")
+
     @unittest.skipUnless(
         shutil.which("pdfinfo") and shutil.which("pdftotext"),
         "Poppler tools are required",

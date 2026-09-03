@@ -26,20 +26,19 @@ suite, and records the exact source revision.
 
 | Paper label or claim | Primary evidence |
 |---|---|
-| `tab:functional-comparison` | cited primary systems in `paper/references.bib`; input/control dimensions encoded in `paper/main.tex` |
 | FSE 18+4 page boundary | `analysis/fse2027-pdf-page-limit-audit.json`; rendered-page boundary checked by `scripts/verify_fse2027_pdf_page_limit.py` using Poppler text extraction |
 | double-anonymous submission audit | `analysis/fse2027-anonymity-audit.json`; PDF metadata/text plus `paper/main.tex` and this anonymous entry point checked by `scripts/verify_fse2027_anonymity.py` |
 | paper/result evidence identity | `analysis/fse2027-paper-result-bridge-audit.json`; generated and checked-in TeX bridges compared by `scripts/verify_fse2027_paper_result_bridge.py`, with scale, exercise-held-out, prompt, cross-fit, and verdict-order macro use required in `paper/main.tex` |
 | `tab:data` | `split-summary.json`; `datasets/*-final.summary.json`; `datasets/*-final.filter-summary.json` |
 | `tab:adapter-data` | `datasets/train-*.jsonl`; `datasets/valid-*.jsonl`; `analysis/fse2027-supervision-audit.json` |
-| `tab:patch-budget` | `analysis/fse2027-lsgen-budget-controller.json`; budgeted evaluations under `eval/selected-portfolios/` |
+| `tab:patch-budget` | `analysis/fse2027-lsgen-budget-controller.json`; current-only Answer-3Seed frontier in `analysis/fse2027-current-only-deployment-ladder.json`; budgeted evaluations under `eval/selected-portfolios/` |
 | `tab:main-results` | `analysis/fse2027-robustness.json`; `analysis/fse2027-answer9-control.json`; `analysis/fse2027-selected-portfolios.json` |
 | `tab:rq2` | `eval/rq2-*-comparison/`; `analysis/fse2027-robustness.json` |
 | `tab:rq3` | `eval/progress-seen-test.evaluation.jsonl`; `eval/strict-seen-test.evaluation.jsonl`; `eval/answer-seen-test.evaluation.jsonl` |
 | `tab:rq4` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-stochastic-candidate-control.json`; `analysis/fse2027-operational-cost.json` |
+| decoding-matched breadth controls | temperature sweep, one-vs-three checkpoint stochastic contrast, and SFT-free base-model breadth in `analysis/fse2027-breadth-controls.json`; raw candidates and executions under `eval/breadth-controls/` |
 | `tab:replication-ladder` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-current-only-deployment-ladder.json`; `analysis/fse2027-scale-1.5b.json`; `analysis/fse2027-codeworkout-problem-holdout.json`; `analysis/fse2027-codeworkout-exercise-sensitivity.json`; consolidated macros in `analysis/fse2027-result-bridge.json` |
-| `tab:budget-mechanism` | per-budget members in `analysis/fse2027-portfolio-validation-selection.json` and `analysis/fse2027-answer9-validation-selection.json`; paired Seen contrasts in `analysis/fse2027-answer9-control.json`; exact paper transcription sealed by `analysis/fse2027-paper-budget-table-audit.json` and `scripts/verify_paper_budget_table.py` |
-| `tab:analysis-provenance` | selection rules in `scripts/select_execution_portfolio.py` and `scripts/select_answer_seed_portfolio.py`; frozen-selection analyses listed below |
+| patch-budget table transcription | exact values checked against the LSGen and current-only analyses by `scripts/verify_paper_budget_table.py` and sealed in `analysis/fse2027-paper-budget-table-audit.json` |
 | hidden-test confirmation | `analysis/fse2027-answer9-independent-hidden.json` |
 | problem-disjoint selection | `analysis/fse2027-problem-disjoint-selection.json`; `analysis/fse2027-answer9-problem-disjoint-selection.json`; `analysis/fse2027-problem-disjoint-budget-fair-pools.json` |
 | five-fold problem cross-fitting | `analysis/fse2027-problem-crossfit.json`; fold construction and frozen test replay in `scripts/analyze_problem_crossfit_portfolios.py`; exact 5-fold, 461-validation/997-test cohort identity, 328-problem coverage, and zero fold overlap are sealed by `scripts/verify_fse2027_fair_selection.py` |
@@ -48,8 +47,10 @@ suite, and records the exact source revision.
 | post-review protocol provenance | `analysis_protocols/fse2027-postreview.json`; final seal regenerates `analysis/fse2027-protocol-provenance-audit.json`, rejects changed frozen blobs, and verifies the original and replacement revisions of every declared conformance amendment |
 | exploratory effect heterogeneity | `analysis/fse2027-effect-heterogeneity.json`; fixed strata and paired problem-cluster analysis in `scripts/analyze_fse2027_effect_heterogeneity.py` |
 | normalized edit frontier | `analysis/fse2027-normalized-ted-frontier.json` |
+| pre-repair difficulty match | `analysis/fse2027-difficulty-matched-holdout.json`; exact matching on six outcome-free covariates in `scripts/analyze_fse2027_difficulty_matched_holdout.py` |
 | absolute-budget interpretation | current-program AST node counts and per-budget fractions in `analysis/fse2027-normalized-ted-frontier.json` |
 | source retention | `analysis/fse2027-patch-locality.json` |
+| qualitative locality case | deterministic selection record in `analysis/fse2027-patch-locality-case.json`; selection script `scripts/select_fse2027_patch_locality_case.py` |
 | `tab:codeworkout` | `analysis/fse2027-codeworkout-answer9.json`; `analysis/fse2027-codeworkout-answer9-selection.json` |
 | 1.5B scale replication | `analysis/fse2027-scale-1.5b.json`; `analysis/fse2027-scale-1.5b-{mixed,answer}-selection.json`; fixed Answer-1/3Seed completion and split-specific raw member preservation in `scripts/run_fse2027_scale_a3_remote.sh` |
 | 1.5B split-member replay audit | `analysis/fse2027-scale-split-member-audit.json`; exact dataset-ID coverage enforced by `scripts/verify_fse2027_scale_split_members.py` |
@@ -75,6 +76,7 @@ bash scripts/run_fse2027_prompt_distribution_control_remote.sh
 bash scripts/run_fse2027_problem_crossfit_remote.sh
 bash scripts/run_fse2027_verdict_order_retraining_remote.sh
 bash scripts/run_fse2027_effect_heterogeneity_remote.sh
+bash scripts/run_fse2027_breadth_controls_remote.sh
 ```
 
 The five-fold cross-fitting script hashes problem identities into deterministic

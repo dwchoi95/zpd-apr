@@ -36,9 +36,8 @@ fi
 
 "${PYTHON}" scripts/verify_paper_budget_table.py \
   --paper "${WORK_ROOT}/paper/main.tex" \
-  --mixed-selection "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json" \
-  --answer-selection "${RUN_ROOT}/analysis/fse2027-answer9-validation-selection.json" \
-  --analysis "${RUN_ROOT}/analysis/fse2027-answer9-control.json" \
+  --lsgen "${RUN_ROOT}/analysis/fse2027-lsgen-budget-controller.json" \
+  --current-only "${RUN_ROOT}/analysis/fse2027-current-only-deployment-ladder.json" \
   --output "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
 
 "${PYTHON}" scripts/verify_fse2027_pdf_page_limit.py \
@@ -82,6 +81,9 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-codeworkout-exercise-sensitivity.json"
   "${RUN_ROOT}/analysis/fse2027-stochastic-candidate-control.json"
   "${RUN_ROOT}/analysis/fse2027-stochastic-one-decomposition.json"
+  "${RUN_ROOT}/analysis/fse2027-breadth-controls.json"
+  "${RUN_ROOT}/analysis/fse2027-difficulty-matched-holdout.json"
+  "${RUN_ROOT}/analysis/fse2027-patch-locality-case.json"
   "${RUN_ROOT}/analysis/fse2027-independent-hidden-seen.json"
   "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-zpdpatch.json"
   "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-answer9.json"
@@ -154,6 +156,8 @@ done
   --seen-hidden "${RUN_ROOT}/analysis/fse2027-independent-hidden-seen.json" \
   --seen-overlap-zpdpatch "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-zpdpatch.json" \
   --seen-overlap-answer9 "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-answer9.json" \
+  --breadth-controls "${RUN_ROOT}/analysis/fse2027-breadth-controls.json" \
+  --difficulty-match "${RUN_ROOT}/analysis/fse2027-difficulty-matched-holdout.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 
