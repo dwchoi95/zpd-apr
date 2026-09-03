@@ -33,6 +33,18 @@
     "mechanism_sensitivity": {
       "method": "For each paired mechanism contrast, estimate the cluster-robust standard error from the frozen 95 percent interval and report the two-sided alpha 0.05, 80 percent-power normal-approximation MDE as (1.96 + 0.8416) times that standard error.",
       "interpretation": "MDE is design sensitivity, not evidence that a null effect is exactly zero."
+    },
+    "paired_target_control": {
+      "design": "Match Progress and Answer training records by problem, user, exact current submission, and exact current code; exclude pairs whose target submission is identical; serialize current code only; and retain equal counts.",
+      "models": "Train Progress and Answer adapters with the identical 7B base, seeds 2027/2028/2029, hyperparameters, one epoch, and relation-specific targets on the matched sources.",
+      "inference": "Compare fixed three-seed Progress and Answer controllers on identical current-only Seen and Unseen inputs with the same greedy decoder, execution fallback, and TED budgets.",
+      "endpoints": [
+        "unrestricted paired repair-rate difference",
+        "mean paired repair-rate difference over TED budgets 5, 10, 20, 40, 80, 160",
+        "per-budget paired repair-rate differences",
+        "paired TED and source-preservation summaries on joint repairs"
+      ],
+      "interpretation": "This isolates target construction on a common source distribution and equal sample count; it does not isolate target semantics from the target-distance distribution that those semantics induce."
     }
   },
   "literature_audit": {
