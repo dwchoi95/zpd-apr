@@ -176,6 +176,25 @@
         "scripts/run_fse2027_breadth_controls_remote.sh": "f89820f1007e7588c90ea942c41684570112ecde",
         "tests/test_evaluate_streaming.py": "f89820f1007e7588c90ea942c41684570112ecde"
       }
+    },
+    {
+      "id": "breadth-control-frozen-baseline-reuse",
+      "kind": "protocol-conformance-throughput-fix",
+      "timing": "Temperature 0.2 and the first temperature-0.4 Seen sample were complete; the second temperature-0.4 sample had streamed 992 of 997 rows. No repair-rate aggregate, paired contrast, temperature comparison, checkpoint comparison, base-model comparison, or analysis JSON had been inspected.",
+      "rationale": "The breadth runner re-executed each current program and then deterministically replaced its verdict and pass rate from the frozen split reference. The evaluator now accepts that reference directly and executes only the generated candidate, avoiding duplicated timeout-bound current-program work.",
+      "impact": "Generated candidates and their execution are unchanged. The reused baseline IDs must exactly equal the dataset IDs. Current-program verdicts and pass rates are byte-source-identical to the same reference already applied by post-evaluation normalization; repair indicators, composition, selectors, and all endpoints are unchanged. Recorded online time excludes a reused current execution and is not an endpoint of this control.",
+      "original_files": {
+        "src/cli.py": "f89820f1007e7588c90ea942c41684570112ecde",
+        "src/repair/evaluate.py": "f89820f1007e7588c90ea942c41684570112ecde",
+        "scripts/run_fse2027_breadth_controls_remote.sh": "f89820f1007e7588c90ea942c41684570112ecde",
+        "tests/test_evaluate_streaming.py": "f89820f1007e7588c90ea942c41684570112ecde"
+      },
+      "replacement_files": {
+        "src/cli.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
+        "src/repair/evaluate.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
+        "scripts/run_fse2027_breadth_controls_remote.sh": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
+        "tests/test_evaluate_streaming.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2"
+      }
     }
   ],
   "experiments": {
@@ -258,9 +277,9 @@
       "files": {
         "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f",
         "scripts/analyze_fse2027_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f",
-        "scripts/run_fse2027_breadth_controls_remote.sh": "f89820f1007e7588c90ea942c41684570112ecde",
-        "src/cli.py": "f89820f1007e7588c90ea942c41684570112ecde",
-        "src/repair/evaluate.py": "f89820f1007e7588c90ea942c41684570112ecde",
+        "scripts/run_fse2027_breadth_controls_remote.sh": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
+        "src/cli.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
+        "src/repair/evaluate.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
         "scripts/prefetch_fse2027_breadth_generations_remote.sh": "651e65160df0d48d6164b2e64c58fe2b6beafdfa",
         "tests/test_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f"
       }
