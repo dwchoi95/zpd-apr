@@ -493,6 +493,11 @@ def main() -> None:
     evaluate.add_argument("--data-root", type=Path, default=Path("data"))
     evaluate.add_argument("--workers", type=int, default=8)
     evaluate.add_argument("--ted-workers", type=int, default=None)
+    evaluate.add_argument(
+        "--skip-ted",
+        action="store_true",
+        help="Skip AST edit-distance postprocessing when the analysis uses execution only",
+    )
     evaluate.add_argument("--timeout-sec", type=float, default=2.5)
     evaluate.add_argument("--no-resume", action="store_true")
 
@@ -879,6 +884,7 @@ def main() -> None:
             timeout_sec=args.timeout_sec,
             resume=not args.no_resume,
             ted_workers=args.ted_workers,
+            compute_tree_edit_distance=not args.skip_ted,
         )
         print(json.dumps(asdict(summary), ensure_ascii=False, indent=2, default=str))
         return

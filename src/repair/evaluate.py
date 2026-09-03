@@ -42,6 +42,7 @@ def evaluate_generations(
     timeout_sec: float = 2.5,
     resume: bool = True,
     ted_workers: int | None = None,
+    compute_tree_edit_distance: bool = True,
 ) -> EvaluationSummary:
     records = {item["example_id"]: item for item in _iter_jsonl(dataset_path)}
     generations = list(_iter_jsonl(generations_path))
@@ -140,11 +141,12 @@ def evaluate_generations(
                 output.write(json.dumps(result, ensure_ascii=False) + "\n")
                 output.flush()
 
-    _compute_repaired_ted(
-        results,
-        records,
-        workers=workers if ted_workers is None else ted_workers,
-    )
+    if compute_tree_edit_distance:
+        _compute_repaired_ted(
+            results,
+            records,
+            workers=workers if ted_workers is None else ted_workers,
+        )
     results.sort(key=lambda item: item["example_id"])
     _rewrite_completed_evaluations(output_path, results)
 

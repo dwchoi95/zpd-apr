@@ -148,6 +148,33 @@ class EvaluateStreamingTest(unittest.TestCase):
             self.assertIsNone(result["ted_buggy_fixed"])
             self.assertIsNone(result["ted_fixed_oracle"])
 
+    def test_explicit_execution_only_mode_skips_ted_for_repairs(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            dataset = root / "dataset.jsonl"
+            generations = root / "generations.jsonl"
+            output = root / "evaluation.jsonl"
+            _write_jsonl(dataset, [_record("a", "buggy-a")])
+            _write_jsonl(generations, [_generation("a", "fixed-a")])
+            with (
+                patch("src.repair.evaluate.PythonSubmissionRunner", _FakeRunner),
+                patch("src.repair.evaluate.load_testcases", return_value=[object()]),
+                patch("src.repair.evaluate.tree_edit_distance") as ted,
+            ):
+                summary = evaluate_generations(
+                    dataset.parent,
+                    dataset,
+                    generations,
+                    output,
+                    workers=2,
+                    timeout_sec=0.1,
+                    compute_tree_edit_distance=False,
+                )
+            ted.assert_not_called()
+            self.assertEqual(summary.repaired, 1)
+            [result] = list(_iter_jsonl(output))
+            self.assertIsNone(result["ted_buggy_fixed"])
+
 
 def _evaluate(dataset: Path, generations: Path, output: Path) -> object:
     with (
