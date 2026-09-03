@@ -208,6 +208,19 @@
       "replacement_files": {
         "scripts/run_fse2027_breadth_controls_remote.sh": "11e88a1115904ef9c489a0d333df42a4990663a1"
       }
+    },
+    {
+      "id": "stochastic-generator-optional-adapter-compatibility",
+      "kind": "backward-compatible-interface-extension",
+      "timing": "The original stochastic-candidate and same-draw experiments were complete before the breadth-control extension. Their generated programs and analyses were not rerun. The extension was required to add the untuned base-model cell.",
+      "rationale": "The shared generator now permits an absent adapter and an explicit method prefix. When the historically required adapter is supplied and the prefix is omitted, the default Answer2027 label, LoRA request, prompts, seeds, sampling parameters, and generated outputs follow the original path.",
+      "impact": "This amendment records source compatibility only. It changes no previously generated candidate or result; the new no-adapter branch is used solely by the separately declared base-model breadth control.",
+      "original_files": {
+        "scripts/generate_vllm_stochastic_candidates.py": "2eec779294e9126247ba6a401827023de5f06987"
+      },
+      "replacement_files": {
+        "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f"
+      }
     }
   ],
   "experiments": {
@@ -246,16 +259,16 @@
     "stochastic_candidate_breadth": {
       "files": {
         "src/repair/inference.py": "b287a898352073ad192afaa3634aaad06269923f",
-        "src/cli.py": "dd1be28696b60c53f6e0588fe438094f102e11cb",
+        "src/cli.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
         "scripts/run_fse2027_stochastic_candidate_control_remote.sh": "2eec779294e9126247ba6a401827023de5f06987",
-        "scripts/generate_vllm_stochastic_candidates.py": "2eec779294e9126247ba6a401827023de5f06987",
+        "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f",
         "scripts/analyze_stochastic_candidate_control.py": "dd1be28696b60c53f6e0588fe438094f102e11cb"
       }
     },
     "stochastic_one_decomposition": {
       "design": "Generate three newly fixed Answer2027 samples with seeds 4101, 4102, and 4103 at temperature 0.8 and top-p 0.95. Evaluate each sample as a one-candidate policy and evaluate the execution-selected union of those identical three draws. The primary breadth estimand is union RR minus the mean one-draw RR, with problem-cluster bootstrap intervals. Greedy Answer2027 is retained only to estimate the decoding-mode contrast. Seen and Unseen test outcomes are not used to choose seeds, candidates, or analysis.",
       "files": {
-        "scripts/generate_vllm_stochastic_candidates.py": "2eec779294e9126247ba6a401827023de5f06987",
+        "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f",
         "scripts/analyze_stochastic_one_decomposition.py": "a109e5025380f5df7cd24340700ae022237fae66",
         "scripts/run_fse2027_stochastic_one_decomposition_remote.sh": "9a01a103d2a67169733ded2388711ffa2ccbacb1",
         "tests/test_stochastic_one_decomposition.py": "a109e5025380f5df7cd24340700ae022237fae66"
