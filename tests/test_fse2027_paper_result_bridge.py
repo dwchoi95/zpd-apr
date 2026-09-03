@@ -19,7 +19,7 @@ BRIDGE = """\
 \\newcommand{\\StochasticThreeSeenRR}{60.0}
 \\newcommand{\\SeenHiddenMixedJointRR}{45.0}
 \\newcommand{\\SeenOverlapMixedExactRate}{1.0}
-\\newcommand{\\SweepT08SeenRR}{63.0}
+\\newcommand{\\SweepTPointEightSeenRR}{63.0}
 \\newcommand{\\CheckpointStochasticThreeSeenRR}{64.0}
 \\newcommand{\\BaseStochasticThreeSeenRR}{50.0}
 \\newcommand{\\DifficultyMatchedSeenRR}{70.0}

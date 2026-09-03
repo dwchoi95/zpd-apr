@@ -7,6 +7,10 @@
 \newcommand{\AnswerNineUnseenRR}{74.8}
 \newcommand{\AnswerOneSeenRR}{50.1}
 \newcommand{\AnswerOneUnseenRR}{65.6}
+\newcommand{\AnswerStochasticMinusBaseSeen}{27.2}
+\newcommand{\AnswerStochasticMinusBaseSeenCI}{[22.99, 31.41]}
+\newcommand{\AnswerStochasticMinusBaseUnseen}{6.4}
+\newcommand{\AnswerStochasticMinusBaseUnseenCI}{[1.19, 11.34]}
 \newcommand{\AnswerThreeMinusOneSeen}{11.6}
 \newcommand{\AnswerThreeMinusOneSeenCI}{[9.54, 13.74]}
 \newcommand{\AnswerThreeMinusOneUnseen}{7.6}
@@ -19,10 +23,18 @@
 \newcommand{\AnswerThreeMinusStochasticThreeUnseenP}{0.7201}
 \newcommand{\AnswerThreeSeenRR}{61.7}
 \newcommand{\AnswerThreeUnseenRR}{73.2}
+\newcommand{\BaseStochasticThreeSeenRR}{30.4}
+\newcommand{\BaseStochasticThreeUnseenRR}{65.6}
 \newcommand{\BudgetMixedMinusAnswerNineSeen}{1.2}
 \newcommand{\BudgetMixedMinusAnswerNineSeenCI}{[0.02, 2.42]}
 \newcommand{\BudgetMixedMinusAnswerNineUnseen}{1.4}
 \newcommand{\BudgetMixedMinusAnswerNineUnseenCI}{[-1.23, 4.02]}
+\newcommand{\CheckpointStochasticMinusSameCheckpointSeen}{-0.1}
+\newcommand{\CheckpointStochasticMinusSameCheckpointSeenCI}{[-2.00, 1.80]}
+\newcommand{\CheckpointStochasticMinusSameCheckpointUnseen}{2.4}
+\newcommand{\CheckpointStochasticMinusSameCheckpointUnseenCI}{[-0.41, 5.31]}
+\newcommand{\CheckpointStochasticThreeSeenRR}{57.5}
+\newcommand{\CheckpointStochasticThreeUnseenRR}{74.4}
 \newcommand{\CodeWorkoutProblemAnswerNineIR}{61.8}
 \newcommand{\CodeWorkoutProblemAnswerNineMembers}{Answer2027--Answer2028--Answer2029}
 \newcommand{\CodeWorkoutProblemAnswerNineMinusThree}{0.0}
@@ -89,10 +101,34 @@
 \newcommand{\CurrentOnlyAnswerNineUnseenRR}{82.0}
 \newcommand{\CurrentOnlyAnswerOneSeenRR}{58.1}
 \newcommand{\CurrentOnlyAnswerOneUnseenRR}{69.6}
+\newcommand{\CurrentOnlyAnswerThreeSeenIR}{78.6}
+\newcommand{\CurrentOnlyAnswerThreeSeenPR}{90.2}
 \newcommand{\CurrentOnlyAnswerThreeSeenRR}{72.0}
+\newcommand{\CurrentOnlyAnswerThreeSeenTEDBuggyFixed}{37.94}
+\newcommand{\CurrentOnlyAnswerThreeSeenTEDFixedOracle}{35.51}
+\newcommand{\CurrentOnlyAnswerThreeTEDEightySeenRR}{61.0}
+\newcommand{\CurrentOnlyAnswerThreeTEDEightyUnseenRR}{71.2}
+\newcommand{\CurrentOnlyAnswerThreeTEDFiveSeenRR}{16.9}
+\newcommand{\CurrentOnlyAnswerThreeTEDFiveUnseenRR}{32.0}
+\newcommand{\CurrentOnlyAnswerThreeTEDFortySeenRR}{51.4}
+\newcommand{\CurrentOnlyAnswerThreeTEDFortyUnseenRR}{67.2}
+\newcommand{\CurrentOnlyAnswerThreeTEDOneSixtySeenRR}{66.8}
+\newcommand{\CurrentOnlyAnswerThreeTEDOneSixtyUnseenRR}{72.0}
+\newcommand{\CurrentOnlyAnswerThreeTEDTenSeenRR}{28.5}
+\newcommand{\CurrentOnlyAnswerThreeTEDTenUnseenRR}{40.8}
+\newcommand{\CurrentOnlyAnswerThreeTEDTwentySeenRR}{40.3}
+\newcommand{\CurrentOnlyAnswerThreeTEDTwentyUnseenRR}{54.8}
+\newcommand{\CurrentOnlyAnswerThreeUnseenIR}{88.0}
+\newcommand{\CurrentOnlyAnswerThreeUnseenPR}{89.3}
 \newcommand{\CurrentOnlyAnswerThreeUnseenRR}{81.2}
+\newcommand{\CurrentOnlyAnswerThreeUnseenTEDBuggyFixed}{16.01}
+\newcommand{\CurrentOnlyAnswerThreeUnseenTEDFixedOracle}{16.58}
 \newcommand{\CurrentOnlyMixedSeenRR}{72.0}
 \newcommand{\CurrentOnlyMixedUnseenRR}{81.2}
+\newcommand{\DifficultyMatchedSeenRR}{86.4}
+\newcommand{\DifficultyMatchedUnseenMinusSeen}{-4.6}
+\newcommand{\DifficultyMatchedUnseenMinusSeenCI}{[-14.18, 5.30]}
+\newcommand{\DifficultyMatchedUnseenRR}{81.8}
 \newcommand{\ExerciseSensitivityClusters}{4}
 \newcommand{\ExerciseSensitivityLOOMaximum}{4.4}
 \newcommand{\ExerciseSensitivityLOOMinimum}{3.6}
@@ -262,6 +298,26 @@
 \newcommand{\StochasticThreeUnseenIR}{76.8}
 \newcommand{\StochasticThreeUnseenPR}{83.4}
 \newcommand{\StochasticThreeUnseenRR}{72.0}
+\newcommand{\SweepTOnePointZeroSeenRR}{60.0}
+\newcommand{\SweepTOnePointZeroSeenSingleRR}{41.1}
+\newcommand{\SweepTOnePointZeroUnseenRR}{75.2}
+\newcommand{\SweepTOnePointZeroUnseenSingleRR}{62.5}
+\newcommand{\SweepTPointEightSeenRR}{57.6}
+\newcommand{\SweepTPointEightSeenSingleRR}{42.5}
+\newcommand{\SweepTPointEightUnseenRR}{72.0}
+\newcommand{\SweepTPointEightUnseenSingleRR}{61.1}
+\newcommand{\SweepTPointFourSeenRR}{51.9}
+\newcommand{\SweepTPointFourSeenSingleRR}{42.7}
+\newcommand{\SweepTPointFourUnseenRR}{68.8}
+\newcommand{\SweepTPointFourUnseenSingleRR}{62.3}
+\newcommand{\SweepTPointSixSeenRR}{54.8}
+\newcommand{\SweepTPointSixSeenSingleRR}{43.0}
+\newcommand{\SweepTPointSixUnseenRR}{70.8}
+\newcommand{\SweepTPointSixUnseenSingleRR}{62.5}
+\newcommand{\SweepTPointTwoSeenRR}{48.4}
+\newcommand{\SweepTPointTwoSeenSingleRR}{43.1}
+\newcommand{\SweepTPointTwoUnseenRR}{65.6}
+\newcommand{\SweepTPointTwoUnseenSingleRR}{62.3}
 \newcommand{\TEDFiveAtMostTenPercentInputs}{91.9}
 \newcommand{\TEDFiveMedianASTFraction}{4.5}
 \newcommand{\TEDFortyAtMostTenPercentInputs}{3.3}

@@ -48,6 +48,14 @@ NUMBER_WORDS = {
     160: "OneSixty",
 }
 
+TEMPERATURE_WORDS = {
+    "0.2": "PointTwo",
+    "0.4": "PointFour",
+    "0.6": "PointSix",
+    "0.8": "PointEight",
+    "1.0": "OnePointZero",
+}
+
 
 def build(
     answer9: dict[str, Any],
@@ -457,7 +465,7 @@ def macros(result: dict[str, Any]) -> str:
         for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
             row = breadth["splits"][split]
             for temperature, summary in row["temperature_sweep"].items():
-                suffix = "T" + temperature.replace(".", "")
+                suffix = "T" + TEMPERATURE_WORDS[temperature]
                 values[f"Sweep{suffix}{prefix}RR"] = pct(summary["union"]["rr"])
                 values[f"Sweep{suffix}{prefix}SingleRR"] = pct(
                     summary["single_draw_expectation"]["mean_rr"]

@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.build_fse2027_result_bridge import build, macros
+from scripts.build_fse2027_result_bridge import TEMPERATURE_WORDS, build, macros
 
 
 def split_row(mixed: float, answer: float) -> dict:
@@ -73,6 +73,10 @@ def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> 
 
 
 class ResultBridgeTest(unittest.TestCase):
+    def test_temperature_macro_suffixes_are_valid_tex_control_words(self) -> None:
+        self.assertEqual(set(TEMPERATURE_WORDS), {"0.2", "0.4", "0.6", "0.8", "1.0"})
+        self.assertTrue(all(value.isalpha() for value in TEMPERATURE_WORDS.values()))
+
     def test_canonical_values_and_macros(self) -> None:
         answer9 = {"splits": {"seen": split_row(0.6, 0.59), "unseen": split_row(0.7, 0.68)}}
         stability = {"problem_bootstrap": {"full_selection_fraction": 0.44}}

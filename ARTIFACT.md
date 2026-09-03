@@ -36,7 +36,7 @@ suite, and records the exact source revision.
 | `tab:rq2` | `eval/rq2-*-comparison/`; `analysis/fse2027-robustness.json` |
 | `tab:rq3` | `eval/progress-seen-test.evaluation.jsonl`; `eval/strict-seen-test.evaluation.jsonl`; `eval/answer-seen-test.evaluation.jsonl` |
 | `tab:rq4` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-stochastic-candidate-control.json`; `analysis/fse2027-operational-cost.json` |
-| decoding-matched breadth controls | temperature sweep, one-vs-three checkpoint stochastic contrast, and SFT-free base-model breadth in `analysis/fse2027-breadth-controls.json`; raw candidates and executions under `eval/breadth-controls/` |
+| `tab:breadth-controls` | temperature sweep, one-vs-three checkpoint stochastic contrast, and SFT-free base-model breadth in `analysis/fse2027-breadth-controls.json`; raw candidates and executions under `eval/breadth-controls/` |
 | `tab:replication-ladder` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-current-only-deployment-ladder.json`; `analysis/fse2027-scale-1.5b.json`; `analysis/fse2027-codeworkout-problem-holdout.json`; `analysis/fse2027-codeworkout-exercise-sensitivity.json`; consolidated macros in `analysis/fse2027-result-bridge.json` |
 | patch-budget table transcription | exact values checked against the LSGen and current-only analyses by `scripts/verify_paper_budget_table.py` and sealed in `analysis/fse2027-paper-budget-table-audit.json` |
 | hidden-test confirmation | `analysis/fse2027-answer9-independent-hidden.json` |

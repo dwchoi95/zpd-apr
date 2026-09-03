@@ -581,14 +581,10 @@ CodeWorkout split uses 10/3/4 disjoint train/validation/test exercises
 213/150/161 students, including 151 shared train--test identities; it therefore
 isolates assignment transfer, whereas the student split isolates learners.
 
-OpenAI Codex was used interactively to propose control and validation-selection
-design alternatives, implement dataset builders, orchestrate experiments,
-develop statistical-analysis scripts, and assist manuscript drafting. The
-authors selected the final design and acceptance criteria, executed every job on
-author-controlled infrastructure, reviewed code changes, and checked reported
-values against saved machine-readable outputs. AI-produced text was not treated
-as empirical evidence, and every cited work was checked against a retrievable
-source.
+OpenAI Codex was used interactively for control design, implementation,
+orchestration, analysis, and drafting. The authors selected the design and criteria, ran jobs on
+author-controlled infrastructure, reviewed changes, verified every value
+against saved outputs, and checked citations; AI text was not empirical evidence.
 
 An isolated runner executes original and generated programs: Python800 uses the
 Python judge and CodeWorkout compiles Java 21 in a network-disabled container.
@@ -855,43 +851,74 @@ algorithm with tree edit distance 83. Both repairs pass all tests.}
 
 \subsection{RQ4: Mechanism Identification}
 
-The original Progress--Strict--Answer controller reaches 59.5\% RR, 9.4 points
-[7.6, 11.3] above the strongest member, but does not identify why. Its early
-stop uses 2.04 calls per input instead of three, and fallback abstains 329
-times. The complete ladder below separates the sources of its coverage.
+The original P--S--A controller reaches 59.5\% RR, +9.4 points [7.6, 11.3]
+over its strongest member, but this aggregate does not identify why.
 
 \paragraph{Answer to RQ4.}
-The complete ladder separates five mechanisms. Candidate breadth is the
-dominant unrestricted-coverage effect. Changing greedy decoding to one
-stochastic draw contributes
+Candidate breadth is the dominant unrestricted-coverage effect. Changing
+greedy decoding to one stochastic draw contributes
 \StochasticOneMinusGreedyOneSeen{} points
 \StochasticOneMinusGreedyOneSeenCI, whereas execution-selecting three of those
 identical fixed draws contributes
 \SameDrawThreeMinusOneSeen{} points
-\SameDrawThreeMinusOneSeenCI. Independent checkpoints then contribute
-\SameDrawAnswerThreeMinusStochasticThreeSeen{} points
-\SameDrawAnswerThreeMinusStochasticThreeSeenCI. Enlarging only the Answer pool
-does not improve it: \(A_9-A_3=-1.91\) [--4.30, 0.32]. The primary five-fold,
-instance-weighted $M_9-A_9$ estimate is +2.2 [--0.19, 4.63], hence null; the
-non-cross-fitted estimate is +1.71 [--0.79, 4.29]. Equal-problem estimates are
-positive sensitivity analyses, not the confirmatory result. Thus mixed targets
-do not establish a robust unrestricted RR advantage. Repeating one checkpoint
-with generated feedback reaches only 55.2\%, and compulsory one-per-relation
-selection reduces RR to 57.3\%.
+\SameDrawThreeMinusOneSeenCI. In Table~\ref{tab:breadth-controls}, mean
+one-draw RR stays within 41.1--43.1\% Seen and 61.1--62.5\% Unseen, while the
+three-draw union rises 48.4--60.0\% and 65.6--75.2\%, respectively. Temperature
+changes complementarity far more than marginal success; no test cell is tuned.
 
-Relation targets instead produce a constrained-repair effect. Across six
-predeclared TED budgets, budget-specific \(M_9\) portfolios improve mean Seen
-RR over selection-matched \(A_9\) by 1.22 points [0.02, 2.42], with TED 20 at
-+1.61 [0.39, 2.85]. On 532 jointly repaired inputs, \(M_9\) preserves 2.57 more
-buggy-token points [1.56, 3.64] and 3.33 more non-empty-line points
-[1.89, 4.83]. The method contribution is therefore target-dependent patch
-scope under an executable deployment constraint, while candidate breadth
-explains most unrestricted coverage.
+At matched temperature, replacing three Answer2027 draws with one draw from
+each of three Answer checkpoints changes RR by
+\CheckpointStochasticMinusSameCheckpointSeen{} points
+\CheckpointStochasticMinusSameCheckpointSeenCI{} on Seen and
+\CheckpointStochasticMinusSameCheckpointUnseen{} points
+\CheckpointStochasticMinusSameCheckpointUnseenCI{} on Unseen; both intervals
+include zero. Answer SFT beats the matched base-model union by
+\AnswerStochasticMinusBaseSeen{} points
+\AnswerStochasticMinusBaseSeenCI{} on Seen and
+\AnswerStochasticMinusBaseUnseen{} points
+\AnswerStochasticMinusBaseUnseenCI{} on Unseen. Fine-tuning and breadth matter;
+checkpoint identity adds no conclusive third effect.
 
-A post-hoc normalized audit on 966 parseable inputs finds positive $M_9-A_9$
-effects at TED/current-AST limits 0.10, 0.20, and 0.40 (+2.80, +3.83, and
-+2.90 points), while 0.05, 0.80, and 1.60 include zero. This exploratory
-result neither replaces the fixed absolute frontier nor supports learner quality.
+Enlarging only the Answer pool also fails to help: \(A_9-A_3=-1.91\)
+[--4.30, 0.32]. Primary five-fold $M_9-A_9$ is +2.2 [--0.19, 4.63], and the
+non-cross-fitted estimate is +1.71 [--0.79, 4.29]; equal-problem estimates are
+sensitivity analyses. Generated-feedback repetition reaches 55.2\%, and
+compulsory one-per-relation selection reaches 57.3\%.
+
+\begin{table}[t]
+\caption{Temperature sweep RR (\%). ``1'' is mean single-draw performance and
+``3'' is the same three draws' execution-selected union.}
+\label{tab:breadth-controls}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrr}
+\toprule
+$T$ & .2 & .4 & .6 & .8 & 1.0 \\
+\midrule
+Seen-1 & \SweepTPointTwoSeenSingleRR & \SweepTPointFourSeenSingleRR & \SweepTPointSixSeenSingleRR & \SweepTPointEightSeenSingleRR & \SweepTOnePointZeroSeenSingleRR \\
+Seen-3 & \SweepTPointTwoSeenRR & \SweepTPointFourSeenRR & \SweepTPointSixSeenRR & \SweepTPointEightSeenRR & \SweepTOnePointZeroSeenRR \\
+Unseen-1 & \SweepTPointTwoUnseenSingleRR & \SweepTPointFourUnseenSingleRR & \SweepTPointSixUnseenSingleRR & \SweepTPointEightUnseenSingleRR & \SweepTOnePointZeroUnseenSingleRR \\
+Unseen-3 & \SweepTPointTwoUnseenRR & \SweepTPointFourUnseenRR & \SweepTPointSixUnseenRR & \SweepTPointEightUnseenRR & \SweepTOnePointZeroUnseenRR \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+At $T=.8$, three-checkpoint RR is
+\CheckpointStochasticThreeSeenRR/\CheckpointStochasticThreeUnseenRR\% and
+base-model RR is \BaseStochasticThreeSeenRR/\BaseStochasticThreeUnseenRR\%
+(Seen/Unseen).
+\end{table}
+
+Relation targets instead affect constrained repair. Across six TED budgets,
+budget-specific \(M_9\) improves mean Seen RR over matched \(A_9\) by 1.22
+points [0.02, 2.42]; at TED 20 the effect is +1.61 [0.39, 2.85]. On 532 joint
+repairs, \(M_9\) preserves 2.57 more buggy-token points [1.56, 3.64] and 3.33
+more non-empty-line points [1.89, 4.83]. Thus relation targets change patch
+scope under an executable constraint, not unrestricted coverage.
+
+A post-hoc normalized audit finds positive $M_9-A_9$ at relative limits 0.10,
+0.20, and 0.40 (+2.80, +3.83, +2.90 points); three other limits include zero.
+It neither replaces the fixed frontier nor supports learner quality.
 
 \subsection{RQ5: Problem Generalization}
 
@@ -905,7 +932,8 @@ On Unseen, Independent Policies exceeds repeated Answer-with-feedback, 73.2\%
 versus 68.4\% RR (15 versus three exclusive repairs; McNemar
 \(p=.00754\)), but matches independent Answer-3Seed: 73.2\%, difference 0.0
 [--3.2, 3.1], \(p=1.0\). Thus problem-held-out evidence supports checkpoint
-diversity, not relation heterogeneity.
+breadth, not relation heterogeneity; the decoding-matched contrast in RQ4 does
+not identify an additional checkpoint-diversity gain.
 
 The frozen unrestricted \(M_9\) and selection-matched \(A_9\) winners both
 reach 74.8\% Unseen RR. Their paired difference is 0.0 points
@@ -925,9 +953,10 @@ that novelty helps repair.
 A post-review matching audit makes that caveat testable. Without using repair
 outcomes, minimum-cost assignment pairs all 54 Unseen problems to distinct Seen
 problems on current pass rate, statement and code size, AST size, history
-length, and test count. For current-only $A_3$, problem-balanced RR is 81.8\%
-on Unseen versus 86.4\% on matched Seen: $-4.58$ points
-[--14.18, 5.30]. The interval is wide, but the apparent raw reversal
+length, and test count. For current-only $A_3$, problem-balanced RR is
+\DifficultyMatchedUnseenRR\% on Unseen versus \DifficultyMatchedSeenRR\% on
+matched Seen: \DifficultyMatchedUnseenMinusSeen{} points
+\DifficultyMatchedUnseenMinusSeenCI. The interval is wide, but the apparent raw reversal
 disappears; we use only within-split paired contrasts for method claims.
 
 \paragraph{Independent-test confirmation.}
@@ -944,11 +973,6 @@ tests, but this confirmation does not distinguish their coverage.
 
 \subsection{RQ6: Robustness and External Replication}
 
-\paragraph{Conformance, dependence, and seeds.}
-No construction, non-regression, budget, or parse violation occurs. Across
-three P--S--A runs, Seen/Unseen RR SD is 1.0/1.9; all six fixed-candidate orders
-preserve RR, while P--S--A minimizes calls and TED. These are conformance checks.
-
 \paragraph{Seen hidden tests and training-target overlap.}
 ZPDPatch/\(A_9\) observed-only RR is
 \SeenHiddenMixedObservedRR/\SeenHiddenAnswerNineObservedRR\% and joint hidden
@@ -963,8 +987,9 @@ At 1.5B, $A_3-A_1=\ScaleAnswerThreeMinusOneSeen$
 \ScaleAnswerThreeMinusOneSeenCI, while $M_9-A_9=\ScaleMixedMinusAnswerNineSeen$
 \ScaleMixedMinusAnswerNineSeenCI. The four-exercise Java holdout is positive
 (\CodeWorkoutProblemMixedMinusAnswerNine{} points
-\CodeWorkoutProblemMixedMinusAnswerNineExerciseCI), but 151 users cross its
-boundary; the user-disjoint holdout is null
+\CodeWorkoutProblemMixedMinusAnswerNineExerciseCI; per-exercise
++\ExerciseSensitivityPerMinimum{} to +\ExerciseSensitivityPerMaximum), but
+151 users cross its boundary; the user-disjoint holdout is null
 (\CodeWorkoutStudentMixedMinusAnswerNine{} points
 \CodeWorkoutStudentMixedMinusAnswerNineStudentCI). Breadth replicates;
 relation composition does not.
@@ -1011,34 +1036,28 @@ unmeasured.
 \label{sec:threats}
 
 \noindent\emph{Construct validity.} Passing generated tests is not semantic
-equivalence, although independent hidden partitions confirm 97.8--98.9\% of
-observed repairs. TED and source retention measure structural change, not
-readability, hint quality, or learning. We consequently report a Pareto cost
-axis rather than claiming pedagogical superiority.
+equivalence, despite 97.8--98.9\% hidden-partition confirmation. TED and source
+retention measure change, not readability, hint quality, or learning; they are
+a Pareto cost axis, not evidence of pedagogical superiority.
 \emph{Internal validity.} $M_9-A_9$ changes the complete
-relation-specific data construction, including target distance and sample
-count; it does not isolate relation semantics. The original $A_3-S_3$ contrast
-also changes decoding, which motivates the added stochastic three-checkpoint
-cell and temperature sweep. Repository freezing preceded these additions, but
-none of the analyses was externally preregistered.
+data construction, including target distance and count, rather than relation
+semantics alone. The original $A_3-S_3$ also changed decoding; the matched
+checkpoint and temperature controls resolve that confound. None was externally preregistered.
 \emph{Leakage and selection.} Unseen excludes every training problem
 ~\cite{allamanis2019adverse}; Seen permits problem and user overlap. Hidden-test,
-cross-fit, exact-AST, token-similarity, and difficulty-matching audits reduce
-specific alternatives but cannot eliminate algorithmic memorization. We treat
-the instance-weighted cross-fit null as primary and equal-problem or normalized
-TED results as sensitivity analyses.
+cross-fit, overlap, and difficulty audits cannot eliminate algorithmic
+memorization. The instance-weighted cross-fit null is primary; equal-problem
+and normalized-TED results are sensitivities.
 \emph{External validity and ethics.} CodeNet users are not a classroom cohort;
-only CodeWorkout identifies students. Evidence covers one Python model family,
-one smaller scale, and two Java splits; the positive four-exercise split has
-user overlap. Public identifiers are anonymized, and no user study validates
-patch utility.
+only CodeWorkout identifies students. Evidence covers one Python family, one
+smaller scale, and two Java splits, one with user overlap. Identifiers are
+anonymized, and no user study validates utility.
 
 \section{Data Availability}
 \label{sec:data-availability}
-The anonymized replication package supplies splits, checkpoints, JSONL, code, tests,
-pinned environments, and the \texttt{ARTIFACT.md} claim/digest map. Finalization
-records the exact Git commit, UTC timestamp, file hashes, and row counts in a
-machine-readable evidence manifest and fails on checkout or result drift.
+The anonymized replication package supplies all artifacts and environments. Its manifest
+binds the Git SHA and UTC timestamp to hashes and row counts;
+\texttt{ARTIFACT.md} maps claims to evidence.
 
 \clearpage
 \bibliographystyle{ACM-Reference-Format}
