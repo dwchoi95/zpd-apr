@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +14,14 @@ SPEC = importlib.util.spec_from_file_location(
 MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 SPEC.loader.exec_module(MODULE)
+
+sys.path.insert(0, str(Path("scripts").resolve()))
+ANALYSIS_SPEC = importlib.util.spec_from_file_location(
+    "paired_target_analysis", Path("scripts/analyze_paired_target_control.py")
+)
+ANALYSIS = importlib.util.module_from_spec(ANALYSIS_SPEC)
+assert ANALYSIS_SPEC.loader is not None
+ANALYSIS_SPEC.loader.exec_module(ANALYSIS)
 
 
 def row(example: str, source: str, target: str, code: str = "x=1") -> dict:
@@ -57,6 +66,45 @@ class PairedTargetControlTest(unittest.TestCase):
         self.assertIn("breadth-extension/COMPLETE", runner)
         self.assertIn("for seed in 2027 2028 2029", runner)
         self.assertIn("--max-ted", runner)
+
+    def test_analysis_includes_source_preservation(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            evaluation_root = root / "eval" / "seen"
+            dataset_root = root / "datasets"
+            evaluation_root.mkdir(parents=True)
+            dataset_root.mkdir()
+            dataset = {
+                "example_id": "e",
+                "problem_id": "p",
+                "history": [{"code": "a = 1\nb = 2"}],
+            }
+            (dataset_root / "seen-test.jsonl").write_text(
+                json.dumps(dataset) + "\n", encoding="utf-8"
+            )
+            progress = {
+                "example_id": "e", "problem_id": "p", "repaired": True,
+                "improved": True, "fixed_pass_rate": 1.0,
+                "ted_buggy_fixed": 1, "ted_fixed_oracle": 1,
+                "generated_code": "a = 1\nb = 3",
+            }
+            answer = dict(progress, generated_code="c = 9")
+            for name, value in (("progress3", progress), ("answer3", answer)):
+                (evaluation_root / f"{name}.evaluation.jsonl").write_text(
+                    json.dumps(value) + "\n", encoding="utf-8"
+                )
+                for budget in ANALYSIS.BUDGETS:
+                    (evaluation_root / f"{name}.max-ted-{budget}.evaluation.jsonl").write_text(
+                        json.dumps(value) + "\n", encoding="utf-8"
+                    )
+            result = ANALYSIS.analyze_split(
+                root / "eval", dataset_root, "seen", samples=10, seed=1
+            )
+            retention = result["source_preservation_on_joint_repairs"]
+            self.assertEqual(retention["joint_repairs"], 1)
+            self.assertGreater(
+                retention["metrics"]["token_retention"]["left_minus_right"], 0
+            )
 
 
 if __name__ == "__main__":

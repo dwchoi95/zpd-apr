@@ -11,14 +11,29 @@ from typing import Any
 try:
     from analyze_fse2027_robustness import paired_suite_rows, read_jsonl, summarize_method
     from analyze_fse2027_selected_portfolios import BUDGETS, clustered_mean_budget_difference
+    from analyze_patch_locality import paired_locality
 except ImportError:  # pragma: no cover
     from scripts.analyze_fse2027_robustness import paired_suite_rows, read_jsonl, summarize_method
     from scripts.analyze_fse2027_selected_portfolios import BUDGETS, clustered_mean_budget_difference
+    from scripts.analyze_patch_locality import paired_locality
 
 
-def analyze_split(root: Path, split: str, *, samples: int, seed: int) -> dict[str, Any]:
+def analyze_split(
+    root: Path,
+    dataset_root: Path,
+    split: str,
+    *,
+    samples: int,
+    seed: int,
+) -> dict[str, Any]:
     progress = read_jsonl(root / split / "progress3.evaluation.jsonl")
     answer = read_jsonl(root / split / "answer3.evaluation.jsonl")
+    source = {
+        str(row["example_id"]): str(row["history"][-1]["code"])
+        for row in read_jsonl(dataset_root / f"{split}-test.jsonl")
+    }
+    progress_by_id = {str(row["example_id"]): row for row in progress}
+    answer_by_id = {str(row["example_id"]): row for row in answer}
     progress_budget = {
         budget: read_jsonl(root / split / f"progress3.max-ted-{budget}.evaluation.jsonl")
         for budget in BUDGETS
@@ -43,6 +58,13 @@ def analyze_split(root: Path, split: str, *, samples: int, seed: int) -> dict[st
         "mean_over_budgets": clustered_mean_budget_difference(
             progress_budget, answer_budget, samples=samples, seed=seed + 1
         ),
+        "source_preservation_on_joint_repairs": paired_locality(
+            progress_by_id,
+            answer_by_id,
+            source,
+            samples=samples,
+            seed=seed + 2,
+        ),
         "per_budget": {
             str(budget): paired_suite_rows(
                 progress_budget[budget],
@@ -60,6 +82,7 @@ def analyze_split(root: Path, split: str, *, samples: int, seed: int) -> dict[st
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--dataset-root", type=Path, required=True)
     parser.add_argument("--train-summary", type=Path, required=True)
     parser.add_argument("--valid-summary", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -71,7 +94,11 @@ def main() -> None:
         "validation_dataset": json.loads(args.valid_summary.read_text(encoding="utf-8")),
         "splits": {
             split: analyze_split(
-                args.root, split, samples=args.samples, seed=8100 + index * 100
+                args.root,
+                args.dataset_root,
+                split,
+                samples=args.samples,
+                seed=8100 + index * 100,
             )
             for index, split in enumerate(("seen", "unseen"))
         },
