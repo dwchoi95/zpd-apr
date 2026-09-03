@@ -240,6 +240,7 @@
         "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f",
         "scripts/analyze_fse2027_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f",
         "scripts/run_fse2027_breadth_controls_remote.sh": "61085dceae32ab58625b0356874ef2cf59b38810",
+        "scripts/prefetch_fse2027_breadth_generations_remote.sh": "651e65160df0d48d6164b2e64c58fe2b6beafdfa",
         "tests/test_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f"
       }
     },

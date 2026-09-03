@@ -21,6 +21,10 @@ REQUIRED_RESULT_PREFIXES = (
     "Stochastic",
     "SeenHidden",
     "SeenOverlap",
+    "Sweep",
+    "CheckpointStochastic",
+    "BaseStochastic",
+    "DifficultyMatched",
 )
 
 

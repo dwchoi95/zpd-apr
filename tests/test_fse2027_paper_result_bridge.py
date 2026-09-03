@@ -19,6 +19,10 @@ BRIDGE = """\
 \\newcommand{\\StochasticThreeSeenRR}{60.0}
 \\newcommand{\\SeenHiddenMixedJointRR}{45.0}
 \\newcommand{\\SeenOverlapMixedExactRate}{1.0}
+\\newcommand{\\SweepT08SeenRR}{63.0}
+\\newcommand{\\CheckpointStochasticThreeSeenRR}{64.0}
+\\newcommand{\\BaseStochasticThreeSeenRR}{50.0}
+\\newcommand{\\DifficultyMatchedSeenRR}{70.0}
 """
 
 
@@ -44,8 +48,8 @@ class PaperResultBridgeTest(unittest.TestCase):
             expected, checked_in, paper = self.materialize(Path(directory))
             result = verify(expected, checked_in, paper)
             self.assertTrue(result["byte_identical"])
-            self.assertEqual(result["commands"], 10)
-            self.assertEqual(result["referenced_commands"], 10)
+            self.assertEqual(result["commands"], 14)
+            self.assertEqual(result["referenced_commands"], 14)
 
     def test_rejects_stale_checked_in_bridge(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
