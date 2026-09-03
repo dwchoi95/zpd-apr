@@ -581,21 +581,18 @@ CodeWorkout split uses 10/3/4 disjoint train/validation/test exercises
 213/150/161 students, including 151 shared train--test identities; it therefore
 isolates assignment transfer, whereas the student split isolates learners.
 
-OpenAI Codex was used interactively for control design, implementation,
-orchestration, analysis, and drafting. The authors selected the design and criteria, ran jobs on
-author-controlled infrastructure, reviewed changes, verified every value
-against saved outputs, and checked citations; AI text was not empirical evidence.
+OpenAI Codex was used interactively to propose control and validation-selection
+design alternatives, implement dataset builders, orchestrate experiments,
+develop statistical-analysis scripts, and assist manuscript drafting. The
+authors selected the final design and acceptance criteria, ran every job on
+author-controlled infrastructure, reviewed code changes, checked reported
+values against saved machine-readable outputs, and every cited work was checked
+against a retrievable source. AI-produced text was not empirical evidence.
 
-An isolated runner executes original and generated programs: Python800 uses the
-Python judge and CodeWorkout compiles Java 21 in a network-disabled container.
-We cache outcomes by problem, code, test set, timeout, and memory configuration
-and reuse the cache across supervision construction and evaluation. Within an
-evaluation split, every policy is bound to the same cached current-program
-verdict and pass rate; only a previously unseen generated candidate is executed,
-which prevents timeout-boundary noise from changing the baseline across
-portfolio members. The Java
-harness reproduces all 181 recorded accepted test programs before model
-evaluation.
+An isolated runner executes Python and compiles Java 21 in a network-disabled
+container. Outcomes are cached by program, tests, timeout, and memory settings;
+every policy uses the same cached current-program baseline and executes only
+new candidates. The Java harness reproduces all 181 recorded accepted tests.
 
 \subsection{Ablations}
 
