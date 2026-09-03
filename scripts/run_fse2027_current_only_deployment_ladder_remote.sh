@@ -21,6 +21,13 @@ for split in seen unseen; do
   "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
     "${EVAL_ROOT}/${split}/answer-3seed.evaluation.jsonl" \
     --method CurrentOnly-Answer-3Seed "${stages[@]}"
+  for budget in 5 10 20 40 80 160; do
+    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+      "${EVAL_ROOT}/${split}/answer-3seed.max-ted-${budget}.evaluation.jsonl" \
+      --method "CurrentOnly-Answer-3Seed-TED-${budget}" --max-ted "${budget}" \
+      "${stages[@]}"
+  done
 done
 "${PYTHON}" scripts/analyze_current_only_deployment_ladder.py \
-  --eval-root "${EVAL_ROOT}" --output "${ANALYSIS}"
+  --eval-root "${EVAL_ROOT}" --reference-root "${RUN_ROOT}/eval" \
+  --output "${ANALYSIS}"

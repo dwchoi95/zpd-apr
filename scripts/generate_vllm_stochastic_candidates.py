@@ -22,7 +22,12 @@ def main() -> None:
     parser.add_argument("dataset", type=Path)
     parser.add_argument("output_root", type=Path)
     parser.add_argument("--base-model", required=True)
-    parser.add_argument("--adapter", type=Path, required=True)
+    parser.add_argument("--adapter", type=Path)
+    parser.add_argument(
+        "--method-prefix",
+        default="Answer2027",
+        help="Stable method label written to every generation row.",
+    )
     parser.add_argument("--sampling-seed", action="append", type=int, required=True)
     parser.add_argument("--temperature", type=float, default=0.8)
     parser.add_argument("--top-p", type=float, default=0.95)
@@ -34,6 +39,10 @@ def main() -> None:
 
     if args.temperature <= 0 or not 0 < args.top_p <= 1:
         parser.error("invalid stochastic decoding parameters")
+    if args.adapter is not None and not (
+        args.adapter / "adapter_model.safetensors"
+    ).is_file():
+        parser.error(f"missing adapter weights: {args.adapter}")
     records = read_jsonl(args.dataset)
     if args.limit is not None:
         records = records[: args.limit]
@@ -77,24 +86,26 @@ def main() -> None:
             ))
             request_keys.append((sampling_seed, record))
 
-    model = LLM(
+    model_kwargs = dict(
         model=args.base_model,
         tokenizer=args.base_model,
         quantization="bitsandbytes",
         load_format="bitsandbytes",
         dtype="bfloat16",
-        enable_lora=True,
-        max_lora_rank=64,
         max_model_len=args.max_model_len,
         gpu_memory_utilization=args.gpu_memory_utilization,
         seed=2027,
     )
+    if args.adapter is not None:
+        model_kwargs.update(enable_lora=True, max_lora_rank=64)
+    model = LLM(**model_kwargs)
     started = time.perf_counter()
-    outputs = model.generate(
-        expanded_prompts,
-        sampling_params,
-        lora_request=LoRARequest("answer2027", 1, str(args.adapter)),
-    )
+    generate_kwargs = {}
+    if args.adapter is not None:
+        generate_kwargs["lora_request"] = LoRARequest(
+            args.method_prefix.lower(), 1, str(args.adapter)
+        )
+    outputs = model.generate(expanded_prompts, sampling_params, **generate_kwargs)
     elapsed = time.perf_counter() - started
     if len(outputs) != len(request_keys):
         raise RuntimeError("vLLM returned an unexpected request count")
@@ -113,7 +124,7 @@ def main() -> None:
                 "example_id": record["example_id"],
                 "problem_id": record["problem_id"],
                 "user_id": record["user_id"],
-                "method": f"Answer2027-Sample{sampling_seed}",
+                "method": f"{args.method_prefix}-Sample{sampling_seed}",
                 "prompt_style": "D",
                 "generation_time_sec": elapsed / len(outputs),
                 "generated_code": extract_python_code(raw_text),
@@ -138,6 +149,8 @@ def main() -> None:
         "examples": len(records),
         "requests": len(outputs),
         "sampling_seeds": args.sampling_seed,
+        "method_prefix": args.method_prefix,
+        "adapter": None if args.adapter is None else str(args.adapter),
         "temperature": args.temperature,
         "top_p": args.top_p,
         "max_new_tokens": args.max_new_tokens,

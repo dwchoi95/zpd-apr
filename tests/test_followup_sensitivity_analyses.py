@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
 from scripts.analyze_codeworkout_exercise_sensitivity import analyze as analyze_exercises
-from scripts.analyze_current_only_deployment_ladder import analyze_split
+from scripts.analyze_current_only_deployment_ladder import BUDGETS, analyze_split
 
 
 def rows(values: tuple[bool, ...], problems: tuple[str, ...] | None = None) -> list[dict]:
@@ -15,6 +16,11 @@ def rows(values: tuple[bool, ...], problems: tuple[str, ...] | None = None) -> l
 
 
 class FollowupSensitivityAnalysesTest(unittest.TestCase):
+    def test_current_only_frontier_uses_predeclared_budgets(self) -> None:
+        self.assertEqual(BUDGETS, (5, 10, 20, 40, 80, 160))
+        runner = Path("scripts/run_fse2027_current_only_deployment_ladder_remote.sh").read_text()
+        self.assertIn("--max-ted", runner)
+
     def test_current_only_ladder_reports_all_four_methods(self) -> None:
         result = analyze_split(
             rows((True, True, False, False)), rows((True, False, False, False)),
