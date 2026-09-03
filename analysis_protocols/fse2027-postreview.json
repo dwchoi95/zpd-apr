@@ -221,6 +221,21 @@
       "replacement_files": {
         "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f"
       }
+    },
+    {
+      "id": "current-only-deployment-budget-frontier-extension",
+      "kind": "post-result-additional-endpoint",
+      "timing": "The unrestricted current-only deployment ladder was complete. The reviewer requested comparison against ZPDPatch and LSGen under the same structural edit budgets; the existing unrestricted candidates and frozen reference portfolios were reused without regeneration.",
+      "rationale": "Compose the already fixed Answer-3Seed candidates under each of the six predeclared AST-TED gates and add paired problem-cluster comparisons to the existing analyzer.",
+      "impact": "No dataset, prompt, checkpoint, generated candidate, execution outcome, unrestricted result, budget, or reference method changes. This only adds budgeted compositions and analyses from frozen inputs.",
+      "original_files": {
+        "scripts/run_fse2027_current_only_deployment_ladder_remote.sh": "c139a4ba5f7861192250c103624128c515819c01",
+        "scripts/analyze_current_only_deployment_ladder.py": "c139a4ba5f7861192250c103624128c515819c01"
+      },
+      "replacement_files": {
+        "scripts/run_fse2027_current_only_deployment_ladder_remote.sh": "1abbceac358b1f36576913dfdce63de129958a4f",
+        "scripts/analyze_current_only_deployment_ladder.py": "63789b65c4151c439b82e18b1f5bb6888390d509"
+      }
     }
   ],
   "experiments": {
@@ -289,8 +304,8 @@
     },
     "current_only_deployment_ladder": {
       "files": {
-        "scripts/run_fse2027_current_only_deployment_ladder_remote.sh": "c139a4ba5f7861192250c103624128c515819c01",
-        "scripts/analyze_current_only_deployment_ladder.py": "c139a4ba5f7861192250c103624128c515819c01"
+        "scripts/run_fse2027_current_only_deployment_ladder_remote.sh": "1abbceac358b1f36576913dfdce63de129958a4f",
+        "scripts/analyze_current_only_deployment_ladder.py": "63789b65c4151c439b82e18b1f5bb6888390d509"
       }
     },
     "codeworkout_exercise_sensitivity": {
