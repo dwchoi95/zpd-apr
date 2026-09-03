@@ -17,6 +17,7 @@ except ImportError:  # pragma: no cover
 
 
 TEMPERATURES = ("0.2", "0.4", "0.6", "0.8", "1.0")
+EXTRA_TEMPERATURES = ("1.2", "1.5")
 SEEDS = (4101, 4102, 4103)
 
 
@@ -26,7 +27,8 @@ def stochastic_family(root: Path) -> tuple[list[dict[str, Any]], list[list[dict[
     return union, singles
 
 
-def analyze_split(root: Path, reference_root: Path, split: str, *, samples: int, seed: int) -> dict[str, Any]:
+def analyze_split(root: Path, reference_root: Path, split: str, *, samples: int, seed: int,
+                  extra_temperature_root: Path | None = None) -> dict[str, Any]:
     sweep: dict[str, Any] = {}
     for offset, temperature in enumerate(TEMPERATURES):
         union, singles = stochastic_family(root / "temperature" / temperature / split)
@@ -34,6 +36,15 @@ def analyze_split(root: Path, reference_root: Path, split: str, *, samples: int,
             "union": summarize_method(union),
             "single_draw_expectation": mean_single_summary(singles),
         }
+    if extra_temperature_root is not None:
+        for temperature in EXTRA_TEMPERATURES:
+            union, singles = stochastic_family(
+                extra_temperature_root / temperature / split
+            )
+            sweep[temperature] = {
+                "union": summarize_method(union),
+                "single_draw_expectation": mean_single_summary(singles),
+            }
 
     same_checkpoint, _ = stochastic_family(root / "temperature" / "0.8" / split)
     checkpoint_stochastic = read_jsonl(
@@ -88,11 +99,19 @@ def main() -> None:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--reference-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--extra-temperature-root", type=Path)
     parser.add_argument("--samples", type=int, default=10_000)
     args = parser.parse_args()
     result = {
         "protocol": "test outcomes never tune temperature or choose a checkpoint; all fixed cells are reported",
-        "temperatures": [float(value) for value in TEMPERATURES],
+        "temperatures": [
+            float(value)
+            for value in (
+                TEMPERATURES
+                if args.extra_temperature_root is None
+                else TEMPERATURES + EXTRA_TEMPERATURES
+            )
+        ],
         "sampling_seeds": list(SEEDS),
         "top_p": 0.95,
         "splits": {
@@ -102,6 +121,7 @@ def main() -> None:
                 split,
                 samples=args.samples,
                 seed=6200 + offset * 100,
+                extra_temperature_root=args.extra_temperature_root,
             )
             for offset, split in enumerate(("seen", "unseen"))
         },

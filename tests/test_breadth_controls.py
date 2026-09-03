@@ -13,6 +13,11 @@ class BreadthControlProtocolTest(unittest.TestCase):
         self.assertIn("--sampling-seed 4101 --sampling-seed 4102 --sampling-seed 4103", runner)
         self.assertIn("--gpu-memory-utilization 0.82", runner)
 
+    def test_analyzer_supports_frozen_temperature_extension(self) -> None:
+        analyzer = Path("scripts/analyze_fse2027_breadth_controls.py").read_text()
+        self.assertIn('EXTRA_TEMPERATURES = ("1.2", "1.5")', analyzer)
+        self.assertIn('parser.add_argument("--extra-temperature-root", type=Path)', analyzer)
+
     def test_generator_allows_base_model_or_adapter(self) -> None:
         generator = Path("scripts/generate_vllm_stochastic_candidates.py").read_text()
         self.assertIn('parser.add_argument("--adapter", type=Path)', generator)
