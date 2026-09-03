@@ -1,0 +1,39 @@
+{
+  "role": "post-hoc qualitative illustration; excluded from every estimate",
+  "selection_rule": "closest to the median Answer-minus-Progress TED gap among jointly repaired examples with every displayed program at most the fixed character cap; ties use example_id",
+  "candidate_count": 341,
+  "target_gap": 0.0,
+  "maximum_chars": 900,
+  "example_id": "p02547:u167908302:S4",
+  "problem_id": "p02547",
+  "history": [
+    {
+      "position": 1,
+      "verdict": "Wrong Answer",
+      "pass_rate": 0.7777777777777778,
+      "code": "# coding:utf-8\nn = int(input())\ncount = 0\nans = 0\n\nfor i in range(n):\n    d1, d2 = map(int, input().split())\n\n    if d1 == d2:\n        count += 1\n    else:\n        ans = count\n        count = 0\n\nans = max(ans, count)\n\nif ans >= 3:\n    print('Yes')\nelse:\n    print('No')\n"
+    },
+    {
+      "position": 2,
+      "verdict": "Wrong Answer",
+      "pass_rate": 0.6666666666666666,
+      "code": "# coding:utf-8\nn = int(input())\ncount = 0\n\nfor i in range(n):\n    d1, d2 = map(int, input().split())\n\n    if d1 == d2:\n        count += 1\n\n    if count >= 3:\n        print('Yes')\n        exit()\n\nprint('No')\n"
+    },
+    {
+      "position": 3,
+      "verdict": "Wrong Answer",
+      "pass_rate": 0.5,
+      "code": "# coding:utf-8\nn = int(input())\ncount = 0\n\nfor i in range(n):\n    d1, d2 = map(int, input().split())\n\n    if d1 == d2:\n        count += 1\n\n    if count == 3:\n        print('Yes')\n        exit()\n    else:\n        count = 0\n\nprint('No')\n"
+    }
+  ],
+  "progress": {
+    "ted": 7,
+    "code": "# coding:utf-8\nn = int(input())\ncount = 0\n\nfor i in range(n):\n    d1, d2 = map(int, input().split())\n\n    if d1 == d2:\n        count += 1\n\n    if count == 3:\n        print('Yes')\n        exit()\n    elif d1 != d2:\n        count = 0\n\nprint('No')",
+    "repaired": true
+  },
+  "answer": {
+    "ted": 7,
+    "code": "# coding:utf-8\nn = int(input())\ncount = 0\n\nfor i in range(n):\n    d1, d2 = map(int, input().split())\n\n    if d1 == d2:\n        count += 1\n\n    if count == 3:\n        print('Yes')\n        exit()\n    else:\n        if d1 != d2:\n            count = 0\n\nprint('No')",
+    "repaired": true
+  }
+}
