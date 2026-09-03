@@ -29,11 +29,24 @@ class AnswerBreadthCostCurveTest(unittest.TestCase):
                 (split / f"sample-{seed}.evaluation.jsonl").write_text(
                     "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
                 )
+                generations = [
+                    {
+                        "example_id": row["example_id"],
+                        "problem_id": row["problem_id"],
+                        "generation_time_sec": 0.25,
+                    }
+                    for row in rows
+                ]
+                (split / f"sample-{seed}.generations.jsonl").write_text(
+                    "".join(json.dumps(row) + "\n" for row in generations),
+                    encoding="utf-8",
+                )
             curve = MODULE.analyze_split(root, "seen", samples=100, seed=1)
             self.assertEqual(curve["1"]["union_repair_rate"], 0.5)
             self.assertEqual(curve["5"]["union_repair_rate"], 1.0)
             self.assertEqual(curve["5"]["newly_repaired_since_previous_k"], 1)
             self.assertEqual(curve["5"]["mean_sequential_candidates_invoked"], 3.0)
+            self.assertEqual(curve["5"]["mean_amortized_generation_sec"], 0.75)
 
     def test_runner_freezes_full_curve_and_temperature_extension(self) -> None:
         runner = Path("scripts/run_fse2027_breadth_extension_remote.sh").read_text()

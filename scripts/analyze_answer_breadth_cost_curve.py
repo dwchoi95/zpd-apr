@@ -58,9 +58,15 @@ def analyze_split(root: Path, split: str, *, samples: int, seed: int) -> dict[st
         read_keyed(root / split / f"sample-{sampling_seed}.evaluation.jsonl")
         for sampling_seed in SEEDS
     ]
+    generations = [
+        read_keyed(root / split / f"sample-{sampling_seed}.generations.jsonl")
+        for sampling_seed in SEEDS
+    ]
     example_ids = sorted(evaluations[0])
     if any(set(rows) != set(example_ids) for rows in evaluations[1:]):
         raise ValueError(f"{split}: sampling seeds cover different examples")
+    if any(set(rows) != set(example_ids) for rows in generations):
+        raise ValueError(f"{split}: generation seeds cover different examples")
     problems = {
         example_id: str(evaluations[0][example_id]["problem_id"])
         for example_id in example_ids
@@ -75,11 +81,20 @@ def analyze_split(root: Path, split: str, *, samples: int, seed: int) -> dict[st
             for example_id in example_ids
         }
         calls = {}
+        amortized_generation_sec = {}
         for example_id in example_ids:
             calls[example_id] = float(k)
+            amortized_generation_sec[example_id] = sum(
+                float(rows[example_id]["generation_time_sec"])
+                for rows in generations[:k]
+            )
             for index, rows in enumerate(evaluations[:k], start=1):
                 if bool(rows[example_id]["repaired"]):
                     calls[example_id] = float(index)
+                    amortized_generation_sec[example_id] = sum(
+                        float(generations[position][example_id]["generation_time_sec"])
+                        for position in range(index)
+                    )
                     break
         by_problem: dict[str, list[str]] = defaultdict(list)
         for example_id, problem_id in problems.items():
@@ -101,6 +116,8 @@ def analyze_split(root: Path, split: str, *, samples: int, seed: int) -> dict[st
             ) / len(by_problem),
             "newly_repaired_since_previous_k": int(sum(marginal.values())),
             "mean_sequential_candidates_invoked": sum(calls.values()) / len(calls),
+            "mean_amortized_generation_sec": sum(amortized_generation_sec.values())
+            / len(amortized_generation_sec),
         }
         if previous is not None:
             curve[str(k)]["rr_gain_since_previous_k"] = sum(marginal.values()) / len(marginal)
@@ -121,6 +138,7 @@ def main() -> None:
         "protocol": "All k cells and the fixed seed order were frozen before outcomes; no test-time k selection.",
         "temperature": 0.8,
         "top_p": 0.95,
+        "generation_cost_note": "generation_time_sec is batch elapsed time divided by requests; the curve sums this amortized throughput cost only for calls before early stopping and is not interactive wall-clock latency.",
         "sampling_seeds_in_order": list(SEEDS),
         "reported_k": list(K_VALUES),
         "splits": {
