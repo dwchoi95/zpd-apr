@@ -26,14 +26,22 @@ complete_jsonl() {
 evaluate_family() {
   local split=$1 dataset=$2 family=$3 baseline=$4 expected=$5
   local stages=()
+  local pids=()
   for sampling_seed in 4101 4102 4103; do
     local prefix=${family}/sample-${sampling_seed}
     if ! complete_jsonl "${prefix}.evaluation.jsonl" "${expected}"; then
       "${PYTHON}" run.py evaluate "${dataset}" "${prefix}.generations.jsonl" \
         "${prefix}.evaluation.jsonl" --data-root "${DATA_ROOT}" \
-        --workers 64 --timeout-sec 2.5 --skip-ted \
-        --baseline-reference "${baseline}"
+        --workers 22 --timeout-sec 2.5 --skip-ted \
+        --baseline-reference "${baseline}" &
+      pids+=("$!")
     fi
+  done
+  for pid in "${pids[@]}"; do
+    wait "${pid}"
+  done
+  for sampling_seed in 4101 4102 4103; do
+    local prefix=${family}/sample-${sampling_seed}
     "${PYTHON}" scripts/normalize_evaluation_baseline.py \
       "${prefix}.evaluation.jsonl" --reference "${baseline}"
     stages+=(--stage "Sample${sampling_seed}=${prefix}.evaluation.jsonl")
