@@ -45,6 +45,10 @@
         "paired TED and source-preservation summaries on joint repairs"
       ],
       "interpretation": "This isolates target construction on a common source distribution and equal sample count; it does not isolate target semantics from the target-distance distribution that those semantics induce."
+    },
+    "typical_locality_case": {
+      "design": "Among jointly repaired examples for which the current, Progress, and Answer programs each contain at most 900 characters, select the example whose Answer-minus-Progress TED gap is closest to the median over that complete candidate set; break ties by example_id.",
+      "interpretation": "This post-hoc illustration is excluded from every estimate and replaces the prior maximum-gap illustration in the manuscript. A zero or adverse median is retained as selected."
     }
   },
   "literature_audit": {
