@@ -498,6 +498,11 @@ def main() -> None:
         action="store_true",
         help="Skip AST edit-distance postprocessing when the analysis uses execution only",
     )
+    evaluate.add_argument(
+        "--baseline-reference",
+        type=Path,
+        help="Reuse frozen current-program verdict and pass rate by example ID",
+    )
     evaluate.add_argument("--timeout-sec", type=float, default=2.5)
     evaluate.add_argument("--no-resume", action="store_true")
 
@@ -885,6 +890,7 @@ def main() -> None:
             resume=not args.no_resume,
             ted_workers=args.ted_workers,
             compute_tree_edit_distance=not args.skip_ted,
+            baseline_reference_path=args.baseline_reference,
         )
         print(json.dumps(asdict(summary), ensure_ascii=False, indent=2, default=str))
         return

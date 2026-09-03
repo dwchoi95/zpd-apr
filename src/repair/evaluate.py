@@ -43,9 +43,15 @@ def evaluate_generations(
     resume: bool = True,
     ted_workers: int | None = None,
     compute_tree_edit_distance: bool = True,
+    baseline_reference_path: Path | None = None,
 ) -> EvaluationSummary:
     records = {item["example_id"]: item for item in _iter_jsonl(dataset_path)}
     generations = list(_iter_jsonl(generations_path))
+    baseline_by_id = (
+        {str(item["example_id"]): item for item in _iter_jsonl(baseline_reference_path)}
+        if baseline_reference_path is not None
+        else {}
+    )
     output_path = output_path.expanduser().resolve()
     output_path.parent.mkdir(parents=True, exist_ok=True)
     generation_by_id = {
@@ -53,6 +59,8 @@ def evaluate_generations(
     }
     if len(generation_by_id) != len(generations):
         raise ValueError(f"Duplicate example_id in generations: {generations_path}")
+    if baseline_reference_path is not None and set(baseline_by_id) != set(records):
+        raise ValueError("Baseline reference example IDs do not match the dataset")
     results = (
         _load_resumable_evaluations(output_path, generation_by_id)
         if resume and output_path.is_file()
@@ -77,15 +85,23 @@ def evaluate_generations(
         buggy_code = str(buggy["code"])
         fixed_code = str(generation.get("generated_code", ""))
         oracle_code = str(record["target_code"])
-        buggy_started = time.perf_counter()
-        buggy_outcome = runner.run_submission(
-            submission_id=f"{record['example_id']}:buggy",
-            problem_id=problem_id,
-            code=buggy_code,
-            source_verdict=str(buggy.get("verdict")),
-            testcases=testcases,
-        )
-        buggy_execution_time = time.perf_counter() - buggy_started
+        baseline = baseline_by_id.get(str(record["example_id"]))
+        if baseline is None:
+            buggy_started = time.perf_counter()
+            buggy_outcome = runner.run_submission(
+                submission_id=f"{record['example_id']}:buggy",
+                problem_id=problem_id,
+                code=buggy_code,
+                source_verdict=str(buggy.get("verdict")),
+                testcases=testcases,
+            )
+            buggy_execution_time = time.perf_counter() - buggy_started
+            buggy_pass_rate = _pass_rate(buggy_outcome)
+            buggy_verdict = buggy_outcome.verdict.value
+        else:
+            buggy_execution_time = 0.0
+            buggy_pass_rate = float(baseline["buggy_pass_rate"])
+            buggy_verdict = str(baseline["buggy_verdict"])
         fixed_started = time.perf_counter()
         fixed_outcome = runner.run_submission(
             submission_id=f"{record['example_id']}:fixed",
@@ -95,7 +111,6 @@ def evaluate_generations(
             testcases=testcases,
         )
         fixed_execution_time = time.perf_counter() - fixed_started
-        buggy_pass_rate = _pass_rate(buggy_outcome)
         fixed_pass_rate = _pass_rate(fixed_outcome)
         changed = fixed_code.strip() != buggy_code.strip()
         repaired = changed and fixed_pass_rate == 1.0
@@ -109,7 +124,7 @@ def evaluate_generations(
                 + buggy_execution_time
                 + fixed_execution_time
             ),
-            "buggy_verdict": buggy_outcome.verdict.value,
+            "buggy_verdict": buggy_verdict,
             "fixed_verdict": fixed_outcome.verdict.value,
             "buggy_pass_rate": buggy_pass_rate,
             "fixed_pass_rate": fixed_pass_rate,

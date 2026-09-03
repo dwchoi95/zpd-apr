@@ -31,7 +31,8 @@ evaluate_family() {
     if ! complete_jsonl "${prefix}.evaluation.jsonl" "${expected}"; then
       "${PYTHON}" run.py evaluate "${dataset}" "${prefix}.generations.jsonl" \
         "${prefix}.evaluation.jsonl" --data-root "${DATA_ROOT}" \
-        --workers 64 --timeout-sec 2.5 --skip-ted
+        --workers 64 --timeout-sec 2.5 --skip-ted \
+        --baseline-reference "${baseline}"
     fi
     "${PYTHON}" scripts/normalize_evaluation_baseline.py \
       "${prefix}.evaluation.jsonl" --reference "${baseline}"

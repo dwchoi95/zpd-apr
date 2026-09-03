@@ -175,6 +175,40 @@ class EvaluateStreamingTest(unittest.TestCase):
             [result] = list(_iter_jsonl(output))
             self.assertIsNone(result["ted_buggy_fixed"])
 
+    def test_frozen_baseline_avoids_reexecuting_current_program(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            dataset = root / "dataset.jsonl"
+            generations = root / "generations.jsonl"
+            baseline = root / "baseline.jsonl"
+            output = root / "evaluation.jsonl"
+            _write_jsonl(dataset, [_record("a", "buggy-a")])
+            _write_jsonl(generations, [_generation("a", "fixed-a")])
+            _write_jsonl(baseline, [{
+                "example_id": "a",
+                "buggy_verdict": "WA",
+                "buggy_pass_rate": 0.25,
+            }])
+            with (
+                patch("src.repair.evaluate.PythonSubmissionRunner", _FakeRunner),
+                patch("src.repair.evaluate.load_testcases", return_value=[object()]),
+            ):
+                evaluate_generations(
+                    dataset.parent,
+                    dataset,
+                    generations,
+                    output,
+                    workers=2,
+                    timeout_sec=0.1,
+                    compute_tree_edit_distance=False,
+                    baseline_reference_path=baseline,
+                )
+            self.assertNotIn("buggy-a", _FakeRunner.calls)
+            self.assertIn("fixed-a", _FakeRunner.calls)
+            [result] = list(_iter_jsonl(output))
+            self.assertEqual(result["buggy_verdict"], "WA")
+            self.assertEqual(result["buggy_pass_rate"], 0.25)
+
 
 def _evaluate(dataset: Path, generations: Path, output: Path) -> object:
     with (
