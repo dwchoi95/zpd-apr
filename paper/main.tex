@@ -807,6 +807,17 @@ Each Full--Current pair holds training examples, targets, architecture, hyperpar
 
 We also searched directly for cases in which history should be most identifiable. A mechanically specified matched audit requires different users on the same problem, identical current verdict and pass rate, at least one earlier submission each, and normalized current-code similarity of at least 0.8. Only 6 Strict and 12 Progress Seen examples qualify (none Unseen); Full reaches 16.7/58.3\% RR versus 66.7/66.7\% for Current. These tiny, post-hoc subsets cannot estimate a population effect, but they expose rather than conceal that the benchmark contains little counterfactual support for a history-sensitive claim.
 
+The portfolio-level prompt control agrees. Removing history improves frozen
+mixed/Answer RR by
+\PromptFrozenMixedCurrentMinusFullSeen/\PromptFrozenAnswerNineCurrentMinusFullSeen{}
+Seen points and
+\PromptFrozenMixedCurrentMinusFullUnseen/\PromptFrozenAnswerNineCurrentMinusFullUnseen{}
+Unseen points; all intervals exclude zero. Current-only $A_3$ reaches
+\CurrentOnlyAnswerThreeSeenRR/\CurrentOnlyAnswerThreeUnseenRR\% Seen/Unseen RR,
+and current-only mixed selection chooses exactly those Answer members. Thus
+earlier submissions are not merely unnecessary here; under the observed prompt
+distribution they impede the strongest deployment.
+
 \subsection{RQ3: Adapter Specialization}
 
 Table~\ref{tab:rq3} exposes a coverage-size tradeoff. \answer has the highest PR, RR, and IR, but also the largest mean patch at TED 20.22. \progress has lower coverage but the smallest patch at TED 15.85. \strict and \progress have statistically indistinguishable RR (adjusted \(p=0.857\)). \answer repairs 5.2 points more than \progress and 5.5 points more than \strict; problem-cluster intervals are [2.5, 7.9] and [2.9, 8.0], respectively.
@@ -1043,16 +1054,6 @@ Five fixed folds exclude test-problem identities during selection and give $M_9-
 includes zero. The six-budget mean remains
 \CrossFitBudgetMixedMinusAnswerNineSeen{} points
 \CrossFitBudgetMixedMinusAnswerNineSeenCI.
-
-\paragraph{Prompt-distribution control.}
-Removing history improves frozen mixed/Answer RR by
-\PromptFrozenMixedCurrentMinusFullSeen/\PromptFrozenAnswerNineCurrentMinusFullSeen{}
-Seen points and
-\PromptFrozenMixedCurrentMinusFullUnseen/\PromptFrozenAnswerNineCurrentMinusFullUnseen{}
-Unseen points; all CIs exclude zero. Current-only $A_3$ reaches
-\CurrentOnlyAnswerThreeSeenRR/\CurrentOnlyAnswerThreeUnseenRR\% Seen/Unseen RR.
-The nominal current-only $M_9$ selects exactly those three Answer members, so
-we recommend current-only $A_3$ for unrestricted deployment.
 
 \paragraph{Verdict-order model sensitivity.}
 Collapsing non-AC verdicts and retraining changes Progress RR by
