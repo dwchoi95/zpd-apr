@@ -74,7 +74,10 @@ def paired_row(mixed: float, answer: float, key: str = "mixed_minus_answer") -> 
 
 class ResultBridgeTest(unittest.TestCase):
     def test_temperature_macro_suffixes_are_valid_tex_control_words(self) -> None:
-        self.assertEqual(set(TEMPERATURE_WORDS), {"0.2", "0.4", "0.6", "0.8", "1.0"})
+        self.assertEqual(
+            set(TEMPERATURE_WORDS),
+            {"0.2", "0.4", "0.6", "0.8", "1.0", "1.2", "1.5"},
+        )
         self.assertTrue(all(value.isalpha() for value in TEMPERATURE_WORDS.values()))
 
     def test_canonical_values_and_macros(self) -> None:
@@ -475,10 +478,49 @@ class ResultBridgeTest(unittest.TestCase):
             overlap,
         )
         self.assertAlmostEqual(result["canonical"]["unseen"]["rr_difference"], 0.02)
+        curve_row = {
+            "union_repair_rate": 0.61,
+            "union_repair_rate_cluster_95ci": [0.58, 0.64],
+            "mean_sequential_candidates_invoked": 2.25,
+            "mean_amortized_generation_sec": 0.33,
+        }
+        result["answer_breadth_cost_curve"] = {
+            "splits": {"seen": {"3": curve_row}, "unseen": {"3": curve_row}}
+        }
+        paired_contrast = {
+            "paired": [
+                {
+                    "metric": "rr",
+                    "left_minus_right_instance_weighted": 0.03,
+                    "cluster_bootstrap_95ci": [0.01, 0.05],
+                }
+            ]
+        }
+        paired_split = {
+            "unrestricted": {
+                "progress": {"rr": 0.60},
+                "answer": {"rr": 0.57},
+                "progress_minus_answer": paired_contrast,
+            },
+            "mean_over_budgets": {
+                "difference": 0.02,
+                "problem_cluster_95ci": [0.0, 0.04],
+            },
+        }
+        result["paired_target_control"] = {
+            "train_dataset": {"paired_target_divergent_examples": 7389},
+            "validation_dataset": {"paired_target_divergent_examples": 931},
+            "splits": {"seen": paired_split, "unseen": paired_split},
+        }
         rendered = macros(result)
         self.assertNotRegex(rendered, r"\\newcommand\{\\[A-Za-z]*\d")
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
         self.assertIn(r"\newcommand{\SameDrawThreeMinusOneSeen}{9.0}", rendered)
+        self.assertIn(r"\newcommand{\BreadthKThreeSeenRR}{61.0}", rendered)
+        self.assertIn(r"\newcommand{\PairedTargetTrainExamples}{7389}", rendered)
+        self.assertIn(
+            r"\newcommand{\PairedTargetProgressMinusAnswerSeen}{3.0}", rendered
+        )
         self.assertIn(r"\newcommand{\StochasticOneMinusGreedyOneSeen}{2.0}", rendered)
         self.assertIn(
             r"\newcommand{\SameDrawAnswerThreeMinusStochasticThreeSeen}{1.0}",

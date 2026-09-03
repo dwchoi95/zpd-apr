@@ -40,6 +40,8 @@ def members(values: list[str]) -> str:
 
 
 NUMBER_WORDS = {
+    1: "One",
+    3: "Three",
     5: "Five",
     10: "Ten",
     20: "Twenty",
@@ -54,6 +56,8 @@ TEMPERATURE_WORDS = {
     "0.6": "PointSix",
     "0.8": "PointEight",
     "1.0": "OnePointZero",
+    "1.2": "OnePointTwo",
+    "1.5": "OnePointFive",
 }
 
 
@@ -83,6 +87,8 @@ def build(
     seen_overlap_answer9: dict[str, Any],
     breadth_controls: dict[str, Any] | None = None,
     difficulty_match: dict[str, Any] | None = None,
+    breadth_curve: dict[str, Any] | None = None,
+    paired_target: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -115,6 +121,10 @@ def build(
         result["breadth_controls"] = breadth_controls
     if difficulty_match is not None:
         result["difficulty_matched_holdout"] = difficulty_match
+    if breadth_curve is not None:
+        result["answer_breadth_cost_curve"] = breadth_curve
+    if paired_target is not None:
+        result["paired_target_control"] = paired_target
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
         rr = metric(row["zpdpatch_minus_answer_9choose3"])
@@ -504,6 +514,49 @@ def macros(result: dict[str, Any]) -> str:
             matched["paired_problem_bootstrap_95ci"]
         )
 
+    if "answer_breadth_cost_curve" in result:
+        curve = result["answer_breadth_cost_curve"]
+        for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+            for k, row in curve["splits"][split].items():
+                suffix = NUMBER_WORDS[int(k)]
+                base = f"BreadthK{suffix}{prefix}"
+                values[f"{base}RR"] = pct(row["union_repair_rate"])
+                values[f"{base}CI"] = interval(row["union_repair_rate_cluster_95ci"])
+                values[f"{base}Calls"] = f"{row['mean_sequential_candidates_invoked']:.2f}"
+                values[f"{base}GenSec"] = f"{row['mean_amortized_generation_sec']:.2f}"
+                if "rr_gain_since_previous_k" in row:
+                    values[f"{base}Gain"] = pct(row["rr_gain_since_previous_k"])
+                    values[f"{base}GainCI"] = interval(row["rr_gain_cluster_95ci"])
+
+    if "paired_target_control" in result:
+        paired_target = result["paired_target_control"]
+        values["PairedTargetTrainExamples"] = str(
+            paired_target["train_dataset"]["paired_target_divergent_examples"]
+        )
+        values["PairedTargetValidExamples"] = str(
+            paired_target["validation_dataset"]["paired_target_divergent_examples"]
+        )
+        for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+            row = paired_target["splits"][split]
+            values[f"PairedTargetProgress{prefix}RR"] = pct(
+                row["unrestricted"]["progress"]["rr"]
+            )
+            values[f"PairedTargetAnswer{prefix}RR"] = pct(
+                row["unrestricted"]["answer"]["rr"]
+            )
+            effect = metric(row["unrestricted"]["progress_minus_answer"])
+            values[f"PairedTargetProgressMinusAnswer{prefix}"] = pct(
+                effect["left_minus_right_instance_weighted"]
+            )
+            values[f"PairedTargetProgressMinusAnswer{prefix}CI"] = ci(effect)
+            budget = row["mean_over_budgets"]
+            values[f"PairedTargetBudgetProgressMinusAnswer{prefix}"] = pct(
+                budget["difference"]
+            )
+            values[f"PairedTargetBudgetProgressMinusAnswer{prefix}CI"] = interval(
+                budget["problem_cluster_95ci"]
+            )
+
     exercise = result["codeworkout_exercise_sensitivity"]
     per_effects = [row["mixed_minus_answer_rr"] for row in exercise["per_exercise"]]
     loo_effects = [
@@ -706,6 +759,8 @@ def main() -> None:
     parser.add_argument("--seen-overlap-answer9", type=Path, required=True)
     parser.add_argument("--breadth-controls", type=Path)
     parser.add_argument("--difficulty-match", type=Path)
+    parser.add_argument("--breadth-curve", type=Path)
+    parser.add_argument("--paired-target", type=Path)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -735,6 +790,8 @@ def main() -> None:
         read(args.seen_overlap_answer9),
         read(args.breadth_controls) if args.breadth_controls else None,
         read(args.difficulty_match) if args.difficulty_match else None,
+        read(args.breadth_curve) if args.breadth_curve else None,
+        read(args.paired_target) if args.paired_target else None,
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)
