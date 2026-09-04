@@ -610,6 +610,9 @@ def macros(result: dict[str, Any]) -> str:
                 effect["left_minus_right_instance_weighted"]
             )
             values[f"CrossUserTargetSameMinusOther{prefix}CI"] = ci(effect)
+            values[f"CrossUserTargetSameMinusOther{prefix}P"] = (
+                f"{row['same_user_minus_cross_user']['exact_mcnemar_two_sided_p']:.4g}"
+            )
 
     if "all_prefix_control" in result:
         prefix_control = result["all_prefix_control"]

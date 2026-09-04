@@ -25,6 +25,8 @@ REQUIRED_RESULT_PREFIXES = (
     "CheckpointStochastic",
     "BaseStochastic",
     "DifficultyMatched",
+    "CrossUserTarget",
+    "AllPrefix",
 )
 
 

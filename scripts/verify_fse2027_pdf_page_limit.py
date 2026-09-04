@@ -42,6 +42,7 @@ def first_content_line(text: str) -> str:
         if (
             "ZPDPatch: Separating Trajectory Supervision" in line
             or "Disentangling Candidate Breadth and Trajectory Supervision" in line
+            or "Disentangling Candidate Breadth, Target Provenance, and Trajectory Supervision" in line
         ):
             continue
         line = re.sub(r"^\d+\s+", "", line)

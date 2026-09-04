@@ -88,6 +88,8 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-zpdpatch.json"
   "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-answer9.json"
   "${RUN_ROOT}/analysis/fse2027-effect-heterogeneity.json"
+  "${RUN_ROOT}/analysis/fse2027-cross-user-target-control.json"
+  "${RUN_ROOT}/analysis/fse2027-all-prefix-control.json"
   "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
   "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
@@ -195,9 +197,10 @@ checkpoint_args=(
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-1.5b"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/codeworkout-problem-holdout"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-verdict-order/accepted-vs-failure"
+  --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-cross-user-target"
 )
 external_args=(--external-root "${WORK_ROOT}/archive/external/tiktoc")
-for index in 1 3 5 7 9 11 13; do
+for index in 1 3 5 7 9 11 13 15; do
   if [[ ! -d "${checkpoint_args[index]}" ]]; then
     echo "missing checkpoint root: ${checkpoint_args[index]}" >&2
     exit 1

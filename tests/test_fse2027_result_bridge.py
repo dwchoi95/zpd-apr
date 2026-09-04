@@ -533,6 +533,7 @@ class ResultBridgeTest(unittest.TestCase):
             "splits": {"seen": paired_split, "unseen": paired_split},
         }
         provenance_contrast = {
+            "exact_mcnemar_two_sided_p": 0.25,
             "paired": [{
                 "metric": "rr",
                 "left_minus_right_instance_weighted": 0.04,
@@ -587,6 +588,7 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\CrossUserTargetTrainExamples}{5231}", rendered)
         self.assertIn(r"\newcommand{\CrossUserTargetSameMinusOtherSeen}{4.0}", rendered)
         self.assertIn(r"\newcommand{\CrossUserTargetSameMinusOtherSeenCI}{[1.00, 7.00]}", rendered)
+        self.assertIn(r"\newcommand{\CrossUserTargetSameMinusOtherSeenP}{0.25}", rendered)
         self.assertIn(r"\newcommand{\AllPrefixSeenExamples}{300}", rendered)
         self.assertIn(r"\newcommand{\AllPrefixEarlySeenCI}{[45.00, 55.00]}", rendered)
         self.assertIn(r"\newcommand{\StochasticOneMinusGreedyOneSeen}{2.0}", rendered)

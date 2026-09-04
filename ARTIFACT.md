@@ -40,6 +40,8 @@ suite, and records the exact source revision.
 | `tab:rq4` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-stochastic-candidate-control.json`; `analysis/fse2027-operational-cost.json` |
 | `tab:breadth-controls` | temperature sweep, one-vs-three checkpoint stochastic contrast, and SFT-free base-model breadth in `analysis/fse2027-breadth-controls.json`; raw candidates and executions under `eval/breadth-controls/` |
 | `tab:paired-target` | `analysis/fse2027-paired-target-control.json`; exact shared-source datasets under `datasets/paired-target-control/`; six independently trained checkpoints and raw member evaluations under `eval/paired-target-control/` |
+| `tab:target-provenance` | `analysis/fse2027-cross-user-target-control.json`; exact-source/outcome and token-distance-caliper datasets under `datasets/cross-user-target-control/`; same-user and matched-peer checkpoints and raw evaluations under `eval/cross-user-target-control/` |
+| all-prefix endpoint control | `analysis/fse2027-all-prefix-control.json`; all executable non-AC prefixes from eventually successful held-out trajectories under `datasets/all-prefix-control/`; phase-stratified raw evaluations under `eval/all-prefix-control/` |
 | `tab:replication-ladder` | `analysis/fse2027-answer9-control.json`; `analysis/fse2027-current-only-deployment-ladder.json`; `analysis/fse2027-scale-1.5b.json`; `analysis/fse2027-codeworkout-problem-holdout.json`; `analysis/fse2027-codeworkout-exercise-sensitivity.json`; consolidated macros in `analysis/fse2027-result-bridge.json` |
 | patch-budget table transcription | exact values checked against the LSGen and current-only analyses by `scripts/verify_paper_budget_table.py` and sealed in `analysis/fse2027-paper-budget-table-audit.json` |
 | hidden-test confirmation | `analysis/fse2027-answer9-independent-hidden.json` |
@@ -80,6 +82,8 @@ bash scripts/run_fse2027_problem_crossfit_remote.sh
 bash scripts/run_fse2027_verdict_order_retraining_remote.sh
 bash scripts/run_fse2027_effect_heterogeneity_remote.sh
 bash scripts/run_fse2027_breadth_controls_remote.sh
+bash scripts/run_fse2027_cross_user_target_control_remote.sh
+bash scripts/run_fse2027_all_prefix_control_remote.sh
 ```
 
 The five-fold cross-fitting script hashes problem identities into deterministic
