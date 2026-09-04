@@ -236,6 +236,36 @@
         "scripts/run_fse2027_current_only_deployment_ladder_remote.sh": "1abbceac358b1f36576913dfdce63de129958a4f",
         "scripts/analyze_current_only_deployment_ladder.py": "63789b65c4151c439b82e18b1f5bb6888390d509"
       }
+    },
+    {
+      "id": "breadth-control-declared-temperature-extension",
+      "kind": "pre-result-additional-endpoint",
+      "timing": "The original 0.2--1.0 breadth-control analysis was complete. A separate response protocol was committed before generating or inspecting the requested 1.2 and 1.5 temperature cells.",
+      "rationale": "Extend the existing analyzer to consume the two additional fixed temperatures declared in analysis_protocols/fse2027-borderline-response.json and report both cells without test-set tuning.",
+      "impact": "No original candidate, execution, statistic, checkpoint, seed, prompt, or temperature cell changes. The analyzer and its test only add the separately frozen 1.2 and 1.5 inputs to the complete reported sweep.",
+      "original_files": {
+        "scripts/analyze_fse2027_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f",
+        "tests/test_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f"
+      },
+      "replacement_files": {
+        "scripts/analyze_fse2027_breadth_controls.py": "6269ce5d62c7b53bd1ca2195542327882a08b989",
+        "tests/test_breadth_controls.py": "6269ce5d62c7b53bd1ca2195542327882a08b989"
+      }
+    },
+    {
+      "id": "declared-typical-locality-illustration",
+      "kind": "post-result-qualitative-selection-amendment",
+      "timing": "The quantitative locality estimates were complete. A separate response protocol was committed before exporting or inspecting the replacement qualitative illustration.",
+      "rationale": "Replace the deliberately extreme maximum-gap example with the compact jointly repaired example whose Answer-minus-Progress TED gap is closest to the complete candidate set median, as declared in analysis_protocols/fse2027-borderline-response.json.",
+      "impact": "No quantitative estimate, candidate, execution outcome, repair label, TED value, or candidate census changes. The deterministic example is excluded from every estimate and only illustrates a typical rather than extreme locality contrast.",
+      "original_files": {
+        "scripts/export_patch_locality_case.py": "2b8f4e6010203a27a883e0a9136cbb49ac4d8266",
+        "tests/test_patch_locality_case.py": "2b8f4e6010203a27a883e0a9136cbb49ac4d8266"
+      },
+      "replacement_files": {
+        "scripts/export_patch_locality_case.py": "3c1f5421f20fa51f3002d5fb737360d111ecfb60",
+        "tests/test_patch_locality_case.py": "3c1f5421f20fa51f3002d5fb737360d111ecfb60"
+      }
     }
   ],
   "experiments": {
@@ -317,12 +347,12 @@
       "design": "On Seen and Unseen, use current-only prompts and fixed seeds 4101, 4102, and 4103. Report three-draw Answer2027 unions at temperatures 0.2, 0.4, 0.6, 0.8, and 1.0 with top-p 0.95; compare the temperature-0.8 union with one stochastic draw from each of Answer2027, Answer2028, and Answer2029; and compare it with three identically decoded draws from the untuned base model. Report all split-by-temperature cells without selecting a temperature on test outcomes. Use the identical execution selector and problem-cluster bootstrap throughout.",
       "files": {
         "scripts/generate_vllm_stochastic_candidates.py": "1abbceac358b1f36576913dfdce63de129958a4f",
-        "scripts/analyze_fse2027_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f",
+        "scripts/analyze_fse2027_breadth_controls.py": "6269ce5d62c7b53bd1ca2195542327882a08b989",
         "scripts/run_fse2027_breadth_controls_remote.sh": "11e88a1115904ef9c489a0d333df42a4990663a1",
         "src/cli.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
         "src/repair/evaluate.py": "e7909e310c756b0af6e18edc7e80a1ec6a8d68c2",
         "scripts/prefetch_fse2027_breadth_generations_remote.sh": "651e65160df0d48d6164b2e64c58fe2b6beafdfa",
-        "tests/test_breadth_controls.py": "1abbceac358b1f36576913dfdce63de129958a4f"
+        "tests/test_breadth_controls.py": "6269ce5d62c7b53bd1ca2195542327882a08b989"
       }
     },
     "pre_repair_difficulty_match": {
@@ -333,10 +363,10 @@
       }
     },
     "qualitative_patch_locality_case": {
-      "design": "After quantitative analyses, select the largest Answer-minus-Progress TED gap among examples repaired by both policies whose displayed programs are each no longer than 900 characters. Preserve the deterministic candidate census and exclude the example from all estimates.",
+      "design": "After quantitative analyses, select the Answer-minus-Progress TED gap closest to the complete candidate-set median among examples repaired by both policies whose displayed programs are each no longer than 900 characters. Break ties by example_id, preserve the deterministic candidate census, and exclude the example from all estimates.",
       "files": {
-        "scripts/export_patch_locality_case.py": "2b8f4e6010203a27a883e0a9136cbb49ac4d8266",
-        "tests/test_patch_locality_case.py": "2b8f4e6010203a27a883e0a9136cbb49ac4d8266"
+        "scripts/export_patch_locality_case.py": "3c1f5421f20fa51f3002d5fb737360d111ecfb60",
+        "tests/test_patch_locality_case.py": "3c1f5421f20fa51f3002d5fb737360d111ecfb60"
       }
     }
   }
