@@ -58,8 +58,11 @@ def verify(pdf: Path) -> dict[str, object]:
     if pages > 22:
         raise ValueError(f"FSE page limit exceeded: {pages} > 22")
     body_last = page_text(pdf, 18)
-    if "Data Availability" not in body_last:
-        raise ValueError("Data Availability is not present on body page 18")
+    if not any(
+        heading in body_last
+        for heading in ("Data Availability", "Data and Artifact Availability")
+    ):
+        raise ValueError("data and artifact availability is not present on body page 18")
     if "References" in body_last:
         raise ValueError("references begin before the 18-page body boundary")
     references_first = page_text(pdf, 19)

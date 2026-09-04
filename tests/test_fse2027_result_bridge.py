@@ -500,11 +500,31 @@ class ResultBridgeTest(unittest.TestCase):
             "unrestricted": {
                 "progress": {"rr": 0.60},
                 "answer": {"rr": 0.57},
-                "progress_minus_answer": paired_contrast,
+                "progress_minus_answer": {
+                    **paired_contrast,
+                    "paired_ted": {
+                        "joint_repairs": 100,
+                        "right_minus_left_mean_ted": 4.25,
+                        "problem_cluster_bootstrap_95ci": [2.0, 6.5],
+                    },
+                },
             },
             "mean_over_budgets": {
                 "difference": 0.02,
                 "problem_cluster_95ci": [0.0, 0.04],
+            },
+            "source_preservation_on_joint_repairs": {
+                "joint_repairs": 110,
+                "metrics": {
+                    "token_retention": {
+                        "left_minus_right": 0.06,
+                        "problem_cluster_bootstrap_95ci": [0.04, 0.08],
+                    },
+                    "line_retention": {
+                        "left_minus_right": 0.10,
+                        "problem_cluster_bootstrap_95ci": [0.07, 0.13],
+                    },
+                },
             },
         }
         result["paired_target_control"] = {
@@ -520,6 +540,21 @@ class ResultBridgeTest(unittest.TestCase):
         self.assertIn(r"\newcommand{\PairedTargetTrainExamples}{7389}", rendered)
         self.assertIn(
             r"\newcommand{\PairedTargetProgressMinusAnswerSeen}{3.0}", rendered
+        )
+        self.assertIn(
+            r"\newcommand{\PairedTargetAnswerMinusProgressTEDSeen}{4.25}", rendered
+        )
+        self.assertIn(
+            r"\newcommand{\PairedTargetAnswerMinusProgressTEDSeenCI}{[2.00, 6.50]}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\PairedTargetProgressMinusAnswerTokenRetentionSeen}{6.0}",
+            rendered,
+        )
+        self.assertIn(
+            r"\newcommand{\PairedTargetProgressMinusAnswerLineRetentionSeenCI}{[7.00, 13.00]}",
+            rendered,
         )
         self.assertIn(r"\newcommand{\StochasticOneMinusGreedyOneSeen}{2.0}", rendered)
         self.assertIn(

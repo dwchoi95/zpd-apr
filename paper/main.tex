@@ -38,21 +38,22 @@
 \begin{document}
 
 \begin{abstract}
-Candidate breadth can masquerade as a training-method improvement in
-execution-guided program repair. We introduce an identification framework and
-use \tool as its experimental instrument. \tool mines three executable
+We present an identification framework that separates candidate breadth from
+trajectory supervision in execution-guided program repair, using \tool as its
+experimental instrument. Execution-selected breadth can otherwise masquerade
+as a training-method improvement. \tool mines three executable
 relations from user submission trajectories, trains independent QLoRA
 checkpoints, and selects a validation-frozen three-member portfolio. Its
 controller provably preserves observed-test pass rate, enforces an optional
 AST edit budget, and finds a repair whenever the emitted candidate set contains
-an eligible one. Across 997 Seen and 250 problem-held-out Python evaluation instances,
+an eligible one. Across 997 Seen and 250 problem-held-out last-failure instances from eventually successful Python trajectories,
 same-draw decomposition, temperature sweeps, decoding-matched checkpoints, and
 an untuned-model control separate stochastic breadth from supervision. The
 results reject a simple heterogeneous-policy account: breadth explains most
 unrestricted coverage, and five-fold problem cross-fitting finds no conclusive
-mixed-target advantage over a selection-matched Answer pool. A small-budget
-signal does not reproduce across the smaller model, problem holdout, or
-user-held-out Java setting. A scoped audit of eight educational repair studies
+mixed-target advantage over a selection-matched Answer pool. With sources and
+counts matched, Answer gains 19.3/11.2 Seen/Unseen RR points, whereas Progress
+repairs are 10.08/6.83 TED units smaller and retain 5.6/6.5 more buggy-token points. A scoped audit of eight educational repair studies
 turns this result into a reporting contract: disclose calls, report the matched
 one-draw estimand, and trace the complete coverage--cost curve. A current-only
 three-Answer deployment repairs
@@ -106,29 +107,13 @@ that are easy to conflate: output sampling, independent training seeds,
 validation-selected pool breadth, relation-specific dataset construction, and
 serialization of prior submissions. The
 \(A_1\!\rightarrow T_1\!\rightarrow S_3\!\rightarrow A_3\!\rightarrow A_9\!\rightarrow M_9\)
-ladder matches
-each successive opportunity. Target-matched retraining separately finds no
-stable causal benefit from serializing earlier submissions.
+ladder matches each successive opportunity. Target-matched retraining finds no stable causal benefit from serializing earlier submissions, while paired-target training identifies a reproducible tradeoff: terminal Answer targets raise coverage, whereas intermediate Progress targets produce smaller, more source-preserving repairs.
 
 This paper makes the following contributions:
 \begin{itemize}
-  \item We pose checkpoint choice as exact validation-coverage search and
-  derive a same-draw decomposition that measures candidate breadth without
-  attributing ordinary inference scaling to training.
-  \item We audit candidate accounting in eight directly related educational
-  repair studies and derive a reproducible reporting contract that separates
-  one-draw quality, execution-selected coverage, and deployed call budget.
-  \item We empirically separate output, checkpoint, target-construction, and
-  selection diversity using the full
-  \(A_1\)--\(T_1\)--\(S_3\)--\(A_3\)--\(A_9\)--\(M_9\) ladder,
-  target-matched history ablations, hidden tests, complete five-fold
-  problem-cross-fitted selection, patch-budget and source-retention analyses,
-  a second model scale, two orthogonal Java holdouts, prompt-distribution
-  controls, and model-level verdict-order retraining.
-  \item We formulate trajectory-mined repair as finite execution-evidence
-  orders plus terminal closure, audit every materialized transition, and prove
-  a generator-agnostic controller contract for non-regression, candidate-relative
-  completeness, and edit-budget compliance.
+  \item We identify candidate breadth as an underreported confound through a scoped audit of eight educational repair studies, derive a same-draw decomposition, and specify a reporting contract separating one-draw quality, execution-selected coverage, and deployed calls.
+  \item We present a trajectory-supervision framework that constructs three finite execution-evidence relations, solves checkpoint choice as exact validation-coverage search, and provides a generator-agnostic controller contract for non-regression, candidate-relative completeness, and edit-budget compliance.
+  \item We evaluate the full \(A_1\)--\(T_1\)--\(S_3\)--\(A_3\)--\(A_9\)--\(M_9\) mechanism ladder with matched history and target controls, five-fold problem-cross-fitted selection, hidden tests, two model scales, two Java holdouts, and patch-locality analyses; the evidence isolates breadth as the principal coverage mechanism and intermediate targets as a reproducible locality mechanism.
 \end{itemize}
 
 \section{Background and Related Work}
@@ -204,6 +189,8 @@ REFERENT~\cite{heo2023referent} & NR & NR & NR \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+This purposive audit bounds its prevalence claim to eight studies; the contract is a normative proposal, not an APR-wide estimate.
 
 The resulting reporting contract has four fields: expected one-draw repair
 rate under the same decoder, execution-selected union at every deployed $k$,
@@ -375,16 +362,17 @@ Unrestricted execution stops at the first acceptance; budgeted execution
 continues past over-budget acceptances. The order is frozen before evaluation,
 and generated-feedback prompting is evaluated separately.
 
-If no eligible candidate is accepted, the selector includes the current program \(c_i\) as a fallback:
+For a budget $B\in[0,\infty]$, define the feasible set explicitly:
 \begin{equation}
-\mathcal{C}=\{c_i,c^{(1)},c^{(2)},c^{(3)}\}.
+\mathcal{C}_B=\{c_i\}\cup\{c^{(j)}:\mathrm{ted}^{\dagger}(c_i,c^{(j)})<\infty\ \land\ \mathrm{ted}^{\dagger}(c_i,c^{(j)})\leq B\}.
+\label{eq:feasible-set}
 \end{equation}
 Let \(\mathrm{Pass}(c)\) be the fraction of tests passed. We define
 \(\mathrm{ted}^{\dagger}(c_i,c)=0\) for the unchanged fallback, the Python
 AST tree edit distance when both changed programs parse, and \(+\infty\)
-otherwise. Fallback selection is lexicographic:
+otherwise. Unrestricted operation sets $B=\infty$ while retaining the finite-TED condition; budgeted operation uses its declared finite $B$. The scan accepts only candidates in $\mathcal{C}_B$. If none is accepted, fallback selection is lexicographic:
 \begin{equation}
-c^*=\underset{c\in\mathcal{C}}{\arg\max}
+c^*=\underset{c\in\mathcal{C}_B}{\arg\max}
 \left(\mathrm{Pass}(c),-\mathrm{ted}^{\dagger}(c_i,c)\right).
 \label{eq:selection}
 \end{equation}
@@ -404,8 +392,8 @@ set.
 \end{theorem}
 \begin{proof}
 An eligible accepted candidate terminates the scan and has pass rate one. If
-none exists, Equation~\ref{eq:selection} maximizes over a set containing the
-zero-edit fallback, proving (i); the eligibility filter proves (ii). The scan
+none exists, Equation~\ref{eq:selection} maximizes over $\mathcal{C}_B$, which contains the
+zero-edit fallback, proving (i); Equation~\ref{eq:feasible-set} proves (ii). The scan
 visits every candidate until an eligible acceptance, proving both directions of
 (iii). The final statement follows because existence in a finite set is
 permutation invariant.
@@ -464,7 +452,7 @@ normalized TED, retention, user strata, order replay, and heterogeneity are
 exploratory, and none was externally preregistered. A scale-run invariant found
 repeated current-program execution; before selection or analysis, a logged
 amendment rebound every member to the pre-existing cached baseline without
-changing training, candidates, candidate outcomes, TED, or analysis.
+changing training, candidates, candidate outcomes, TED, or analysis. Paired-target, extended-temperature, and $k$-curve protocols were repository-frozen before outcomes and report every cell; they are artifact-confirmatory, not externally preregistered.
 
 RR is the primary effectiveness endpoint. The system contrast is portfolio
 versus Zero-shot; the mechanism contrast is selection-matched \(M_9-A_9\).
@@ -506,7 +494,7 @@ Unseen & Test & 54 & 642 & 260 & 965 & 705 & 237 \\
 \end{tabular}
 \end{table}
 
-Adapter construction yields the training and validation sizes in Table~\ref{tab:adapter-data}. Final evaluation uses the prefix ending at the last non-accepted submission and the final accepted program as the oracle. We retain only cases for which re-execution confirms the current program as non-accepted and the oracle as accepted, leaving 997 Seen instances from 328 of the 492 Seen problems and 250 Unseen instances from all 54 held-out problems. The remaining Seen problems still contribute Train or Validation trajectories but have no Test trajectory satisfying both execution checks; this is why the abstract's test-problem count is smaller than the Seen pool.
+Adapter construction yields the training and validation sizes in Table~\ref{tab:adapter-data}. Final evaluation uses the last non-accepted submission before the recorded acceptance. The estimand is therefore conditional repair of the last failed state in an eventually successful trajectory, not repair of arbitrary failures; never-successful trajectories and earlier failed states are outside scope. Re-execution leaves 997 Seen instances from 328 of the 492 Seen problems and 250 Unseen instances from all 54 held-out problems. Other Seen problems still contribute Train or Validation trajectories but lack a Test trajectory satisfying both execution checks.
 
 \begin{table}[t]
 \caption{Adapter supervision datasets. Validation examples are excluded from training.}
@@ -582,10 +570,7 @@ CodeWorkout split uses 10/3/4 disjoint train/validation/test exercises
 213/150/161 students, including 151 shared train--test identities; it therefore
 isolates assignment transfer, whereas the student split isolates learners.
 
-OpenAI Codex assisted design exploration, implementation, orchestration,
-analysis scripts, and drafting. The authors fixed the design, ran jobs on
-author-controlled infrastructure, reviewed code and evidence, and verified
-citations; AI-produced text is not empirical evidence.
+OpenAI Codex was used to propose control and validation-selection designs, implement dataset builders, orchestrate experiments, develop statistical-analysis scripts, and assist manuscript drafting. The authors selected the final design and acceptance criteria, ran jobs on author-controlled infrastructure, reviewed code changes, checked reported values against saved machine-readable outputs, and every cited work was checked against a retrievable source; AI-produced text is not empirical evidence.
 
 An isolated runner executes Python and compiles Java 21 in a network-disabled
 container. Outcomes are cached by program, tests, timeout, and memory settings;
@@ -629,7 +614,7 @@ draws extend the same candidate stream to $k=1,3,5,10,20$; we report the
 prefix-union RR, marginal gain, mean early-stop calls, and generation latency
 on both splits. No test cell selects a temperature, $k$, or portfolio.
 
-Finally, the emph{paired-target control} addresses training-data quantity.
+Finally, the \emph{paired-target control} addresses training-data quantity.
 We inner-join Progress and Answer examples by problem, user, current submission
 identifier, and exact current code, discard pairs with the same target, and
 serialize only that shared current code. Three Progress and three Answer
@@ -837,45 +822,7 @@ Adapter & PR & RR & IR & \(\mathrm{TED}_{B\to F}\) & \(\mathrm{TED}_{F\to O}\) \
 \end{tabular}
 \end{table}
 
-The raw TED ordering could reflect different repaired subsets, so we also pair
-joint repairs and resample problems. On 350 Answer--Progress joint repairs,
-Progress is 1.84 TED smaller [0.50, 3.26]; on 361 Strict--Progress joint repairs,
-it is 1.67 smaller [0.53, 2.93]. Strict differs from Answer by only 0.29
-[--1.09, 1.64] across 358 joint repairs. Thus the supported specialization is
-Progress's narrower patch scope, not a fully ordered three-policy hierarchy.
-Two source-based measures corroborate rather than merely rename TED. On joint
-Progress--Answer repairs, Progress retains 1.29 more percentage points of buggy
-tokens [0.02, 2.57] and 2.89 more points of non-empty source lines [1.16, 4.71].
-Progress also retains 0.84 more token points than Strict [0.04, 1.67], while
-the line interval crosses zero. The paired 1.84-TED reduction is about 9.1\%
-of Answer's unpaired mean TED, whereas the 1.29-point token effect is modest;
-statistical detectability should not be confused with a typical or large
-practical change. Indeed, among 341 jointly repaired cases whose displayed
-programs fit the fixed 900-character cap, the median Answer-minus-Progress TED
-gap is zero (Fig.~\ref{fig:locality-case}). The positive mean is therefore
-tail-sensitive: Progress sometimes avoids a large rewrite, but usually does
-not reduce TED. These are preservation measures, not learner outcomes; hard
-non-regression enters only through selection.
-
-\begin{figure}[t]
-\centering
-\fbox{\begin{minipage}{.94\columnwidth}\small
-\textbf{Median-gap trajectory:} the current program resets \texttt{count} in
-the \texttt{else} paired with \texttt{if count == 3}, including after equal
-dice.\\[2pt]
-\textbf{Progress repair (AC, TED 7):} changes that branch to
-\texttt{elif d1 != d2: count = 0}.\\[2pt]
-\textbf{Answer repair (AC, TED 7):} nests the same condition as
-\texttt{else: if d1 != d2: count = 0}. Both preserve the loop and state.
-\end{minipage}}
-\caption{Deterministic post-hoc central case
-(\texttt{p02547:u167908302:S4}), selected closest to the median TED gap among
-341 compact joint repairs (ties by ID). It is excluded from every estimate.}
-\Description{A submission resets a consecutive-equal-dice counter after every
-nonterminal iteration. Progress uses an else-if guard and Answer nests the same
-guard. Both repairs pass all tests and have tree edit distance seven.}
-\label{fig:locality-case}
-\end{figure}
+The raw TED ordering compares different repaired subsets, so we pair joint repairs and resample problems. Progress is 1.84 TED smaller than Answer on 350 joint repairs [0.50, 3.26] and 1.67 smaller than Strict on 361 [0.53, 2.93]; Strict--Answer includes zero. Progress also retains 1.29 more buggy-token points [0.02, 2.57] and 2.89 more source-line points [1.16, 4.71] than Answer. Yet the median TED gap across 341 compact joint repairs is zero. These unmatched results identify a tail-sensitive specialization and motivate the source-matched RQ4 control; they do not establish learner benefit.
 
 \subsection{RQ4: Mechanism Identification}
 
@@ -889,10 +836,7 @@ greedy decoding to one stochastic draw contributes
 \StochasticOneMinusGreedyOneSeenCI, whereas execution-selecting three of those
 identical fixed draws contributes
 \SameDrawThreeMinusOneSeen{} points
-\SameDrawThreeMinusOneSeenCI. In Table~\ref{tab:breadth-controls}, mean
-one-draw RR stays within 41.1--43.1\% Seen and 61.1--62.5\% Unseen, while the
-three-draw union rises 48.4--60.0\% and 65.6--75.2\%, respectively. Temperature
-changes complementarity far more than marginal success; no test cell is tuned.
+\SameDrawThreeMinusOneSeenCI. Table~\ref{tab:breadth-controls} reports every frozen cell. Through $T=1.0$, mean one-draw RR stays within 41.1--43.1\% Seen and 61.1--62.5\% Unseen, and three-draw union reaches 60.0/75.2\%. At $T=1.2$ it remains 58.6/76.4\%, but $T=1.5$ collapses to 15.8/35.2\%. The $k$ curve rises monotonically to 74.8/84.0\% at 20 draws, requiring 7.44/5.08 mean calls; the matched base-model three-draw RR is \BaseStochasticThreeSeenRR/\BaseStochasticThreeUnseenRR\%.
 
 At matched temperature, replacing three Answer2027 draws with one draw from
 each of three Answer checkpoints changes RR by
@@ -923,39 +867,53 @@ sensitivity analyses. Generated-feedback repetition reaches 55.2\%, and
 compulsory one-per-relation selection reaches 57.3\%.
 
 \begin{table}[t]
-\caption{Temperature sweep RR (\%). ``1'' is mean single-draw performance and
-``3'' is the same three draws' execution-selected union.}
+\caption{Complete breadth accounting. Temperature cells are single/three-draw RR (\%); $k$ cells are prefix-union RR/mean early-stop calls/amortized generation seconds. Every frozen temperature and $k$ is shown.}
 \label{tab:breadth-controls}
 \centering
 \scriptsize
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrrrr}
 \toprule
-$T$ & .2 & .4 & .6 & .8 & 1.0 \\
+$T$ & .2 & .4 & .6 & .8 & 1.0 & 1.2 & 1.5 \\
 \midrule
-Seen-1 & \SweepTPointTwoSeenSingleRR & \SweepTPointFourSeenSingleRR & \SweepTPointSixSeenSingleRR & \SweepTPointEightSeenSingleRR & \SweepTOnePointZeroSeenSingleRR \\
-Seen-3 & \SweepTPointTwoSeenRR & \SweepTPointFourSeenRR & \SweepTPointSixSeenRR & \SweepTPointEightSeenRR & \SweepTOnePointZeroSeenRR \\
-Unseen-1 & \SweepTPointTwoUnseenSingleRR & \SweepTPointFourUnseenSingleRR & \SweepTPointSixUnseenSingleRR & \SweepTPointEightUnseenSingleRR & \SweepTOnePointZeroUnseenSingleRR \\
-Unseen-3 & \SweepTPointTwoUnseenRR & \SweepTPointFourUnseenRR & \SweepTPointSixUnseenRR & \SweepTPointEightUnseenRR & \SweepTOnePointZeroUnseenRR \\
+Seen & \SweepTPointTwoSeenSingleRR/\SweepTPointTwoSeenRR & \SweepTPointFourSeenSingleRR/\SweepTPointFourSeenRR & \SweepTPointSixSeenSingleRR/\SweepTPointSixSeenRR & \SweepTPointEightSeenSingleRR/\SweepTPointEightSeenRR & \SweepTOnePointZeroSeenSingleRR/\SweepTOnePointZeroSeenRR & \SweepTOnePointTwoSeenSingleRR/\SweepTOnePointTwoSeenRR & \SweepTOnePointFiveSeenSingleRR/\SweepTOnePointFiveSeenRR \\
+Unseen & \SweepTPointTwoUnseenSingleRR/\SweepTPointTwoUnseenRR & \SweepTPointFourUnseenSingleRR/\SweepTPointFourUnseenRR & \SweepTPointSixUnseenSingleRR/\SweepTPointSixUnseenRR & \SweepTPointEightUnseenSingleRR/\SweepTPointEightUnseenRR & \SweepTOnePointZeroUnseenSingleRR/\SweepTOnePointZeroUnseenRR & \SweepTOnePointTwoUnseenSingleRR/\SweepTOnePointTwoUnseenRR & \SweepTOnePointFiveUnseenSingleRR/\SweepTOnePointFiveUnseenRR \\
 \bottomrule
 \end{tabular}
 \par\smallskip
-At $T=.8$, three-checkpoint RR is
-\CheckpointStochasticThreeSeenRR/\CheckpointStochasticThreeUnseenRR\% and
-base-model RR is \BaseStochasticThreeSeenRR/\BaseStochasticThreeUnseenRR\%
-(Seen/Unseen).
+\begin{tabular}{lrrrrr}
+\toprule
+$k$ & 1 & 3 & 5 & 10 & 20 \\
+\midrule
+Seen & \BreadthKOneSeenRR/\BreadthKOneSeenCalls/\BreadthKOneSeenGenSec & \BreadthKThreeSeenRR/\BreadthKThreeSeenCalls/\BreadthKThreeSeenGenSec & \BreadthKFiveSeenRR/\BreadthKFiveSeenCalls/\BreadthKFiveSeenGenSec & \BreadthKTenSeenRR/\BreadthKTenSeenCalls/\BreadthKTenSeenGenSec & \BreadthKTwentySeenRR/\BreadthKTwentySeenCalls/\BreadthKTwentySeenGenSec \\
+Unseen & \BreadthKOneUnseenRR/\BreadthKOneUnseenCalls/\BreadthKOneUnseenGenSec & \BreadthKThreeUnseenRR/\BreadthKThreeUnseenCalls/\BreadthKThreeUnseenGenSec & \BreadthKFiveUnseenRR/\BreadthKFiveUnseenCalls/\BreadthKFiveUnseenGenSec & \BreadthKTenUnseenRR/\BreadthKTenUnseenCalls/\BreadthKTenUnseenGenSec & \BreadthKTwentyUnseenRR/\BreadthKTwentyUnseenCalls/\BreadthKTwentyUnseenGenSec \\
+\bottomrule
+\end{tabular}
 \end{table}
 
-Relation targets produce a constrained-repair signal, but not a replicated
-effect. Across six TED budgets, budget-specific \(M_9\) improves mean Seen RR
-over matched \(A_9\) by 1.22 points [0.02, 2.42]; at TED 20 the effect is +1.61
-[0.39, 2.85]. Its approximate 80\%-power MDE is 1.72 points, larger than the
-observed mean. The corresponding Unseen interval includes zero; the 1.5B
-effect reverses sign, and the user-held-out Java interval includes zero. On 532
-joint repairs, \(M_9\) nevertheless preserves 2.57 more buggy-token points
-[1.56, 3.64] and 3.33 more non-empty-line points [1.89, 4.83]. We therefore
-treat constrained coverage as a hypothesis generated by the Seen frontier,
-while source preservation is the supported descriptive specialization.
+Target semantics produce a replicated coverage--locality tradeoff, not a coverage advantage. The paired-target control uses \PairedTargetTrainExamples/\PairedTargetValidExamples{} train/validation pairs and fixes current programs, counts, seeds, training, prompts, selectors, and test inputs. Table~\ref{tab:paired-target} shows Progress losing \PairedTargetProgressMinusAnswerSeen/\PairedTargetProgressMinusAnswerUnseen{} Seen/Unseen RR points; clustered intervals exclude zero, as do exact McNemar tests ($p=4.60\times10^{-34}/6.17\times10^{-5}$). Its six-budget mean also loses \PairedTargetBudgetProgressMinusAnswerSeen{} Seen points, while Unseen is unresolved. Thus intermediate targets do not improve coverage on the matched source distribution.
+
+\begin{table*}[t]
+\caption{Paired-target control. $\Delta$ is Progress minus Answer; RR and retention are percentage points. Positive Answer$-$Progress TED means that Progress makes the smaller joint repair. Intervals resample problems as clusters.}
+\label{tab:paired-target}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lrrrrrr}
+\toprule
+Split & Progress/Answer RR & $\Delta$RR [95\% CI] & Mean $\Delta$RR over budgets & Answer$-$Progress TED & $\Delta$ token retention & $\Delta$ line retention \\
+\midrule
+Seen & \PairedTargetProgressSeenRR/\PairedTargetAnswerSeenRR & \PairedTargetProgressMinusAnswerSeen{} \PairedTargetProgressMinusAnswerSeenCI & \PairedTargetBudgetProgressMinusAnswerSeen{} \PairedTargetBudgetProgressMinusAnswerSeenCI & \PairedTargetAnswerMinusProgressTEDSeen{} \PairedTargetAnswerMinusProgressTEDSeenCI & \PairedTargetProgressMinusAnswerTokenRetentionSeen{} \PairedTargetProgressMinusAnswerTokenRetentionSeenCI & \PairedTargetProgressMinusAnswerLineRetentionSeen{} \PairedTargetProgressMinusAnswerLineRetentionSeenCI \\
+Unseen & \PairedTargetProgressUnseenRR/\PairedTargetAnswerUnseenRR & \PairedTargetProgressMinusAnswerUnseen{} \PairedTargetProgressMinusAnswerUnseenCI & \PairedTargetBudgetProgressMinusAnswerUnseen{} \PairedTargetBudgetProgressMinusAnswerUnseenCI & \PairedTargetAnswerMinusProgressTEDUnseen{} \PairedTargetAnswerMinusProgressTEDUnseenCI & \PairedTargetProgressMinusAnswerTokenRetentionUnseen{} \PairedTargetProgressMinusAnswerTokenRetentionUnseenCI & \PairedTargetProgressMinusAnswerLineRetentionUnseen{} \PairedTargetProgressMinusAnswerLineRetentionUnseenCI \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}
+
+The same control confirms repair locality. On \PairedTargetJointTEDRepairsSeen/\PairedTargetJointTEDRepairsUnseen{} joint parseable repairs, Answer patches are \PairedTargetAnswerMinusProgressTEDSeen/\PairedTargetAnswerMinusProgressTEDUnseen{} TED units larger. Across \PairedTargetJointRepairsSeen/\PairedTargetJointRepairsUnseen{} joint repairs, Progress retains \PairedTargetProgressMinusAnswerTokenRetentionSeen/\PairedTargetProgressMinusAnswerTokenRetentionUnseen{} more token points and \PairedTargetProgressMinusAnswerLineRetentionSeen/\PairedTargetProgressMinusAnswerLineRetentionUnseen{} more line points; every clustered interval excludes zero. This demonstrates a matched effect on patch scope, not learning.
+
+The mixed-pool budget signal remains weaker. Across six TED budgets, budget-specific \(M_9\) improves mean Seen RR over matched \(A_9\) by 1.22 points [0.02, 2.42], but the corresponding Unseen interval includes zero, the 1.5B effect reverses sign, and the user-held-out Java interval includes zero. On 532 joint repairs, \(M_9\) preserves 2.57 more buggy-token points [1.56, 3.64] and 3.33 more non-empty-line points [1.89, 4.83]. We therefore reject a general mixed-target coverage claim and retain source preservation as the supported specialization.
 
 A post-hoc normalized audit finds positive $M_9-A_9$ at relative limits 0.10,
 0.20, and 0.40 (+2.80, +3.83, +2.90 points); three other limits include zero.
@@ -1066,13 +1024,16 @@ intervals include zero. Verdict ordering has no portable benefit.
 \section{Conclusion}
 \label{sec:conclusion}
 
-Candidate breadth supplies the largest stable unrestricted gain; current-only
+Candidate breadth supplies the largest stable unrestricted gain; within the evaluated Qwen2.5-Coder models and information conditions, current-only
 Answer-3Seed is therefore the tested default, and mixed-target pools are not
 justified for unrestricted deployment. More generally, method claims in
 execution-guided repair require a matched one-draw estimand and an explicit
 coverage--cost curve; our audit shows that this accounting is not yet routine.
-Trajectory mining has a narrower supported role: Progress yields modestly
-smaller joint repairs, while the small-budget coverage signal remains
+Paired-target training fixes source distribution and quantity and shows the
+precise role of trajectory mining: Answer wins unrestricted RR by 19.3/11.2
+Seen/Unseen points, whereas Progress reduces joint-repair TED by 10.08/6.83 and
+preserves 5.6/6.5 more buggy-token points. Thus intermediate targets provide a
+reproducible locality mechanism, while their small-budget coverage signal remains
 unreplicated. The certified controller deploys either choice without
 observed-test regression or over-budget changes. Whether locality benefits
 users, or relation effects recur in larger user-disjoint populations, remains
@@ -1081,29 +1042,11 @@ unmeasured.
 \section{Threats to Validity}
 \label{sec:threats}
 
-\noindent\emph{Construct validity.} Passing generated tests is not semantic
-equivalence. The 97.8--98.9\% held-out-slice rates use correlated partitions of
-one suite and exclude only obvious slice overfitting. TED and source
-retention measure change, not readability, hint quality, or learning; they are
-a Pareto cost axis, not evidence of pedagogical superiority.
-\emph{Internal validity.} $M_9-A_9$ changes target semantics, distance, and
-training-set size together. The original $A_3-S_3$ also changed decoding; the matched
-checkpoint and temperature controls resolve that confound. None was externally preregistered.
-\emph{Leakage and selection.} Unseen excludes every training problem
-~\cite{allamanis2019adverse}; Seen permits problem and user overlap. Hidden-test,
-cross-fit, overlap, and difficulty audits cannot eliminate algorithmic
-memorization. The instance-weighted cross-fit null is primary; equal-problem
-and normalized-TED results are sensitivities.
-\emph{External validity and ethics.} CodeNet users are not a classroom cohort;
-only CodeWorkout identifies students. Evidence covers one Python family, one
-smaller scale, and two Java splits, one with user overlap. Identifiers are
-anonymized, and no user study validates utility.
+\noindent\emph{Construct validity.} Generated-test passing is not semantic equivalence; correlated held-out slices exclude only obvious slice overfitting. TED and retention measure change, not readability, learning, or pedagogy. \emph{Internal validity.} $M_9-A_9$ jointly changes target semantics, distance, and set size. The paired control fixes sources and count, but not semantics and induced distance; matched decoding controls $A_3-S_3$. None was externally preregistered. \emph{Selection and leakage.} Evaluation conditions on an eventually successful trajectory's last failure, likely easier than arbitrary or never-successful failures; early/middle states are unmeasured. Unseen excludes training problems~\cite{allamanis2019adverse}, whereas Seen permits problem and user overlap. Audits cannot eliminate memorization. Cross-fit is primary; equal-problem and normalized-TED results are sensitivities. \emph{External validity and ethics.} CodeNet is not a classroom cohort; only CodeWorkout identifies students. Evidence covers one Python family, one smaller scale, and two Java splits. Identifiers are anonymized; learner utility remains unmeasured.
 
-\section{Data Availability}
+\section{Data and Artifact Availability}
 \label{sec:data-availability}
-The anonymized replication package supplies all artifacts and environments. Its manifest
-binds the Git SHA and UTC timestamp to hashes and row counts;
-\texttt{ARTIFACT.md} maps claims to evidence.
+The anonymized package supplies environments, a hash-bound manifest, and an \texttt{ARTIFACT.md} claim--evidence map.
 
 \clearpage
 \bibliographystyle{ACM-Reference-Format}

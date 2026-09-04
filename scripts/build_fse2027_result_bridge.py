@@ -35,6 +35,11 @@ def interval(values: list[float]) -> str:
     return f"[{100 * lo:.2f}, {100 * hi:.2f}]"
 
 
+def raw_interval(values: list[float]) -> str:
+    lo, hi = values
+    return f"[{lo:.2f}, {hi:.2f}]"
+
+
 def members(values: list[str]) -> str:
     return "--".join(values)
 
@@ -556,6 +561,31 @@ def macros(result: dict[str, Any]) -> str:
             values[f"PairedTargetBudgetProgressMinusAnswer{prefix}CI"] = interval(
                 budget["problem_cluster_95ci"]
             )
+            paired_ted = row["unrestricted"]["progress_minus_answer"]["paired_ted"]
+            values[f"PairedTargetAnswerMinusProgressTED{prefix}"] = (
+                f"{paired_ted['right_minus_left_mean_ted']:.2f}"
+            )
+            values[f"PairedTargetAnswerMinusProgressTED{prefix}CI"] = raw_interval(
+                paired_ted["problem_cluster_bootstrap_95ci"]
+            )
+            values[f"PairedTargetJointTEDRepairs{prefix}"] = str(
+                paired_ted["joint_repairs"]
+            )
+            locality = row["source_preservation_on_joint_repairs"]
+            values[f"PairedTargetJointRepairs{prefix}"] = str(
+                locality["joint_repairs"]
+            )
+            for metric_name, metric_prefix in (
+                ("token_retention", "TokenRetention"),
+                ("line_retention", "LineRetention"),
+            ):
+                locality_metric = locality["metrics"][metric_name]
+                values[f"PairedTargetProgressMinusAnswer{metric_prefix}{prefix}"] = pct(
+                    locality_metric["left_minus_right"]
+                )
+                values[f"PairedTargetProgressMinusAnswer{metric_prefix}{prefix}CI"] = interval(
+                    locality_metric["problem_cluster_bootstrap_95ci"]
+                )
 
     exercise = result["codeworkout_exercise_sensitivity"]
     per_effects = [row["mixed_minus_answer_rr"] for row in exercise["per_exercise"]]
