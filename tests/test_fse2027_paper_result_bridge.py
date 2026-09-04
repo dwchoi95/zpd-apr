@@ -80,6 +80,17 @@ class PaperResultBridgeTest(unittest.TestCase):
         self.assertIn("paper/fse2027-result-bridge.tex", finalizer)
         self.assertIn("fse2027-paper-result-bridge-audit.json", finalizer)
 
+    def test_finalizer_collects_cross_user_control_checkpoints(self) -> None:
+        finalizer = (ROOT / "scripts" / "finalize_fse2027_evidence_remote.sh").read_text(
+            encoding="utf-8"
+        )
+        runner = (
+            ROOT / "scripts" / "run_fse2027_cross_user_target_control_remote.sh"
+        ).read_text(encoding="utf-8")
+        checkpoint_suffix = "checkpoints/split-90-10/cross-user-target-control"
+        self.assertIn(checkpoint_suffix, finalizer)
+        self.assertIn(checkpoint_suffix, runner)
+
 
 if __name__ == "__main__":
     unittest.main()

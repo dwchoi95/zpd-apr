@@ -197,7 +197,7 @@ checkpoint_args=(
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-1.5b"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/codeworkout-problem-holdout"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-verdict-order/accepted-vs-failure"
-  --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-cross-user-target"
+  --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/cross-user-target-control"
 )
 external_args=(--external-root "${WORK_ROOT}/archive/external/tiktoc")
 for index in 1 3 5 7 9 11 13 15; do
