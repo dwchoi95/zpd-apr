@@ -27,7 +27,8 @@ def check(pdf: Path) -> dict[str, int]:
         text = output("pdftotext", "-f", str(page), "-l", str(page), "-layout", str(pdf), "-")
         if data_availability_page is None:
             data_heading = re.search(
-                r"(?m)^\s*(?:\d+\s+){0,2}Data Availability\s*$", text
+                r"(?m)^\s*(?:\d+\s+){0,2}Data(?: and Artifact)? Availability\s*$",
+                text,
             )
             if data_heading:
                 data_availability_page = page

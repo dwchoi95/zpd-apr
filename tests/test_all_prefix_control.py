@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import unittest
+import json
+import tempfile
+from pathlib import Path
 
 from scripts.build_all_prefix_evaluation import phase, transform
+from scripts.analyze_all_prefix_control import analyze_split
 
 
 class AllPrefixControlTest(unittest.TestCase):
@@ -28,6 +32,28 @@ class AllPrefixControlTest(unittest.TestCase):
         self.assertEqual(result["trajectory_source_position"], 2)
         self.assertEqual(result["trajectory_phase"], "last")
         self.assertEqual(result["attempts_remaining_to_acceptance"], 1)
+
+    def test_analysis_reports_problem_clustered_phase_intervals(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "seen").mkdir()
+            dataset = root / "seen.jsonl"
+            rows = [
+                {"example_id": "e1", "problem_id": "p1", "trajectory_phase": "early"},
+                {"example_id": "e2", "problem_id": "p2", "trajectory_phase": "last"},
+            ]
+            dataset.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            evaluations = [
+                {"example_id": "e1", "problem_id": "p1", "repaired": True, "improved": True, "fixed_pass_rate": 1.0},
+                {"example_id": "e2", "problem_id": "p2", "repaired": False, "improved": False, "fixed_pass_rate": 0.0},
+            ]
+            (root / "seen" / "answer3.evaluation.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in evaluations)
+            )
+            result = analyze_split(root, dataset, "seen")
+            early = result["by_trajectory_phase"]["early"]["answer"]
+            self.assertEqual(early["rr"], 1.0)
+            self.assertEqual(early["problem_cluster_bootstrap_95ci"], [1.0, 1.0])
 
 
 if __name__ == "__main__":

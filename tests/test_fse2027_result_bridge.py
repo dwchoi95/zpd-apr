@@ -532,6 +532,34 @@ class ResultBridgeTest(unittest.TestCase):
             "validation_dataset": {"paired_target_divergent_examples": 931},
             "splits": {"seen": paired_split, "unseen": paired_split},
         }
+        provenance_contrast = {
+            "paired": [{
+                "metric": "rr",
+                "left_minus_right_instance_weighted": 0.04,
+                "cluster_bootstrap_95ci": [0.01, 0.07],
+            }]
+        }
+        provenance_split = {
+            "same_user": {"rr": 0.51},
+            "cross_user": {"rr": 0.47},
+            "same_user_minus_cross_user": provenance_contrast,
+        }
+        result["cross_user_target_control"] = {
+            "train_dataset": {"written_examples_per_condition": 5231},
+            "validation_dataset": {"written_examples_per_condition": 306},
+            "splits": {"seen": provenance_split, "unseen": provenance_split},
+        }
+        phase = {
+            "examples": 100,
+            "answer": {"rr": 0.50, "problem_cluster_bootstrap_95ci": [0.45, 0.55]},
+        }
+        prefix_split = {
+            "overall": {"examples": 300, "rr": 0.50},
+            "by_trajectory_phase": {"early": phase, "middle": phase, "last": phase},
+        }
+        result["all_prefix_control"] = {
+            "splits": {"seen": prefix_split, "unseen": prefix_split}
+        }
         rendered = macros(result)
         self.assertNotRegex(rendered, r"\\newcommand\{\\[A-Za-z]*\d")
         self.assertIn(r"\newcommand{\AnswerNineSeenRR}{59.0}", rendered)
@@ -556,6 +584,11 @@ class ResultBridgeTest(unittest.TestCase):
             r"\newcommand{\PairedTargetProgressMinusAnswerLineRetentionSeenCI}{[7.00, 13.00]}",
             rendered,
         )
+        self.assertIn(r"\newcommand{\CrossUserTargetTrainExamples}{5231}", rendered)
+        self.assertIn(r"\newcommand{\CrossUserTargetSameMinusOtherSeen}{4.0}", rendered)
+        self.assertIn(r"\newcommand{\CrossUserTargetSameMinusOtherSeenCI}{[1.00, 7.00]}", rendered)
+        self.assertIn(r"\newcommand{\AllPrefixSeenExamples}{300}", rendered)
+        self.assertIn(r"\newcommand{\AllPrefixEarlySeenCI}{[45.00, 55.00]}", rendered)
         self.assertIn(r"\newcommand{\StochasticOneMinusGreedyOneSeen}{2.0}", rendered)
         self.assertIn(
             r"\newcommand{\SameDrawAnswerThreeMinusStochasticThreeSeen}{1.0}",

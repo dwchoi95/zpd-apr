@@ -160,6 +160,8 @@ done
   --difficulty-match "${RUN_ROOT}/analysis/fse2027-difficulty-matched-holdout.json" \
   --breadth-curve "${RUN_ROOT}/analysis/fse2027-answer-breadth-cost-curve.json" \
   --paired-target "${RUN_ROOT}/analysis/fse2027-paired-target-control.json" \
+  --cross-user-target "${RUN_ROOT}/analysis/fse2027-cross-user-target-control.json" \
+  --all-prefix "${RUN_ROOT}/analysis/fse2027-all-prefix-control.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
 

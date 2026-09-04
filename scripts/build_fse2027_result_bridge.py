@@ -94,6 +94,8 @@ def build(
     difficulty_match: dict[str, Any] | None = None,
     breadth_curve: dict[str, Any] | None = None,
     paired_target: dict[str, Any] | None = None,
+    cross_user_target: dict[str, Any] | None = None,
+    all_prefix: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -130,6 +132,10 @@ def build(
         result["answer_breadth_cost_curve"] = breadth_curve
     if paired_target is not None:
         result["paired_target_control"] = paired_target
+    if cross_user_target is not None:
+        result["cross_user_target_control"] = cross_user_target
+    if all_prefix is not None:
+        result["all_prefix_control"] = all_prefix
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
         rr = metric(row["zpdpatch_minus_answer_9choose3"])
@@ -587,6 +593,38 @@ def macros(result: dict[str, Any]) -> str:
                     locality_metric["problem_cluster_bootstrap_95ci"]
                 )
 
+    if "cross_user_target_control" in result:
+        provenance = result["cross_user_target_control"]
+        values["CrossUserTargetTrainExamples"] = str(
+            provenance["train_dataset"]["written_examples_per_condition"]
+        )
+        values["CrossUserTargetValidExamples"] = str(
+            provenance["validation_dataset"]["written_examples_per_condition"]
+        )
+        for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+            row = provenance["splits"][split]
+            values[f"CrossUserTargetSameUser{prefix}RR"] = pct(row["same_user"]["rr"])
+            values[f"CrossUserTargetOtherUser{prefix}RR"] = pct(row["cross_user"]["rr"])
+            effect = metric(row["same_user_minus_cross_user"])
+            values[f"CrossUserTargetSameMinusOther{prefix}"] = pct(
+                effect["left_minus_right_instance_weighted"]
+            )
+            values[f"CrossUserTargetSameMinusOther{prefix}CI"] = ci(effect)
+
+    if "all_prefix_control" in result:
+        prefix_control = result["all_prefix_control"]
+        for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+            row = prefix_control["splits"][split]
+            values[f"AllPrefix{prefix}Examples"] = str(row["overall"]["examples"])
+            values[f"AllPrefix{prefix}RR"] = pct(row["overall"]["rr"])
+            for phase, phase_prefix in (("early", "Early"), ("middle", "Middle"), ("last", "Last")):
+                phase_row = row["by_trajectory_phase"][phase]
+                values[f"AllPrefix{phase_prefix}{prefix}Examples"] = str(phase_row["examples"])
+                values[f"AllPrefix{phase_prefix}{prefix}RR"] = pct(phase_row["answer"]["rr"])
+                values[f"AllPrefix{phase_prefix}{prefix}CI"] = interval(
+                    phase_row["answer"]["problem_cluster_bootstrap_95ci"]
+                )
+
     exercise = result["codeworkout_exercise_sensitivity"]
     per_effects = [row["mixed_minus_answer_rr"] for row in exercise["per_exercise"]]
     loo_effects = [
@@ -791,6 +829,8 @@ def main() -> None:
     parser.add_argument("--difficulty-match", type=Path)
     parser.add_argument("--breadth-curve", type=Path)
     parser.add_argument("--paired-target", type=Path)
+    parser.add_argument("--cross-user-target", type=Path)
+    parser.add_argument("--all-prefix", type=Path)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -822,6 +862,8 @@ def main() -> None:
         read(args.difficulty_match) if args.difficulty_match else None,
         read(args.breadth_curve) if args.breadth_curve else None,
         read(args.paired_target) if args.paired_target else None,
+        read(args.cross_user_target) if args.cross_user_target else None,
+        read(args.all_prefix) if args.all_prefix else None,
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)

@@ -471,9 +471,9 @@ we therefore use it as behavioral repair evidence rather than evidence about
 students or learning. The separately collected CodeWorkout replication below
 provides the CS1-course population.
 
-Before splitting, we tokenize every possible \answer, \strict, conservative \progress, and final-evaluation prompt-target configuration. If any configuration exceeds 4,096 tokens, we exclude the entire trajectory rather than truncating code or history. This removes 2,896 trajectories and leaves 18,558. No later \texttt{max\_history}, transition-count, code, or test truncation is applied.
+Before splitting, we tokenize every possible \answer, \strict, conservative \progress, and final-evaluation prompt-target configuration. If any configuration exceeds 4,096 tokens, we exclude the entire trajectory rather than truncating code or history. This removes 3,660 trajectories and leaves 17,794. No later \texttt{max\_history}, transition-count, code, or test truncation is applied.
 
-We sort problems by eligible trajectory count and assign the top 90\% (492 problems) to \emph{Seen} and the remaining 54 low-resource problems to \emph{Unseen}. Within every Seen problem, we reserve at least one trajectory for Train, Validation, and Test, then obtain a deterministic 80:10:10 trajectory split. All 260 Unseen trajectories remain problem-held-out test data. Table~\ref{tab:data} reports the resulting corpus. Users may occur in more than one split; RQ5 is problem-held-out, not user-held-out.
+We sort problems by eligible trajectory count and assign the top 90\% (492 problems) to \emph{Seen} and the remaining 54 low-resource problems to \emph{Unseen}. Within every Seen problem, we reserve at least one trajectory for Train, Validation, and Test, then obtain a deterministic 80:10:10 trajectory split. All 259 Unseen trajectories remain problem-held-out test data. Table~\ref{tab:data} reports the resulting corpus. Users may occur in more than one split; RQ5 is problem-held-out, not user-held-out.
 
 \begin{table}[t]
 \caption{Dataset statistics after whole-trajectory context filtering. ``Prefix'' counts possible raw prefixes before adapter-specific filtering.}
@@ -485,11 +485,11 @@ We sort problems by eligible trajectory count and assign the top 90\% (492 probl
 Group & Role & Problems & Tests & Traj. & Sub. & Prefix & Users \\
 \midrule
 \multirow{3}{*}{Seen}
- & Train & \multirow{3}{*}{492} & \multirow{3}{*}{9,446} & 14,638 & 58,872 & 44,234 & 4,072 \\
- & Validation & & & 1,830 & 7,283 & 5,453 & 1,283 \\
- & Test & & & 1,830 & 7,068 & 5,238 & 1,291 \\
+ & Train & \multirow{3}{*}{492} & \multirow{3}{*}{9,446} & 14,027 & 54,481 & 40,454 & 4,012 \\
+ & Validation & & & 1,754 & 6,719 & 4,965 & 1,248 \\
+ & Test & & & 1,754 & 6,598 & 4,844 & 1,250 \\
 \midrule
-Unseen & Test & 54 & 642 & 260 & 965 & 705 & 237 \\
+Unseen & Test & 54 & 642 & 259 & 954 & 695 & 236 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -570,7 +570,7 @@ CodeWorkout split uses 10/3/4 disjoint train/validation/test exercises
 213/150/161 students, including 151 shared train--test identities; it therefore
 isolates assignment transfer, whereas the student split isolates learners.
 
-OpenAI Codex was used to propose control and validation-selection designs, implement dataset builders, orchestrate experiments, develop statistical-analysis scripts, and assist manuscript drafting. The authors selected the final design and acceptance criteria, ran jobs on author-controlled infrastructure, reviewed code changes, checked reported values against saved machine-readable outputs, and every cited work was checked against a retrievable source; AI-produced text is not empirical evidence.
+OpenAI Codex was used interactively to propose control and validation-selection designs, implement dataset builders, orchestrate experiments, develop statistical-analysis scripts, and assist manuscript drafting. The authors selected the final design and acceptance criteria, ran jobs on author-controlled infrastructure, reviewed code changes, checked reported values against saved machine-readable outputs, and every cited work was checked against a retrievable source; AI-produced text is not empirical evidence.
 
 An isolated runner executes Python and compiles Java 21 in a network-disabled
 container. Outcomes are cached by program, tests, timeout, and memory settings;
@@ -1046,7 +1046,7 @@ unmeasured.
 
 \section{Data and Artifact Availability}
 \label{sec:data-availability}
-The anonymized package supplies environments, a hash-bound manifest, and an \texttt{ARTIFACT.md} claim--evidence map.
+The anonymized replication package supplies environments, a hash-bound manifest, and an \texttt{ARTIFACT.md} claim--evidence map.
 
 \clearpage
 \bibliographystyle{ACM-Reference-Format}
