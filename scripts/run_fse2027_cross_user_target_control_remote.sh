@@ -81,7 +81,7 @@ for split in seen unseen; do
           --method "CrossUserControl-${relation}-${seed}" --prompt D \
           --base-model "${BASE_MODEL}" \
           --adapter "${CHECKPOINT_ROOT}/${relation}/seed-${seed}" \
-          --batch-size 8 --max-new-tokens 4096
+          --batch-size 16 --max-new-tokens 4096
         "${PYTHON}" run.py evaluate "${dataset}" "${prefix}.generations.jsonl" \
           "${prefix}.evaluation.jsonl" --data-root "${DATA_ROOT}" \
           --workers 64 --ted-workers 24 --timeout-sec 2.5 \
