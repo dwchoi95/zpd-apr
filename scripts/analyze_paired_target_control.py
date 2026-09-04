@@ -11,11 +11,11 @@ from typing import Any
 try:
     from analyze_fse2027_robustness import paired_suite_rows, read_jsonl, summarize_method
     from analyze_fse2027_selected_portfolios import BUDGETS, clustered_mean_budget_difference
-    from analyze_patch_locality import paired_locality
+    from analyze_patch_locality import paired_locality, resolve_generated_codes
 except ImportError:  # pragma: no cover
     from scripts.analyze_fse2027_robustness import paired_suite_rows, read_jsonl, summarize_method
     from scripts.analyze_fse2027_selected_portfolios import BUDGETS, clustered_mean_budget_difference
-    from scripts.analyze_patch_locality import paired_locality
+    from scripts.analyze_patch_locality import paired_locality, resolve_generated_codes
 
 
 def analyze_split(
@@ -34,6 +34,21 @@ def analyze_split(
     }
     progress_by_id = {str(row["example_id"]): row for row in progress}
     answer_by_id = {str(row["example_id"]): row for row in answer}
+    candidates = {
+        f"{relation}-{member_seed}": {
+            str(row["example_id"]): row
+            for row in read_jsonl(
+                root / split / f"{relation}-{member_seed}.evaluation.jsonl"
+            )
+        }
+        for relation in ("progress", "answer")
+        for member_seed in (2027, 2028, 2029)
+    }
+    resolve_generated_codes(
+        {"progress3": progress_by_id, "answer3": answer_by_id},
+        candidates,
+        source,
+    )
     progress_budget = {
         budget: read_jsonl(root / split / f"progress3.max-ted-{budget}.evaluation.jsonl")
         for budget in BUDGETS

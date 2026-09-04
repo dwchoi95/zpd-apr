@@ -90,11 +90,19 @@ class PairedTargetControlTest(unittest.TestCase):
             }
             answer = dict(progress, generated_code="c = 9")
             for name, value in (("progress3", progress), ("answer3", answer)):
+                composed = dict(value)
+                composed.pop("generated_code")
+                composed["selected_source"] = name.removesuffix("3") + "-2027"
                 (evaluation_root / f"{name}.evaluation.jsonl").write_text(
-                    json.dumps(value) + "\n", encoding="utf-8"
+                    json.dumps(composed) + "\n", encoding="utf-8"
                 )
                 for budget in ANALYSIS.BUDGETS:
                     (evaluation_root / f"{name}.max-ted-{budget}.evaluation.jsonl").write_text(
+                        json.dumps(value) + "\n", encoding="utf-8"
+                    )
+            for relation, value in (("progress", progress), ("answer", answer)):
+                for member_seed in (2027, 2028, 2029):
+                    (evaluation_root / f"{relation}-{member_seed}.evaluation.jsonl").write_text(
                         json.dumps(value) + "\n", encoding="utf-8"
                     )
             result = ANALYSIS.analyze_split(
