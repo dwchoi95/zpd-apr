@@ -2,7 +2,7 @@
 set -euo pipefail
 
 WORK_ROOT=/home/cdw/VSCode/zpd-apr
-PYTHON=${WORK_ROOT}/env/bin/python
+PYTHON=${WORK_ROOT}/.runtime/fse-env/bin/python
 RUN_ROOT=${WORK_ROOT}/outputs/split-90-10/canonical-v5
 MANIFEST=${RUN_ROOT}/analysis/evidence-manifest.json
 if [[ $# -ne 1 ]]; then

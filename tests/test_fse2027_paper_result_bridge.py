@@ -90,6 +90,7 @@ class PaperResultBridgeTest(unittest.TestCase):
         checkpoint_suffix = "checkpoints/split-90-10/cross-user-target-control"
         self.assertIn(checkpoint_suffix, finalizer)
         self.assertIn(checkpoint_suffix, runner)
+        self.assertIn("PYTHON=${WORK_ROOT}/.runtime/fse-env/bin/python", finalizer)
 
 
 if __name__ == "__main__":
