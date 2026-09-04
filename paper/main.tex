@@ -58,7 +58,7 @@ one-draw estimand, and trace the complete coverage--cost curve. A current-only
 three-Answer deployment repairs
 \CurrentOnlyAnswerThreeSeenRR/\CurrentOnlyAnswerThreeUnseenRR\% of Seen/Unseen
 inputs, while retrieval-based LSGen remains stronger without an edit limit.
-Hidden-test, difficulty-matching, smaller-model, and Java audits delimit rather
+Hidden-test, all-prefix, difficulty-matching, smaller-model, and Java audits delimit rather
 than erase these conclusions.
 \end{abstract}
 
@@ -778,8 +778,11 @@ With prompts and selection recomputed from the observed partition, 189/192 \tool
 
 \subsection{RQ6: Robustness and External Replication}
 
+\paragraph{Endpoint-selection control.}
+Across \AllPrefixSeenExamples/\AllPrefixUnseenExamples{} executable Seen/Unseen prefixes from eventually successful held-out trajectories, current-only Answer-3Seed reaches \AllPrefixSeenRR/\AllPrefixUnseenRR\% RR. Early/middle/last RR is \AllPrefixEarlySeenRR/\AllPrefixMiddleSeenRR/\AllPrefixLastSeenRR\% Seen and \AllPrefixEarlyUnseenRR/\AllPrefixMiddleUnseenRR/\AllPrefixLastUnseenRR\% Unseen; overlapping phase-clustered intervals show that effectiveness is not confined to last failure, while never-successful trajectories remain unmeasured.
+
 \paragraph{Replications and robustness.}
-On Seen hidden slices, ZPDPatch/$A_9$ joint RR is \SeenHiddenMixedJointRR/\SeenHiddenAnswerNineJointRR\%, and exact training-AC AST matches occur in only \SeenOverlapMixedExactRate/\SeenOverlapAnswerNineExactRate\% of selections. At 1.5B, $A_3-A_1=\ScaleAnswerThreeMinusOneSeen$ \ScaleAnswerThreeMinusOneSeenCI, while $M_9-A_9=\ScaleMixedMinusAnswerNineSeen$ \ScaleMixedMinusAnswerNineSeenCI. Mixed-minus-Answer is positive on the four-exercise Java holdout (\CodeWorkoutProblemMixedMinusAnswerNine{} points \CodeWorkoutProblemMixedMinusAnswerNineExerciseCI) but null on its user-disjoint split (\CodeWorkoutStudentMixedMinusAnswerNine{} points \CodeWorkoutStudentMixedMinusAnswerNineStudentCI). Five-fold problem-cross-fitted selection likewise gives $M_9-A_9=\CrossFitMixedMinusAnswerNineSeen$ \CrossFitMixedMinusAnswerNineSeenCI. Collapsing non-AC verdicts and retraining changes Progress by \VerdictOrderProgressCanonicalMinusAlternativeSeen/\VerdictOrderProgressCanonicalMinusAlternativeUnseen{} Seen/Unseen points, with no portable Strict effect. Across scale, domain, selection, and label controls, breadth replicates but relation composition does not.
+On Seen hidden slices, ZPDPatch/$A_9$ joint RR is \SeenHiddenMixedJointRR/\SeenHiddenAnswerNineJointRR\%, and exact training-AC AST matches occur in only \SeenOverlapMixedExactRate/\SeenOverlapAnswerNineExactRate\% of selections. At 1.5B, $A_3-A_1=\ScaleAnswerThreeMinusOneSeen$ \ScaleAnswerThreeMinusOneSeenCI, while $M_9-A_9=\ScaleMixedMinusAnswerNineSeen$ \ScaleMixedMinusAnswerNineSeenCI. Mixed-minus-Answer is positive on the four-exercise Java holdout (\CodeWorkoutProblemMixedMinusAnswerNine{} points \CodeWorkoutProblemMixedMinusAnswerNineExerciseCI; per exercise +\ExerciseSensitivityPerMinimum{} to +\ExerciseSensitivityPerMaximum) but null on its user-disjoint split (\CodeWorkoutStudentMixedMinusAnswerNine{} points \CodeWorkoutStudentMixedMinusAnswerNineStudentCI). Five-fold problem-cross-fitted selection likewise gives $M_9-A_9=\CrossFitMixedMinusAnswerNineSeen$ \CrossFitMixedMinusAnswerNineSeenCI. Collapsing non-AC verdicts and retraining changes Progress by \VerdictOrderProgressCanonicalMinusAlternativeSeen/\VerdictOrderProgressCanonicalMinusAlternativeUnseen{} Seen/Unseen points, with no portable Strict effect. Across scale, domain, selection, and label controls, breadth replicates but relation composition does not.
 
 \section{Conclusion}
 \label{sec:conclusion}
