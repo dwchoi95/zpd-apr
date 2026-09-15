@@ -1,6 +1,6 @@
 # FSE 2027 Claim-Evidence Ledger
 
-One-sentence story: Although execution-guided selection can raise repair coverage, it conflates supervision with candidate breadth and target provenance; we present a matched identification framework instantiated by ZPDPatch and show that breadth dominates unrestricted coverage, Progress targets trade coverage for locality, and outcome-equivalent peer substitution improves Progress coverage over same-user targets.
+One-sentence story: ZPDPatch separates target construction from candidate selection: on two Python splits, matched-source Progress targets trade coverage for locality and matched peer replacement increases coverage; fixed-decoder breadth is a distinct, separately measured contributor, not a universal explanation of improvement.
 
 | ID | Claim | Scope | Actual evidence | Claim verb | Principal threat |
 |---|---|---|---|---|---|
@@ -13,4 +13,15 @@ One-sentence story: Although execution-guided selection can raise repair coverag
 | C7 | Same-user provenance is not the source of Progress coverage in the matched design; outcome-equivalent peer targets improve it. | 5,231 train and 306 validation examples per condition; canonical Seen/Unseen tests | Exact source/outcome matching, token-distance caliper, three independently trained seeds; peer minus same-user RR +4.3/+6.0 points | demonstrates | Unmeasured target structure and style can differ within calipers |
 | C8 | Current-only Answer-3Seed effectiveness is not confined to the last-failure endpoint within eventually successful trajectories. | 2,770 Seen and 674 Unseen executable non-AC prefixes | Early/middle/last RR 70.0/67.6/71.4% Seen and 82.9/77.3/81.8% Unseen with overlapping problem-cluster intervals | shows | Never-successful trajectories remain unmeasured |
 
-Claim lock: C1-C8 may change only when their underlying artifacts change. Abstract, Introduction, Results, Threats, and Conclusion must preserve the same scope and direction.
+## September 15 audit amendment
+
+The raw outcomes underlying C1-C8 are unchanged. Their interpretation must reflect the following verified corrections; this amendment supersedes any stronger causal reading above.
+
+- Existing breadth-control and breadth-extension runners read full-history datasets. Prompt style D does not remove history. The new `analysis_protocols/fse2027-review-20260915.json` declares a separate current-only four-cell comparison; no result is available yet.
+- C5 is supported on two Python splits, not directly replicated by the old Java or 1.5B portfolio contrasts. Direct matched-target Java retraining is pending.
+- C7 estimates replacement under the entire matching rule, not isolated provenance causality. All 5,231/306 donors come from the recipient's train/validation split; donor identifiers, code and outcome linkage pass the record audit, with no train-validation donor overlap.
+- `fse2027-peer-distributions.json` reports pre-match, excluded, same-target and peer-target distributions. Train mean token distances are 118.06/118.69 and mean defined AST distances 116.64/118.81 (5,154 pairs). Validation values are 136.98/137.37 and 134.59/134.73 (300 pairs). Target length and reuse remain different.
+- `fse2027-review-consistency-audit.json` reproduces both paired-target selectors without mismatch. Each split has 20 joint repairs with unparseable source code: included in unrestricted RR, excluded from defined-TED summaries. Finite budgets reject undefined-distance changes.
+- Historical `FSE2027_COMPLETE` seals an earlier revision. It does not certify these changes or the pending experiments.
+
+Abstract, Introduction, Results, Threats, and Conclusion must preserve these scopes and distinguish completed from pending evidence.

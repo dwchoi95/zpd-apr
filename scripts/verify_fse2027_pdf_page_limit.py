@@ -41,6 +41,7 @@ def first_content_line(text: str) -> str:
             continue
         if (
             "ZPDPatch: Separating Trajectory Supervision" in line
+            or "Target Construction and Candidate Breadth in Program Repair" in line
             or "Disentangling Candidate Breadth and Trajectory Supervision" in line
             or "Disentangling Candidate Breadth, Target Provenance, and Trajectory Supervision" in line
         ):

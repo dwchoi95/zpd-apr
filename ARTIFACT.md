@@ -5,6 +5,13 @@ It deliberately contains no author names or author-revealing repository URL.
 
 ## Environment and final verification
 
+Revision notice (September 15): the existing completion marker certifies the
+previous seal only. New consistency/distribution audits and the current-only
+factorial/paired-Java experiments are declared in
+`analysis_protocols/fse2027-review-20260915.json` and require a new evidence seal
+after completion. The historical breadth-control runners use full-history
+inputs despite earlier prose describing prompt style D as current-only.
+
 - Python dependencies: `requirements.txt`
 - Python runner: `src/runner/python_runner.py`
 - Java runner container entry point: `scripts/run_codeworkout_java_container.sh`
