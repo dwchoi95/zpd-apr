@@ -46,7 +46,7 @@ SHA256: `f03e517a1edeee7eb94dacd8d2ee287f40979c6a02eb01914e41fda8a46358e8`
 내 격리 디렉터리다. live checkout에서 실행하지 않는다. 서버 runtime의
 numpy 2.5.2 / scipy 1.18.1 / sklearn 1.9.0을 읽기 확인했다.
 
-## 현재 중단 지점 — 원격 실험 미시작
+## 이전 중단 지점 — 전송 승인 대기 (해소됨)
 
 서버 결과 디렉터리 생성은 완료됐으나, 소스·학습 features·제출 codes·
 train labels의 rsync 전송이 자동 보안 검토에서 거부됐다. 기존 SSH
@@ -58,3 +58,23 @@ train labels의 rsync 전송이 자동 보안 검토에서 거부됐다. 기존 
 sklearn 환경 테스트 → train-only power 실행 → 원시 결과와 출처 검증.
 원격 학습·crossfit·test 평가는 아직 실행되지 않았다. v5, 논문, 기존
 성능값은 변경하지 않았다.
+
+## 승인 후 실제 실행 — 2026-09-15 21:28 KST
+
+사용자가 위 payload/경로의 전송과 예비 분석 실행을 명시적으로 승인했다.
+동일 묶음 전송 후 서버 SHA256 일치를 검증했으며 새 디렉터리
+`/home/cdw/VSCode/zpd-apr/outputs/zpd-history-gate-20260915/power-run-v1/`
+에 추출했다. 검증·테스트 label 파일의 물리적 부재도 확인했다.
+
+서버의 실제 sklearn 환경에서 history 관련 테스트 17개가 모두 통과했다.
+21:28:32 KST에 tmux `zpd-history-power-v1`으로 실행을 시작했다.
+첫 생존 확인에서 PID 3081821, CPU 사용률 100%, train 71,191개 로딩
+완료 및 `train_only_crossfit` 진입을 확인했다. 아직 epoch 완료 이벤트나
+`COMPLETE`는 없으므로 처리율·종료 시각·분석 결과를 추정하지 않는다.
+
+실시간 로그: 위 실행 디렉터리의 `launch.log` 및
+`power-results/progress.jsonl`. 출처는 `power-results/metadata.json`.
+완료 판단은 `power-results/power.json`과 `COMPLETE`의 SHA256 검증,
+모든 fold/contrast의 evaluability 확인 이후에만 한다. 본 학습과
+테스트 평가는 자동으로 이어지지 않는다. 이 기록은 시작 당시의
+관측이며 이후 상태 보고 시 반드시 다시 확인해야 한다.
