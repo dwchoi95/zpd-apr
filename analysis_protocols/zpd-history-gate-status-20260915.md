@@ -78,3 +78,34 @@ sklearn 환경 테스트 → train-only power 실행 → 원시 결과와 출처
 모든 fold/contrast의 evaluability 확인 이후에만 한다. 본 학습과
 테스트 평가는 자동으로 이어지지 않는다. 이 기록은 시작 당시의
 관측이며 이후 상태 보고 시 반드시 다시 확인해야 한다.
+
+## Power 완료 확인 및 후속 선택 실행
+
+Power는 21:37 KST에 실제 완료됐다(557.1878초). 5개 fold의 C/H와 U/H
+모두 evaluated, 학습 실행 20개, 반복 포함 16,145,760 example exposures를
+완료했다. COMPLETE/result SHA256과 frozen source 일치를 재확인했으며
+원시 결과를 로컬 `power-results-v1/`에 동기화했다. test_opened=false다.
+
+사용자 균등 OOF NLL 개선은 C-H 0.006639, U-H 0.020105로 두 비교 모두
+양수이나, 고정 test 사용자 수의 prospective detectable difference
+0.011983 / 0.026017보다 작다. 성공 gate나 학습효과의 증거로 해석하지 않는다.
+`power-strata-v1/report.json`에 사후 탐색 분석 전체 strata를 보존했다.
+RE에서는 C-H 0.052191, TLE에서는 -0.009532였다. 이 결과로 inclusion,
+threshold, alpha grid 또는 모델을 바꾸지 않았다.
+
+후속 사용자의 진행 승인에 따라 train/validation 선택 단계를 구현했다.
+`zpd-history-selection-stage-20260915.md`에 실행 경계와 저장 계약을 기록했다.
+검증 label을 포함하지만 test label은 제외한 별도 묶음을 동일 서버 경로로
+전송했다. 묶음 SHA256:
+`2d8437907496ef911b77a447631992c1d9fbc1e1b575b4372cbd7da36a37323b`.
+서버 실제 환경 테스트 22개 모두 통과했고 22:37:15 KST에 tmux
+`zpd-history-selection-v1`으로 시작했다. 실행 루트는
+`/home/cdw/VSCode/zpd-apr/outputs/zpd-history-gate-20260915/selection-run-v1/`.
+
+본 단계 전체 예정 노출은 49,955,940개다(71,191 train × full 3조건 ×
+180회 + 31,980 matched train × 2조건 × 180회). 180회는 alpha 3개 ×
+seed 3개 × epoch 20회의 전체 grid 노출이며 단일 모델의 epoch 수가 아니다.
+첫 진행 확인에서 C_F 8,186,965 / 12,814,380 exposures와 CPU 생존을
+확인했다. 이는 시작 직후 관측이며 최신 상태는 로그로 다시 확인해야 한다.
+각 조건 완료 시 모델·선택 기록·검증 seed 확률을 저장한다. 전체 완료와
+해시 확인 이전에 selection 완료로 보고하지 않는다.
