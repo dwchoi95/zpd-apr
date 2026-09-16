@@ -96,3 +96,28 @@ v1 H_M/U_M를 재현하는 PR anchor가 실패하면 중단한다. 원래 모델
 v2 재검증 준비 중 기존 unit test의 실제 전역 lock 존재에 대한 의존을 발견했다.
 통합 mock fixture만 canonical lock 존재 검사를 가상화해 격리하며, 실제 소비
 잠금과 동결된 runner/모델/통계 코드는 변경하지 않는다. 이전 실행 bundle은 보존한다.
+
+## v2 개발 실행 시작
+
+dev commit `184f3ac3`에 실패 결과/진단/새 계획/구현을 보존했다. 원격 native
+환경에서 history 관련 테스트 **59개 모두 통과**했다. 여기에는 실제 sparse
+특징과 SGD의 12조건 전체 통합 fixture, PR 재현 검사, train-only scaler,
+순서·donor·경계 검사 및 격리된 이전 lock fixture가 포함된다.
+
+실행 묶음 `development-v2-bundle-v1.tar.gz` SHA256:
+`4a166d3048f9d32636d141b3c838913563b08c0a00b0b15beef8a5ead0655665`.
+원격에서 SHA 검증 후 새 경로
+`/home/cdw/VSCode/zpd-apr/outputs/zpd-history-gate-20260915/development-v2-run-v1/`
+에 추출했다. prepared input은 지정된 다섯 train/valid 파일만 포함하며
+labels-test.jsonl과 test predictions는 반입하지 않았다.
+
+2026-09-16 **18:20:10 KST** tmux `zpd-history-v2-development` 시작.
+로그 `launch.log`, 중간 저장 `development-results/`, 전체 완료는
+development-results/manifest.json 및 COMPLETE로 확인한다. 모델/검증 산출물은
+조건/alpha/seed별 보존하며 108 main fits와 1,536 smoke exposures를 분리한다.
+원격 저장 공간 1.1TB, 가용 메모리 약172GiB를 실행 전 확인했다.
+
+완료 후 다음 action은 development.json의 사전 정의 선택 규칙을 적용한다.
+선택 H가 대응 C/U를 모두 이기더라도 새 holdout 적격성 감사로만 이동하며
+이미 소비된 test를 열지 않는다. 불리하면 이 family를 중지하고 모든 결과를
+보고한다. 다음 별도 family는 독립 검토와 새 예산/문서가 필요하다.
