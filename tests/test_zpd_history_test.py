@@ -12,6 +12,18 @@ from scripts.zpd_history_test import consume_lock, dimensions, reconstruct_model
 from scripts.zpd_history_predictor import SEEDS, ARMS
 
 
+_CANONICAL_LOCK = Path('/home/cdw/VSCode/zpd-apr/outputs/zpd-history-gate-20260915/TEST_CONSUMED.json')
+_REAL_PATH_EXISTS = Path.exists
+
+
+def _fixture_path_exists(path, *args, **kwargs):
+    # Full-run fixtures also mock consume_lock; never inspect or modify the real
+    # experiment lock. All unrelated filesystem checks keep their real behavior.
+    if path == _CANONICAL_LOCK:
+        return False
+    return _REAL_PATH_EXISTS(path, *args, **kwargs)
+
+
 class HeldoutBoundaryTests(unittest.TestCase):
     def test_lock_exclusive_persistent(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -52,6 +64,7 @@ class HeldoutBoundaryTests(unittest.TestCase):
                 'scipy': SimpleNamespace(__version__='1.18.1'),
                 'sklearn': SimpleNamespace(__version__='1.9.0')}), \
                 patch('numpy.__version__', '2.5.2'), \
+                patch.object(Path, 'exists', _fixture_path_exists), \
                 patch('scripts.zpd_history_test.verify_selection', side_effect=ValueError('bad seal')), \
                 patch('scripts.zpd_history_test.consume_lock') as lock, \
                 patch('scripts.zpd_history_test.load_test_labels') as labels:
@@ -86,6 +99,7 @@ class HeldoutBoundaryTests(unittest.TestCase):
             stack.enter_context(patch.dict('sys.modules', {'scipy':SimpleNamespace(__version__='1.18.1'),
                                                          'sklearn':SimpleNamespace(__version__='1.9.0')}))
             stack.enter_context(patch('numpy.__version__', '2.5.2'))
+            stack.enter_context(patch.object(Path, 'exists', _fixture_path_exists))
             mocks = {'verify_selection': lambda *a:(sealed,{}), 'digest_file':lambda *a:'hash',
                      'verified_files':lambda *a:{}, 'load_observed':lambda *a:([train,valid,test],{}),
                      'reconstruct_models':reconstruct, 'features':lambda *a:None,

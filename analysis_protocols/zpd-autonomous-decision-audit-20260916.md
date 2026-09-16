@@ -174,3 +174,58 @@ source가 같은지 확인한다. collision label 다양성/문제 수/seed 차�
 bundle hash 검증을 통과한 다음 한 번의 test 실행으로 진행해도 된다. 이 판정은
 실험 실행 적격성에 관한 것이며 연구 가설의 성공이나 실제 test 결과 판정이 아니다.
 분석 코드/프로토콜을 이후 수정하면 이 감사와 bundle seal을 재검토해야 한다.
+
+## 8. 실행 후 독립 raw artifact 점검
+
+주 에이전트가 `test-results-v1` 동기화 완료 후 읽기를 승인했다. 모델/label 개봉을
+재실행하지 않고 저장된 NPZ와 prepared 관측 metadata만 읽었다. 통계 producer의
+inference.json은 보지 않고 별도 NumPy/사용자별 집계로 다음을 계산했다.
+
+- COMPLETE→test.json→모든 artifact SHA256 및 prepared manifest/features binding PASS.
+- full 15,761행/1,837사용자/23문제, matched 7,157행/1,552사용자/23문제 ID 일치.
+- 각 NPZ user/problem ID가 prepared observation과 일치, 조건 간 label 일치,
+  세 seed probabilities 평균이 저장 ensemble과 일치.
+
+| 조건 | 독립 사용자 균등 NLL |
+|---|---:|
+| C_F | 1.0419372478997768 |
+| H_F | 1.0201467421263033 |
+| S_F | 1.0495861083462474 |
+| H_M | 0.9917787935461738 |
+| U_M | 0.9954726319432073 |
+
+독립 paired 사용자 차이는 C_F−H_F = +0.02179050577347354,
+U_M−H_M = +0.0036938383970333893, C_F−S_F = −0.00764886044647057이다.
+이는 point estimate 검증이지 CI/p 또는 gate 판정이 아니다. H/U 차이는 validation의
+차이보다 작으며, 현재 코드 baseline에 대한 H 이득만으로 authentic history의 기여를
+분리했다고 결론 내릴 수 없다. 교육적 효과는 여전히 미측정이다.
+
+## 9. 동결된 최종 통계의 독립 확인과 분기
+
+통계 artifact 동기화 이후 `inference-results-v1`의 COMPLETE→manifest.json→
+inference.json seal을 확인했다. producer의 통계 함수를 호출하지 않고 raw NPZ에서
+사용자별 paired loss를 재구축한 별도 NumPy 코드로 고정 seed/repetition의 bootstrap,
+sign-flip 및 두 대조 Holm 보정을 다시 계산했다. point estimate는 §8과 일치하고,
+95% CI는 1e-14 이내, Monte Carlo p와 Holm 값은 정확히 일치했다.
+
+| 대조(양수=H 개선) | 사용자 균등 NLL 차이 | paired 95% CI | Holm p |
+|---|---:|---|---:|
+| C_F−H_F | +0.02179051 | [0.01726154, 0.02637217] | 0.00002000 |
+| U_M−H_M | +0.00369384 | [−0.00266628, 0.01010322] | 0.13108869 |
+
+**동결된 holdout gate는 not_passed이며 이 판정은 정확하다.** C/H는 통과했으나
+H/U는 CI가 0을 포함하고 Holm p가 .05 이상이다. 모든 조건이 충족되어야 하는
+원래 전진 규칙을 그대로 적용했다. H/U의 실패는 이력 고유 효과가 이번 검증에서
+분리되지 않았다는 뜻이며, 이력 효과가 0이라는 동등성 증명은 아니다.
+
+producer의 descriptive exact-code 결과도 확인했다. 전체 test의 cross-user/
+distinct-history collision은 38개 code group이다. matched collision의 H/U 차이는
+91행/74사용자에서 −0.00805618로 방향이 반대다. 이는 기술적 subset 결과로, 유의성
+판정이나 사후 primary 변경에 사용하지 않는다. secondary S는 C보다 악화됐으며
+C−S = −0.00764886, CI [−0.01067601, −0.00460973]이다.
+
+따라서 결과 전에 작성한 repair pilot skeleton은 **실행 단계로 승격하지 않는다**.
+현재 test는 exposed-development로 유지하고, 다음 작업은 train/validation만 이용한
+순서 정보 손실 진단과 representation×scaling 2×2 v2 개발 계획의 사전 동결이다.
+v2의 평가 결과가 나오기 전에 현재 gate의 실패, threshold, 표본, source를 변경하지
+않는다. 새 확인 자료가 없는 개발 실험은 새로운 확인 연구로 제시하지 않는다.
