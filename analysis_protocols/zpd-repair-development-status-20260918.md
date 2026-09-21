@@ -44,3 +44,19 @@ attempts/*.json 개수/768 → evaluation/completions.jsonl의 block/source 완�
 → fit/report.json 및 최상위 COMPLETE.json 순서로 확인한다. 완료 시 모든 seal과
 denominator/unknown을 검증하고 전체27개 validation grid, selected C/H/U,
 first-attempt/noop/min-edit/oracle 및 결정 차이를 보고한다. 불리한 결과도 유지한다.
+
+## 2026-09-21 완료 확인
+
+최상위 COMPLETE의 mtime은2026-09-18 18:06:10 KST다. generation768attempt,
+evaluation745 unique sources의4block,fit전체27grid가 완료됐다. 모든 완료 marker의
+참조 SHA를 원격에서 검증하고 로컬 run-v1에 결과를 동기화했다.
+검증32에서 first-attempt AC18/퇴행5, C AC20/퇴행6, H AC20/퇴행2,
+U AC19/퇴행5이며 각조건unknown1이다. H-C 선택이21개 다르고 AC가3개 늘고
+3개 줄었다. H-C netgain 차이는+.01138336이며 valid선택 결과다.
+stable-only oracle AC28/32 대비 H의8개 성공후보 선택누락이 남는다.
+validunknown은p02658:s509181279 원본의case_00007이block0 AC→나머지TLE로
+변한 것으로, 안정된원본벡터가 없어bank9후보 비교전체가unknown이다. 별도train
+p02684에서 발생한큰출력 MemoryError와 구분한다. 세션종료/GPU반납도 확인했다.
+
+후속은 `zpd-repair-replication-20260921.md`: 기존선택계수 고정, 새128개 개발valid,
+정답생성 전prediction봉인. 이전32개로 재선택하지 않는다.
