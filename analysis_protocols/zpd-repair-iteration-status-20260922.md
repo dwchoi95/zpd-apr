@@ -24,6 +24,10 @@ clean source a9ab16979ad12d29328b1497762fd9f4c4b4ad94. 학습은원래64train만
 이것은개발결과이며새확증이나ZPD효과가아니다. 선택된H설정은새C설정보다나빴다.
 다만C는규제파라미터.1,H는1로원래32valid에서각각선택되었으므로, 이차이를
 동일규제강도에서history만더한인과효과라고단정할수없다.
+원본noop의stable여부/AC여부로분모를나누면known-nonAC118개중새C85개,
+새H78개,first71개가AC였다. 원래AC8개중보존은새C6개,새H5개,first8개다.
+원본unknown2개는별도다. 새C의개발이득은AC보존만으로생긴것은아니지만,
+원래AC2개를깨뜨린점과전체관측퇴행19vs18을함께남긴다.
 report/selection/manifest/source/input해시와18grid선택규칙을독립검증했고,
 학습API를호출금지한직렬화모델재계산에서도3조건모든128선택/metrics가일치했다.
 
