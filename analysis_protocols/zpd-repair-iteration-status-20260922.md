@@ -36,5 +36,33 @@ selection SHA b03fc14653ed2dd1dcdacc5555dc4da2de7bf16059f2d3415790ba6bde4cc515.
 모델세조건은변경하지않고predict를testcase생성전에봉인한다. 최대1024generation
 attempt와동일runtime4block평가,6h평가예산. 미개봉test와paper는변경하지않는다.
 
-실제원격launch정보는시작확인후아래에추가한다. 결과가나쁘면숨기거나128을다시
-선택하지않고, 다음독립가족의큰trainbank수집으로이어가는조건을미리기록했다.
+결과가나쁘면숨기거나128을다시선택하지않고, 다음독립가족의큰trainbank수집으로
+이어가는조건을미리기록했다.
+
+## 원격 실행 확인 — 2026-09-22 20:52 KST
+
+신규 128개 고정 개발 재검증을 UbuntuServer에서 실제 시작했다. 원격의
+`pytest`는 미설치였으나 저장소 테스트는 unittest 기반이어서 추가 설치 없이
+`unittest discover`로 ZPD 205개 및 repair prototype 19개를 모두 통과했다.
+깨끗한 source에서 실행했고, 원래 32개 × C/H/U의 **96개 선택이 모두 재현**된
+뒤 generator가 시작되었다. 20:52:21 확인 시 GPU 27,603 MiB / utilization 63%로
+모델 초기화를 진행했다. 이는 완료나 성능 확인이 아니라 시작 확인이다.
+
+- Upstream: `05b87bf0ab3aaf926444521cca687d15edced9ef`
+- Clean snapshot: `a9cab0de18b94206f6432beb38c18c73f37c890c`
+- Source bundle SHA256:
+  `d801bf63184ea6170c6ef5827248e12de2f05eb2426c572b33ec23d9b138b4c4`
+- Prepared manifest SHA256:
+  `2b96561f4b5ad6122d658c2b2d5b3cb31bf766e31d8887c721206d1b78fd8567`
+- Protocol SHA256:
+  `ca677907a123ce7643fa1587eda94e4f7521fc5ba19199584280408a430793bc`
+- Server source: `/home/cdw/VSCode/zpd-apr/.runtime/pairwise-replication-20260922-v1`
+- Server output: `/home/cdw/VSCode/zpd-apr/outputs/zpd-repair-pairwise-replication-20260922/run-v1`
+- Server log: 同 `run-v1.log`
+- tmux: `zpd-pairwise-replication-20260922`
+- Remote inference versions: numpy 2.5.2 / scipy 1.18.1 / scikit-learn 1.9.0.
+
+Launcher는 두 generation chunk, label 생성 전 고정 선택 봉인, 동일 runtime의
+4-block 실행, assessment, COMPLETE까지 순서대로 자동 연결한다. 동결 모델을
+다시 fit하지 않는다. 코드·입력·출력은 canonical 프로젝트 내부에 두었으며,
+미개봉 test와 paper는 이번 작업에서 열거나 변경하지 않았다.
