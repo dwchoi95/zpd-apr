@@ -65,3 +65,63 @@ No next-objective fit is authorized by C0 alone. See
 The first CPU pipeline is complete, not still running in the background. Future
 chat notifications are not configured; STATUS/events/COMPLETE files provide
 durable machine-readable progress and must not be advertised as push messages.
+
+## C0 completed: next-target sources restored, not a new model fit
+
+The source recovery and design records were committed as `3cdeb803`. Before any
+actual collection, full-suite testing exposed an unrelated uncommitted wrapper
+that leaves the original builder's split globals mutated. The new collector was
+isolated from those globals using the unchanged September15 salt/thresholds;
+its own regression test and an independent audit addendum were added. No user
+fresh-holdout files or existing splits were edited. The correction is committed
+as `d12342ee`. Focused21 and full local306 tests pass; the clean source snapshot
+passes300 ZPD tests (the same six unrelated tests are outside the snapshot).
+
+Actual preparation used clean snapshot
+`c308d050f74c6c0438b97892ebc86e7c5cdf7bc9` at
+`/private/tmp/zpd-successor-source.cwD5Ej`, with the exact manifests/protocol
+specified in `zpd-train-successor-recovery-20260923.md`. It completed on
+2026-09-23 by21:50:44 KST. No model fit, code execution, validation/test labels
+or held-out future source access was involved.
+
+- All **71,191/71,191 training prefixes**,8,473 users and23 problems retained.
+- **71,190** readable immediate-successor source targets recovered.
+- **1** successor timestamp ambiguity retained as unavailable; neither tied
+  source was opened and its legacy RESOURCE label was not used as a certified
+  singleton target. Example: `p02947:s161865109`.
+- **1,591** readable non-Python successors retained as language changes, not
+  mislabeled as Python patches;69,599 readable Python successors remain.
+- Certified next labels: AC20,934; WA33,939; RE8,406; RESOURCE7,764; CE147;
+  unknown1. No convenient-source or AC-only subset replaced the train cohort.
+- Verified103,775 unique observed current/past source paths against original
+  bindings. The71,190 distinct target source files contain26,292,504 raw bytes.
+- Existing feature hash remains
+  `db0b8ab67d905d44b9dc095441bb225822154c858eb61886640f5dcd6ceb244c`.
+
+Artifact directory (local and canonical UbuntuServer):
+`outputs/zpd-train-successors-20260923/prepared-train-v1`.
+After synchronization, all three server SHA256 values match local values:
+
+| Artifact | SHA256 |
+| --- | --- |
+| COMPLETE.json | `40b25a7ff27664cd88b0b83d9d4ed87f74c2a12c649493dfeca7b8994e950932` |
+| manifest.json | `b69d51ce1b155292acbbba9d4904548fedfbd4f03837acb3755d87a25981e620` |
+| targets-train.jsonl | `2a84dbf209ed86027ed39403bec58da797323db992487b43c69a04c652747cad` |
+
+The exact clean source is also retained on UbuntuServer at
+`.runtime/train-successors-20260923-v1`; source bundle SHA256:
+`a84d00436a01c958d93c3bf8c70b9d11802953bccf069e4fbbc35e2ff300869c`.
+All server writes remain inside `/home/cdw/VSCode/zpd-apr`.
+
+The independent post-run audit passed and is recorded in
+`zpd-train-successor-completion-audit-20260923.md`. It independently checked all
+103,806 input bindings, the full metadata joins, all target-code hashes and the
+127,823 permitted raw paths; the ambiguous future sources remained unopened.
+
+Next: implement and freeze the edit-event encoder and
+history/current/donor/order controls, obtain an independent protocol/code audit,
+and conduct a bounded train-only objective comparison. Include preservation of already-passing programs as an explicit
+repair endpoint; the p02756 diagnosis does not license zeroing a coefficient or
+changing the failed gate. Behavioral next-edit predictability and repair benefit
+remain separate endpoints. No new algorithm training or new-user replay is
+running yet, and no canonical-v5 or paper result has been replaced.

@@ -102,6 +102,15 @@ not silently become the primary training population.
 
 ## 4. Minimal next preparation implementation
 
+Implementation update: the narrower C0 source-recovery stage is now implemented
+as `scripts/prepare_zpd_train_successors.py` under
+`zpd-train-successor-recovery-20260923.md`. It leaves the existing observation
+artifacts untouched and produces a separate target-only file. It does not yet
+implement the full feature/target event encoding package described below.
+See `zpd-method-autonomous-status-20260923.md` for the actual completed command
+inputs, source revision and target availability; the following larger-package
+API/command remains a design specification, not an executed learner.
+
 Proposed new module, **not yet present**:
 `scripts/prepare_zpd_history_action_targets.py`.
 Proposed public entry point:
@@ -287,12 +296,15 @@ support remain visible. No repeated validation search or best-arm promotion.
 
 ## 8. Bounded continuation and non-negotiable stops
 
-The immediate next action is the preparation module plus synthetic tests and
-training-source coverage audit, not more GPU training or another risk threshold.
-If raw target recovery succeeds, an independent protocol/code audit can release
-one fixed train-only history-action crossfit. If it fails, report the exact
-source/identity/missingness blocker and preserve the frozen cohort; do not invent
-successors or reinterpret a convenient subset as complete.
+The narrower source-recovery stage has completed and passed independent audit;
+see `zpd-train-successor-completion-audit-20260923.md`. All71,191 training prefixes
+are retained, with71,190 certified source targets and one ambiguous successor.
+The immediate next action is implementation and freezing of the event/state
+encoder and all five controls, not more GPU repair generation or another risk
+threshold. An independent protocol/code audit can then release one fixed
+train-only history-action crossfit. Any new source/identity/missingness blocker
+must preserve the frozen cohort; do not invent successors or reinterpret a
+convenient subset as complete. C0 completion alone does not authorize a fit.
 
 If history-action prediction improves, proceed only to a separately fixed repair
 integration experiment with unchanged safety/correctness gates. If it does not,
