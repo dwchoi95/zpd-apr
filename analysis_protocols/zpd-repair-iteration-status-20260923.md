@@ -45,4 +45,35 @@ generation/prediction/evaluation/assessment/root COMPLETE의 SHA 및 원시 labe
 생성은64 banks씩4묶음, 총2,048 attempts 상한. 동일4-block 평가가 완전히
 끝나야 학습하고, 이후 집계까지 자동 연결한다. 미개봉 test와 paper는 그대로 둔다.
 
-원격 실행 시각·snapshot·진행 증거는 테스트와 독립 감사 후 아래에 기록한다.
+## 검증 및 실제 원격 시작
+
+독립 실행 감사는 신규 준비16 + launcher8 + risk11 + fit runner9 =44개 합성
+테스트를 통과했다. 첫 설계의 총 loss 가중치 confound와 sigmoid 포화 시 잘못된
+위험 비교를 실행 전에 수정했다. 확률 표시와 별개로 logit의 순서를 비교한다.
+이 테스트 통과는 코드 계약 검증이지 실측 성능·안전성 입증이 아니다.
+
+로컬 전체 ZPD255 + prototype19 통과. 깨끗한 서버 사본에서는 기존 로컬 미커밋
+fresh-holdout 테스트6개가 빠져 ZPD249 + prototype19, 총268개가 모두 통과했다.
+
+- Upstream dev commit: `51b872bb`
+- Clean snapshot: `f351d1c38dc5bcbb565d1ee22bdd6315f6c6e8f9`
+- Bundle SHA256:
+  `950c0f32db0f2e91ed2e7457f295c34da6090b05792a3dcc179fdb8f5e451496`
+- Protocol SHA256:
+  `896f92c96cc7ceb157a3d14582b539262b0b4b7a2e2be112b87b66c96cd339fc`
+- Remote source: `/home/cdw/VSCode/zpd-apr/.runtime/repair-risk-20260923-v1`
+- Remote output: `/home/cdw/VSCode/zpd-apr/outputs/zpd-repair-risk-development-20260923/run-v1`
+- Remote log: 같은 출력 상위 폴더의 `run-v1.log`
+- tmux: `zpd-repair-risk-20260923`
+- Actual start: **2026-09-23 17:51:32 KST**
+
+17:52:04 확인 시 데이터/계보/runtime 사전 검사를 통과한 launch.json이 존재하며,
+GPU 28,305 MiB, 사용률49%로 CUDA graph 초기화를 수행했다. 새 vLLM 캐시와
+설정 파일도 프로젝트의 `.cache`와 `.config` 아래에 기록하도록 경로를 지정했다.
+원래 모델·생성 파라미터·테스트케이스·평가 규칙은 바꾸지 않았다.
+
+신규 은행의 testcase 수 합계는5,141이며, bank당 원본+8개 후보를 모두 다르게
+생성한 경우4-block 실행 상한은185,076 testcase다. 기존128 평가의 약85분과
+규모를 기준으로 **20:30~21:30 KST** 집계를 예상하지만 타임아웃 분포에 따라
+달라질 수 있다. 실제 학습과 성능 비교는 모든 새 실행 label이 완료된 다음이다.
+아직 이 family의 성능 향상 결과가 나온 것으로 해석해서는 안 된다.
