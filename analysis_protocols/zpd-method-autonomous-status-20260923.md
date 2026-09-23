@@ -125,3 +125,20 @@ repair endpoint; the p02756 diagnosis does not license zeroing a coefficient or
 changing the failed gate. Behavioral next-edit predictability and repair benefit
 remain separate endpoints. No new algorithm training or new-user replay is
 running yet, and no canonical-v5 or paper result has been replaced.
+
+## C1 supervised continuation launched
+
+The preceding C0 checkpoint is superseded for execution status by
+`zpd-history-action-supervised-run-20260923.md`. On explicit user authorization
+to proceed without repeated approval, six-arm train-only history-action crossfit
+was implemented, independently audited and launched on UbuntuServer at
+2026-09-23 22:31:16 KST. A durable30-second-heartbeat supervisor automatically
+chains crossfit completion to independent numeric verification and fixed
+diagnosis. Local366 and clean server360 ZPD tests passed; exact source/input
+seals and the6-test unrelated-worktree difference are recorded in that run file.
+
+No repair-performance result exists at launch. This is the planned behavioral
+objective test, not adapter retraining or replacement of canonical-v5. New
+results must be read from the terminal run/verification/supervisor seals, not
+inferred from a process launch or partial training log. No scheduled chat wakeup
+or unsolicited future message was configured.
