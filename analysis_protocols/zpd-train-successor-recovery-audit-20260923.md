@@ -126,3 +126,47 @@ defect and must not be worked around by weakening containment checks.
 | `tests/test_zpd_train_successors.py` | `d9b211bf42177df3de894f1d464519783e4849833232c0b80cd2649acc1fa2ab` |
 | `analysis_protocols/zpd-train-successor-recovery-20260923.md` | `d9894c92ddd7f07419a1c5afd1de49e7b07841c8c24890c81c9caf2cadb195b2` |
 | `scripts/build_zpd_original_prefixes.py` | `07651db42c0b452de1afe6e2b55054fbdce30c22a4d2d91611222611328fc9fb` |
+
+## Runtime-isolation addendum — before real collection
+
+The initial focused checks above did not reveal a full-suite import-order
+interaction. Before actual collection, the broader suite exposed an unrelated
+pre-existing fresh-holdout module that mutates `original_builder.SALT` and
+`original_builder.split_for_user` at module scope without restoring them. The
+first collector version therefore could inherit a different in-memory split
+despite an unchanged, hash-verified builder file. Real collection remained
+unstarted; there is no changed dataset or experimental outcome to replace.
+
+The reviewed fix is restricted to the new collector and its test fixture. C0 now
+uses its own frozen `SPLIT_SALT = 'zpd-history-gate-20260915-v1'` and the exact
+original SHA256(salt:user)/2**256 formula with .70/.85 thresholds. Both recipient
+validation and manifest-salt validation use this isolated contract. The original
+builder, original manifest, prepared split and user-owned fresh-holdout module
+are unchanged. This restores the previously specified split; it does not
+relax eligibility or introduce a new split.
+
+The auditor independently reviewed the complete two-file diff, rechecked the
+new hashes, and reran:
+
+```text
+python3 -m unittest tests.test_zpd_train_successors tests.test_zpd_original_prefixes -q
+Ran 21 tests — OK
+```
+
+The added regression replaces the original builder's salt and split function
+with unrelated/failing values while verifying unchanged fixture membership,
+the frozen manifest salt and successful synthetic C0 collection. The coder
+also reported306 passing full ZPD-suite tests; the auditor's direct rerun for
+this addendum is the21-test focused suite above.
+
+No blocking defect remains in this corrected version. The earlier audit's
+access, output, byte-preservation and completion requirements still apply.
+Proceed only after committing the corrected files and creating a clean source
+snapshot. This addendum supersedes the collector/test hashes in the earlier
+table while preserving that initial audit record.
+
+| Corrected artifact | SHA256 |
+| --- | --- |
+| `scripts/prepare_zpd_train_successors.py` | `41881d5884328d124e2dd294527293c3371135cd2b3b80dc884dbe92289af666` |
+| `tests/test_zpd_train_successors.py` | `35b3aa6b2c712cc1023f71501b5c9bbbd3dbb11140b7887763b7909bd15bb591` |
+| Unchanged C0 protocol | `d9894c92ddd7f07419a1c5afd1de49e7b07841c8c24890c81c9caf2cadb195b2` |

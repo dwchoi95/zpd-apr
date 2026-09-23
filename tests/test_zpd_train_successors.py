@@ -8,7 +8,6 @@ import unittest
 from unittest.mock import patch
 
 from scripts import prepare_zpd_train_successors as collector
-from scripts.build_zpd_original_prefixes import split_for_user
 
 
 class TrainSuccessorTests(unittest.TestCase):
@@ -25,7 +24,7 @@ class TrainSuccessorTests(unittest.TestCase):
         self.protocol.write_text('synthetic frozen protocol\n')
         self.users = {}
         for desired, count in (('train', 2), ('valid', 1), ('test', 1)):
-            self.users[desired] = [f'u{i}' for i in range(100) if split_for_user(f'u{i}') == desired][:count]
+            self.users[desired] = [f'u{i}' for i in range(100) if collector.split_for_user(f'u{i}') == desired][:count]
         self.raw, self.features, self.train_labels, self.expected_sources = [], [], [], {}
         for group, (split, user) in enumerate((split, user) for split, values in self.users.items() for user in values):
             ids = [f's{group}{i}' for i in range(3)]
@@ -66,7 +65,7 @@ class TrainSuccessorTests(unittest.TestCase):
             metadata_sha256={str(self.metadata/'p1.csv'):collector.file_digest(self.metadata/'p1.csv')},
             source_sha256=self.expected_sources,
             script_sha256=collector.file_digest(Path(collector.original_builder.__file__)),
-            split={'salt':collector.original_builder.SALT})
+            split={'salt':collector.SPLIT_SALT})
         (self.original/'manifest.json').write_text(json.dumps(original))
         prepared = dict(counts=dict(Counter(feature['split'] for feature in self.features)),
             source_manifest_sha256=collector.file_digest(self.original/'manifest.json'),
@@ -270,6 +269,18 @@ class TrainSuccessorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'clean committed'):
                 collector._source_provenance(True)
             self.assertFalse(collector._source_provenance(False)['clean'])
+
+    def test_frozen_split_ignores_mutated_original_builder_globals(self):
+        expected = {user:collector.split_for_user(user) for values in self.users.values() for user in values}
+        with patch.object(collector.original_builder, 'SALT', 'unrelated-split-salt'), \
+             patch.object(collector.original_builder, 'split_for_user', side_effect=AssertionError('mutable split called')):
+            # The fixture's manifests and the collector both remain on Sept15.
+            self.seal()
+            actual = {user:collector.split_for_user(user) for user in expected}
+            self.assertEqual(actual, expected)
+            self.assertEqual(json.loads((self.original/'manifest.json').read_text())['split']['salt'],
+                             'zpd-history-gate-20260915-v1')
+            self.assertEqual(self.collect()['counts']['train_prefixes'], 2)
 
 
 if __name__ == '__main__':

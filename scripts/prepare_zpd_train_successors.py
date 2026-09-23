@@ -28,6 +28,7 @@ import sys
 from scripts import build_zpd_original_prefixes as original_builder
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SPLIT_SALT = 'zpd-history-gate-20260915-v1'
 FEATURE_FIELDS = {'example_id', 'user_id', 'problem_id', 'split', 'timestamp',
     'current_code_id', 'current_verdict', 'matching_current_verdict', 'history', 'donor_example_id'}
 LABEL_CATEGORIES = {'AC', 'WA', 'CE', 'RE', 'RESOURCE', 'OTHER'}
@@ -35,6 +36,12 @@ LABEL_CATEGORIES = {'AC', 'WA', 'CE', 'RE', 'RESOURCE', 'OTHER'}
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def split_for_user(user):
+    """Frozen original split, isolated from other builders' mutable globals."""
+    value = int(digest(f'{SPLIT_SALT}:{user}'.encode()), 16) / 2**256
+    return 'train' if value < .70 else 'valid' if value < .85 else 'test'
 
 
 def file_digest(path):
@@ -143,7 +150,7 @@ def _load_train(prepared_root, manifest):
         problem = row['problem_id']
         if type(problem) is not str or re.fullmatch(r'p\d+', problem) is None:
             raise ValueError('invalid training problem')
-        if original_builder.split_for_user(row['user_id']) != 'train':
+        if split_for_user(row['user_id']) != 'train':
             raise ValueError('training user disagrees with original split')
         _identity(row['example_id'], problem)
         if row['current_code_id'] != row['example_id'] or type(row['timestamp']) is not int:
@@ -346,7 +353,7 @@ def prepare_train_successors(prepared_root, original_prefix_root, metadata_root,
     original = json.loads((original_prefix_root/'manifest.json').read_text(encoding='utf-8'))
     if prepared['source_manifest_sha256'] != original_manifest_sha256:
         raise ValueError('prepared/original manifest binding mismatch')
-    if original['schema_version'] != 1 or original['split']['salt'] != original_builder.SALT:
+    if original['schema_version'] != 1 or original['split']['salt'] != SPLIT_SALT:
         raise ValueError('unsupported original prefix/split contract')
     if (original_prefix_root/'COMPLETE').read_text(encoding='utf-8') != 'inventory only; no fitting\n':
         raise ValueError('original prefix inventory is incomplete')
