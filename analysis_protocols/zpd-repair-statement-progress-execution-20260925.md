@@ -50,3 +50,48 @@ release remains in Git history; its clean deployed snapshot remains untouched.
 No empirical fit, label-body access or empirical output occurred in this failed
 preflight. Final-snapshot focused guard/supervisor tests passed 38/38 on both
 platforms before this metadata-only correction.
+
+## Actual single run (completed, scientific gates failed)
+
+- Started 2026-09-25 02:58:07 KST; terminal status 03:05:18 KST (431 seconds).
+- Clean execution revision `02bd97f4d97ee135677fb2a7cc8a1017d56b8965`, tree
+  `e9d62eaab716282ecfb1d57d9bda6ea15bbbc910`; deployed under
+  `.runtime/statement-progress32-20260925-release-v2`. The `v2` refers to the
+  corrected release metadata, not a second empirical fitting attempt.
+- Full 320 recipients, 23 problems, 2,544 candidates, 30 fits and 13 methods;
+  all ten supervisor stages and the pure independent numerical audit completed.
+- No retry, full-train refit, promotion, fresh-test access or exclusion occurred.
+- After completion, no experiment worker or owned tmux session remained; the
+  clean execution source was unchanged. Final artifacts were copied locally and
+  both externally captured completion hashes matched.
+- Outer completion SHA:
+  `54c76aedb52f2b02569af0534b1725a5b520984f8bfc818bc2837a45e89aa57a`.
+- Experiment completion SHA:
+  `2d0fcc31221073cdf961934924f6559eb4eb324012a96dc698d76b2cbc26b1d9`.
+
+| Method | Stable AC / 320 | Stable regression | Unknown |
+| --- | --- | --- | --- |
+| H (primary) | 205 | 52 | 13 |
+| Structural C | 206 | 52 | 13 |
+| Lexical C | 201 | 58 | 13 |
+| First attempt | 184 | 50 | 15 |
+| CF | 206 | 52 | 13 |
+| Jm | 205 | 52 | 13 |
+| HS | 205 | 52 | 13 |
+| U | 204 | 52 | 13 |
+| L | 204 | 53 | 13 |
+| Shared H / CF | 206 | 52 | 13 |
+| Shared H / Jm | 205 | 52 | 13 |
+| Shared H / HS | 205 | 52 | 13 |
+| No-op | 19 | 0 | 13 |
+
+H's pooled stable-AC lower bound is 64.0625%, versus structural C's 64.375%.
+Equal-problem values are 62.6602% versus 63.4050%. All original actual-repair and
+mechanism gates, and the added CF gate, are false. Unknowns remain in denominators.
+H changes six structural-C choices (one AC gain, two losses, no regression
+introduced or prevented). Against CF it changes two choices (no AC gain, one
+loss). These are a completed negative result, not evidence of improvement.
+
+Separate nonauthor result recount and post-completion diagnostic analysis began
+immediately after synchronization. Their findings are recorded separately; this
+execution record does not pre-empt those audits or authorize another fit.
