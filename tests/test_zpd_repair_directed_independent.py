@@ -11,7 +11,7 @@ import numpy as np
 
 from scripts import audit_zpd_repair_directed_independent as audit
 from scripts import zpd_repair_directed_history as directed
-from scripts import zpd_repair_residual_core as core
+from scripts import zpd_repair_residual_newton as core
 from scripts import run_zpd_repair_directed_cv as runner
 from scripts import zpd_repair_feedback_assessment as assessment
 from src.repair.pilot_contracts import canonical_hash, source_hash
@@ -30,8 +30,20 @@ def reseal(model):
 def analytic_certificate(data, theta=None):
     theta = np.zeros(144) if theta is None else theta
     opt, grad, train = audit.numerical_reference(theta, data['matrix'], data['y'], data['weights'], data['base_margin'])
-    opt.update(success=True, status=0, message='synthetic analytic stationary point', iterations=0,
-        function_evaluations=1, gradient_evaluations=1, accepted=True)
+    # Valid no-fit fixtures use exact zero-D, zero-theta optima. Nonzero theta
+    # is used only in rejecting gradient-boundary tests, never as a passed run.
+    trace = [dict(iteration=0, objective=opt['objective'], gradient_infinity_norm=opt['gradient_infinity_norm'],
+        gradient_l2_norm=opt['gradient_l2_norm'])]
+    updates = int(np.any(theta))
+    if updates:
+        initial, _, _ = audit.numerical_reference(np.zeros(144), data['matrix'], data['y'], data['weights'], data['base_margin'])
+        trace[0]['iteration'] = 1
+        trace.insert(0, dict(iteration=0, objective=initial['objective'],
+            gradient_infinity_norm=initial['gradient_infinity_norm'], gradient_l2_norm=initial['gradient_l2_norm'],
+            a=1., q=1., r=0., alpha=1., normalized_solve_residual=0.))
+    opt.update(status='converged_gradient', accepted=True, updates=updates, loop_evaluations=updates+1,
+        hessian_evaluations=updates, linear_solves=updates, final_checks=1, total_evaluations=updates+2,
+        loop_gradient_infinity_norm=opt['gradient_infinity_norm'], loop_gradient_l2_norm=opt['gradient_l2_norm'], trace=trace)
     return reseal(dict(configuration=audit.expected_configuration(), coefficients=theta.tolist(),
         final_gradient=grad.tolist(), training=train, optimization=opt, runtime=dict(RUNTIME)))
 
@@ -86,7 +98,7 @@ def complete_analytic_fixture(n=320):
         all_models[fold] = {}
         for arm in audit.ARMS:
             data = audit.reconstruct_pairs(train, bs, labs, {bid: interactions[arm][bid] for bid in bs}, scores)
-            all_models[fold][arm] = reseal(dict(kind='repair_directed_fold_offset_v1', arm=arm, fold=fold,
+            all_models[fold][arm] = reseal(dict(kind='repair_directed_fold_offset_v2', arm=arm, fold=fold,
                 train_example_ids=[e.example_id for e in train], held_example_ids=[e.example_id for e in held], input_fingerprint='f'*64,
                 label_contract=contracts[fold], parent_structure_model_sha256=parents['structural_C']['model_sha256'],
                 pair_metadata=data['metadata'], offset_model=analytic_certificate(data)))
@@ -110,7 +122,7 @@ class DirectedIndependentAuditTests(unittest.TestCase):
 
     def test_independent_imports_no_producer_arithmetic_io_or_fit(self):
         source = inspect.getsource(audit)
-        for name in ('zpd_repair_residual_core', 'zpd_repair_feedback_offset', 'zpd_repair_feedback_pairs',
+        for name in ('zpd_repair_residual_core', 'zpd_repair_residual_newton', 'zpd_repair_feedback_offset', 'zpd_repair_feedback_pairs',
                 'run_zpd_repair_directed_cv', 'zpd_repair_feedback_assessment', 'candidate_features(', '_aggregate(',
                 'fit_offset(', 'minimize(', 'read_bytes(', 'read_text(', 'open('):
             self.assertNotIn(name, source)
@@ -207,24 +219,28 @@ class DirectedIndependentAuditTests(unittest.TestCase):
         x = np.zeros((2, 144)); x[:, 0] = [1., -1.]; theta = np.zeros(144); theta[0] = 1.
         b = math.log(189.)-1.
         data = dict(matrix=x, y=np.array([1, 0]), weights=np.array([950., 950.]), base_margin=np.array([b, -b]))
-        model = analytic_certificate(data, theta)
-        np.testing.assert_array_equal(audit.verify_offset_certificate(model, data), theta)
+        metadata, grad, _ = audit.numerical_reference(theta, **dict(x=data['matrix'], y=data['y'], weights=data['weights'], offset=data['base_margin']))
+        self.assertLess(metadata['gradient_infinity_norm'], 1e-12)
+        model = core.fit_offset(data['matrix'], data['y'], data['weights'], data['base_margin'], spec=runner.SPEC)
+        np.testing.assert_allclose(audit.verify_offset_certificate(model, data), theta, atol=1e-8, rtol=0.)
         self.assertEqual(model['training']['hessian_spectral_upper_bound'], 48.5)
-        for mutation in ('ftol', 'gtol', 'C', 'mass_rtol', 'dimension', 'bool', 'spec', 'string', 'gradient', 'hash', 'budget'):
+        for mutation in ('final_gradient_infinity_limit', 'normalized_solve_residual_limit', 'C', 'mass_rtol', 'dimension', 'bool', 'spec', 'string', 'gradient', 'hash', 'budget', 'old_options', 'old_status'):
             changed = copy.deepcopy(model)
-            if mutation in ('ftol', 'gtol', 'C', 'mass_rtol'): changed['configuration'][mutation] += 1e-15
+            if mutation in ('final_gradient_infinity_limit', 'normalized_solve_residual_limit', 'C', 'mass_rtol'): changed['configuration'][mutation] += 1e-15
             elif mutation == 'dimension': changed['configuration']['dimension'] = 144.
-            elif mutation == 'bool': changed['configuration']['analytic_jacobian'] = 1
+            elif mutation == 'bool': changed['configuration']['base_margin_optimized'] = 0
             elif mutation == 'spec': changed['configuration']['representation']['feature_configuration_sha256'] = 'f'*64
             elif mutation == 'string': changed['coefficients'][0] = '1.0'
             elif mutation == 'gradient': changed['final_gradient'][0] = 1e-5
             elif mutation == 'hash': changed['training']['input_sha256']['weights'] = 'a'*64
-            else: changed['optimization']['iterations'] = 2001
+            elif mutation == 'budget': changed['optimization']['updates'] = 2001
+            elif mutation == 'old_options': changed['configuration']['ftol'] = 1e-12
+            else: changed['optimization']['status'] = 0
             reseal(changed)
             with self.subTest(mutation=mutation), self.assertRaises(ValueError): audit.verify_offset_certificate(changed, data)
-        zero = dict(data, matrix=np.zeros_like(x), base_margin=np.zeros(2)); theta[:] = 0.; theta[0] = 1e-6+1e-12
+        zero = dict(data, matrix=np.zeros_like(x), base_margin=np.zeros(2)); theta[:] = 0.; theta[0] = 1e-8+1e-12
         with self.assertRaisesRegex(ValueError, 'convergence'): audit.verify_offset_certificate(analytic_certificate(zero, theta), zero)
-        theta[0] = 1e-6
+        theta[0] = 1e-8
         boundary = analytic_certificate(zero, theta)
         boundary['optimization']['gradient_infinity_norm'] += 1e-12
         reseal(boundary)
@@ -244,6 +260,35 @@ class DirectedIndependentAuditTests(unittest.TestCase):
                 self.assertAlmostEqual(meta['objective'], value, delta=1e-10*max(1., abs(value)))
                 np.testing.assert_allclose(grad, expected, atol=1e-10, rtol=1e-10)
                 self.assertTrue(math.isfinite(training['hessian_spectral_upper_bound']))
+
+    def test_native_newton_trace_counter_damping_and_solve_tampering(self):
+        x = np.zeros((2, 144)); x[:, 0] = [1., -1.]
+        data = dict(matrix=x, y=np.array([1, 0]), weights=np.array([950., 950.]), base_margin=np.zeros(2))
+        model = core.fit_offset(data['matrix'], data['y'], data['weights'], data['base_margin'], spec=runner.SPEC)
+        self.assertGreater(model['optimization']['updates'], 0)
+        audit.verify_offset_certificate(model, data)
+        for mutation in ('trace_missing', 'iteration_bool', 'loop_count', 'total_count', 'hessian_count',
+                'solve_count', 'final_check', 'old_success', 'trace_extra', 'alpha', 'residual',
+                'initial_objective', 'initial_small_drift', 'terminal_small_drift', 'terminal_gradient', 'loop_gradient'):
+            changed = copy.deepcopy(model); opt = changed['optimization']
+            if mutation == 'trace_missing': opt['trace'].pop()
+            elif mutation == 'iteration_bool': opt['trace'][0]['iteration'] = False
+            elif mutation == 'loop_count': opt['loop_evaluations'] += 1
+            elif mutation == 'total_count': opt['total_evaluations'] += 1
+            elif mutation == 'hessian_count': opt['hessian_evaluations'] -= 1
+            elif mutation == 'solve_count': opt['linear_solves'] -= 1
+            elif mutation == 'final_check': opt['final_checks'] = True
+            elif mutation == 'old_success': opt['success'] = True
+            elif mutation == 'trace_extra': opt['trace'][-1]['alpha'] = 1.
+            elif mutation == 'alpha': opt['trace'][0]['alpha'] *= .5
+            elif mutation == 'residual': opt['trace'][0]['normalized_solve_residual'] = 1e-12+1e-20
+            elif mutation == 'initial_objective': opt['trace'][0]['objective'] += .01
+            elif mutation == 'initial_small_drift': opt['trace'][0]['objective'] = np.nextafter(opt['initial_objective'], np.inf).item()
+            elif mutation == 'terminal_small_drift': opt['trace'][-1]['gradient_l2_norm'] = np.nextafter(opt['loop_gradient_l2_norm'], np.inf).item()
+            elif mutation == 'terminal_gradient': opt['trace'][-1]['gradient_infinity_norm'] = 1e-8+1e-12
+            else: opt['loop_gradient_infinity_norm'] = 1e-8+1e-12
+            reseal(changed)
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError): audit.verify_offset_certificate(changed, data)
 
     def test_synthetic_nonzero25_models_cross_implementation_and_mutations(self):
         inputs, labs = self.inputs, self.labels

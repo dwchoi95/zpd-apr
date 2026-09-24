@@ -46,7 +46,8 @@ class DirectedSupervisorTests(unittest.TestCase):
                           experiment_complete_sha256=guard.sha(self.location['run']/'COMPLETE.json'))
             put(self.location['verified']/'report.json', result)
             put(self.location['verified']/'COMPLETE.json', dict(status='complete', files_sha256={'report.json': guard.sha(self.location['verified']/'report.json')}))
-        put(stage_output/'report.json', dict(stage=name, source=self.context['source'], release_sha256=self.context['release_sha256'], result=result))
+        put(stage_output/'report.json', dict(kind='repair_directed_production_stage_v2',
+            stage=name, source=self.context['source'], release_sha256=self.context['release_sha256'], result=result))
         put(stage_output/'COMPLETE.json', dict(status='complete', files_sha256={'report.json': guard.sha(stage_output/'report.json')}))
         log = self.output/(name+'.log'); log.write_text('synthetic child\n')
         return dict(name=name, output=str(stage_output), returncode=0, elapsed_seconds=.01,
@@ -69,6 +70,7 @@ class DirectedSupervisorTests(unittest.TestCase):
         self.assertEqual(self.calls, list(guard.STAGES)); self.assertEqual(len(self.calls), 10)
         self.assertNotIn('prepare', self.calls)
         manifest = guard.read(self.output/'manifest.json')
+        self.assertEqual(manifest['kind'], 'bounded_repair_directed_10_stage_supervisor_v2')
         self.assertEqual(manifest['maximum_child_budget_seconds'], 25200)
         self.assertEqual(guard.release_configuration()['stage_timeout_seconds'], supervisor.TIMEOUTS)
         self.assertFalse(manifest['preparation_permitted']); self.assertEqual(manifest['automatic_retries'], 0)
@@ -79,6 +81,20 @@ class DirectedSupervisorTests(unittest.TestCase):
         for name, digest in marker['files_sha256'].items(): self.assertEqual(guard.sha(self.output/name), digest)
         for name, data in self.original_labels.items(): self.assertEqual(Path(name).read_bytes(), data)
         self.assertTrue(all(stage+'.log' in marker['files_sha256'] for stage in guard.STAGES))
+
+    def test_existing_v1_failure_is_preserved_without_resume_or_splicing(self):
+        family = self.project/guard.FAMILY
+        old_files = {family/'run-v1/FAILED.json': {'preserved_v1_failure': True},
+                     family/'run-v1/fold-2/H.json': {'partial_v1_model': True},
+                     family/'supervised-v1/FAILED.json': {'preserved_v1_supervisor': True}}
+        for path, value in old_files.items(): put(path, value)
+        before = {path: path.read_bytes() for path in old_files}
+        self.run_supervisor()
+        self.assertEqual(self.calls, list(guard.STAGES))
+        self.assertEqual(self.location['run'], family/'run-v2')
+        self.assertEqual(self.output, family/'supervised-v2')
+        for path, value in before.items(): self.assertEqual(path.read_bytes(), value)
+        self.assertTrue((self.output/'COMPLETE.json').exists())
 
     def test_child_failure_stops_without_retry_and_keeps_previous_complete(self):
         def failed(*args, **kwargs):

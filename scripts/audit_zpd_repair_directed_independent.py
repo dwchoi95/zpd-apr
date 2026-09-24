@@ -8,7 +8,7 @@ residual scores are reconstructed here, without the producer core or driver.
 Source moments use scalar fsum and fixed atol=rtol=2e-14. Once checked, supplied
 float64 matrices are the exact consumed arrays for byte hashes and optimization
 replay: scalar reassociation is not expected to reproduce their bytes. Numeric
-certificate comparisons use atol=rtol=1e-10; convergence remains <=1e-6 and
+certificate comparisons use atol=rtol=1e-10; Newton convergence is <=1e-8 and
 selected SHA identities are exact. None of these tolerances is outcome-tuned.
 
 The caller owns clean-source/runtime/input seals, source-language/donor ancestry,
@@ -37,7 +37,7 @@ VERDICTS = ('AC', 'CE', 'OTHER', 'RE', 'RESOURCE', 'WA')
 DIMENSION = 144
 ATOL = RTOL = 1e-10
 FEATURE_TOL = 2e-14
-GRADIENT_LIMIT = 1e-6
+GRADIENT_LIMIT = 1e-8
 OBSERVATION_FIELDS = {'example_id', 'user_id', 'problem_id', 'bank_id', 'fold',
     'current_code', 'current_verdict', 'current_timestamp', 'current_source_sha256',
     'history', 'donor_history', 'donor_example_id', 'donor_user_id',
@@ -116,18 +116,26 @@ def feature_configuration():
 def expected_spec():
     return dict(representation='candidate_directed_exact_ast_history_v1', dimension=144,
         feature_configuration_sha256=canonical_hash(feature_configuration()),
-        model_kind='fixed_repair_directed_offset_logistic_v1')
+        model_kind='fixed_repair_directed_offset_newton_v2')
 
 
 def expected_configuration():
-    return dict(kind='fixed_repair_directed_offset_logistic_v1', dimension=144, representation=expected_spec(),
+    return dict(kind='fixed_repair_directed_offset_newton_v2', dimension=144, representation=expected_spec(),
         C=.1, mirrored_row_mass=1900., intercept=0., fixed_base_margin_coefficient=1.,
         labels='integer_0_1_signed_as_2y_minus_1',
         row_contract='adjacent_exact_feature_offset_label_mirrors_equal_positive_weights',
         matrix_arithmetic='canonical_float64_CSR', regularization='half_squared_L2_interaction_only',
-        initialization='all_zero', optimizer='scipy.optimize.minimize_L-BFGS-B', analytic_jacobian=True,
-        bounds=None, maxiter=2000, ftol=1e-12, gtol=1e-8, maxcor=10, maxls=20, maxfun=15000,
-        final_gradient_infinity_limit=1e-6, mass_rtol=1e-12, mass_atol=1e-12, retries=0, base_margin_optimized=False)
+        initialization='all_zero', optimizer='analytic_damped_newton_cholesky_v1',
+        hessian='I_plus_C_XT_diag_w_sigmoid_z_sigmoid_minus_z_X',
+        hessian_symmetrization='0.5_times_H_plus_0.5_times_H_transpose',
+        linear_solver='Cholesky_lower_then_two_triangular_solves_no_inverse',
+        damping='min_1_log1p_r_times_a_div_q_div_r_else_min_1_a_div_q',
+        max_updates=2000, max_loop_evaluations=2001, max_hessian_evaluations=2000,
+        max_linear_solves=2000, max_final_checks=1, max_total_evaluations=2002,
+        loop_gradient_infinity_limit=1e-8, final_gradient_infinity_limit=1e-8,
+        normalized_solve_residual_limit=1e-12, objective_end_check_relative_allowance=1e-12,
+        mass_rtol=1e-12, mass_atol=1e-12, line_search=False, jitter=False, iterative_refinement=False,
+        retries=0, base_margin_optimized=False)
 
 
 def _nominal(value):
@@ -347,18 +355,63 @@ def verify_offset_certificate(model, data):
     _require(metadata['gradient_infinity_norm'] <= GRADIENT_LIMIT and np.max(np.abs(saved_gradient)) <= GRADIENT_LIMIT,
         'gradient convergence limit exceeded')
     opt = model['optimization']
-    _require(type(opt) is dict and set(opt) == set(metadata)|{'success', 'status', 'message', 'iterations', 'function_evaluations', 'gradient_evaluations', 'accepted'}, 'optimization schema differs')
-    _require(opt['success'] is True and opt['accepted'] is True and type(opt['status']) is int and opt['status'] == 0
-        and type(opt['message']) is str and type(opt['iterations']) is int and 0 <= opt['iterations'] <= 2000
-        and all(type(opt[k]) is int and 1 <= opt[k] <= 15000 for k in ('function_evaluations', 'gradient_evaluations')), 'optimizer status/budget differs')
+    keys = set(metadata)|{'status', 'accepted', 'updates', 'loop_evaluations', 'hessian_evaluations',
+        'linear_solves', 'final_checks', 'total_evaluations', 'loop_gradient_infinity_norm',
+        'loop_gradient_l2_norm', 'trace'}
+    _require(type(opt) is dict and set(opt) == keys, 'native Newton optimization schema differs')
+    _require(opt['status'] == 'converged_gradient' and type(opt['status']) is str and opt['accepted'] is True,
+        'native Newton accepted status required')
+    counters = ('updates', 'loop_evaluations', 'hessian_evaluations', 'linear_solves', 'final_checks', 'total_evaluations')
+    _require(all(type(opt[k]) is int for k in counters) and 0 <= opt['updates'] <= 2000
+        and opt['loop_evaluations'] == opt['updates']+1 and opt['hessian_evaluations'] == opt['updates']
+        and opt['linear_solves'] == opt['updates'] and opt['final_checks'] == 1
+        and opt['total_evaluations'] == opt['loop_evaluations']+1, 'Newton update/evaluation/solve accounting differs')
+    _require(opt['updates'] != 0 or not np.any(theta), 'zero-update Newton coefficients must be exact zero')
     for key, value in metadata.items():
         _require(_number(opt[key]) and opt[key] >= 0., 'negative/nonfinite numerical certificate')
         _equal(opt[key], value, 'optimization.'+key)
     _require(opt['gradient_infinity_norm'] <= GRADIENT_LIMIT, 'reported gradient convergence limit exceeded')
+    for name in ('infinity', 'l2'):
+        key = 'loop_gradient_'+name+'_norm'
+        _require(_number(opt[key]) and opt[key] >= 0., 'finite nonnegative loop gradient norm required')
+        _equal(opt[key], metadata['gradient_'+name+'_norm'], 'fresh loop/final gradient.'+name)
+    _require(opt['loop_gradient_infinity_norm'] <= GRADIENT_LIMIT, 'loop gradient convergence limit exceeded')
+    _verify_trace(opt)
     _require(metadata['objective'] <= metadata['initial_objective']+1e-12*max(1., abs(metadata['initial_objective'])), 'objective exceeds zero initialization')
     _require(type(model['runtime']) is dict and set(model['runtime']) == {'python', 'numpy', 'scipy'}
         and all(type(v) is str and v for v in model['runtime'].values()), 'runtime metadata differs')
     return theta
+
+
+def _verify_trace(opt):
+    """Check native trace structure/algebra, not unrecorded iterate provenance."""
+    trace = opt['trace']
+    _require(type(trace) is list and len(trace) == opt['loop_evaluations'], 'Newton trace/evaluation count differs')
+    common = {'iteration', 'objective', 'gradient_infinity_norm', 'gradient_l2_norm'}
+    update = {'a', 'q', 'r', 'alpha', 'normalized_solve_residual'}
+    for i, row in enumerate(trace):
+        terminal = i == len(trace)-1
+        _require(type(row) is dict and set(row) == (common if terminal else common|update)
+            and type(row['iteration']) is int and row['iteration'] == i, 'Newton trace schema/index differs')
+        _require(all(_number(v) and v >= 0. for key, v in row.items() if key != 'iteration'), 'Newton trace finite nonnegative values required')
+        infinity = row['gradient_infinity_norm']; norm2 = row['gradient_l2_norm']
+        _require(infinity <= norm2+ATOL and norm2 <= 12.*infinity+ATOL, 'trace gradient norms inconsistent with144 dimensions')
+        if terminal:
+            _require(infinity <= GRADIENT_LIMIT, 'terminal trace gradient convergence limit exceeded')
+            _equal(row['objective'], opt['objective'], 'terminal trace objective')
+            _exact(infinity, opt['loop_gradient_infinity_norm'], 'terminal trace infinity gradient')
+            _exact(norm2, opt['loop_gradient_l2_norm'], 'terminal trace L2 gradient')
+        else:
+            _require(infinity > GRADIENT_LIMIT, 'Newton updates after gradient convergence forbidden')
+            a, q, r = row['a'], row['q'], row['r']
+            _require(a > 0. and q > 0. and 0. < row['alpha'] <= 1.
+                and row['normalized_solve_residual'] <= 1e-12, 'Newton descent/solve certificate invalid')
+            ratio = a/q
+            _require(math.isfinite(ratio) and ratio > 0. and math.isfinite(r*ratio), 'finite analytic damping ratio/argument required')
+            alpha = min(1., math.log1p(r*ratio)/r) if r else min(1., ratio)
+            _require(math.isfinite(alpha) and alpha > 0., 'finite positive analytic damping required')
+            _equal(row['alpha'], alpha, 'analytic damping from saved direction diagnostics')
+    _exact(trace[0]['objective'], opt['initial_objective'], 'zero-initialization trace objective')
 
 
 def verify_fold(inputs, fold, models, predictions, train_labels, *, expected_input_fingerprint,
@@ -376,7 +429,7 @@ def verify_fold(inputs, fold, models, predictions, train_labels, *, expected_inp
         model = models[arm]
         fields = {'kind', 'arm', 'fold', 'train_example_ids', 'held_example_ids', 'input_fingerprint',
             'label_contract', 'parent_structure_model_sha256', 'pair_metadata', 'offset_model', 'model_sha256'}
-        _require(type(model) is dict and set(model) == fields and model['kind'] == 'repair_directed_fold_offset_v1'
+        _require(type(model) is dict and set(model) == fields and model['kind'] == 'repair_directed_fold_offset_v2'
             and model['arm'] == arm and type(model['fold']) is int and model['fold'] == fold
             and model['train_example_ids'] == [e.example_id for e in train] and model['held_example_ids'] == [e.example_id for e in held]
             and model['input_fingerprint'] == expected_input_fingerprint
@@ -490,7 +543,7 @@ def audit_run(inputs, observations, fold_models, predictions, train_labels_by_fo
         fitting_performed=False, unverified_auxiliary_fields=[],
         guard_owned_checks=['artifact_byte_seals', 'clean_source_and_runtime_ancestry', 'authentic_language_and_donor_join',
             'label_envelope_file_provenance', 'prediction_before_label_process_barrier', 'report.predictions_complete_sha256'],
-        not_reconstructed=['optimizer_iteration_trace'],
+        not_reconstructed=['Newton_iterate_vectors_and_Hessians_not_serialized'],
         floating_tolerance=dict(atol=ATOL, rtol=RTOL, feature_tolerance=FEATURE_TOL, gradient_limit=GRADIENT_LIMIT))
 
 

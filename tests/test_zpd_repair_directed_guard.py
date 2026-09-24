@@ -22,7 +22,8 @@ def put(path, value):
 
 def wrapper(location, stage, context):
     directory = location['supervisor']/'stages'/stage
-    put(directory/'report.json', dict(stage=stage, status='complete', source=context['source'],
+    put(directory/'report.json', dict(kind='repair_directed_production_stage_v2',
+        stage=stage, status='complete', source=context['source'],
         release_sha256=context['release_sha256'], result={},
         engine_artifact_sha256={guard.FAMILY+'/'+name: guard.sha(location['family']/name) for name in guard._artifact_paths(stage)}))
     put(directory/'COMPLETE.json', dict(status='complete', files_sha256={'report.json': guard.sha(directory/'report.json')}))
@@ -90,12 +91,13 @@ class DirectedGuardTests(unittest.TestCase):
             files_sha256={name: guard.sha(support/name) for name in guard.observed.FILES}))
         self.mock_value(engine, 'SUPPORT_COMPLETE_SHA256', guard.sha(support/'COMPLETE.json'))
         contracts, _, _ = guard._metadata_preparation(self.location)
-        release = dict(kind='repair_directed_fixed25_fit_release_v1', project=str(self.project), family=guard.FAMILY,
+        release = dict(kind='repair_directed_fixed25_fit_release_v2', project=str(self.project), family=guard.FAMILY,
             fit_release_authorized=True, confirmatory=False, fresh_test_opened=False, runtime=guard.RUNTIME,
             input_complete_sha256={guard.observed.SUPPORT+'/COMPLETE.json': engine.SUPPORT_COMPLETE_SHA256,
                 guard.ancestry.PARENT+'/COMPLETE.json': parent_sha, guard.PREPARED+'/COMPLETE.json': guard.PREPARED_COMPLETE_SHA256},
             prepared_metadata_sha256={guard.PREPARED+'/'+name: guard.sha(prepared/name) for name in ('manifest.json', 'folds.json')},
             prepared_label_contracts=guard._serialized_contracts(contracts), protocol_sha256=guard.sha(self.root/guard.PROTOCOL),
+            amendment_sha256=guard.sha(self.root/guard.AMENDMENT),
             configuration=guard.release_configuration(), source_sha256={name: guard.sha(self.root/name) for name in guard.SOURCE_FILES},
             decision_reason='synthetic approval only')
         self.set_release(release)
@@ -144,9 +146,37 @@ class DirectedGuardTests(unittest.TestCase):
             guard.main(['--project', str(self.project), '--stage', 'preflight', '--retry'])
         self.assertFalse(self.location['supervisor'].exists())
 
+    def test_v2_namespace_amendment_and_old_primitive_dependencies_are_explicit(self):
+        self.assertEqual(self.location['run'], self.project/guard.FAMILY/'run-v2')
+        self.assertEqual(self.location['supervisor'], self.project/guard.FAMILY/'supervised-v2')
+        self.assertEqual(self.location['verified'], self.project/guard.FAMILY/'supervised-v2/verified')
+        self.assertEqual(guard.RELEASE, 'analysis_protocols/zpd-repair-directed-newton-release-20260924.json')
+        self.assertTrue({guard.AMENDMENT, 'scripts/zpd_repair_residual_newton.py',
+            'tests/test_zpd_repair_residual_newton.py', 'scripts/zpd_repair_residual_core.py',
+            'scripts/zpd_repair_feedback_offset.py'}.issubset(guard.SOURCE_FILES))
+        for stage in guard.STAGES:
+            self.assertTrue(all(name.startswith(('run-v2/', 'supervised-v2/'))
+                                for name in guard._artifact_paths(stage)))
+        release = guard.read(self.root/guard.RELEASE)
+        self.assertEqual(release['amendment_sha256'], guard.sha(self.root/guard.AMENDMENT))
+        self.assertEqual(release['protocol_sha256'], guard.sha(self.root/guard.PROTOCOL))
+
+    def test_v1_release_is_never_used_as_implicit_v2_permission(self):
+        old = self.root/'analysis_protocols/zpd-repair-directed-fit-release-20260924.json'
+        put(old, dict(guard.read(self.root/guard.RELEASE), kind='repair_directed_fixed25_fit_release_v1'))
+        old_sidecar = Path(str(old)+'.sha256'); old_sidecar.write_text(guard.sha(old)+'\n')
+        before = old.read_bytes(), old_sidecar.read_bytes()
+        (self.root/guard.RELEASE).unlink(); (self.root/guard.SIDECAR).unlink()
+        with self.assertRaisesRegex(RuntimeError, 'unreleased'):
+            guard.preflight(self.project)
+        self.assertEqual(before, (old.read_bytes(), old_sidecar.read_bytes()))
+        self.assertFalse(self.location['run'].exists()); self.assertFalse(self.location['supervisor'].exists())
+
     def test_strict_release_contracts_source_inventory_types_and_sidecar(self):
         original = guard.read(self.root/guard.RELEASE)
         mutations = [lambda v: v.update(fit_release_authorized=False), lambda v: v.update(extra=True),
+            lambda v: v.update(kind='repair_directed_fixed25_fit_release_v1'),
+            lambda v: v.update(amendment_sha256='0'*64), lambda v: v.pop('amendment_sha256'),
             lambda v: v['configuration'].update(dimension=1296), lambda v: v['configuration'].update(new_label_files=False),
             lambda v: v['source_sha256'].pop(next(iter(v['source_sha256']))),
             lambda v: v['prepared_label_contracts']['0'].update(expected_sha256='a'*64),
@@ -244,6 +274,17 @@ class DirectedGuardTests(unittest.TestCase):
         with self.assertRaises((FileNotFoundError, ValueError)): guard.verify_wrapper(self.project, 'audit', deep=True)
         directory = wrapper(self.location, 'audit', context); put(directory/'FAILED.json', {'failed': True})
         with self.assertRaisesRegex(ValueError, 'valid completed'): guard.verify_wrapper(self.project, 'audit', deep=True)
+
+    def test_resealed_v1_wrapper_kind_cannot_enter_v2(self):
+        context = self.context(); directory = wrapper(self.location, 'preflight', context)
+        guard.verify_wrapper(self.project, 'preflight')
+        report = guard.read(directory/'report.json')
+        report['kind'] = 'repair_directed_production_stage_v1'
+        put(directory/'report.json', report)
+        put(directory/'COMPLETE.json', dict(status='complete', files_sha256={
+            'report.json': guard.sha(directory/'report.json')}))
+        with self.assertRaisesRegex(ValueError, 'strict stage wrapper'):
+            guard.verify_wrapper(self.project, 'preflight')
 
     def test_inner_audit_seal_waits_for_final_runtime_barrier(self):
         context = self.context(); result = dict(verified=True, experiment_complete_sha256='a'*64)

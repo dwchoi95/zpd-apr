@@ -1,4 +1,4 @@
-"""Ten bounded directed144 children using read-only sealed preparation.
+"""Ten bounded directed144 Newton-v2 children; original v1 remains untouched.
 
 No retry, preparation, full refit or promotion. Lifecycle is delegated unchanged
 to the reviewed process helper; one-stage workers never spawn sibling workers.
@@ -38,7 +38,7 @@ def supervise(project):
     commands = [(stage, [sys.executable, '-B', '-m', 'scripts.guard_zpd_repair_directed',
                  '--project', str(location['project']), '--stage', stage], output/'stages'/stage, TIMEOUTS[stage]) for stage in guard.STAGES]
     output.mkdir(parents=True)
-    guard.write(output/'manifest.json', dict(kind='bounded_repair_directed_10_stage_supervisor_v1',
+    guard.write(output/'manifest.json', dict(kind='bounded_repair_directed_10_stage_supervisor_v2',
         project=str(location['project']), source=context['source'], source_root=str(ROOT), release_sha256=context['release_sha256'],
         runtime=guard.RUNTIME, external_guard_released=True, engine_own_cli_remains_unreleased=True,
         child_memory_bytes=MEMORY_BYTES, heartbeat_seconds=HEARTBEAT_SECONDS, blas_threads=1,

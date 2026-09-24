@@ -1,4 +1,4 @@
-"""Fixed directed144 production boundary; one child stage, no prepare or retry.
+"""Fixed directed144 Newton-v2 boundary; one child stage, no prepare or retry.
 
 The separately authored tracked release and strict SHA256 sidecar must exist
 in the same clean committed snapshot. Reuse the six already sealed label files
@@ -20,7 +20,7 @@ from scripts import run_zpd_repair_directed_cv as engine
 from scripts import zpd_repair_directed_history as directed
 from scripts import zpd_repair_directed_inputs as observed
 from scripts import zpd_repair_feedback_labels as labels
-from scripts import zpd_repair_residual_core as core
+from scripts import zpd_repair_residual_newton as core
 from scripts.supervise_zpd_history_action import verify_marker
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,9 +28,10 @@ PROJECT = Path('/home/cdw/VSCode/zpd-apr')
 FAMILY = 'outputs/zpd-repair-directed-history-20260924'
 PREPARED = 'outputs/zpd-repair-feedback-20260924/prepared-v1'
 PREPARED_COMPLETE_SHA256 = '71a9f8803895b9585364589554811c67c9a99969d16e6c5247716d643e21048e'
-RELEASE = 'analysis_protocols/zpd-repair-directed-fit-release-20260924.json'
+RELEASE = 'analysis_protocols/zpd-repair-directed-newton-release-20260924.json'
 SIDECAR = RELEASE+'.sha256'
 PROTOCOL = 'analysis_protocols/zpd-repair-directed-history-prospective-20260924.md'
+AMENDMENT = 'analysis_protocols/zpd-repair-directed-newton-amendment-20260924.md'
 STAGES = ('preflight', 'initialize', *(f'fold-{f}' for f in range(5)), 'finalize', 'assess', 'audit')
 RUNTIME = dict(python='3.13.11', numpy='2.5.2', scipy='1.18.1', sklearn='1.9.0')
 CHILD_MEMORY_BYTES = 32*1024**3
@@ -38,10 +39,11 @@ BLAS_ENVIRONMENT = frozen.BLAS_ENVIRONMENT
 SOURCE_FILES = tuple(sorted(set((*frozen.SOURCE_FILES, *support.SOURCE_FILES, *observed.LOCAL_SOURCES,
     'scripts/run_zpd_repair_directed_cv.py', 'scripts/audit_zpd_repair_directed_independent.py',
     'scripts/guard_zpd_repair_directed.py', 'scripts/supervise_zpd_repair_directed.py',
+    'scripts/zpd_repair_residual_newton.py', 'tests/test_zpd_repair_residual_newton.py',
     'tests/test_zpd_repair_residual_core.py', 'tests/test_zpd_repair_directed_inputs.py',
     'tests/test_zpd_repair_directed_cv.py', 'tests/test_zpd_repair_directed_independent.py',
     'tests/test_zpd_repair_directed_guard.py', 'tests/test_zpd_repair_directed_supervisor.py',
-    'analysis_protocols/zpd-repair-directed-fit-integration-plan-20260924.md', PROTOCOL))))
+    'analysis_protocols/zpd-repair-directed-fit-integration-plan-20260924.md', PROTOCOL, AMENDMENT))))
 
 # Only dimension/path-family-independent reviewed primitives are reused.
 canonical = frozen.canonical
@@ -65,8 +67,8 @@ def paths(project):
     if project != PROJECT: raise ValueError('fixed canonical production project required')
     family = canonical(project/FAMILY)
     return dict(project=project, family=family, prepared=canonical(project/PREPARED),
-                run=canonical(family/'run-v1'), supervisor=canonical(family/'supervised-v1'),
-                verified=canonical(family/'supervised-v1/verified'))
+                run=canonical(family/'run-v2'), supervisor=canonical(family/'supervised-v2'),
+                verified=canonical(family/'supervised-v2/verified'))
 
 
 def release_configuration():
@@ -126,11 +128,12 @@ def preflight(project):
         bindings[str(path)] = expected
     contracts, _, prepared_folds = _metadata_preparation(location)
     prep_metadata = {PREPARED+'/'+name: sha(canonical(location['prepared']/name)) for name in ('manifest.json', 'folds.json')}
-    expected = dict(kind='repair_directed_fixed25_fit_release_v1', project=str(PROJECT), family=FAMILY,
+    expected = dict(kind='repair_directed_fixed25_fit_release_v2', project=str(PROJECT), family=FAMILY,
         fit_release_authorized=True, confirmatory=False, fresh_test_opened=False, runtime=RUNTIME,
         input_complete_sha256=pins, prepared_metadata_sha256=prep_metadata,
         prepared_label_contracts=_serialized_contracts(contracts),
-        protocol_sha256=sha(ROOT/PROTOCOL), configuration=release_configuration())
+        protocol_sha256=sha(ROOT/PROTOCOL), amendment_sha256=sha(ROOT/AMENDMENT),
+        configuration=release_configuration())
     if (type(approval) is not dict or set(approval) != set(expected) | {'source_sha256', 'decision_reason'}
             or any(not _same(approval[k], v) for k, v in expected.items())
             or type(approval['decision_reason']) is not str or not approval['decision_reason'].strip()
@@ -188,11 +191,11 @@ def _load_inputs(location, context):
 
 def _artifact_paths(stage):
     if stage == 'preflight': return ()
-    if stage == 'initialize': return tuple('run-v1/'+name for name in ('FOLDS_COMPLETE.json', 'manifest.json', 'cohort.json', 'folds.json'))
-    if stage.startswith('fold-'): return (f'run-v1/{stage}/COMPLETE.json', f'run-v1/{stage}/MODELS_COMPLETE.json')
-    if stage == 'finalize': return ('run-v1/PREDICTIONS_COMPLETE.json', 'run-v1/predictions.json')
-    if stage == 'assess': return tuple('run-v1/'+name for name in ('COMPLETE.json', 'assessment/COMPLETE.json', 'assessment/report.json', 'assessment/next_action.json'))
-    if stage == 'audit': return ('supervised-v1/verified/COMPLETE.json', 'supervised-v1/verified/report.json')
+    if stage == 'initialize': return tuple('run-v2/'+name for name in ('FOLDS_COMPLETE.json', 'manifest.json', 'cohort.json', 'folds.json'))
+    if stage.startswith('fold-'): return (f'run-v2/{stage}/COMPLETE.json', f'run-v2/{stage}/MODELS_COMPLETE.json')
+    if stage == 'finalize': return ('run-v2/PREDICTIONS_COMPLETE.json', 'run-v2/predictions.json')
+    if stage == 'assess': return tuple('run-v2/'+name for name in ('COMPLETE.json', 'assessment/COMPLETE.json', 'assessment/report.json', 'assessment/next_action.json'))
+    if stage == 'audit': return ('supervised-v2/verified/COMPLETE.json', 'supervised-v2/verified/report.json')
     raise ValueError('unknown fixed stage; preparation is forbidden')
 
 
@@ -202,7 +205,9 @@ def verify_wrapper(project, stage, *, deep=False):
     if stage not in STAGES or (directory/'FAILED.json').exists(): raise ValueError('valid completed fixed stage required')
     verified = verify_marker(directory, required_files=('report.json',))
     marker = read(directory/'COMPLETE.json'); report = read(directory/'report.json')
-    if set(marker['files_sha256']) != {'report.json'} or report.get('stage') != stage or report.get('status') != 'complete':
+    if (set(marker['files_sha256']) != {'report.json'}
+            or report.get('kind') != 'repair_directed_production_stage_v2'
+            or report.get('stage') != stage or report.get('status') != 'complete'):
         raise ValueError('strict stage wrapper required')
     expected = {FAMILY+'/'+name for name in _artifact_paths(stage)}
     if set(report.get('engine_artifact_sha256', {})) != expected: raise ValueError('wrapper must bind exact actual engine artifacts')
@@ -338,7 +343,7 @@ def execute_stage(project, stage):
             verify_audit_label_inputs(location, contracts)
             engine._seal(location['verified'], ['report.json'], verified=True)
         artifacts = {FAMILY+'/'+name: sha(canonical(location['family']/name)) for name in _artifact_paths(stage)}
-        report = dict(kind='repair_directed_production_stage_v1', stage=stage, status='complete', source=context['source'],
+        report = dict(kind='repair_directed_production_stage_v2', stage=stage, status='complete', source=context['source'],
             release_sha256=context['release_sha256'], runtime=RUNTIME, result=result, engine_artifact_sha256=artifacts,
             reused_preparation_complete_sha256=PREPARED_COMPLETE_SHA256, retries=0, model_promotion=False)
         write(directory/'report.json', report)
