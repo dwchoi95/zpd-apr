@@ -100,7 +100,10 @@ class FakeUnit:
     def snapshot(self):
         value=self.show()
         host.verify_properties(value,self.name,self.envelope)
-        return dict(monotonic=self.clock(),properties=value,cgroup=cgroup(self.envelope),main_process=identity())
+        cg=cgroup(self.envelope)
+        if self.behavior=='ready_thread' or self.behavior=='end_thread' and (self.directory/'GO.json').exists():
+            cg['threads'].append(124);cg['pids.current']='2';cg['pids.peak']['value']='2'
+        return dict(monotonic=self.clock(),properties=value,cgroup=cg,main_process=identity())
 
     def stop(self):self.stopped=True
     def verify_empty(self,cg):
@@ -140,6 +143,7 @@ class ResourceProbeTests(unittest.TestCase):
              patch.object(probe,'assess_normal',return_value={'synthetic':True}), \
              patch.object(probe,'is_alive',return_value=False), \
              patch.object(host,'process_identity',side_effect=identity), \
+             patch.object(host,'cgroup_path',return_value=self.root/'mock-cgroup'), \
              patch.object(host,'read_cgroup',side_effect=lambda _:cgroup(probe.envelope(fixture))), \
              patch.object(probe,'kill_main',side_effect=kill):
             try:
@@ -311,6 +315,31 @@ class ResourceProbeTests(unittest.TestCase):
         self.assertTrue(self.units[0].stopped)
         report=probe.json_file(self.context['output']/'P4/report.json')
         self.assertFalse(report['work_released']);self.assertIsNotNone(report['cleanup_error'])
+
+    def test_before_stop_evidence_write_failure_still_stops_owned_unit(self):
+        actual=host.durable_new
+        def writing(path,value):
+            if Path(path).name=='before-stop.json':raise OSError('synthetic evidence fsync failure')
+            return actual(path,value)
+        with patch.object(host,'durable_new',side_effect=writing),self.assertRaises(host.EnvelopeError):
+            self.run_fake()
+        self.assertTrue(self.units[0].stopped)
+        report=probe.json_file(self.context['output']/'P4/report.json')
+        self.assertFalse(report['probe_pass']);self.assertEqual(report['cleanup_error']['type'],'OSError')
+        self.assertTrue((self.context['output']/'P4/FAILED.json').exists())
+        self.assertTrue((self.context['output']/'P4/cleanup.json').exists())
+
+    def test_extra_ready_thread_refuses_GO_and_stops_owned_unit(self):
+        with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='ready_thread')
+        self.assertTrue(self.units[0].stopped)
+        self.assertFalse((self.context['output']/'P4/GO.json').exists())
+
+    def test_extra_keeper_thread_refuses_ACK_and_stops_owned_unit(self):
+        with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='end_thread')
+        self.assertTrue(self.units[0].stopped)
+        self.assertTrue((self.context['output']/'P4/GO.json').exists())
+        self.assertFalse((self.context['output']/'P4/ACK.json').exists())
+        self.assertGreaterEqual(self.clock(),5);self.assertLess(self.clock(),5.2)
 
     def test_pid_reuse_refuses_signal(self):
         unit=SimpleNamespace(snapshot=lambda:{'main_process':identity()})

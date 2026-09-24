@@ -907,3 +907,28 @@ positive scientific completion date is known. Finish/review the trusted resource
 probe release first; use one new bounded probe, then release one sample-only
 replay only if its safety prerequisites pass. Continue the ready next stage
 immediately rather than waiting for the hourly report time.
+
+## Reviewed implementations and first trusted-probe release,00:24 KST
+
+No submitted replay has started:0/16,776 case attempts. Live server checks at
+00:19 show no matching research process or statement-sample unit,174GiB available
+RAM and1.1TiB free disk. The original dirty checkout remains untouched. All new
+probe output/source/bundle paths are absent; there is no duplicate to resume.
+
+The production replay launcher and pure progress32 encoder now have separate
+nonauthor scoped PASS reviews. Root reran72 synthetic launcher/core/host/encoder
+tests successfully in1.842s. The encoder reviewer independently matched43,200
+scalar-reference arrays and nine extra boundaries; no real feedback was consumed.
+These are implementation checks, not repair improvement or fit authorization.
+
+Before first probe deployment, cross-review found a final exact-owned cleanup
+edge: failed before-stop evidence writes could skip stop. The author corrected
+it and added exact singleton process/thread barriers without changing the fixed
+limits. Root read the diff and reran43 probe/host tests successfully in0.248s.
+The unexecuted old release/snapshot is preserved; amended probe release SHA is
+9a6838ab152270de54ea323d17b880a933eef9dd8864084f92076c5b70ef181f.
+Only this amended snapshot may be deployed/tested before one trusted P0-P6 probe.
+Actual submissions still require independently audited successful live probes
+and a separately pinned replay release. Prepared inputs and prior negative
+scientific results remain unchanged. Work on a synthetic-only authenticated
+feedback loader proceeds in parallel; no fit or new assessment access.

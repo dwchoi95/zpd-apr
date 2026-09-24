@@ -608,6 +608,9 @@ def coordinate_fixture(context, fixture, suite_deadline, *, unit_factory=host.Us
                 if (directory/'READY.json').is_file():
                     ready=read('READY.json');verify_ready(ready,snap,fixture,context)
                     first=snap
+                    require(snap['cgroup']['processes']==[snap['main_process']['pid']]
+                        and snap['cgroup']['threads']==[snap['main_process']['pid']],
+                        'READY requires exactly the unit main process and thread')
                     write('ready-snapshot.json',snap)
                     write('GO.json',dict(kind='trusted_fixture_go_v1',
                         ready_sha256=ledger.hashes[prefix+'READY.json'],main_process=snap['main_process']))
@@ -638,9 +641,12 @@ def coordinate_fixture(context, fixture, suite_deadline, *, unit_factory=host.Us
                     # The harness remains alive. Require no case process before
                     # ACK; P4 gets its stated five-second per-case cleanup bound.
                     limit=min(deadline,end['result'].get('call_returned_monotonic',clock())+BARRIER_SECONDS)
-                    while any(pid!=first['main_process']['pid'] for pid in last['cgroup']['processes']) and clock()<limit:
+                    while (last['cgroup']['processes']!=[first['main_process']['pid']]
+                           or last['cgroup']['threads']!=[first['main_process']['pid']]) and clock()<limit:
                         sleep(POLL_SECONDS);capture(stream)
-                    require(last['cgroup']['processes']==[first['main_process']['pid']], 'case descendants survive before unit cleanup')
+                    require(last['cgroup']['processes']==[first['main_process']['pid']]
+                        and last['cgroup']['threads']==[first['main_process']['pid']],
+                        'case descendants or worker threads survive before unit cleanup')
                     deltas=assess_normal(fixture,end['result'],first['cgroup'],last['cgroup'],outside,
                                          list(observed.values()),context['runtime'])
                     write('end-snapshot.json',last)
@@ -691,31 +697,33 @@ def coordinate_fixture(context, fixture, suite_deadline, *, unit_factory=host.Us
         if getattr(unit,'start_attempted',False):
             try:
                 state=unit.show()
-                write('before-stop.json',state)
                 # A start timeout may still have created the exact requested
                 # service. Only this attempted unit is eligible for cleanup.
                 if state['LoadState']!='not-found':
                     require(state['Id']==unit.name,'refuse cleanup of a different unit identity')
-                    try:host.verify_properties(state,unit.name,unit.envelope,running=False)
-                    except BaseException as exc:
-                        cleanup_error=dict(type=type(exc).__name__,message=text_record(str(exc)))
+                    cg=first['properties']['ControlGroup'] if first else state['ControlGroup']
+                    require(state['ControlGroup']==cg,'owned cleanup cgroup identity changed')
+                    host.cgroup_path(cg)
                     if state['MainPID']!='0':
                         identity=host.process_identity(int(state['MainPID']))
-                        require(identity['control_group']==state['ControlGroup'],'main cgroup differs before cleanup')
+                        require(identity['control_group']==cg,'main cgroup differs before cleanup')
                         if first is not None:require(identity==first['main_process'],'PID reuse before cleanup')
-                        # A configuration mismatch must not prevent exact-owned
-                        # cleanup. Preserve raw evidence without asserting validity.
-                        try:
+                    # Exact ownership is established before evidence writes.
+                    # Neither a failed write nor a configuration mismatch may
+                    # skip the owned stop; both still make the probe fail.
+                    try:
+                        write('before-stop.json',state)
+                        if state['MainPID']!='0':
                             live=dict(properties=state,main_process=identity,
-                                      cgroup=host.read_cgroup(state['ControlGroup']))
+                                      cgroup=host.read_cgroup(cg))
                             write('before-stop-live.json',live)
-                        except BaseException as exc:
-                            cleanup_error=dict(type=type(exc).__name__,message=text_record(str(exc)))
-                    cg=first['properties']['ControlGroup'] if first else state['ControlGroup']
-                    unit.stop();empty=unit.verify_empty(cg)
-                    write('cleanup.json',dict(unit=unit.name,empty=True,properties=empty))
+                        host.verify_properties(state,unit.name,unit.envelope,running=False)
+                    finally:
+                        unit.stop();empty=unit.verify_empty(cg)
+                        write('cleanup.json',dict(unit=unit.name,empty=True,properties=empty))
                 else:
                     require(first is None,'owned unit disappeared before retained cleanup')
+                    write('before-stop.json',state)
                     write('cleanup.json',dict(unit=unit.name,not_created=True))
             except BaseException as exc:
                 cleanup_error=dict(type=type(exc).__name__,message=text_record(str(exc)))

@@ -109,3 +109,28 @@ Its authority is limited to one fresh bounded trusted-only probe after the
 required exact-tree tests. It contains no empirical source/sample input pin and
 explicitly sets replay authorization false. No previously failed scientific gate
 or frozen repair result changes as a consequence of this code review.
+
+## Pre-execution amendment,00:23 KST
+
+The preceding release and local execution snapshot f2ec4cee1eaed3f5d57e4c862723293df984458d
+were never deployed or run. A further cross-review identified R4: failure writing
+before-stop metadata could skip cleanup. After independently confirming this
+path, root requested an author correction. Exact unit/cgroup/PID-start ownership
+is now established first; evidence and property checks are enclosed in a finally
+that attempts stop and empty verification even if those checks fail. Failure
+remains failure. READY and normal terminal barriers additionally enforce an
+exact singleton process and thread, within the existing fixed five-second bound.
+No resource limit, fixture, runner or scientific threshold changes.
+
+Root independently read the complete diff and reran the probe/host closure:
+43/43 synthetic tests PASS in0.248s, including three new cleanup/thread regressions.
+Amended source SHA0bdd2f2b59aaba311fffb4d5a53666efe94e075a3994eecbd9d589c2c5f7ffcf;
+tests SHA2ac4207d7325dd8376367f7b4c1dde3ef96f85f49bdb82802960ee8f8450120d.
+The earlier scoped decision is superseded by this scoped PASS, still conditional
+on the fresh amended snapshot's local/server tests and actual preflight. Old
+snapshot bytes and commit remain preserved as unexecuted preparation, not a
+failed or repeated experiment. A revised release must bind these exact hashes
+before the first and only live trusted-probe attempt.
+
+Amended release SHA:
+`9a6838ab152270de54ea323d17b880a933eef9dd8864084f92076c5b70ef181f`.

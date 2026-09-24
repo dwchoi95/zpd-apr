@@ -98,7 +98,7 @@
   },
   "source_sha256": {
     "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "648217b34c68cbf385b00eb39d38423c8435b923cd89898e4f62770f0a456367",
-    "scripts/probe_zpd_statement_sample_resources.py": "a35e622701ff8862e0953370c80fcc07223dfbab21bede3d36575d79d6906d02",
+    "scripts/probe_zpd_statement_sample_resources.py": "0bdd2f2b59aaba311fffb4d5a53666efe94e075a3994eecbd9d589c2c5f7ffcf",
     "scripts/zpd_repair_evaluate.py": "f6ba1c6a207f075f58726d87267f4cbc612edf50fa9b0074825e40a1f1831e67",
     "scripts/zpd_statement_sample_host.py": "be41c10f8b4ab6eb08b9541a0b9a5f2b761d057393cc44c86b4035152c0ae7af",
     "src/repair/pilot_contracts.py": "2bdc27e49e4d815cfdab67f87addeba809d5044370a83cfcba3adf4639faf664",
@@ -106,7 +106,7 @@
     "src/runner/models.py": "80b844802f20f7a194b6ea454fc4a33c10a007862005896c0edad655dad8beea",
     "src/runner/python_runner.py": "ec1d970c2e1674c77063a87fc2e1471614fe2e62bac7bc805e396fe6edbc7164",
     "tests/test_zpd_statement_sample_host.py": "f12a0f1595729f03e8d088c39d57278bbd16494cc6443607354e967e889e94fa",
-    "tests/test_zpd_statement_sample_resources.py": "cd06d61e8ca66e9f4b554d9ec5decf2c05fe891cd49ada4c8f88198e7d5d0536"
+    "tests/test_zpd_statement_sample_resources.py": "2ac4207d7325dd8376367f7b4c1dde3ef96f85f49bdb82802960ee8f8450120d"
   },
   "runtime": {
     "architecture": "x86_64",
@@ -281,5 +281,5 @@
   },
   "trusted_probe_authorized": true,
   "replay_authorized": false,
-  "decision_reason": "Authorize one fresh bounded P0-P6 trusted-only resource probe after independent nonauthor review and exact clean-source local/server closure tests. No prepared submissions, empirical samples, scorer caches, fitting, installation, system-wide configuration, retries or outside-unit workload fallback. P3-only OOMPolicy continue retains accounting under its smaller fixed cap; production remains stop. Preserve every failure."
+  "decision_reason": "Authorize one fresh bounded P0-P6 trusted-only resource probe after independent nonauthor review and exact clean-source local/server closure tests. The unexecuted initial release is superseded before deployment by reviewed exact-owned cleanup-on-evidence-failure and singleton process/thread barrier corrections. No prepared submissions, empirical samples, scorer caches, fitting, installation, system-wide configuration, retries or outside-unit workload fallback. P3-only OOMPolicy continue retains accounting under its smaller fixed cap; production remains stop. Preserve every failure."
 }
