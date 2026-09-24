@@ -93,3 +93,17 @@ server check at22:30 found no matching repair worker/tmux session, unchanged v1
 failed-marker hashes, absent new run-v2/supervised-v2/launcher and absent planned
 new runtime/bundle paths. The server main checkout remains dirty and untouched;
 available resources were174GiB memory and1.1TiB disk. No empirical run was started.
+
+At22:36 root additionally checked24 fixed seeded synthetic144-dimensional fits
+and independently audited every final certificate:4/40/400 unordered pairs,
+dense and sparse directions, retained zero-D pairs, unequal mirrored positive
+weights, and offset scales0/1/20/1000. All24 completed and all24 independent
+certificates passed. Maximum final infinity gradient was9.42610367538066e-9 and
+maximum updates34. No failed case was omitted and no input or threshold was
+changed. These tests used final solver SHA
+472e82a334186ac538435f2a224da8360183f022acbef816715a2631a3574cc2.
+Root also independently ran that solver's15 tests:15/15 PASS0.192s. Its authored
+test file SHA is5356f3c81e690ef021ba07cb71402955499cbcccf051226ad5c6621407742dc8.
+None of these synthetic checks opens the new empirical assessment or establishes
+actual repair improvement. The separate independent solver/stage review and
+clean-snapshot regressions still control release readiness.
