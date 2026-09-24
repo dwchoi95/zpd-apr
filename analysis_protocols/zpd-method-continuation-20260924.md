@@ -1153,3 +1153,37 @@ is retained verbatim in
 18a8c173c48043d2eb1a7a891e1a003bfa5cf5d4f16d6ffcf3a7454ec3a62f87.
 The actual-repair result remains the earlier negative205 versus206 AC; none of
 the operational or readiness checks supersedes that outcome.
+
+## Readiness independently accepted; pure fitting components underway,01:55 KST
+
+The completed raw independent audit is
+`zpd-statement-sample-readiness-result-independent-audit-20260925.md`, SHA
+cd74327b4ef19d972054780cb2d7713d4df735e521024124495f767e7b7493b5.
+All1,641,552 numerical items matched exact scalar reconstruction, as did
+all320/23/2544 identities, every candidate pair and every frozen prerequisite.
+All133 distinct bound files were rehashed unchanged. Root additionally
+performed live post-run source/native/runtime/inventory and69input checks.
+The readiness result is accepted; the earlier repair failure remains unchanged.
+
+During independent result checking only pure synthetic development proceeded:
+new32 Newton and thirteen-method assessment, with no empirical labels or fits.
+Nonauthor reviews accepted both pure modules. Root ran50 new/old/core numerical
+tests and12 independent dense synthetic reconstructions; assessment review
+ran18 unit tests plus200 independent synthetic cohorts/4800 group scopes and27
+boundaries. Separate reviews preserve scope and limitations. This does not
+authorize an empirical fit or prove the unfinished integration.
+
+The new worker must not reuse the old global-manifest entrypoint. Independent
+source inspection found that the old coordinator/worker path parses all six
+label-contract hashes and other-fold parent training metadata. The new protocol
+requires a stricter worker boundary: coordinator-only full provenance, then an
+externally pinned own-fold capsule containing source/features and only its own
+fold's frozen base scores and own label contract. The original own-file label
+reader and dimension-free pair arithmetic remain reusable. This is trusted
+process dataflow isolation, not an OS security sandbox. No prior result is
+reclassified as leaked labels merely because the new contract is stronger.
+
+Work now proceeds on the pure capsule, coordinator-only input assembler and
+own-fold worker, then separate integration/independent audit and a fresh clean
+released thirty-fit run. No actual progress32 fit has started. There will be no
+new candidate generation, base refit, sample selection, gate change or retry.
