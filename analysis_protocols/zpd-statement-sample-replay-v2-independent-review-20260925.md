@@ -158,3 +158,20 @@ API, launch Linux processes/units, or manufacture an empirical release.
 Within these boundaries, the patch is a targeted prospective correction for
 the observed allocator-startup mismatch, not a relaxation of the resource or
 scientific contract. No additional source change was requested by this review.
+
+## Subsequent root-run clean-snapshot check (not reviewer execution)
+
+After this scoped source decision, root reported a separately committed v2
+release SHA `dc51a878e339cdc6d854bae2d1acc96f954965949135e4e4b123562a16b55fa8`
+and clean execution snapshot commit
+`724766d4d9967efb8185fb71d6533942c2f4df90`, tree
+`dc4b7a8a3ecff62a42e96e0b9e4a171738a662a3`, deployed as
+`.runtime/statement-sample-replay-20260924-v2`. Root's fresh controller started
+without an externally preset allocator variable, imported the actual launcher,
+then ran preflight/recheck/native identity. The reported task set was only
+mainPID1918533 both before and after; all46 source,87 parent, runtime, six
+environment and native-binary checks passed. This directly tests the new
+module's own early assignment rather than relying on shell environment
+inheritance. Root reported no unit/READY/work yet and full local/server tests
+still in progress. These are attributed root-run observations, not a second
+independent Linux run or an actual replay-completion judgment by this reviewer.
