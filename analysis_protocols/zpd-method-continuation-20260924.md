@@ -869,3 +869,41 @@ or performance improvement. Release actual replay immediately after its source,
 tests, resource probes and independent review pass, then seal an observation-only
 readiness result before considering30 new fits. No unchanged duplicate experiment,
 full-suite-as-feedback substitution, cohort removal or threshold relaxation.
+
+## Hourly report and next-stage implementation,2026-09-25 00:01 KST
+
+Live UbuntuServer check at00:01:14 confirms prepared-v1 COMPLETE/noFAILED,
+absent resource-probe-v1/replay-v1/replay-supervised-v1, and no matching research
+Python worker. Preparation is320/320; actual replay is0/16,776 case attempts.
+No performance improvement is claimed: the last scientific result remains
+H205/320 AC versus structural C206/320, with both fixed gates failed.
+
+Next-stage work is active in code and independent review, not a running server
+experiment. The sample-only replay core and host-helper boundaries passed
+synthetic tests and independent scoped review. Review findings were corrected
+before any empirical execution: all operational diagnostics use bounded
+serialization, the final input/source/runtime barrier follows output consumers,
+and a failed terminal write preserves its bytes as REJECTED_COMPLETE before
+cleanup. Raw findings remain in the independent core review. Root independently
+checked900 two-case categorical patterns; the separate reviewer checked1,296
+four-block categorical patterns. No real sandbox/submission ran in those tests.
+
+Trusted P0-P6 resource probes and the separate production coordinator are being
+implemented with source/runtime/input authorization still absent. A read-only
+manager check found DefaultOOMPolicy=stop. Only the bounded128MiB memory-pressure
+probe prospectively uses continue to retain its small keeper and event counters;
+production and every other fixture explicitly retain stop. This does not change
+the submitted-code runner or weaken the production resource cap. Source-level
+test fixes and any unsuccessful probe must remain visible; no retry is automatic.
+
+The pure prospective32 feature implementation has15 passing synthetic tests,
+with independent mathematical review pending. It has no I/O/fit/execution and
+has not consumed empirical feedback. Its tests compare the specified two-stage
+binary64 recency normalization rather than replacing it with a rational shortcut.
+It cannot authorize a fit before the observation-only readiness conditions pass.
+
+Next hourly report01:01 KST. No measured replay ETA exists before launch and no
+positive scientific completion date is known. Finish/review the trusted resource
+probe release first; use one new bounded probe, then release one sample-only
+replay only if its safety prerequisites pass. Continue the ready next stage
+immediately rather than waiting for the hourly report time.
