@@ -353,3 +353,21 @@ independent synthetic review, and separate agents are implementing the strict
 fold-label provider and unchanged-preference candidate-pair builder. Root has
 implemented the exact-fraction assessment gate and requested independent review.
 No actual repair fit is yet released, and no scientific success is inferred.
+
+## Hourly report — 2026-09-24 20:01 KST
+
+C3 input encoding is past the global preparation phase and fold0 is fitting,
+with22,543 unique train prefixes. At20:01:01 the latest event was the L arm;
+no complete all-arm OOF fold had yet been sealed, so completed verification
+predictions were0/29,740, not the target/feature-encoding count. Supervisor and
+child remain live; no production failure or duplicate run was found. Initial
+planning estimates are20:15–20:25 for fit/statistics and20:45–21:10 including
+independent replay, explicitly tentative until more folds establish throughput.
+
+The actual-repair observed support stage is complete320/320; actual repair
+fitting has not started. Pair builder, strict label materialization/worker
+provider, fixed-offset solver and exact-fraction gate are being integrated with
+independent reviews and synthetic tests. The next research action is not being
+deferred until the next hourly report. Reporting remains supplementary to
+continuation. Next scheduled-in-goal reporting checkpoint is around21:01 KST;
+this does not claim a separately installed Scheduled automation.
