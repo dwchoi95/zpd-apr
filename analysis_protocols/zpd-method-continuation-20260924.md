@@ -752,3 +752,48 @@ run-v2 for a complete25-cell run only after independent implementation review,
 local/server tests and a new clean release. This is numerical reliability work,
 not evidence of a history effect or a new positive repair result. The next
 regular report remains23:01; a ready stage must proceed without waiting for it.
+
+## Newton-v2 numerical amendment and final verification,22:39 KST
+
+The prospective numerical specification was committed at d81061ae and its
+symmetric-Hessian/finite-failure clarification at48a8824c. It retains the same
+objective/data/gates and uses one fixed analytic-damped Newton solve, from zero,
+with strict loop AND separately recomputed final gradient<=1e-8. There is no
+line search, jitter, retry, failed-cell rescue or v1 model splicing.
+
+Independent solver/stage review found no unresolved blocker and passed17 tests
+plus Decimal80 witnesses. Root separately reviewed the guard/auditor authored
+by other agents, ran24 boundary and11 auditor tests, independently reran15
+solver tests and checked24 additional full144 synthetic fits/certificates.
+All passed; maximum gradient over the extra24 cases was9.42610367538066e-9,
+maximum updates34. Root's all320/25 synthetic stage flow passed15 tests55.919s;
+the later fixture-key alignment was independently rechecked. These are code/
+numerical checks only, not real repair outcomes. The two scoped independent
+Newton review documents record the exact source hashes and their limitations.
+
+Frozen release/dev commit:43993269. Release SHA:
+0f4abd204bd51ab42ea90af28a66d3bbc47dd7a7cb74448bcd995ffa5cce48bb.
+Immutable parentless execution commit:0d4671ee67ca19ba9ec16f98b72cb45119e37100.
+Exact tree:4162ab94b78e9fe0f22a1b1b6cea343c4532ed7b.
+Local source:/private/tmp/zpd-repair-directed-newton.anwNp1/source.
+Remote source:.runtime/repair-directed-newton-20260924-v2.
+Bundle:.runtime/zpd-repair-directed-newton-20260924-v2.bundle; SHA:
+9fc27135fbf02c7583a3466732fc2197412fbd43db01aad2fc5cab2a84b69390.
+The bundle was verified before clone, and both snapshots passed exact source70,
+release/sidecar, revision/tree and clean-state checks before tests. Production
+runtime still matches Python3.13.11/NumPy2.5.2/SciPy1.18.1/sklearn1.9.0.
+
+At22:39 both local and server exact-tree regression suites are running:83
+tracked ZPD modules, followed by the three tracked repair-pilot modules. No new
+actual experiment has started:0/320 new OOF examples. Local tests use a separate
+macOS numerical runtime and do not replace the pinned production tests. No
+source edits are permitted in either test snapshot. Recheck every hash and
+clean state afterward, then assert absent run-v2/supervised-v2/launcher paths,
+absent matching workers/session and pass read-only preflight before the one
+new launch. At the earlier22:30 server check174GiB memory and1.1TiB disk were
+available; original dirty checkout and all v1 FAILED hashes were unchanged.
+
+Actual completion ETA remains unset until a measured new run provides a basis.
+Next hourly report remains23:01, but passing verification must trigger the next
+stage immediately. Do not confuse these tests with completing131/320 failedv1
+or with evidence that the history-mechanism/scientific gates have passed.
