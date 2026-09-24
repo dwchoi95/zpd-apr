@@ -453,3 +453,64 @@ fold workers, prediction sealing, assessment and independent audit. No stage
 is retried, no model is promoted, and no fresh outcome is opened. Root continues
 completion/error monitoring and the21:01 KST hourly reporting checkpoint; a
 completion marker does not by itself complete the research objective.
+
+## Actual repair complete; hourly report — 2026-09-24 21:01 KST
+
+The automatically chained eleven-stage experiment finished at20:59:08 KST.
+All320 OOF recipients,25 models and11 methods completed, including the no-fit
+independent numerical/result audit. No process failed, retried or refitted.
+The experiment's tmux session exited naturally; the21:02 SSH check found no
+remaining tmux server or matching guard/supervisor. No unrelated job was killed.
+
+Root synchronized only the three new output directories and verified all8
+prepared-label hashes,55 run hashes,40 supervisor hashes and the auditor report
+hash. The following COMPLETE hashes agree between local and UbuntuServer:
+
+- Run:`1edea00abcb56fafc86b7743e480f3cae51f7095ca6a2934ce817a4a69b3906d`.
+- Supervisor:`ec9d758db7e8a160d4194acd0b40115458ad5224b1382c2e18399ab926d19b6d`.
+- Independent audit:`6f30a53f2c54780ee432939fcb5439dd821d1e2f1ba7a5aaaede2ed2f02d5f18`.
+- Assessment report:`e67f9efe397cf3c62ea81af5a6efa098f98ca5c64781527813fa77bc70dc4fd4`.
+
+The independently recomputed gate exactly equals the assessment gate: **FAIL**
+for both actual repair improvement and the proposed mechanism. The auditor
+explicitly excludes auxiliary pair-metadata bank/count fields from its replay;
+its verified status must not be described as verification of those fields.
+
+| Method | Stable AC /320 | Observed regressions /320 | Unknown /320 | No-op selected |
+|---|---:|---:|---:|---:|
+| H, primary |205|54|13|0|
+| Jm |205|54|13|0|
+| HS |204|54|13|0|
+| U |205|54|13|0|
+| L |203|57|13|0|
+| Frozen structural-C |206|52|13|0|
+| Frozen lexical-C |201|58|13|0|
+| First attempt |184|50|15|9|
+| Shared theta-H with HS |205|54|13|0|
+| Shared theta-H with Jm |205|54|13|0|
+| No-op |19|0|13|320|
+
+H changes11/320 structural-C choices, all edited-to-edited: two AC gained,
+three lost; one regression prevented, three introduced. Thus this is not the
+previous global-no-op collapse. H's equal-problem AC lower bound is0.6386544
+versus structural-C0.6340497, but pooled AC is worse and regression is higher
+under both weightings. Neither result may replace the joint frozen gate.
+On288 known-current-nonAC cases H yields192 AC/48 regressions versus193/46;
+on19 known-current-AC cases both yield13 AC/six regressions. All13 unknown-
+current cases remain in the full result.
+
+H/Jm differs in one selected candidate with no outcome difference. H/U has30
+switches with five AC gained/five lost and four regressions prevented/four
+introduced. With fixed theta-H, changing the input to HS changes two choices;
+changing it to Jm changes one. Neither changes AC or regression counts.
+HS feature-equal226 and feature-different94, Jm equal262/different58 are all
+retained. These are negative mechanism observations, not an order-effect pass.
+
+The next work began immediately after completion detection: two independent
+agents inspect saved choices/representation support while root checks all
+seals and evaluates a more specific directed-edit history representation.
+No control promotion, coefficient scaling, threshold search, fresh-data access
+or duplicate fit is authorized by this failure. Next intervention is not yet
+frozen; it must follow a documented diagnosis and independent design review.
+There is therefore no defensible next-experiment finish time yet. The next
+hourly reporting checkpoint is22:01 KST, with work continuing between reports.
