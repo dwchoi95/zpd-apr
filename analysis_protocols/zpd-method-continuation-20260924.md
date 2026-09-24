@@ -1115,3 +1115,41 @@ fresh readiness audit. No implementation byte is changed after the954-test
 pretest. The new release authorizes no program execution, repair-label access,
 model prediction access or fit. Allsix readiness conditions across allfive
 training complements remain fixed; failure must stop the fit branch.
+
+## Full-cohort readiness completed; independent reconstruction pending,01:43 KST
+
+The final clean execution snapshot is
+ddefb782c4479cad66699be0b086f75a74969bf8/tree
+e82bb6bfb06a2fe3485be310ce3b07cd3437c46b, bundle
+2969eabb483ff3b44c0af8443c260053c7f1b74897d252ca21c7c24bfadcb26b.
+It ran from `.runtime/statement-sample-readiness-20260925-v1` under the same
+released runtime/native pins. All56 implementation bytes equal the preceding
+954-test pretest snapshot; final exact-snapshot51 integration tests passed
+locally34.424s and on server20.067s. Post-test source/runtime/native/input checks
+passed before the one new readiness execution at approximately01:42 KST.
+
+The observation-only process exited0 by01:43 and sealed all320 examples and
+2544 candidates. COMPLETE
+e9ed6a38c44f56578ea85e02e5220c68c68906aff767abaa047a318f3259afad
+binds the exact five-file inventory. Root checked every byte hash after
+nondeleting synchronization. The producer reports every frozen prerequisite
+in allfive training complements passed, with zero excluded examples/candidates.
+Its report SHA is22799338ef9439c2ee913e14c112741334646b2a3c52460d036f445c4a005c76.
+No fit, candidate execution, repair-label or new-model-prediction read occurred.
+
+These are provisional producer diagnostics, pending independent scalar audit:
+78 eligible authentic nominal WA-to-WA transitions across60 banks contain
+sample off-diagonal changes;1040 edited pairs vary through that original-weight
+WA contribution. H equals CF in216/320 banks, H equals HS in269/320, and33
+H banks are entirely zero. These limits remain visible; passing minimal
+nondegeneracy does not establish broad signal, repair improvement or learning.
+
+The nonauthor implementation/result auditor received the immutable COMPLETE
+pin and started full independent feature and prerequisite reconstruction.
+Acceptance, a separate fitting release and clean tested source are still
+required before any new empirical fit. The already completed raw replay audit
+is retained verbatim in
+`zpd-statement-sample-replay-v2-result-independent-audit-20260925.md`, SHA
+18a8c173c48043d2eb1a7a891e1a003bfa5cf5d4f16d6ffcf3a7454ec3a62f87.
+The actual-repair result remains the earlier negative205 versus206 AC; none of
+the operational or readiness checks supersedes that outcome.
