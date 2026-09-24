@@ -621,3 +621,39 @@ CLI, and no core/loader/stage fit has run on empirical labels. Next required
 work is synthetic integration tests, independent implementation/numerical
 auditor review and a separately frozen ten-stage release. Do not launch from
 the dirty development checkout or infer fitting authority from support PASS.
+
+## Directed144 fitting integration,21:45 KST
+
+The pure residual core and label-free directed loader passed independent source
+review and62 synthetic regressions; they are committed at `0ac82584`. The review
+also independently compared100 synthetic pair patterns with frozen1296 behavior
+and24 scalar loss/gradient cases. A missing closure for three directly imported
+frozen helpers was corrected and dependency-drift tests added. These are
+implementation checks, not an empirical fit or positive repair result.
+
+Root completed the directed stage adapter and14 synthetic tests, including all
+320 synthetic recipients,25 true144 fits,11 methods and separate assessment.
+Final suite:14/14 PASS in70.382s. An independent reviewer found missing full
+observation alignment and a missing recheck between inner/outer assessment
+seals; both were corrected and covered by regressions. Prior/donor code,
+verdicts, timestamps and current-first source IDs now align with typed examples;
+historical language stays externally certified, never coerced from parsing.
+The stage rechecks sources/runtime/inputs before both terminal seals. Original
+training labels, baseline coefficients, pair weights, unknowns and gates remain
+unchanged. There is no label-preparation entry point or released production CLI.
+
+Two interim synthetic development runs failed: one assertion expected the SPEC
+at the wrong serialized key; another caught an accidentally removed `json`
+import. Both were fixed before the final14-test pass. They were not empirical
+fits or retries, and no production output was created. The completed old
+feedback experiment and directed source-only support remain untouched.
+
+At21:44:41 a read-only remote process check found no directed/feedback guard,
+supervisor or directed support worker. New actual fitting remains unreleased,
+not running or stalled in a server queue. The next active work is the separate
+independent scalar numerical auditor and ten-stage guard/supervisor review.
+Root requested final consumed-label checks specifically in audit/terminal
+processes, without opening sibling/assessment label bodies in fit workers.
+After these pass, freeze a clean source/release, run local/server regression
+tests, assert absent output/workers, and launch the single new320-recipient
+experiment. Do not wait for the next22:01 hourly report to start a ready stage.
