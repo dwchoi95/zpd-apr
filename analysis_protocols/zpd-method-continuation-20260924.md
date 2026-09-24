@@ -969,3 +969,34 @@ Production launcher now refers to the fixed probe module OUTPUT rather than
 hard-coding the failed path, still requiring an external accepted COMPLETE pin.
 Actual replay remains0/16,776, no fit and no improved scientific result. Next
 regular report01:01; continue this corrected safety prerequisite immediately.
+
+## Trusted v2 reached normal case completion but terminal cleanup failed,00:39 KST
+
+The reviewed corrected probe sourcecde08c54925a58ce8063569a426c50d131ecbac2,
+tree9c008558af24261c2cbe2c0f625c067b08b8509a, bundle3966d08e85eef49b56f0b545116788c352d03748f141fe71a85c42b9c3284644
+passed clean local66 tests in0.296s/server66 in0.158s and exact source/config/
+runtime preflight. It ran once at00:32:16 from the dedicated remote snapshot
+.runtime/statement-sample-resource-probe-20260924-v3, releaseb7a8f4e55eeea006d989de1a06734c6f34558525aa78f6c4bfaa44d647b21efb.
+
+P0's12 reason-specific refusals passed independent raw inspection. P1 completed
+all8 fixed trusted cases (6AC and2 intentional WA), bound END/ACK, observed all8
+sandbox workers and returned to a singleton main process/thread. The independent
+audit confirmed output digests, namespace/privilege/mount checks and zero resource
+event deltas; peak tasks33 and memory112803840 bytes. This does not prove the
+unrun pressure/death probes or submitted-source safety/feedback usefulness.
+
+The suite remains FAILED: after normal acknowledged exit, systemd retained the
+same unit/start with MainPID0 and an empty ControlGroup. Cleanup code incorrectly
+required equality to the old live path. P2-P6 never ran; no top-level COMPLETE or
+producer cleanup record exists. Root separately proved exact old start/identity
+and absent old cgroup, stopped only the idle v2 unit at00:33:45 and verified it
+not-found/inactive/dead/0. That operation is separately recorded and does not
+retroactively turn v2 into a pass. V1/v2 raw bytes are preserved/synchronized.
+
+The narrow terminal-lifecycle correction is in independent review: bind the
+original unit/start and dead main plus explicitly absent/empty recorded cgroup,
+preserve that proof, then stop exact-owned unit. Success/exit predicates and
+resource/deadline/runner contracts remain unchanged. Both probe and production
+coordinator need this correction before a fresh separately released v3. Actual
+replay stays0/16,776; authenticated feedback loader development continues on
+synthetic inputs, with no fit or performance improvement claimed.

@@ -31,7 +31,7 @@ from src.runner.python_runner import _SUBPROCESS_RUNNER
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = Path('/home/cdw/VSCode/zpd-apr')
 FAMILY = 'outputs/zpd-statement-sample-feedback-20260924'
-OUTPUT = FAMILY + '/resource-probe-v2'
+OUTPUT = FAMILY + '/resource-probe-v3'
 PROTOCOL = 'analysis_protocols/zpd-statement-sample-resource-probe-20260924.md'
 RELEASE = 'analysis_protocols/zpd-statement-sample-resource-probe-release-20260924.json'
 SIDECAR = RELEASE + '.sha256'
@@ -111,7 +111,7 @@ def envelope(fixture):
 
 def unit_name(fixture):
     require(fixture in FIXTURES, 'fixed trusted fixture required')
-    return 'zpd-statement-samples-probe-20260924-v2-' + fixture.lower() + '.service'
+    return 'zpd-statement-samples-probe-20260924-v3-' + fixture.lower() + '.service'
 
 
 def configuration():
@@ -545,6 +545,56 @@ def kill_main(unit, identity):
     os.kill(identity['pid'],signal.SIGKILL)
 
 
+def cleanup_binding(state, first, name):
+    """Read-only exact ownership proof, independent of scientific/exit success.
+
+    systemd may retain the exited unit after its cgroup evaporates. That narrow
+    case must use the previously attested start and cgroup, never an empty path
+    as an alias for a broad cgroup root. No signal or stop occurs in this helper.
+    """
+    require(state.get('Id')==name and state.get('LoadState')=='loaded',
+            'cleanup unit identity differs')
+    reported=state.get('ControlGroup')
+    require(type(reported)is str,'reported cleanup cgroup required')
+    if first is not None:
+        prior=first['properties'];identity=first['main_process']
+        cg=prior['ControlGroup'];stamp=prior['ExecMainStartTimestampMonotonic']
+        require(prior['Id']==name and type(stamp)is str and stamp.isdigit() and int(stamp)>0
+            and state.get('ExecMainStartTimestampMonotonic')==stamp,
+            'owned unit start timestamp changed or absent')
+        require(identity['control_group']==cg and str(identity['pid'])==prior['MainPID'],
+                'first live process/cgroup binding inconsistent')
+    else:
+        cg=reported;stamp=None;identity=None
+    root=host.cgroup_path(cg)
+    require(reported==cg or reported=='','owned cleanup cgroup identity changed')
+    result=dict(unit=name,recorded_control_group=cg,reported_control_group=reported,
+                first_main_process=identity,start_timestamp_monotonic=stamp,
+                dead_cgroup_observation=None,live_main_process=None)
+    if reported=='':
+        require(first is not None and state.get('MainPID')=='0'
+            and (state.get('ActiveState'),state.get('SubState')) in
+                (('active','exited'),('failed','failed'),('inactive','dead')),
+            'empty cgroup requires previously attested terminal unit')
+        try:host.process_identity(identity['pid'])
+        except FileNotFoundError:pass
+        else:raise host.EnvelopeError('recorded main PID still exists or was reused')
+        present=root.exists()
+        evidence=host.read_cgroup(cg) if present else None
+        if present:
+            require(evidence.get('control_group')==cg and evidence.get('processes')==[]
+                and evidence.get('threads')==[] and evidence.get('cgroup.events',{}).get('populated')==0,
+                'recorded cgroup is still populated or has surviving threads')
+        result['dead_cgroup_observation']=dict(present=present,cgroup=evidence)
+    elif state.get('MainPID')!='0':
+        require(type(state.get('MainPID'))is str and state['MainPID'].isdigit(), 'positive cleanup PID required')
+        current=host.process_identity(int(state['MainPID']))
+        require(current['control_group']==cg,'main cgroup differs before cleanup')
+        if first is not None:require(current==identity,'PID reuse before cleanup')
+        result['live_main_process']=current
+    return result
+
+
 def coordinate_fixture(context, fixture, suite_deadline, *, unit_factory=host.UserUnit,
                        clock=time.monotonic, sleep=time.sleep):
     """One owned unit; no retries, broad signals, collection or implicit success."""
@@ -707,21 +757,16 @@ def coordinate_fixture(context, fixture, suite_deadline, *, unit_factory=host.Us
                 # A start timeout may still have created the exact requested
                 # service. Only this attempted unit is eligible for cleanup.
                 if state['LoadState']!='not-found':
-                    require(state['Id']==unit.name,'refuse cleanup of a different unit identity')
-                    cg=first['properties']['ControlGroup'] if first else state['ControlGroup']
-                    require(state['ControlGroup']==cg,'owned cleanup cgroup identity changed')
-                    host.cgroup_path(cg)
-                    if state['MainPID']!='0':
-                        identity=host.process_identity(int(state['MainPID']))
-                        require(identity['control_group']==cg,'main cgroup differs before cleanup')
-                        if first is not None:require(identity==first['main_process'],'PID reuse before cleanup')
+                    binding=cleanup_binding(state,first,unit.name)
+                    cg=binding['recorded_control_group']
                     # Exact ownership is established before evidence writes.
                     # Neither a failed write nor a configuration mismatch may
                     # skip the owned stop; both still make the probe fail.
                     try:
                         write('before-stop.json',state)
+                        write('cleanup-binding.json',binding)
                         if state['MainPID']!='0':
-                            live=dict(properties=state,main_process=identity,
+                            live=dict(properties=state,main_process=binding['live_main_process'],
                                       cgroup=host.read_cgroup(cg))
                             write('before-stop-live.json',live)
                         host.verify_properties(state,unit.name,unit.envelope,running=False)

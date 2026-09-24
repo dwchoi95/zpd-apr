@@ -1,7 +1,7 @@
 {
   "kind": "trusted_statement_sample_resource_probe_release_v1",
   "project": "/home/cdw/VSCode/zpd-apr",
-  "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v2",
+  "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v3",
   "configuration": {
     "barrier_seconds": 5.0,
     "empirical_inputs": false,
@@ -79,7 +79,7 @@
       "P6"
     ],
     "kind": "trusted_statement_sample_resource_probe_v1",
-    "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v2",
+    "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v3",
     "output_record": "first1024_codepoints_count_and_canonical_JSON_string_SHA",
     "overwrite": false,
     "p2_max_forks": 20,
@@ -97,8 +97,8 @@
     "unit_watchdog_seconds": 30.0
   },
   "source_sha256": {
-    "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "575bdeb422d17758cfcd03f8560d82fc84939320b413c5486db58e6f33a88b8b",
-    "scripts/probe_zpd_statement_sample_resources.py": "095c8370b3e09f4d5e77b0ba1c8b1c9c8d758832b8e47f83ab0b51b2472e3c76",
+    "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "39acc54e52a9cdbdf9ac866641a4a32e45d73af546930fbbf4d4fd075eb7a2f9",
+    "scripts/probe_zpd_statement_sample_resources.py": "671e42762797e96aab72b2c3e7519bcd9667db7f0bd056252693483b293e4945",
     "scripts/zpd_repair_evaluate.py": "f6ba1c6a207f075f58726d87267f4cbc612edf50fa9b0074825e40a1f1831e67",
     "scripts/zpd_statement_sample_host.py": "be41c10f8b4ab6eb08b9541a0b9a5f2b761d057393cc44c86b4035152c0ae7af",
     "src/repair/pilot_contracts.py": "2bdc27e49e4d815cfdab67f87addeba809d5044370a83cfcba3adf4639faf664",
@@ -106,7 +106,7 @@
     "src/runner/models.py": "80b844802f20f7a194b6ea454fc4a33c10a007862005896c0edad655dad8beea",
     "src/runner/python_runner.py": "ec1d970c2e1674c77063a87fc2e1471614fe2e62bac7bc805e396fe6edbc7164",
     "tests/test_zpd_statement_sample_host.py": "f12a0f1595729f03e8d088c39d57278bbd16494cc6443607354e967e889e94fa",
-    "tests/test_zpd_statement_sample_resources.py": "4d1405ca5a639cf8c29343b16ae696474a3e24f439f0af7a9ad6ced7cb4a4b0e"
+    "tests/test_zpd_statement_sample_resources.py": "2c68e8b7acd45b2da1402e8f795b0dd4517e8b1e8494eeda63153110ac714dfc"
   },
   "runtime": {
     "architecture": "x86_64",
@@ -281,5 +281,5 @@
   },
   "trusted_probe_authorized": true,
   "replay_authorized": false,
-  "decision_reason": "Authorize one separately reviewed corrected P0-P6 trusted-only resource-probe-v2 after exact clean-source local/server closure tests. Preserve failed v1: its P1 refused before GO on a stale pre-READY snapshot, and six P0 mutations used the wrong late-bound unit name. V2 consumes READY before fresh attestation and tests intended P0 rejection reasons, using fresh fixed v2 outputs and units. All fixtures, resource caps, five-second barriers and deadlines remain unchanged; no helper allowlist or threshold relaxation. No prepared submissions, empirical samples, scorer caches, fitting, installation, system-wide configuration, unchanged retries or outside-unit workload fallback. P3-only OOMPolicy continue retains accounting under its smaller fixed cap; production remains stop. Preserve every failure."
+  "decision_reason": "Authorize one separately reviewed corrected P0-P6 trusted-only resource-probe-v3 after exact clean-source local/server closure tests. Preserve v1 READY/P0 defects and v2 terminal-cleanup failure as FAILED, not successful probes. V3 retains corrected READY/P0 checks and proves exact original unit/start plus dead main and absent-or-empty recorded cgroup when systemd clears the retained ControlGroup, recording that proof before exact-owned stop. Cleanup is not success. Fresh fixed v3 outputs/units only; all fixtures, resource caps, five-second barriers, deadlines, runtime and verdict predicates unchanged. No prepared submissions, empirical samples, scorer caches, fitting, installation, system-wide configuration, unchanged retries or outside-unit workload fallback. P3-only OOMPolicy continue retains accounting under its smaller fixed cap; production remains stop. Preserve every failure."
 }

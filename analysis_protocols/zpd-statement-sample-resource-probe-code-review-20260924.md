@@ -176,3 +176,44 @@ At00:30 the separate result auditor confirmed the complete v2 diff and amendment
 as scoped PASS and independently reran48 probe/host tests in0.283s. Thus the
 source-review condition is satisfied; exact clean-snapshot verification and the
 new v2 live safety result remain prerequisites, not assumed outcomes.
+
+## V3 exact terminal-lifecycle correction,00:41 KST
+
+V2's normal P1 fixture work/ACK succeeded, but terminal cleanup failed because
+systemd's retained ControlGroup became empty. Independent raw-result review
+confirmed the defect and preserved v2 FAILED. Its separate root cleanup is not
+retroactively inserted into that artifact. The dated protocol amendment binds
+the narrowly corrected lifecycle, without changing fixture or success rules.
+
+Root read the complete four-file probe/production-launcher correction and all
+added tests. New read-only cleanup_binding requires the original same unit and
+positive unchanged main-start timestamp. Empty reported paths additionally need
+MainPID0, a retained terminal state, old PID absence, and direct absence or
+process/thread-empty populated0 evidence for the exact previously bound cgroup.
+Live and different nonempty paths retain exact checks. The proof is durably
+written before stop, and the original cgroup is used for empty verification.
+No broad empty-path signal, ABORT-file dependency or success-by-cleanup exists.
+Unexpected dead results are cleaned when ownership is established but remain
+FAILED; production's provisional inner marker is rejected. Evidence-write
+failure still attempts stop only after exact ownership proof.
+
+Root independently reran114 synthetic probe/host/launcher/core/evaluator/contracts
+tests, PASS in2.343s. A separate nonauthor independently reviewed the same diff
+and ran96 probe/host/launcher/core tests, PASS in2.749s. Both reviews are scoped
+implementation checks, not actual v3 safety or replay permission. Probe author
+also edited the launcher here, so its earlier independent launcher review does
+not self-certify this correction; root and the separate auditor provide that
+nonauthor review. The old source/result records remain intact.
+
+Final corrected source identities:
+
+- probe671e42762797e96aab72b2c3e7519bcd9667db7f0bd056252693483b293e4945;
+- probe tests2c68e8b7acd45b2da1402e8f795b0dd4517e8b1e8494eeda63153110ac714dfc;
+- launcher870ef6a2243df46f346b483d6efff8ce7aafbdddb3959c4212ccb6661704f8f8;
+- launcher tests34e09338f2b6764ffed0664dd1060094875e03bac3814d9ef13d1405752b4891;
+- protocol39acc54e52a9cdbdf9ac866641a4a32e45d73af546930fbbf4d4fd075eb7a2f9.
+
+Scoped source PASS permits consideration of one separately pinned fresh
+resource-probe-v3, conditioned on its exact clean local/server tests/preflight.
+Release SHA032db00336d96d9d951ffa0681f003a83e60cb3730f66acb5f4e03852ad1843e.
+All seven actual probe results and independent evidence audit are still required.

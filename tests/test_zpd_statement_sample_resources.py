@@ -34,7 +34,7 @@ def properties(name,env,*,running=True):
         KillSignal='9',SendSIGKILL='yes',Restart='no',RemainAfterExit='yes',Type='exec',
         LimitAS=str(env.address_bytes),Delegate='no',ControlGroup='/mock/owned',
         Result='success',ExecMainCode='1',ExecMainStatus='0',MemorySwapMax=str(env.swap_bytes or 0),
-        OOMPolicy=getattr(env,'oom_policy','stop'))
+        OOMPolicy=getattr(env,'oom_policy','stop'),ExecMainStartTimestampMonotonic='100')
     return values
 
 
@@ -99,6 +99,12 @@ class FakeUnit:
         if dead and self.fixture in ('P5','P6'):
             value.update(ExecMainCode='2',ExecMainStatus='9',ExecMainExitTimestampMonotonic=str(max(1,int(self.clock()*1e6))))
         if self.behavior=='config_mismatch':value['MemoryMax']='127'
+        if dead and self.behavior.startswith('dead_'):
+            value['ControlGroup']='/mock/replaced' if self.behavior=='dead_changed_cgroup' else ''
+            if not self.stopped:value.update(ActiveState='active',SubState='exited')
+            if self.behavior=='dead_changed_start':value['ExecMainStartTimestampMonotonic']='101'
+            if self.behavior=='dead_unknown':
+                value.update(ActiveState='failed',SubState='failed',Result='oom-kill',ExecMainCode='2',ExecMainStatus='9')
         return value
 
     def snapshot(self):
@@ -119,6 +125,7 @@ class FakeUnit:
     def stop(self):self.stopped=True
     def verify_empty(self,cg):
         if not self.stopped:raise AssertionError('cleanup requires prior stop')
+        if cg!='/mock/owned':raise AssertionError('cleanup must use originally attested cgroup')
         return self.show()
 
 
@@ -149,13 +156,17 @@ class ResourceProbeTests(unittest.TestCase):
                 status={},executable='/mock/python')
         def kill(unit,known):
             self.assertEqual(known,identity());unit.killed=True;self.clock.sleep(.05)
+        def lookup(pid):
+            if pid==123 and units and units[0].show()['MainPID']=='0':raise FileNotFoundError('mock dead main')
+            return identity(pid)
         with patch.object(probe,'process_metadata',side_effect=metadata), \
              patch.object(probe,'snapshot_processes',return_value=[]), \
              patch.object(probe,'assess_normal',return_value={'synthetic':True}), \
              patch.object(probe,'is_alive',return_value=False), \
-             patch.object(host,'process_identity',side_effect=identity), \
+             patch.object(host,'process_identity',side_effect=lookup), \
              patch.object(host,'cgroup_path',return_value=self.root/'mock-cgroup'), \
-             patch.object(host,'read_cgroup',side_effect=lambda _:cgroup(probe.envelope(fixture))), \
+             patch.object(host,'read_cgroup',side_effect=lambda _:cgroup(probe.envelope(fixture),
+                populated=behavior!='dead_empty_existing')), \
              patch.object(probe,'kill_main',side_effect=kill):
             try:
                 result=probe.coordinate_fixture(self.context,fixture,600,unit_factory=factory,
@@ -184,10 +195,10 @@ class ResourceProbeTests(unittest.TestCase):
             'source_SHA_drift':'source SHA drift','runtime_drift':'runtime drift'}
         self.assertEqual({r['check']:r['error']['excerpt'] for r in probe.run_p0()['checks']},expected)
 
-    def test_v2_output_and_names_are_new_and_host_accepted(self):
-        self.assertEqual(probe.OUTPUT,probe.FAMILY+'/resource-probe-v2')
+    def test_v3_output_and_names_are_new_and_host_accepted(self):
+        self.assertEqual(probe.OUTPUT,probe.FAMILY+'/resource-probe-v3')
         for fixture in probe.FIXTURES:
-            name='zpd-statement-samples-probe-20260924-v2-'+fixture.lower()+'.service'
+            name='zpd-statement-samples-probe-20260924-v3-'+fixture.lower()+'.service'
             self.assertEqual(probe.unit_name(fixture),name)
             self.assertEqual(host.checked_unit(name,probe.envelope(fixture)),name)
 
@@ -361,6 +372,60 @@ class ResourceProbeTests(unittest.TestCase):
         self.assertFalse(report['probe_pass']);self.assertEqual(report['cleanup_error']['type'],'OSError')
         self.assertTrue((self.context['output']/'P4/FAILED.json').exists())
         self.assertTrue((self.context['output']/'P4/cleanup.json').exists())
+
+    def test_dead_unit_empty_reported_cgroup_uses_original_absent_path(self):
+        result=self.run_fake(behavior='dead_evaporated')
+        self.assertTrue(result['probe_pass']);self.assertTrue(self.units[0].stopped)
+        binding=probe.json_file(self.context['output']/'P4/cleanup-binding.json')
+        self.assertEqual(binding['reported_control_group'],'')
+        self.assertEqual(binding['recorded_control_group'],'/mock/owned')
+        self.assertEqual(binding['dead_cgroup_observation'],{'present':False,'cgroup':None})
+        self.context['ledger'].verify()
+
+    def test_dead_unit_retained_empty_cgroup_is_proved_and_stopped(self):
+        (self.root/'mock-cgroup').mkdir()
+        result=self.run_fake(behavior='dead_empty_existing')
+        self.assertTrue(result['probe_pass']);self.assertTrue(self.units[0].stopped)
+        binding=probe.json_file(self.context['output']/'P4/cleanup-binding.json')
+        self.assertTrue(binding['dead_cgroup_observation']['present'])
+        self.assertEqual(binding['dead_cgroup_observation']['cgroup']['processes'],[])
+        self.assertEqual(binding['dead_cgroup_observation']['cgroup']['threads'],[])
+
+    def test_dead_unit_changed_start_stamp_is_not_owned_cleanup(self):
+        with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='dead_changed_start')
+        self.assertFalse(self.units[0].stopped)
+
+    def test_dead_unit_changed_nonempty_cgroup_is_never_aliased(self):
+        with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='dead_changed_cgroup')
+        self.assertFalse(self.units[0].stopped)
+
+    def test_dead_unit_reported_empty_but_original_populated_is_refused(self):
+        (self.root/'mock-cgroup').mkdir()
+        with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='dead_populated')
+        self.assertFalse(self.units[0].stopped)
+
+    def test_unknown_dead_exit_is_cleaned_but_never_accepted(self):
+        with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='dead_unknown')
+        self.assertTrue(self.units[0].stopped)
+        report=probe.json_file(self.context['output']/'P4/report.json')
+        self.assertFalse(report['probe_pass']);self.assertIsNotNone(report['error'])
+        self.assertTrue((self.context['output']/'P4/cleanup-binding.json').exists())
+
+    def test_empty_cgroup_binding_requires_prior_live_absence_and_terminal_state(self):
+        env=probe.envelope('P1');name=probe.unit_name('P1')
+        first=dict(properties=properties(name,env),main_process=identity())
+        dead=properties(name,env,running=False);dead['ControlGroup']=''
+        with patch.object(host,'cgroup_path',return_value=self.root/'absent'), \
+             patch.object(host,'process_identity',side_effect=FileNotFoundError):
+            for states in (('active','exited'),('failed','failed'),('inactive','dead')):
+                dead.update(ActiveState=states[0],SubState=states[1],Result='oom-kill',ExecMainStatus='9')
+                value=probe.cleanup_binding(dead,first,name)
+                self.assertEqual(value['recorded_control_group'],'/mock/owned')
+            for bad in (dict(dead,MainPID='123'),dict(dead,ActiveState='active',SubState='running')):
+                with self.assertRaises(host.EnvelopeError):probe.cleanup_binding(bad,first,name)
+            with self.assertRaises(host.EnvelopeError):probe.cleanup_binding(dead,None,name)
+            with patch.object(host,'process_identity',return_value=dict(identity(),start_ticks=999)):
+                with self.assertRaises(host.EnvelopeError):probe.cleanup_binding(dead,first,name)
 
     def test_extra_ready_thread_refuses_GO_and_stops_owned_unit(self):
         with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='ready_thread')

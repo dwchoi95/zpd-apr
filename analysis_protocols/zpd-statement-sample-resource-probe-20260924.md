@@ -39,6 +39,38 @@ actual-result verification; this amendment alone is not a release or replay
 permission. It is an evidence-backed harness correction, not an unchanged retry
 or a scientific experiment. No submitted source has yet run in either attempt.
 
+### Terminal lifecycle amendment after v2,2026-09-25 00:35 KST
+
+V2 ran its eight fixed P1 trusted cases and reached normal acknowledged exit,
+but the producer then refused cleanup because retained ControlGroup was empty.
+The first-bound start timestamp remained identical, MainPID was0, and systemd
+reported active/exited with Result success and exit1/0. The exact original cgroup
+had already disappeared. The original v2 remains FAILED with no cleanup artifact
+and no suite COMPLETE; a separate root exact-unit stop/verification is recorded
+in zpd-statement-sample-resource-probe-v2-exact-cleanup-20260924.md. P2-P6 did not
+run, and no submitted source/sample was accessed.
+
+The implementation must distinguish live ownership from retained terminal
+ownership. A fresh fixed resource-probe-v3 may be considered only after separate
+source/tests/release review. A live or nonempty reported cgroup still requires
+exact identity equality. For an empty reported path, require the originally
+attested same unit and positive unchanged main-start timestamp, MainPID0 and a
+retained terminal lifecycle state, plus direct evidence that the exact previously
+recorded cgroup is absent or has no processes/threads and populated0. Then retain
+terminal evidence and stop only that exact owned unit, verifying the original
+cgroup empty. A changed start, different nonempty cgroup, live main, unknown
+ownership, or nonempty old cgroup remains refusal. No broad signal is permitted.
+
+Cleanup ownership is separate from scientific/fixture success: a safely identified
+failed unit also needs cleanup, but a successful cleanup cannot turn an abnormal
+exit into PASS. Existing normal/intentional-failure result predicates remain
+unchanged. Add synthetic realistic empty-terminal-cgroup, reused-start,
+different-nonempty-cgroup and surviving-old-membership tests for the probe and
+production coordinator. Keep all fixture/runtime/resource/deadline/unknown
+contracts unchanged. Preserve v1/v2 and use fixed new v3 names/output; never
+overwrite or automatically restart a failed attempt. This document does not
+authorize empirical replay or grant an actual successful resource result.
+
 Reference: replay contract
 `zpd-statement-sample-replay-prospective-20260924.md`, SHA
 `f9dd7c153bbe5bfceb2aa7906031e9e8412cbfb94ebbb8f381e0adaa950bed38`.

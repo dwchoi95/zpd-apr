@@ -95,10 +95,16 @@ class FakeUnit:
 
     def show(self):
         value=properties();value['Id']=driver.UNIT;value['ControlGroup']=self.identity['control_group']
+        value['ExecMainStartTimestampMonotonic']='100'
         if self.stopped:value.update(ActiveState='inactive',SubState='dead',MainPID='0')
         elif (self.handshake/'ACK.json').exists():value.update(SubState='exited',MainPID='0',Result='success',ExecMainCode='1',ExecMainStatus='0')
         if self.mode=='bad_exit' and (self.handshake/'ACK.json').exists():value['ExecMainStatus']='2'
         if self.mode=='bad_property' and (self.handshake/'ACK.json').exists():value['MemoryMax']='1'
+        if self.mode is not None and self.mode.startswith('dead_') and value['MainPID']=='0':
+            value['ControlGroup']='/different-unit' if self.mode=='dead_changed_cgroup' else ''
+            if self.mode=='dead_changed_start':value['ExecMainStartTimestampMonotonic']='101'
+            if self.mode=='dead_oom':
+                value.update(ActiveState='failed',SubState='failed',Result='oom-kill',ExecMainCode='2',ExecMainStatus='9')
         return value
 
     def snapshot(self):
@@ -288,6 +294,47 @@ class ReplayLauncherTests(unittest.TestCase):
                 if mode=='normal_snapshot':
                     value=json.loads((context['outside']/'before-stop-live.json').read_bytes())
                     self.assertTrue(value['available']);self.assertEqual(value['cgroup'],{'synthetic_live':True})
+
+    def test_dead_unit_cgroup_evaporation_requires_old_start_and_empty_original(self):
+        for mode in ('dead_absent','dead_empty','dead_changed_start','dead_changed_cgroup','dead_populated','dead_thread'):
+            with self.subTest(mode=mode),fixture() as f:
+                context=driver.preflight(f['project']);unit=FakeUnit(context,mode)
+                evidence=dict(control_group=unit.identity['control_group'],processes=[],threads=[],
+                    **{'cgroup.events':{'populated':0}})
+                if mode in ('dead_empty','dead_populated','dead_thread'):(f['project']/'synthetic-cgroup').mkdir()
+                if mode=='dead_populated':evidence['processes']=[124];evidence['cgroup.events']['populated']=1
+                if mode=='dead_thread':evidence['threads']=[124]
+                with patch.object(driver,'preflight',return_value=context), \
+                     patch.object(driver.host,'process_identity',side_effect=FileNotFoundError), \
+                     patch.object(driver.host,'read_cgroup',return_value=evidence):
+                    if mode in ('dead_absent','dead_empty'):
+                        result=driver.coordinator(f['project'],_unit_factory=lambda *args:unit)
+                        self.assertTrue(result['cleanup_verified']);self.assertEqual(unit.stop_calls,1)
+                        binding=json.loads((context['outside']/'cleanup-binding.json').read_bytes())
+                        self.assertEqual(binding['reported_control_group'],'')
+                        self.assertEqual(binding['recorded_control_group'],unit.identity['control_group'])
+                        self.assertEqual(binding['dead_cgroup_observation']['present'],mode=='dead_empty')
+                        marker=json.loads((context['outside']/'COMPLETE.json').read_bytes())
+                        self.assertIn('cleanup-binding.json',marker['files_sha256'])
+                    else:
+                        with self.assertRaises(RuntimeError):driver.coordinator(f['project'],_unit_factory=lambda *args:unit)
+                        self.assertEqual(unit.stop_calls,0)
+                        self.assertFalse((context['outside']/'COMPLETE.json').exists())
+                        self.assertFalse((context['run']/'COMPLETE.json').exists())
+
+    def test_dead_abnormal_result_cleans_without_ABORT_but_cannot_complete(self):
+        with fixture() as f:
+            context=driver.preflight(f['project']);unit=FakeUnit(context,'dead_oom')
+            with patch.object(driver,'preflight',return_value=context), \
+                 patch.object(driver.host,'process_identity',side_effect=FileNotFoundError), \
+                 self.assertRaises(RuntimeError):
+                driver.coordinator(f['project'],_unit_factory=lambda *args:unit)
+            self.assertEqual(unit.stop_calls,1)
+            self.assertFalse((context['outside']/'worker/ABORT_REQUEST.json').exists())
+            self.assertFalse((context['outside']/'COMPLETE.json').exists())
+            self.assertFalse((context['run']/'COMPLETE.json').exists())
+            self.assertTrue((context['outside']/'FAILED.json').exists())
+            self.assertTrue((context['outside']/'cleanup-binding.json').exists())
 
     def test_worker_body_after_two_live_attestations_and_normal_ACK(self):
         with fixture() as f:

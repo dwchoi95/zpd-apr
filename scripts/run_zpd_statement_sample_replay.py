@@ -47,7 +47,7 @@ SOURCES=tuple(sorted(set((*preparation.SOURCE_FILES,*probe.SOURCES,PROTOCOL,
     'scripts/run_zpd_statement_sample_replay.py','tests/test_zpd_statement_sample_replay_launcher.py'))))
 PROBE_NAMES=frozenset(('report.json','READY.json','GO.json','WORK_READY.json','END.json','ACK.json',
     'journal.jsonl','progress.json','snapshots.jsonl','ready-snapshot.json','end-snapshot.json',
-    'kill-intent.json','retained-unit.json','before-stop.json','before-stop-live.json','cleanup.json','FAILED.json'))
+    'kill-intent.json','retained-unit.json','before-stop.json','before-stop-live.json','cleanup-binding.json','cleanup.json','FAILED.json'))
 
 
 def require(condition,message):
@@ -402,18 +402,13 @@ def coordinator(project,*,_unit_factory=host.UserUnit):
             try:
                 state=unit.show()
                 if state['LoadState']!='not-found':
-                    require(state['Id']==UNIT,'cleanup unit name differs')
-                    cg=first['properties']['ControlGroup'] if first is not None else state['ControlGroup']
-                    require(state['ControlGroup']==cg,'cleanup cgroup identity changed')
-                    host.cgroup_path(cg)
-                    if state['MainPID']!='0':
-                        identity=host.process_identity(int(state['MainPID']))
-                        require(identity['control_group']==cg,'cleanup main escaped owned cgroup')
-                        if first is not None:require(same(identity,first['main_process']),'PID reuse before exact-unit stop')
+                    binding=probe.cleanup_binding(state,first,UNIT)
+                    cg=binding['recorded_control_group']
                     # Once ownership is established, neither a property mismatch
                     # nor a failed evidence write may skip exact-unit cleanup.
                     try:
                         write('before-stop.json',state)
+                        write('cleanup-binding.json',binding)
                         if state['MainPID']!='0':
                             try:live=host.read_cgroup(cg)
                             except Exception as exc:
@@ -421,7 +416,7 @@ def coordinator(project,*,_unit_factory=host.UserUnit):
                                     error=dict(error_type=type(exc).__name__,error=core.diagnostic_summary(str(exc)))))
                                 raise
                             write('before-stop-live.json',dict(available=True,properties=state,cgroup=live,
-                                main_process=identity,monotonic=time.monotonic()))
+                                main_process=binding['live_main_process'],monotonic=time.monotonic()))
                         host.verify_properties(state,UNIT,host.Envelope(),running=False)
                     finally:
                         unit.stop();empty=unit.verify_empty(cg)
