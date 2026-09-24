@@ -35,6 +35,18 @@ The seven-hour sum of hard stage limits is an operational bound, not an ETA.
 Real fit timing must be measured before reporting a completion estimate.
 
 Release SHA256:
-`1734fa570e458f4e4d2723ee3c20ed4832450c2770cfa069d367fa6112282088`.
+`49bd8787e322c9a3c65bbc7e62c9306b360a67f1329f30a79d81738555f8aafd`.
 Actual execution source, receipts, progress and results are recorded under
 `outputs/zpd-repair-statement-progress-20260925/supervised-v1/` on UbuntuServer.
+
+## Preflight serialization correction (before fitting)
+
+The initial release serialization removed `.0` from four integral binary64
+configuration values. The strict canonical comparison correctly rejected that
+release during a read-only preflight. The mathematical values, protocol and all
+137 source files were unchanged. The four JSON number tokens were restored to
+the frozen configuration's float types, and the sidecar was updated. The original
+release remains in Git history; its clean deployed snapshot remains untouched.
+No empirical fit, label-body access or empirical output occurred in this failed
+preflight. Final-snapshot focused guard/supervisor tests passed 38/38 on both
+platforms before this metadata-only correction.
