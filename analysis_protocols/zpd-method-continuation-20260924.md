@@ -1041,3 +1041,38 @@ independent code review for fresh v2 paths. Allsingleton/case/cgroup/deadline
 conditions remain unchanged; the failed generic environment attempts are not
 adopted. Parallel readiness-driver implementation remains labels-free and does
 not execute data or fit. Next hourly report02:01; continue after reviewed repair.
+
+## Actual replay v2 started with READY/GO,01:22 KST
+
+Nonauthor v2 review PASS c106c7ad981b8c9c9686eb985730695e7a59f6816bc8a90c682f2629f7804c02
+preserves114 independent regressions plus22 edge checks and attributes the
+separate Linux import-only checks to root. Final clean snapshot
+724766d4d9967efb8185fb71d6533942c2f4df90/tree dc4b7a8a3ecff62a42e96e0b9e4a171738a662a3,
+bundle b84942391b95afb2314392e258fac813b9a1e84dd2fe18cdec60f0bbe2dd778d,
+was deployed to.runtime/statement-sample-replay-20260924-v2. Its release is
+dc51a878e339cdc6d854bae2d1acc96f954965949135e4e4b123562a16b55fa8.
+
+Full clean local926 ZPD tests258.113s +19 pilot0.008s and server926 tests124.723s
++19 pilot0.005s passed. All46 source/87 parent/config/release/runtime/newnative
+checks passed before/after tests; native early import retained a singleton.
+Local logs540b31c7078382bf851b24782e39ae3045871aeb1099b94601e7dfba30083f1c
+andd8905a2a05c44c0b0f8d0262f2b2a02a7dd092f51f56a279cd5445181fc0e706;
+server1163fa06b40bf36cbe5dc727337b8511f25b7faedfe3b6012be3ada3e626356e
+and77e5ff021d745c11d320e0918b4a1600dba10daa4adae6bda0bea8e7d65747e9.
+
+Exactly one v2 attempt started01:22:20 KST, tmux coordinator
+zpd-statement-replay-20260924-v2 and fixed worker service
+zpd-statement-samples-replay-20260924-v2.service. At01:22:28 main1919560 was
+active/running; READY/GO existed and innerSTATUS showed starting with the exact
+16776 cases/6056source-block plan and30 unsupported identities preserved. This
+is active execution, not successful completion or accepted feedback. No v1
+path/unit was reused. Completion is being monitored before separate result audit.
+
+In parallel the observation-only readiness driver was completed and independently
+reviewed: source9b60ac4a595c3755f05e74e6d396a806cee84ab61134745c49a1f89146ecca5f,
+tests06057268f7c4cd6d1012ff9f513e0a13b85ca9d1a100e46c0ae5067ad5ffd8e1,
+review6f67d6e78f14f467bd77a8ec75e988ec6ed221dca884fa9eb58b384ea02a867c.
+Independent51 synthetic tests passed29.189s. It has no empirical release yet:
+an accepted complete replay, independent audit, external pins and clean tests
+are required before all320 observation-only readiness records can be generated.
+No repair improvement, fit or readiness decision is claimed at this point.
