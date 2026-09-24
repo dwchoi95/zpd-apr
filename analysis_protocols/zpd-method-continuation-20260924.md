@@ -845,3 +845,27 @@ and a defensible inference-time feedback-access contract. No rerun, gate change,
 control promotion or original-valid32 access occurred. The research goal remains
 active; no credible date for achieving a positive scientific result is known.
 Next regular report00:01 KST; proceed when ready rather than waiting for it.
+
+## Statement-sample preparation complete and verified,23:51 KST
+
+The next method branch has advanced, rather than rerunning nominal-feedback H.
+One separately released source-only preparation completed23:35:53 after both
+local/server803-test suites passed. All320/23 remain, with63 statement sample
+pairs and1,611 observed sources. Exact dedup gives1,514 Python execution tasks
+plus30 retained unsupported-language tasks. Planned four blocks total16,776
+case attempts. No prepared submitted program has yet been replayed or fitted.
+
+Prepared COMPLETE is161436b47e020e990071413c6e5645811323705ae5fa7c7f0eb684a9b6943caf.
+Root reverified six artifacts,32 sources,62 input bindings and release files on
+the clean server snapshot; a nonauthor independently verified the synchronized
+source-only result, roster and all23 HTML/sample projections. See the separate
+preparation completion record for source pins, exact counts and preserved setup
+errors. Raw diagnosis and all previous scientific gate failures remain unchanged.
+
+Prospective32 readiness/control design has independent scoped approval; sample-
+only replay core and bounded trusted systemd/cgroup probes are being implemented
+in parallel. Current verification is not feedback validity, fitting permission
+or performance improvement. Release actual replay immediately after its source,
+tests, resource probes and independent review pass, then seal an observation-only
+readiness result before considering30 new fits. No unchanged duplicate experiment,
+full-suite-as-feedback substitution, cohort removal or threshold relaxation.
