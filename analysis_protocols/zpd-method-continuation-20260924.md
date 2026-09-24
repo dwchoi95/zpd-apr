@@ -657,3 +657,63 @@ processes, without opening sibling/assessment label bodies in fit workers.
 After these pass, freeze a clean source/release, run local/server regression
 tests, assert absent output/workers, and launch the single new320-recipient
 experiment. Do not wait for the next22:01 hourly report to start a ready stage.
+
+## Directed144 release and deployment,22:01 KST
+
+The separate core/input, stage, execution-boundary and numerical-auditor reviews
+are complete. The final auditor's10 tests passed independently at root in16.320s;
+the guard/supervisor's20 tests passed independently in0.834s. Root's additional
+1445 source-only synthetic feature cells and seven scalar analytic optima agree.
+See the four `zpd-repair-directed-*-independent-review-20260924.md` records for
+scope, hashes, corrected findings and limitations. No positive empirical result
+is inferred from these engineering checks.
+
+Frozen release and source:
+
+- Dev release commit:`94bc2ec2`.
+- Parentless execution commit:`314721052c9afc9076d2c29804a13d30ae6a7cf9`.
+- Exact tree:`1da1507071aaafdadbe50d1df82b25012cd989cd`.
+- Release SHA:`28481e7f021170449c55037f64e26d891bbb41ae128e2938a521f9b918ccc9d1`.
+- Source/test/protocol closure:67 files, ten fixed stages,25 fits, all320 examples.
+- Local snapshot:`/private/tmp/zpd-repair-directed-fit.VbJQu1/source`.
+- Remote snapshot:`.runtime/repair-directed-fit-20260924-v1`.
+- Bundle:`.runtime/zpd-repair-directed-fit-20260924-v1.bundle`, SHA
+  `44a37c5f8beefe437de55f461cab3e7c7de745c173016c3f9bc6256b26cd2762`.
+- Frozen Python3.13.11/numpy2.5.2/scipy1.18.1/sklearn1.9.0 verified remotely.
+
+The bundle preserves the committed tree without touching either dirty main
+checkout. Remote deployment first verified absent new snapshot/bundle/run/
+supervisor outputs and174GiB available memory/1.1TiB disk. All67 source hashes,
+exact commit/tree and clean state passed before and after server tests.
+Server82 tracked ZPD modules:709/709 PASS120.738s; repair-pilot19/19 PASS0.005s.
+Expected negative-fixture logs and an inherited sklearn numerical warning are
+not production failures; unittest returned zero failures/errors. Read-only
+production preflight also passed, binding67 sources and11 metadata/input files.
+
+The22:01 hourly report recorded0/320 new actual examples: local exact-tree tests
+were still finishing. Actual fitting has not yet started in this entry. Release
+allows only the one reviewed run after BOTH environments pass, not an immediate
+fit from this development checkout. Original labels are reused read-only, no
+new prepared cache or repeated old experiment is created. Next hourly report
+is23:01; a ready launch must proceed before then.
+
+At22:03 local verification also completed:709/709 ZPD tests PASS250.952s and
+19/19 pilot tests PASS0.008s, with all67 source hashes, exact commit/tree/release
+and clean status rechecked. No source change or retry was needed in either
+environment. Root immediately repeated the read-only production preflight and
+checked absent new run/supervisor/launcher outputs, absent same-name tmux session
+and no matching directed/feedback production worker.
+
+The single new execution started remotely at **22:03:24 KST**, tmux session
+`zpd-repair-directed-fit-20260924`, supervisor PID1890592 and first preflight
+child1890609. The first live status at22:03:37 confirms the separate preflight
+process running, empty child log and no error;0/320 OOF examples are complete
+at this point. The supervisor uses the reviewed32GiB/single-thread/30s-heartbeat
+ten-stage queue. Launcher stdout/stderr are preserved in
+`outputs/zpd-repair-directed-history-20260924/launcher-v1.log`; stage evidence is
+under `supervised-v1`, new empirical models/results under `run-v1`.
+
+This is an actual experiment launch, not only a future plan. Do not start a
+second run or infer a positive result before complete320/25/11 assessment plus
+independent verification. Monitor the existing session and proceed to sealed
+result diagnosis once it ends; next regular report remains23:01 KST.
