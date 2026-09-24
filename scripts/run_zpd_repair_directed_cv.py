@@ -1,4 +1,4 @@
-"""Directed-history144 staged residual engine; no production CLI or release.
+"""Directed-history144 Newton-v2 staged engine; no direct production CLI.
 
 One fold worker opens only its own original label contract. Source assembly and
 external release guards are separate. No label preparation, retry, parameter
@@ -14,7 +14,7 @@ import numpy as np
 
 from scripts import zpd_repair_feedback_assessment as assessment
 from scripts import zpd_repair_feedback_labels as label_provider
-from scripts import zpd_repair_residual_core as core
+from scripts import zpd_repair_residual_newton as core
 from scripts import zpd_repair_directed_history as directed
 from scripts import audit_zpd_repair_feedback_support as observed
 from scripts import zpd_repair_structure as structural
@@ -29,7 +29,7 @@ from scripts.run_zpd_repair_feedback_cv import (
 
 SPEC = core.ResidualSpec(representation=directed.VERSION, dimension=144,
     feature_configuration_sha256=canonical_hash(directed.configuration()),
-    model_kind='fixed_repair_directed_offset_logistic_v1')
+    model_kind='fixed_repair_directed_offset_newton_v2')
 ARMS = ('H', 'Jm', 'HS', 'U', 'L')
 METHODS = assessment.METHODS
 BASELINES = ('structural_C', 'lexical_C')
@@ -203,9 +203,9 @@ def initialize(inputs, output, *, provenance, label_contracts):
         cohort = validate_inputs(inputs); _bindings(provenance)
         contracts = _label_contracts(inputs, label_contracts)
         fingerprint = input_fingerprint(inputs); runtime = _runtime()
-        _write(output/'manifest.json', dict(kind='prospective_repair_directed_cv_staged_v1',
+        _write(output/'manifest.json', dict(kind='prospective_repair_directed_cv_staged_v2',
             input_fingerprint=fingerprint, provenance=provenance, runtime=runtime, label_contracts=contracts,
-            residual_spec=asdict(SPEC),
+            residual_spec=asdict(SPEC), numerical_configuration=core.configuration(SPEC),
             synthetic=inputs.synthetic, production_cli_released=False, support_complete_sha256=SUPPORT_COMPLETE_SHA256,
             parent_complete_sha256=PARENT_COMPLETE_SHA256, fold_assignment_sha256=inputs.fold_assignment_sha256,
             arms=list(ARMS), methods=list(METHODS), fits=25, full_train_refits=0,
@@ -233,14 +233,15 @@ def _run_state(inputs, run):
     if type(manifest) is not dict or set(manifest) != {'kind', 'input_fingerprint', 'provenance', 'runtime',
             'label_contracts', 'synthetic', 'production_cli_released', 'support_complete_sha256',
             'parent_complete_sha256', 'fold_assignment_sha256', 'arms', 'methods', 'fits',
-            'full_train_refits', 'score_semantics', 'residual_spec'}:
+            'full_train_refits', 'score_semantics', 'residual_spec', 'numerical_configuration'}:
         raise ValueError('strict label-free initialization manifest schema required')
     saved_contracts = manifest['label_contracts']
     if (type(saved_contracts) is not dict or set(saved_contracts) != {'0', '1', '2', '3', '4', 'assessment'}
             or _label_contracts(inputs, {None if k == 'assessment' else int(k): LabelContract(**v) for k, v in saved_contracts.items()}) != saved_contracts):
         raise ValueError('fixed preparation label contracts required in initialization seal')
-    if (manifest['residual_spec'] != asdict(SPEC)
-            or manifest['kind'] != 'prospective_repair_directed_cv_staged_v1' or manifest['arms'] != list(ARMS)
+    if (_canonical_json(manifest['residual_spec']) != _canonical_json(asdict(SPEC))
+            or _canonical_json(manifest['numerical_configuration']) != _canonical_json(core.configuration(SPEC))
+            or manifest['kind'] != 'prospective_repair_directed_cv_staged_v2' or manifest['arms'] != list(ARMS)
             or manifest['methods'] != list(METHODS) or type(manifest['fits']) is not int or manifest['fits'] != 25
             or type(manifest['full_train_refits']) is not int or manifest['full_train_refits'] != 0
             or manifest['production_cli_released'] is not False or manifest['synthetic'] is not inputs.synthetic
@@ -270,8 +271,12 @@ def _contract(contract, inputs):
     return vars(contract)
 
 
+def _canonical_json(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False)
+
+
 def _model(arm, fold, train, held, data, fitted, inputs, contract):
-    value = dict(kind='repair_directed_fold_offset_v1', arm=arm, fold=fold,
+    value = dict(kind='repair_directed_fold_offset_v2', arm=arm, fold=fold,
         train_example_ids=[ex.example_id for ex in train], held_example_ids=[ex.example_id for ex in held],
         input_fingerprint=input_fingerprint(inputs), label_contract=vars(contract),
         parent_structure_model_sha256=inputs.parent_folds[fold].models['structural_C']['model_sha256'],
@@ -284,7 +289,7 @@ def _validate_model(model, inputs, fold, arm):
     fields = {'kind', 'arm', 'fold', 'train_example_ids', 'held_example_ids', 'input_fingerprint',
         'label_contract', 'parent_structure_model_sha256', 'pair_metadata', 'offset_model', 'model_sha256'}
     train, held = _scope(inputs, fold)
-    if (type(model) is not dict or set(model) != fields or model['kind'] != 'repair_directed_fold_offset_v1'
+    if (type(model) is not dict or set(model) != fields or model['kind'] != 'repair_directed_fold_offset_v2'
             or type(model['fold']) is not int or model['fold'] != fold or model['arm'] != arm
             or model['train_example_ids'] != [ex.example_id for ex in train] or model['held_example_ids'] != [ex.example_id for ex in held]
             or model['input_fingerprint'] != input_fingerprint(inputs)

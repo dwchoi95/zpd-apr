@@ -11,7 +11,7 @@ import numpy as np
 
 from scripts import run_zpd_repair_directed_cv as runner
 from scripts import zpd_repair_directed_history as directed
-from scripts import zpd_repair_residual_core as core
+from scripts import zpd_repair_residual_newton as core
 from scripts import zpd_repair_feedback_labels as provider
 from src.repair.pilot_contracts import canonical_hash
 from tests.test_zpd_repair_feedback_cv import (
@@ -72,6 +72,7 @@ class DirectedCVTests(unittest.TestCase):
         with patch('builtins.open', side_effect=AssertionError('source validation I/O')):
             self.assertEqual(len(runner.validate_inputs(self.inputs)), 10)
         self.assertEqual(runner.SPEC.dimension, 144)
+        self.assertEqual(runner.SPEC.model_kind, 'fixed_repair_directed_offset_newton_v2')
         self.assertTrue(any(b.matrix.any() for b in self.inputs.interactions['H'].values()))
         self.assertEqual(runner.SPEC.feature_configuration_sha256, canonical_hash(directed.configuration()))
         for mutation in ('support', 'parent', 'observed_future', 'source', 'arm', 'width', 'noop', 'bound'):
@@ -127,6 +128,7 @@ class DirectedCVTests(unittest.TestCase):
             model = runner._read(self.run/f'fold-0/{arm}.json')['offset_model']
             self.assertEqual(len(model['coefficients']), 144)
             self.assertEqual(model['configuration']['representation'], asdict(runner.SPEC))
+            self.assertLessEqual(model['optimization']['gradient_infinity_norm'], 1e-8)
         self.assertNotIn('labels', inspect.signature(runner.predict_fold).parameters)
         self.assertFalse((self.run/'PREDICTIONS_COMPLETE.json').exists())
 
@@ -134,7 +136,10 @@ class DirectedCVTests(unittest.TestCase):
         self.start(); actual = core.fit_offset; calls = []
         def fail(*args, **kwargs):
             calls.append(1)
-            if len(calls) == 3: raise core.OffsetOptimizationError('synthetic convergence failure', {'gradient': .1})
+            if len(calls) == 3:
+                raise core.OffsetOptimizationError('synthetic convergence failure',
+                    {'accepted': False, 'gradient': .1, 'final_theta': [0.]*144,
+                     'trace': [{'iteration': 0, 'objective': 1., 'gradient_infinity_norm': .1}]})
             return actual(*args, **kwargs)
         with patch.object(core, 'fit_offset', fail), self.assertRaisesRegex(RuntimeError, 'convergence'):
             runner.fit_fold(self.inputs, 0, self.label_root, self.contracts[0], self.run)
@@ -142,6 +147,10 @@ class DirectedCVTests(unittest.TestCase):
         self.assertTrue((self.run/'fold-0/H.json').exists()); self.assertTrue((self.run/'fold-0/Jm.json').exists())
         self.assertFalse((self.run/'fold-0/HS.json').exists()); self.assertFalse((self.run/'fold-0/COMPLETE.json').exists())
         self.assertEqual(runner._read(self.run/'FAILED.json')['completed_fits_in_failed_fold'], 2)
+        diagnostics = runner._read(self.run/'FAILED.json')['diagnostics']
+        self.assertFalse(diagnostics['accepted'])
+        self.assertEqual(len(diagnostics['final_theta']), 144)
+        self.assertEqual(diagnostics['trace'][0]['iteration'], 0)
         with self.assertRaisesRegex(ValueError, 'cannot resume'):
             runner.fit_fold(self.inputs, 1, self.label_root, self.contracts[1], self.run)
 
@@ -238,6 +247,24 @@ class DirectedCVTests(unittest.TestCase):
         self.assertFalse(hasattr(runner, 'prepare_labels'))
         with patch('builtins.open', side_effect=AssertionError('forbidden CLI I/O')):
             with self.assertRaisesRegex(RuntimeError, 'NOT released'): runner.main([])
+
+    def test_prior_numerical_version_and_config_drift_rejected_before_labels(self):
+        self.start()
+        manifest = runner._read(self.run/'manifest.json')
+        self.assertEqual(manifest['numerical_configuration'], core.configuration(runner.SPEC))
+        for mutation in ('v1', 'configuration', 'spec_type'):
+            changed = copy.deepcopy(manifest)
+            if mutation == 'v1': changed['kind'] = 'prospective_repair_directed_cv_staged_v1'
+            elif mutation == 'configuration': changed['numerical_configuration']['retries'] = 1
+            else: changed['residual_spec']['dimension'] = 144.
+            (self.run/'manifest.json').write_bytes(encoded(changed))
+            marker = runner._read(self.run/'FOLDS_COMPLETE.json')
+            marker['files_sha256']['manifest.json'] = runner._sha(self.run/'manifest.json')
+            (self.run/'FOLDS_COMPLETE.json').write_bytes(encoded(marker))
+            with self.subTest(mutation=mutation), patch.object(Path, 'read_bytes',
+                    side_effect=AssertionError('forbidden label read')):
+                with self.assertRaisesRegex(ValueError, 'differ from initialization'):
+                    runner.fit_fold(self.inputs, 0, self.label_root, self.contracts[0], self.run)
 
     def test_observation_and_exact_array_fingerprints_are_bound(self):
         original = runner.input_fingerprint(self.inputs)
