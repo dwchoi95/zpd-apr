@@ -514,3 +514,88 @@ or duplicate fit is authorized by this failure. Next intervention is not yet
 frozen; it must follow a documented diagnosis and independent design review.
 There is therefore no defensible next-experiment finish time yet. The next
 hourly reporting checkpoint is22:01 KST, with work continuing between reports.
+
+## Directed local-edit bridge: implemented and support complete — 21:21 KST
+
+The saved-choice diagnosis was independently checked by root: of320 recipients,
+H solved205;34 had a known AC candidate blocked below a stable nonAC candidate
+inside an identical-H-feature class;33 had an AC class representative but the
+ranker selected another class;35 had no AC among stable candidates;13 had no
+known AC and unresolved evidence. This partitions all320. The optimistic
+class-representative ceiling238 and candidate availability272 are diagnostics,
+not achieved accuracy, baselines or inference rules. The diagnosis and design
+review remain separate documents with their raw negative findings.
+
+The single follow-up replaces the broad18-event gate with144 fixed coordinates
+of candidate/history signed AST-local same/reverse edit matching, conditioned
+on nominal verdict pairs under uniform and reciprocal recency. Full typed
+ancestor field/list-index paths preserve location; no lexical fallback, no new
+no-op term, no vocabulary/threshold search and no history cap were introduced.
+Missing parse/language opportunities remain explicit. All earlier failures,
+base coefficients, candidate banks and eventual outcome gates remain unchanged.
+
+Independent source-only review passed43 focused/reused tests plus a54-case
+scalar aggregation comparison and a synthetic36-file observed-only I/O audit.
+Root added the requested final-runtime provenance barrier; the encoder author
+fixed typed-ancestor path identity before any empirical new-feature execution.
+The definitive proposal is
+`zpd-repair-directed-history-prospective-20260924.md`, SHA
+`ca87a111343324fd0b3a1a130b1d2293b63efdb338b08b8472a4b79c5ffb6d7e`.
+
+Execution provenance:
+
+- Dev commit:`a6424fb65f2dba18d88e62e7f84a2707e33e363d`.
+- Clean execution commit:`c47c14c0ed9d79bcf28c864695ed4a41e65d9b34`.
+- Tree:`d1ba3e0d6d36c9af15900e344a1feef76001f7fb`.
+- Local worktree:`/private/tmp/zpd-repair-directed-support.JLJqRV/source`.
+- Remote worktree:`.runtime/repair-directed-support-20260924-v1`, entirely under
+  the canonical server project; dirty checkouts were not modified.
+- Bundle:`.runtime/zpd-repair-directed-support-20260924-v1.bundle`, SHA
+  `9a586abc828ea915f5239256b6fe46a15e96bce992c28af6ff44df9a1b1b59f9`.
+- Exact-tree local ZPD641 tests PASS159.912s; server641 PASS76.989s;
+  all19 repair-pilot tests PASS on both. A mistyped local test command initially
+  requested nonexistent `tests.test_pilot`; correcting it to the three tracked
+  `test_repair_pilot_*` modules passed without a source change. This was a test
+  invocation error, not an empirical run failure or a retried experiment.
+- Runtime: server Python3.13.11/numpy2.5.2/scipy1.18.1/sklearn1.9.0, checked before
+  and after support. Source closure22 files; exact source/tree/runtime/new-output
+  preflight passed. Local/remote source snapshots remained clean after tests.
+
+Root launched the reviewed `audit_zpd_repair_directed_support` child through
+the unchanged `supervise_zpd_history_action.run_stage` helper at21:21:04 KST:
+single-thread numeric environment,32GiB address-space bound,900s timeout,
+30s heartbeat, no retries. New output family and any matching worker were
+absent immediately before launch. Child PID1884909 finished at21:21:21 in
+16.512s. The helper verified all four sealed output files, returncode0 and empty
+log. Source-only output is `outputs/zpd-repair-directed-history-20260924/support-v1`;
+operational events/log are under sibling `supervised-support-v1`. No tmux or
+separate Scheduled automation was created for this short foreground stage.
+
+Support COMPLETE SHA:
+`e04d475e3773e26ac37e277595450c7c272f0021f4f0fa2db939b96c26d62910`.
+Root synchronized the new family and checked every sealed hash. All320 users/
+recipients,23 problems,2,544 candidates and2,560 terminal attempts remain;
+one failed generation attempt and all144 prior-one histories remain represented.
+No outcome, target, model or prediction file was opened by this support stage.
+
+Every one of the30 predeclared training-fold geometric predicates passed.
+Of7,007 edited candidate pairs, H varies on6,053 (previously2,911). It separates
+3,243 pairs formerly identical under old H, including1,836 formerly equal
+masked18-event pairs, but loses101 old distinctions; this is not a strict
+refinement. Edited H/control contrasts: Jm1,206, HS2,358, U6,460, L3,509.
+Across all2,544 candidates, H has121 no-opportunity cases and520 available but
+no-overlap cases. These include retained no-op candidates; they are not row
+exclusions or measures of correctness. Detailed masks/reasons remain in the
+report. Source support alone does not establish a learned mechanism or repairs.
+
+The report correctly remains `fit_release_authorized=false`. Immediately after
+this result, an independent agent began rechecking saved source-only vectors,
+counts and all30 predicates. In parallel, the encoder author began a small
+dimension-explicit pure residual core, and another agent began the new label-
+free144-component loader. Root retains the stage adapter/guard integration.
+Old1296 modules/results are not mutated, monkeypatched or padded to144. The
+existing separated six label contracts can be reused read-only: no repeated
+materialization of the physical64train+32valid cache is required. The proposed
+next ten-stage fitting queue is recorded in
+`zpd-repair-directed-fit-integration-plan-20260924.md`; it is not yet released.
+No new actual-repair success rate or fitting finish time is claimed.
