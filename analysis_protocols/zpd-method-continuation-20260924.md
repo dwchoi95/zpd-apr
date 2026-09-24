@@ -599,3 +599,25 @@ materialization of the physical64train+32valid cache is required. The proposed
 next ten-stage fitting queue is recorded in
 `zpd-repair-directed-fit-integration-plan-20260924.md`; it is not yet released.
 No new actual-repair success rate or fitting finish time is claimed.
+
+At21:28 the independent post-run audit also passed: all12,720 candidate-arm
+vectors were reconstructed from saved similarities/masks/nominal pairs with an
+independent scalar reduction (maximum difference8.33e-17), every row/class/
+aggregate and all30 predicates matched. Source22-file hashes match the clean
+execution commit; the36 observed-input bindings match the previous source-only
+pack. This independent check did not reopen the raw corpus or outcome files.
+Its full limits are in `zpd-repair-directed-support-result-review-20260924.md`.
+H/Jm edited contrasts still occur in only58 banks (HS106); support passing is
+not a claim of adequate power or learned benefit. H's121 unavailable candidates
+split into106 edited and15 no-op;520 available/no-overlap split215/305.
+
+Implementation continues without another experiment launch: the core agent
+owns `zpd_repair_residual_core.py` and its tests; the loader agent owns
+`zpd_repair_directed_inputs.py` and its tests. Root has created a syntax-checked
+draft `run_zpd_repair_directed_cv.py`, reusing unchanged dimension-free seal,
+label-contract and base checks while adapting actual block/model schemas to144.
+That draft is **not tested/reviewed or released**, has no callable production
+CLI, and no core/loader/stage fit has run on empirical labels. Next required
+work is synthetic integration tests, independent implementation/numerical
+auditor review and a separately frozen ten-stage release. Do not launch from
+the dirty development checkout or infer fitting authority from support PASS.
