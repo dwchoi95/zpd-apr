@@ -415,3 +415,41 @@ not a substitute for final clean-snapshot server tests. C3's tmux session exited
 naturally after its terminal seal; no process was forcibly terminated. The
 independent guard/supervisor review and implementation continue in parallel
 with a saved-prediction-only C3 failure diagnosis.
+
+## Actual-repair execution launched — 2026-09-24 20:55:45 KST
+
+The production guard/supervisor received independent PASS after the final
+direct-child resource check:37 focused/reused-helper tests. Root additionally
+ran the24 new boundary tests. Final code and separate release were committed
+before any empirical fitting. This advances the already frozen repair design;
+the completed C3 negative result does not change its arms/features/gate.
+
+- Dev release commit:`43cfb6ecd03f46ae25f44e4f729145e56991d954`.
+- Exact tree:`27e6b99cca68168bfa620be49f3837247be25ed7`.
+- Clean parentless execution commit:`f781849e4b8547c1c7f6fa3488f4a1a7083b7c38`.
+- Release JSON SHA:`2c8746ccdb3f8c69646db6d96e59f97047c869a439a746aeaa3cfe5593b850fd`.
+- Local clean source:`/private/tmp/zpd-repair-feedback-fit.5Sbm41/source`.
+- Remote clean source:`.runtime/repair-feedback-fit-20260924-v1` beneath the
+  canonical `/home/cdw/VSCode/zpd-apr`; dirty project checkouts remain unchanged.
+- Bundle:`.runtime/zpd-repair-feedback-fit-20260924-v1.bundle`, SHA
+  `f868c5a70a90ec06ef35d76ed4dab4f02b826097131a9d0e59720e6a4a9ee885`.
+- Local exact-tree tests:613 ZPD in165.575s plus19 pilot, all PASS.
+- Server exact-tree tests:613 ZPD in76.385s plus19 pilot, all PASS.
+- Server read-only release preflight verified49 source files, eight release/
+  input bindings, the exact commit/tree and frozen3.13.11/2.5.2/1.18.1/1.9.0
+  runtime. Both source checkouts remained clean after testing.
+- Before launch: no matching production worker/supervisor, and all three new
+  output directories absent. No duplicate or existing result was overwritten.
+- tmux:`zpd-repair-feedback-fit-20260924`.
+- Supervisor PID1881015; initial preflight child PID1881029, both verified live.
+- Launch log:`.runtime/repair-feedback-fit-20260924-v1.log`.
+- Supervisor output:`outputs/zpd-repair-feedback-20260924/supervised-v1`.
+- Labels/run outputs:`prepared-v1` and`run-v1` in the same family.
+
+At20:55:54, the first observed-input preflight is running. OOF completion is
+0/320; no actual repair result or improvement is claimed. The fixed eleven-
+process queue advances automatically through preparation, initialization, five
+fold workers, prediction sealing, assessment and independent audit. No stage
+is retried, no model is promoted, and no fresh outcome is opened. Root continues
+completion/error monitoring and the21:01 KST hourly reporting checkpoint; a
+completion marker does not by itself complete the research objective.
