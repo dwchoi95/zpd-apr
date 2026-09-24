@@ -73,6 +73,20 @@ Output parse reason and counts for every problem and coverage for every recipien
 No result-dependent parser patches, manually repaired examples, fallback expected
 outputs, generated tests or dynamic network fetches are permitted by this stage.
 
+Pre-body-inspection parser-review clarification: recognized sample headings must
+contain plain character data only; inline markup/comments invalidate the problem.
+Self-closing `h1`-`h6`, `pre` or ignored non-void elements are malformed HTML,
+not explicit empty blocks. Only a real `<pre></pre>` represents empty bytes.
+Malformed marked declarations are unavailable. Ignore raw-text/RCDATA subtrees
+`script`, `style`, `title`, `textarea`, `xmp`, `iframe`, `noembed`, `noframes`,
+and inert `template`/`noscript` subtrees (including nested inert elements).
+Their textual fake headings are not sample declarations. A `plaintext` document
+is unsupported and unavailable. These rules were fixed using synthetic fixtures,
+before reading any empirical description body.
+Mixed raw-text/RCDATA/inert element kinds nested inside an inert subtree are
+unsupported and make the whole problem unavailable; do not emulate ambiguous
+browser tree recovery or let a literal closing token escape an inert parent.
+
 ## Observed-source request roster
 
 Produce a separate source-only roster from the reviewed exact joins. Bind each
