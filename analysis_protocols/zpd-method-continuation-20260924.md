@@ -797,3 +797,26 @@ Actual completion ETA remains unset until a measured new run provides a basis.
 Next hourly report remains23:01, but passing verification must trigger the next
 stage immediately. Do not confuse these tests with completing131/320 failedv1
 or with evidence that the history-mechanism/scientific gates have passed.
+
+Both final regression runs completed without changes or retries. Server:
+730/730 ZPD tests121.252s,19/19 pilot tests0.005s; local730/730 tests251.542s,
+19/19 pilot tests0.008s. Both passed all70 source hashes, release/sidecar,
+exact revision/tree and clean state afterward. Server read-only production
+preflight passed70 source and11 metadata/input bindings. Expected synthetic
+negative-fixture logs and inherited scaler warnings were not test failures.
+
+Immediately after receiving the local final verification, root repeated the
+production preflight, exact release/revision/tree assertions, absent new output/
+launcher/session checks and no matching Python repair worker check. The single
+new execution started at **22:46:40 KST**, session
+`zpd-repair-directed-newton-20260924`, supervisor PID1896529. Launcher:
+`outputs/zpd-repair-directed-history-20260924/launcher-v2.log`.
+At22:47:07, the initial preflight had completed and initialize child1896595 was
+running (started22:47:03), with empty child log and no FAILED marker. All work
+uses the immutable runtime snapshot, not either dirty main checkout.
+
+This is an actual single new25-cell/320-recipient launch. It does not resume the
+failed v1 and must not be launched again. Monitor this session to completion,
+then verify all25/320/11 artifacts and the independent audit before scientific
+interpretation. At this entry0/320 OOF examples are complete; actual RR/gates
+and a measured completion ETA are not yet available. Next hourly report23:01.
