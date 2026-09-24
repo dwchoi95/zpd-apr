@@ -265,3 +265,40 @@ the final objective. Support completion triggers result verification and a
 fit/no-fit decision without waiting for an hourly reporting boundary. A passing
 support audit is feasibility only; production fitting requires its own fixed
 release. Hourly reporting remains due around20:01 KST alongside active work.
+
+## Support completed and C3 release prepared — 19:30 KST
+
+Support completed at19:16:57 KST, all71,191 prefixes and254,745 observed
+transitions, with zero exclusions. The exact four-file seal was verified on
+UbuntuServer and after local synchronization: COMPLETE
+`106bd5a07b8c262d0fddbf780ccd998bb859582e1811affa1c299bb8bcc15dc3`.
+Independent recount of every row and all21 population/fold aggregates agrees.
+The C2 cohort remains29,740 supported OOF prefixes, of which5,588 have J≠Jm;
+all24,152 nondistinct prefixes remain. These are support counts, not trained
+examples or predictive gains. See the complete independent support decision.
+
+The separately frozen fitting release is
+`zpd-history-feedback-fit-release-20260924.json`, SHA256
+`0882ff57ffa3fd4db498a0a391f924f0ec6c223c43258e2828727bb23817a619`.
+It keeps every predeclared arm, target, mask, fold and contrast. The driver,
+independent coefficient/statistics verifier, production guard and two-stage
+supervisor have passed their scoped independent reviews. Root ran485 ZPD tests
+and19 pilot tests, then added and passed one terminal-source-drift regression
+case (focused guard/supervisor12/12). No test failure was suppressed.
+
+The verifier's final source hash is
+`1a0614c69cd9ff7f656ac88a879f658347645dd7ae4c1c6f1b73422a0aac984b`;
+production guard
+`9ff0863e32c1c29ca4d296a333721d98c4bb6d7de52763ce586280bf7e5aefc6`;
+supervisor
+`29b2dcc5b4ea7c2957521e4532daae2f46a77327272d59421f13e3d81c18ef30`.
+The queue fits35 arm/fold models and immediately verifies their saved
+coefficients and statistics, even after a failed scientific gate. Final server
+tests and the exact launch identity still precede actual fitting.
+
+Actual-repair preparation proceeds in parallel: a common history-only vector
+cancels in a linear pairwise candidate comparison. A prospective candidate-edit
+by historical-feedback interaction design is documented separately, with no
+learned C3 weights transferred across incompatible fold schemes. Its required
+320-bank observation/source-language support checker is being prepared;
+that repair fit is not released by this C3 decision.
