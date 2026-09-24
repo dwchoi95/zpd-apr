@@ -1000,3 +1000,25 @@ resource/deadline/runner contracts remain unchanged. Both probe and production
 coordinator need this correction before a fresh separately released v3. Actual
 replay stays0/16,776; authenticated feedback loader development continues on
 synthetic inputs, with no fit or performance improvement claimed.
+
+## Trusted v3 accepted; empirical replay release,00:57 KST
+
+The separately released trusted suite completed at00:43 with allP0-P6 passing.
+Its clean execution commit5ad72917c662c26bb2884c1be1526e0a4767130d,
+treeaef2c541119e3eae37afb98b2d9bb3b0fd0e6b74 and unchanged runtime passed
+73 local and73 server tests before execution. COMPLETE
+460119fc93c5652b5e756e8b61ce071f12c9539cdaea3f0bf087ff3ec79aadab seals79
+artifacts. Independent nonauthor review PASS is retained verbatim in resource
+result audit section9, SHA7007d23793a46c51a1e3067f6c384383e049294956a1ba83a99e6bcd3b4514b3.
+All six units have no live process; retained intentional failure metadata is not
+an occupied session. Earlier failed v1/v2 evidence is preserved unchanged.
+
+The empirical replay release a59419280a54c2adbfc5ea2be236f44bf06dbce411066b35b0673569764bc4e3
+binds46 source files, runtimee099309749438d36e5d938290cdfa16e0ee0a9267f4368b3ea7af199a4dde11a,
+the accepted trusted probe and exact sealed preparation. It authorizes one fresh
+four-block observed-source replay only, following clean local/server full tests
+and runtime/input verification. Expected6056 source-block completions and16776
+case attempts; all320 recipients/23 problems/2544 bank candidates remain intact.
+Unsupported source identities remain unavailable. No candidate execution,
+assessment read, fit or scientific promotion is authorized at this boundary.
+At this entry replay is still0/16776; packaging and tests start immediately.

@@ -1,7 +1,7 @@
 # Trusted resource-probe result audit: pre-execution checklist
 
 Prepared 2026-09-25 KST by the independent `repair_structure_audit` agent.
-**Current status: actual v1/v2 attempts FAILED; findings in sections5 and7.**
+**Current status: actual v3 trusted-probe scoped PASS (section9); v1/v2 remain FAILED (sections5 and7).**
 At checklist preparation, no actual output had been read or certified. The
 probe author and host author are different agents. This checklist records how
 to audit their eventual trusted-fixture artifact; it does not release execution,
@@ -507,3 +507,152 @@ runtime, comparator or scientific acceptance threshold changed. Root must
 still create and verify a separate committed release and audit actual v3
 outcomes. V1/v2 remain FAILED; no empirical replay authority or real v3 PASS is
 granted by this synthetic review.
+
+## 9. Independent actual v3 result audit
+
+**Judgment: PASS for the frozen trusted resource-probe contract only.** No new
+blocker was found. This is not sample-replay authorization, a scientific
+readiness gate, comprehensive sandbox certification or fitting authority.
+The failed v1/v2 artifacts and the findings above remain unchanged.
+
+Root recorded the actual v3 run at00:42:52–00:43:00 KST on2026-09-25 and
+synchronized its trusted-fixture records. This reviewer did not launch or
+rerun a unit, access empirical source/sample/label/feedback bodies, or query
+the server. The audit independently read the synchronized raw metadata and
+fixed-fixture records and used standard-library assertions rather than the
+producer's `assess_normal` or `probe_pass` computation.
+
+### Authority, bytes and execution identity
+
+| Binding | Verified value |
+| --- | --- |
+| Output | `outputs/zpd-statement-sample-feedback-20260924/resource-probe-v3` |
+| Execution commit | `5ad72917c662c26bb2884c1be1526e0a4767130d` |
+| Execution tree | `aef2c541119e3eae37afb98b2d9bb3b0fd0e6b74` |
+| Release JSON SHA256 | `032db00336d96d9d951ffa0681f003a83e60cb3730f66acb5f4e03852ad1843e` |
+| Outer COMPLETE SHA256 | `460119fc93c5652b5e756e8b61ce071f12c9539cdaea3f0bf087ff3ec79aadab` |
+| Governing amended protocol SHA256 | `39acc54e52a9cdbdf9ac866641a4a32e45d73af546930fbbf4d4fd075eb7a2f9` |
+
+The clean local copy of the exact execution snapshot was
+`/private/tmp/zpd-statement-probe.Cnu71y/source`. Its commit/tree, clean Git
+status, strict release SHA sidecar, all10 released source hashes and the
+manifest's source/configuration/runtime equality to that release were checked.
+The four literal fixture strings were extracted with `ast.literal_eval` and
+their SHA values independently reproduced; none was executed by this reviewer.
+The runtime binding records controller Python3.13.11, execution Python3.14.4,
+bubblewrap0.11.1, systemd259.5-0ubuntu3.4 and kernel7.0.0-30-generic, including
+binary/library and unchanged runner/comparator hashes. This validates the
+recorded identity against the release, not a fresh independent server query.
+
+All **79 bound artifact files** were rehashed and the actual inventory matched
+exactly:79 bound files plus `COMPLETE.json`, with no root FAILED or rejected
+completion. JSON/JSONL parsing rejected duplicate keys and nonfinite constants.
+Every per-probe report equals its copy in the root report. The consumed output,
+COMPLETE, source and release bytes and clean snapshot identity were checked
+again after result consumers. The outer artifact explicitly retains
+`empirical_inputs=false`, `replay_authorized=false` and
+`fitting_authorized=false`.
+
+### Raw evidence and independently reconstructed results
+
+| Probe | Journal snapshots | Observed task peak | Observed memory peak (bytes) | Coordinator duration (s) | Result |
+| --- | ---: | ---: | ---: | ---: | --- |
+| P0 | — | — | — | — | All12 intended refusal reasons; zero workloads |
+| P1 | 11 | 33 | 113786880 | 0.676965 | Eight sandbox cases:6AC,2 deliberate WA |
+| P2 | 7 | 16 | 53317632 | 0.411540 | EAGAIN,15 children reaped, `pids.events:max` +1 |
+| P3 | 7 | 5 | 134217728 | 0.423011 | One allocator killed by SIGKILL; max+38,oom+1,oom_kill+1 |
+| P4 | 45 | 5 | 54161408 | 2.869917 | Genuine unchanged-runner TLE; descendants gone before unit stop |
+| P5 | 48 | 5 | 53350400 | 3.070389 | Intentional unit timeout, code2/status9; durable progress |
+| P6 | 6 | 5 | 54517760 | 0.348910 | Authenticated main-only SIGKILL, code2/status9; durable journal |
+
+Durations are measured coordinator start-to-finish intervals, not pure case
+runtime or an estimate for empirical replay. There are124 journal snapshots;
+including the six bound ready and four bound end snapshots gives134 live
+captures checked for fixed effective properties, cgroup limits, identity,
+finite counters and monotone memory/pids events. Observed peaks are supported
+raw cgroup values. All ready barriers and the P1–P4 end barriers contain only
+their authenticated main process **and one thread**. Recorded PID/thread
+lists are unique integer identities, not coerced booleans. P3 alone has
+swap0/OOMPolicy=continue; the other probes show inherited unlimited swap and
+OOMPolicy=stop. All unchanged memory/task/deadline/LimitAS/accounting/kill/
+no-delegation properties match the fixed envelopes.
+
+P0's12 diagnostic summaries were independently recomputed and matched the
+specific intended property/membership/start/permission/source/runtime reason,
+not merely any exception. Every check records `work_released=false`.
+
+P1 recorded eight distinct sandbox Python identities1912695–1912702 within the
+exact owned cgroup. All have separate PID/network namespaces from the recorded
+host-side keeper, NoNewPrivs1 and zero effective/permitted/bounding capabilities.
+The isolation fixture records absent project/home/users/sentinel and read-only
+`/usr`, `/lib` and `/lib64`. Its full565-character stdout is still reconstructible
+from the bounded summary and agrees with the structured isolation result.
+The producer also checks its outside coordinator namespace at runtime; that
+outside identity is not separately persisted, so this independent raw replay
+uses the recorded host-side keeper plus the reviewed no-namespace-changing
+unit launch path for that relationship.
+
+All16 stdout/stderr summaries were independently checked. The six normal cases
+contain exact `PROBE_OK\n` and empty stderr. The output fixture's8-MiB X stdout
+and1-MiB E stderr have the exact first1024 characters, original counts, canonical
+ASCII JSON-string SHA and truncation flags. These full-string hashes were
+recomputed from the fixed literals, not inferred from their excerpts. The
+full-output comparator precedes serialization in the pinned unchanged runner
+path. No claim is made that the bounded record limits capture-buffer memory.
+
+For P1–P4, every raw ready-to-end memory/pids counter difference was independently
+computed and equals the report. P1/P4 have zero changes in **all** observed
+memory keys, including low and sock_throttled, and pids max. P2's pids max
+increase is1 with exactly15 unique same-cgroup children and15 reaps. P3 records
+actual child SIGKILL rather than a Python MemoryError, with one reap and the
+positive raw OOM-kill counter. Its remaining observed memory/pids event deltas
+are0. P3's continue policy is intentional keeper preservation and does not
+certify production's OOMPolicy=stop path.
+
+P4's sandbox parent/child1912992/1912995 were both observed. The TLE call returned
+at1753395.132296592; the authenticated singleton end snapshot is
+1753395.179265833, **0.046969241s later**, before ACK and before the later unit
+exit. Thus later unit cleanup or the15-second unit limit did not rescue a
+leaked per-case descendant.
+
+P5/P6 have durable progress and same-cgroup child identities visible in the raw
+process snapshots. P6 additionally has the exact one-row sequence0 trusted
+completion journal and main identity bound to the saved SIGKILL intent. Their
+retained Results are respectively timeout and signal, both ExecMainCode2 and
+ExecMainStatus9, with positive compatible start/exit timestamps. Neither has
+a normal END or ACK. Their raw final cgroups no longer exist; the reports
+correctly say `raw_final_cgroup_available=false`. The audit does not invent
+final zero resource counters or treat these as completed empirical work.
+
+### Cleanup, intentional failures and retained limits
+
+For each of the six units, READY→GO hash and identity links were checked; for
+P1–P4, END→ACK hashes were also checked. Every retained/before-stop record has
+the exact unit Id, unchanged positive initial start timestamp, MainPID0 and
+empty reported ControlGroup. The seven-field cleanup binding points to the
+**previously bound exact cgroup**, whose saved direct observation is absent,
+with no live main identity. This is the reviewed lifecycle branch, not an
+empty path interpreted as a broad cgroup root.
+
+All six final cleanup records have MainPID0, empty ControlGroup and `empty=true`.
+P1–P4 are not-found/inactive/dead after explicit stop; P5/P6 retain their expected
+failed-unit metadata with no live main/cgroup. Their coordinator finish is
+respectively0.042556s and0.088005s after the recorded unit exit, within the fixed
+5-second cleanup bound. P1–P4's corresponding exit-to-finish intervals are
+0.071843/0.073672/0.086824/0.084185s. These are archived cleanup observations,
+not a later live server sweep by this reviewer.
+
+P2/P3/P5/P6 contain the prescribed `intentional_fixture=true` and
+`expected_guard_outcome=FAILED_unknown` files; these are expected refusal
+evidence, not ignored root failures. All six reports have `error=null` and
+`cleanup_error=null`. P1–P4 acknowledge normal harness exit; P5/P6 intentionally
+do not. Their fixed acceptance predicates were not altered to obtain PASS.
+
+The verified v3 evidence supports proceeding to the **separate** prospective
+empirical replay release/checks, if root authorizes that next boundary. It
+does not establish actual sample compatibility, per-submission feedback,
+feature readiness, repair improvement or educational benefit. Finite polling,
+the fixed small pressure fixtures, non-delegated same-user execution and
+non-exhaustive sandbox tests remain the limitations already stated in the
+protocol. Neither the passed v3 nor its separate release overwrites the two
+failed operational attempts.
