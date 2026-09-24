@@ -31,7 +31,7 @@ from src.runner.python_runner import _SUBPROCESS_RUNNER
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = Path('/home/cdw/VSCode/zpd-apr')
 FAMILY = 'outputs/zpd-statement-sample-feedback-20260924'
-OUTPUT = FAMILY + '/resource-probe-v1'
+OUTPUT = FAMILY + '/resource-probe-v2'
 PROTOCOL = 'analysis_protocols/zpd-statement-sample-resource-probe-20260924.md'
 RELEASE = 'analysis_protocols/zpd-statement-sample-resource-probe-release-20260924.json'
 SIDECAR = RELEASE + '.sha256'
@@ -111,7 +111,7 @@ def envelope(fixture):
 
 def unit_name(fixture):
     require(fixture in FIXTURES, 'fixed trusted fixture required')
-    return 'zpd-statement-samples-probe-20260924-' + fixture.lower() + '.service'
+    return 'zpd-statement-samples-probe-20260924-v2-' + fixture.lower() + '.service'
 
 
 def configuration():
@@ -507,22 +507,22 @@ def assess_normal(fixture, result, before, after, outside, observed_processes, r
 def run_p0():
     """Fixed mock metadata only; never starts a unit or executes a fixture."""
     from copy import deepcopy
-    env=envelope('P1');name=unit_name('P1')
+    env=envelope('P1');target_unit=unit_name('P1')
     values={k:'' for k in host.PROPERTIES}
-    values.update(Id=name,LoadState='loaded',ActiveState='active',SubState='running',MainPID='123',
+    values.update(Id=target_unit,LoadState='loaded',ActiveState='active',SubState='running',MainPID='123',
         MemoryAccounting='yes',TasksAccounting='yes',MemoryMax=str(32*2**30),TasksMax='128',
         RuntimeMaxUSec='6h',KillMode='control-group',KillSignal='9',SendSIGKILL='yes',Restart='no',
         RemainAfterExit='yes',Type='exec',LimitAS=str(32*2**30),Delegate='no',OOMPolicy='stop')
     cg=dict(control_group='/mock',**{'memory.max':str(32*2**30),'pids.max':'128','processes':[123],
         'memory.events':dict(low=0,high=0,max=0,oom=0,oom_kill=0),'pids.events':{'max':0},
         'cgroup.events':{'populated':1}})
-    host.verify_properties(values,name,env)
+    host.verify_properties(values,target_unit,env)
     host.verify_cgroup(cg,env,123)
     checks=[]
     for key,bad in (('MemoryMax','127'),('TasksMax','127'),('MainPID','0'),('Type','unsupported'),
                     ('Delegate','yes'),('OOMPolicy','continue')):
         changed=deepcopy(values);changed[key]=bad
-        checks.append((key,lambda v=changed:host.verify_properties(v,name,env)))
+        checks.append((key,lambda v=changed,unit=target_unit:host.verify_properties(v,unit,env)))
     checks += [('missing_cgroup_file',lambda:host.verify_cgroup({},env,123)),
         ('wrong_main_membership',lambda:host.verify_cgroup(cg,env,999)),
         ('wrong_start_time',lambda:require({'pid':123,'start_ticks':1}=={'pid':123,'start_ticks':2},'start mismatch')),
@@ -530,11 +530,11 @@ def run_p0():
         ('source_SHA_drift',lambda:require('a'*64=='b'*64,'source SHA drift')),
         ('runtime_drift',lambda:require(same({'python':'fixed'},{'python':'changed'}),'runtime drift'))]
     rows=[]
-    for name,check in checks:
+    for check_name,check in checks:
         try:check()
         except host.EnvelopeError as exc:
-            rows.append(dict(check=name,work_released=False,error=text_record(str(exc))))
-        else:raise host.EnvelopeError('P0 mutation did not refuse work: '+name)
+            rows.append(dict(check=check_name,work_released=False,error=text_record(str(exc))))
+        else:raise host.EnvelopeError('P0 mutation did not refuse work: '+check_name)
     return dict(probe_pass=True,workloads=0,checks=rows)
 
 
@@ -606,11 +606,18 @@ def coordinate_fixture(context, fixture, suite_deadline, *, unit_factory=host.Us
             while clock()<min(deadline,start+BARRIER_SECONDS):
                 snap=capture(stream)
                 if (directory/'READY.json').is_file():
-                    ready=read('READY.json');verify_ready(ready,snap,fixture,context)
+                    ready=read('READY.json')
+                    # The earlier snapshot may precede READY and observe the
+                    # fixture's own self-attestation helper. Consume READY first,
+                    # then require a fresh live singleton; allow no helper names.
+                    snap=capture(stream)
+                    verify_ready(ready,snap,fixture,context)
                     first=snap
                     require(snap['cgroup']['processes']==[snap['main_process']['pid']]
                         and snap['cgroup']['threads']==[snap['main_process']['pid']],
                         'READY requires exactly the unit main process and thread')
+                    require(clock()<min(deadline,start+BARRIER_SECONDS),
+                            'ready attestation exceeded the fixed barrier deadline')
                     write('ready-snapshot.json',snap)
                     write('GO.json',dict(kind='trusted_fixture_go_v1',
                         ready_sha256=ledger.hashes[prefix+'READY.json'],main_process=snap['main_process']))

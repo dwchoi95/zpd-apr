@@ -8,6 +8,37 @@ sample/expected-output body, outcome cache or fit was used in this review.
 Only repository source and prospective documents were read. The preparation
 and replay authorities remain separate; this document grants neither.
 
+### Operational amendment after the first refused READY,2026-09-25 00:28 KST
+
+This dated amendment does not rewrite the pre-execution statements above.
+The first released trusted attempt at00:25:37 KST is permanently retained in
+resource-probe-v1 with top-level FAILED, no COMPLETE and no empirical workload.
+P1 refused before GO. Its third outside snapshot captured the trusted harness's
+own /usr/bin/systemctl child while the harness completed self-attestation;
+READY then appeared before the outside checked that earlier snapshot. Raw
+before-stop evidence is singleton, all resource events are zero, and exact-owned
+cleanup succeeded. This is an observation-order defect, not passing resource
+enforcement evidence. P2-P6 did not run.
+
+Independent result inspection also found P0 lambda late-binding to the loop's
+check name: six property mutants refused an invalid namespace instead of their
+intended property. The original producer's P0 PASS is therefore not certified.
+Both findings must remain in the result audit and failed attempt records.
+
+A separately reviewed/released corrected trusted attempt may use the fresh
+fixed directory resource-probe-v2 and fresh fixed v2 unit names; it must never
+overwrite/restart the old directory/unit. The correction consumes READY before
+obtaining its attesting live snapshot, then requires the same exact singleton
+process/thread identity before GO. No helper-process allowlist, timing extension,
+resource-cap change, changed fixture, runtime substitution or acceptance-threshold
+relaxation is permitted. P0 must bind the intended unit name separately and
+verify reason-specific refusals for each fixed mutation. Add deterministic
+regressions for stale-before-READY versus fresh-after-READY snapshots and persistent
+extra-process/thread refusal. The whole P0-P6 suite still requires independent
+actual-result verification; this amendment alone is not a release or replay
+permission. It is an evidence-backed harness correction, not an unchanged retry
+or a scientific experiment. No submitted source has yet run in either attempt.
+
 Reference: replay contract
 `zpd-statement-sample-replay-prospective-20260924.md`, SHA
 `f9dd7c153bbe5bfceb2aa7906031e9e8412cbfb94ebbb8f381e0adaa950bed38`.

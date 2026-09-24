@@ -146,3 +146,33 @@ its local61-test suite passed0.349s and server61-test suite passed0.148s.
 The corrected release SHA is029bad4308632e02fc73bda2080f078aa1f97013b9ee0266473fed9a9e8a0ffd.
 Subsequent packaging must assert configuration canonical-byte equality locally
 as well as SHA closure and repeat actual server preflight before any first run.
+
+## Evidence-backed v2 correction review,00:30 KST
+
+The first actual attempt refused P1 before GO; the separate independent result
+audit preserves all raw evidence. Root confirmed its R5 observation-order defect
+and R6 P0 late-bound unit-name defect. These were missed by the initial synthetic
+checks; neither the earlier code PASS nor producer P0 PASS proves live safety.
+
+Root independently read the complete v2 diff: fixed new output/unit namespace;
+READY consumption followed by a new attesting snapshot and the same singleton
+condition before GO; explicit original five-second deadline; separate immutable
+P0 target-unit binding. Five new tests exercise intended P0 reasons, exact new
+names, stale-vs-fresh READY, persistent extras and expired original deadline.
+No fixture/runtime/limit/timeout/unknown policy changes or helper exemption.
+
+Root reran81 probe/host/launcher/evaluator/contracts synthetic tests in1.477s,
+all PASS. Amended driver095c8370b3e09f4d5e77b0ba1c8b1c9c8d758832b8e47f83ab0b51b2472e3c76;
+tests4d1405ca5a639cf8c29343b16ae696474a3e24f439f0af7a9ad6ced7cb4a4b0e;
+protocol575bdeb422d17758cfcd03f8560d82fc84939320b413c5486db58e6f33a88b8b.
+Root confirms the bounded source correction, conditional on the separate result
+auditor's review of the amendment and exact clean-snapshot local/server tests.
+The prospective successor release SHA is
+b7a8f4e55eeea006d989de1a06734c6f34558525aa78f6c4bfaa44d647b21efb.
+V1 is not rerun/reset or relabeled. No empirical replay is authorized by this
+correction; all seven actual v2 checks and independent result review remain due.
+
+At00:30 the separate result auditor confirmed the complete v2 diff and amendment
+as scoped PASS and independently reran48 probe/host tests in0.283s. Thus the
+source-review condition is satisfied; exact clean-snapshot verification and the
+new v2 live safety result remain prerequisites, not assumed outcomes.

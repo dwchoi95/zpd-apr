@@ -1,7 +1,7 @@
 {
   "kind": "trusted_statement_sample_resource_probe_release_v1",
   "project": "/home/cdw/VSCode/zpd-apr",
-  "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v1",
+  "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v2",
   "configuration": {
     "barrier_seconds": 5.0,
     "empirical_inputs": false,
@@ -79,7 +79,7 @@
       "P6"
     ],
     "kind": "trusted_statement_sample_resource_probe_v1",
-    "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v1",
+    "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v2",
     "output_record": "first1024_codepoints_count_and_canonical_JSON_string_SHA",
     "overwrite": false,
     "p2_max_forks": 20,
@@ -97,8 +97,8 @@
     "unit_watchdog_seconds": 30.0
   },
   "source_sha256": {
-    "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "648217b34c68cbf385b00eb39d38423c8435b923cd89898e4f62770f0a456367",
-    "scripts/probe_zpd_statement_sample_resources.py": "0bdd2f2b59aaba311fffb4d5a53666efe94e075a3994eecbd9d589c2c5f7ffcf",
+    "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "575bdeb422d17758cfcd03f8560d82fc84939320b413c5486db58e6f33a88b8b",
+    "scripts/probe_zpd_statement_sample_resources.py": "095c8370b3e09f4d5e77b0ba1c8b1c9c8d758832b8e47f83ab0b51b2472e3c76",
     "scripts/zpd_repair_evaluate.py": "f6ba1c6a207f075f58726d87267f4cbc612edf50fa9b0074825e40a1f1831e67",
     "scripts/zpd_statement_sample_host.py": "be41c10f8b4ab6eb08b9541a0b9a5f2b761d057393cc44c86b4035152c0ae7af",
     "src/repair/pilot_contracts.py": "2bdc27e49e4d815cfdab67f87addeba809d5044370a83cfcba3adf4639faf664",
@@ -106,7 +106,7 @@
     "src/runner/models.py": "80b844802f20f7a194b6ea454fc4a33c10a007862005896c0edad655dad8beea",
     "src/runner/python_runner.py": "ec1d970c2e1674c77063a87fc2e1471614fe2e62bac7bc805e396fe6edbc7164",
     "tests/test_zpd_statement_sample_host.py": "f12a0f1595729f03e8d088c39d57278bbd16494cc6443607354e967e889e94fa",
-    "tests/test_zpd_statement_sample_resources.py": "2ac4207d7325dd8376367f7b4c1dde3ef96f85f49bdb82802960ee8f8450120d"
+    "tests/test_zpd_statement_sample_resources.py": "4d1405ca5a639cf8c29343b16ae696474a3e24f439f0af7a9ad6ced7cb4a4b0e"
   },
   "runtime": {
     "architecture": "x86_64",
@@ -281,5 +281,5 @@
   },
   "trusted_probe_authorized": true,
   "replay_authorized": false,
-  "decision_reason": "Authorize one fresh bounded P0-P6 trusted-only resource probe after independent nonauthor review and exact clean-source local/server closure tests. The unexecuted initial release is superseded before deployment by reviewed exact-owned cleanup-on-evidence-failure and singleton process/thread barrier corrections. No prepared submissions, empirical samples, scorer caches, fitting, installation, system-wide configuration, retries or outside-unit workload fallback. P3-only OOMPolicy continue retains accounting under its smaller fixed cap; production remains stop. Preserve every failure."
+  "decision_reason": "Authorize one separately reviewed corrected P0-P6 trusted-only resource-probe-v2 after exact clean-source local/server closure tests. Preserve failed v1: its P1 refused before GO on a stale pre-READY snapshot, and six P0 mutations used the wrong late-bound unit name. V2 consumes READY before fresh attestation and tests intended P0 rejection reasons, using fresh fixed v2 outputs and units. All fixtures, resource caps, five-second barriers and deadlines remain unchanged; no helper allowlist or threshold relaxation. No prepared submissions, empirical samples, scorer caches, fitting, installation, system-wide configuration, unchanged retries or outside-unit workload fallback. P3-only OOMPolicy continue retains accounting under its smaller fixed cap; production remains stop. Preserve every failure."
 }

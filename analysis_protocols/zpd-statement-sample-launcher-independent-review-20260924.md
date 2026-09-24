@@ -127,3 +127,23 @@ runner still lacks a small output-capture byte cap, and the cgroup is not a disk
 swap or complete sandbox-security guarantee. Passing trusted probes does not
 prove learner-program compatibility, stable feedback coverage, useful historical
 progress, hidden-test repair improvement or educational benefit.
+
+## Pre-release fixed successor-probe dependency correction
+
+After the first trusted resource-probe attempt failed before GO, root changed
+exactly one launcher line: `PROBE=FAMILY+'/resource-probe-v1'` became
+`PROBE=probe.OUTPUT`. The reviewer independently inspected that one-line diff.
+The imported driver has a fixed, source-bound v2 path; no CLI/caller override,
+fallback to failed v1, broadened inventory or weakened COMPLETE pin is added.
+The separate replay release must still explicitly pin the successful prerequisite
+COMPLETE and the full current source/runtime closure. This correction is scoped
+PASS for launcher integration, not an independent review of this reviewer's own
+probe modification or an empirical acceptance of v2.
+
+Updated launcher SHA:
+`ef9f6015d41b11f74ed069f6a582d9ca7cb01400ef1253fae9bff41a304c1a02`.
+Launcher tests remain at the prior `2a2f104a...171b945` SHA above. Independent
+combined rerun of probe/host/launcher/core synthetic suites: **87 PASS in 2.090
+seconds**. That execution includes author-owned probe tests and is not claimed
+as an independent probe review. No actual unit, empirical body, runtime or release
+was executed or changed by this reviewer; failed v1 artifacts were not edited.

@@ -58,13 +58,17 @@ class FakeUnit:
         self.fixture=name.rsplit('-',1)[1].split('.')[0].upper()
         self.directory=context['output']/self.fixture
         self.behavior=behavior;self.start_attempted=False;self.stopped=False;self.killed=False
-        self.command=None;self.end_written=False;self.work_written=False
+        self.command=None;self.end_written=False;self.work_written=False;self.snapshots=0
 
     def start(self,command,directory):
         self.command=command
         if self.behavior=='preexisting':raise host.EnvelopeError('preexisting unit')
         self.start_attempted=True
         if self.behavior=='start_timeout':raise subprocess.TimeoutExpired(command,1)
+        if self.behavior in ('ready_race','ready_race_persistent','ready_race_late'):return
+        self.write_ready()
+
+    def write_ready(self):
         host.durable_new(self.directory/'READY.json',dict(kind='trusted_fixture_ready_v1',
             fixture=self.fixture,unit=self.name,main_process=identity(),
             release_sha256=self.context['release_sha256']))
@@ -98,11 +102,18 @@ class FakeUnit:
         return value
 
     def snapshot(self):
+        self.snapshots+=1
         value=self.show()
         host.verify_properties(value,self.name,self.envelope)
         cg=cgroup(self.envelope)
         if self.behavior=='ready_thread' or self.behavior=='end_thread' and (self.directory/'GO.json').exists():
             cg['threads'].append(124);cg['pids.current']='2';cg['pids.peak']['value']='2'
+        if self.behavior in ('ready_race','ready_race_persistent','ready_race_late'):
+            if self.snapshots==1 or self.behavior=='ready_race_persistent':
+                cg['processes'].append(124);cg['threads'].append(124)
+                cg['pids.current']='2';cg['pids.peak']['value']='2'
+            if self.snapshots==1:self.write_ready()  # Appears after pre-READY capture.
+            elif self.snapshots==2 and self.behavior=='ready_race_late':self.clock.sleep(5)
         return dict(monotonic=self.clock(),properties=value,cgroup=cg,main_process=identity())
 
     def stop(self):self.stopped=True
@@ -157,6 +168,28 @@ class ResourceProbeTests(unittest.TestCase):
         self.assertTrue(result['probe_pass']);self.assertEqual(result['workloads'],0)
         self.assertGreaterEqual(len(result['checks']),11)
         self.assertTrue(all(not row['work_released'] for row in result['checks']))
+
+    def test_p0_each_mutation_hits_its_intended_rejection_not_namespace(self):
+        expected={
+            'MemoryMax':'effective property mismatch: MemoryMax',
+            'TasksMax':'effective property mismatch: TasksMax',
+            'MainPID':'unit must be running before releasing child work',
+            'Type':'effective property mismatch: Type',
+            'Delegate':'effective property mismatch: Delegate',
+            'OOMPolicy':'effective property mismatch: OOMPolicy',
+            'missing_cgroup_file':'effective cgroup limits/membership differ',
+            'wrong_main_membership':'effective cgroup limits/membership differ',
+            'wrong_start_time':'start mismatch',
+            'permission_or_controller_unavailable':'controller access unavailable',
+            'source_SHA_drift':'source SHA drift','runtime_drift':'runtime drift'}
+        self.assertEqual({r['check']:r['error']['excerpt'] for r in probe.run_p0()['checks']},expected)
+
+    def test_v2_output_and_names_are_new_and_host_accepted(self):
+        self.assertEqual(probe.OUTPUT,probe.FAMILY+'/resource-probe-v2')
+        for fixture in probe.FIXTURES:
+            name='zpd-statement-samples-probe-20260924-v2-'+fixture.lower()+'.service'
+            self.assertEqual(probe.unit_name(fixture),name)
+            self.assertEqual(host.checked_unit(name,probe.envelope(fixture)),name)
 
     def test_only_p3_has_continue_swap_zero_and_fixed_pressure_caps(self):
         config=probe.configuration()
@@ -333,6 +366,26 @@ class ResourceProbeTests(unittest.TestCase):
         with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='ready_thread')
         self.assertTrue(self.units[0].stopped)
         self.assertFalse((self.context['output']/'P4/GO.json').exists())
+
+    def test_ready_read_then_fresh_capture_rejects_stale_helper_snapshot(self):
+        result=self.run_fake(behavior='ready_race')
+        self.assertTrue(result['probe_pass']);self.assertTrue(result['work_released'])
+        directory=self.context['output']/'P4'
+        rows=[json.loads(line) for line in (directory/'snapshots.jsonl').read_text().splitlines()]
+        self.assertEqual(rows[0]['snapshot']['cgroup']['processes'],[123,124])
+        self.assertEqual(rows[1]['snapshot']['cgroup']['processes'],[123])
+        self.assertEqual(probe.json_file(directory/'ready-snapshot.json'),rows[1]['snapshot'])
+        self.context['ledger'].verify()
+
+    def test_ready_fresh_capture_still_rejects_persistent_extra_process(self):
+        with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='ready_race_persistent')
+        self.assertFalse((self.context['output']/'P4/GO.json').exists())
+        self.assertTrue(self.units[0].stopped)
+
+    def test_ready_refresh_cannot_extend_fixed_five_second_deadline(self):
+        with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='ready_race_late')
+        self.assertFalse((self.context['output']/'P4/GO.json').exists())
+        self.assertTrue(self.units[0].stopped);self.assertEqual(self.clock(),5)
 
     def test_extra_keeper_thread_refuses_ACK_and_stops_owned_unit(self):
         with self.assertRaises(host.EnvelopeError):self.run_fake(behavior='end_thread')

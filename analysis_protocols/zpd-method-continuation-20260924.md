@@ -932,3 +932,40 @@ Actual submissions still require independently audited successful live probes
 and a separately pinned replay release. Prepared inputs and prior negative
 scientific results remain unchanged. Work on a synthetic-only authenticated
 feedback loader proceeds in parallel; no fit or new assessment access.
+
+## First live trusted probe refused; cause isolated,00:29 KST
+
+After a release-only integer/float canonicalization correction, clean source
+bd642e9f2d67799176d34bfb4164537851adba76 (tree2966c3b7504390977eb57fe9a9a287dfdc80d7c7)
+passed local61 tests in0.824s and server61 in0.151s. All10 source hashes, strict
+configuration/release and complete runtime identity passed actual preflight.
+Bundle SHAa4dfe260e80c1785bc71d4a8d30d8b697c1ea934295eb10fc705b4d5294dc7f2;
+source runtime directory.runtime/statement-sample-resource-probe-20260924-v2.
+The corrected first-attempt release SHA is029bad4308632e02fc73bda2080f078aa1f97013b9ee0266473fed9a9e8a0ffd.
+
+Exactly one live trusted suite began00:25:37 KST and failed P1 before GO.
+The raw third snapshot captured the harness's own systemctl helper before READY,
+then used that stale snapshot after READY appeared. Independent result review
+confirmed the ordering defect; pre-stop membership was singleton and exact-owned
+cleanup verified empty with no cleanup error. No trusted fixture workload or
+submitted source was released. All observed resource-event counters were zero;
+that is not evidence that resource enforcement passed. P2-P6 did not execute.
+The same reviewer found a P0 late-binding bug causing six mutants to reject an
+invalid unit name rather than the intended property. Its producer PASS is invalid.
+
+All10 failed-attempt files and the launcher log were synchronized nondeleting.
+Top-level FAILED SHA943b483d79fdc374fc8488f214a6a61e3258d117b5543b0a02ac3dbc8293fec0;
+manifest621abe13353678dddbcdf784b33350ddfe143fa9c46f6fe70a55ecd1f2a9325a;
+P1 report40890817a0b62122b7ccb8bed620839bb87884469fda5994ddcbfd55668f5b00.
+At00:27 the retained P1 service had MainPID0, no ControlGroup and signal-failure
+metadata; no matching worker or empirical replay output existed. Retained failed
+unit metadata is not an occupied process/session. Nothing was deleted/reset.
+
+The evidence-backed operational amendment permits only a separately reviewed,
+fresh v2 trusted attempt: consume READY then attest a fresh live snapshot, keep
+singleton/caps/deadlines unchanged, and bind P0's unit separately with specific
+rejection reasons. No unchanged retry or empirical execution is authorized.
+Production launcher now refers to the fixed probe module OUTPUT rather than
+hard-coding the failed path, still requiring an external accepted COMPLETE pin.
+Actual replay remains0/16,776, no fit and no improved scientific result. Next
+regular report01:01; continue this corrected safety prerequisite immediately.
