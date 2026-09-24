@@ -225,3 +225,43 @@ A new protocol, independent review, tests and clean committed execution
 snapshot must precede any next run. The two failed results, unknown labels,
 all eighteen targets, full history, data splits and untouched evaluation
 boundary remain preserved. Paper and canonical-model results are unchanged.
+
+## Next observation-only stage launched — 2026-09-24 19:12 KST
+
+The bounded coupling support audit is now running, not merely planned. The
+independent pure-feature and observed-loader reviews both passed before launch.
+The alternative six-verdict preservation fit was rejected at its support gate:
+only three of six effects have data support, and the nineteen preservation
+positives are highly concentrated. It was not fitted or silently substituted
+for the failed repair run.
+
+- Dev implementation commit: `cf56b5f4449e7538ee5412949c0c69f1c91c1fb1`.
+- Exact tree: `934db8d04b843873c2ee90373dd714ca69c834b9`.
+- Clean parentless execution commit: `bea87dba9c21c48880eb5bc28538ad736ef37b55`.
+- Local source: `/private/tmp/zpd-feedback-source.A21E79`.
+- Server source: `.runtime/feedback-support-20260924-v1`.
+- Bundle: `.runtime/zpd-feedback-support-20260924-v1.bundle`; SHA256
+  `a5968585def9ffe8b188d6f87a8cc465f8d82f19e28d2264c9ca2db01cc91a01`.
+- Local tests:447 ZPD +19 pilot passed. Server exact-tree tests:441 ZPD +19
+  pilot passed. The six local-only tests are the previously uncommitted,
+  unrelated fresh-holdout tests, not omitted failing tests.
+- Server runtime: Python3.13.11, numpy2.5.2, scipy1.18.1, scikit-learn1.9.0.
+- tmux session:`zpd-feedback-support-20260924`; timeout PID1867220 and child
+  Python PID1867222 were verified live at19:12:09 KST. These are launch
+  identities, not an indefinite-running claim.
+- Output:`outputs/zpd-history-feedback-coupling-20260924/support-v1`.
+- Log:`.runtime/feedback-support-20260924-v1.log`.
+
+The command runs the committed `scripts.audit_zpd_history_feedback_support`
+module with the canonical project and output paths, under `ulimit -v 33554432`,
+`timeout --signal=INT --kill-after=30s 8h`, and all four BLAS thread controls set
+to1. It does not train a model or open future targets. Its population is all
+71,191 TRAIN prefixes. No old output or dirty user file was replaced.
+
+During this stage, separate agents prepare (but do not release or run) the
+seven-arm fitting driver and independent verifier. Another agent examines the
+required bridge to actual repair rather than declaring proxy prediction to be
+the final objective. Support completion triggers result verification and a
+fit/no-fit decision without waiting for an hourly reporting boundary. A passing
+support audit is feasibility only; production fitting requires its own fixed
+release. Hourly reporting remains due around20:01 KST alongside active work.
