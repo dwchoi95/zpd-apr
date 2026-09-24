@@ -37,3 +37,21 @@ actual prediction receipt SHA and the temporal all30-before-assessment barrier
 remain the external guard's responsibility. The auditor cannot reconstruct
 unrecorded Newton iterate vectors or Hessians. It does not issue a production
 release or establish a repair/learner improvement merely by passing.
+
+## Additional cross-author synthetic integration
+
+At 2026-09-25 02:29 KST, root's combined stage/invariant suite passed 13/13
+tests in292.361 seconds. The full synthetic320/23/2544 case actually trained
+all30 nonzero-feature Newton models, sealed all13-method out-of-fold predictions,
+assessed them and then called this independent auditor with the original
+synthetic own-fold labels. All30 numerical certificates and the exact final
+gate matched. No empirical source, repair label or outcome was involved.
+
+An earlier integration attempt correctly failed because the test adapter
+supplied the four-field worker runtime (including sklearn) instead of the
+auditor's exact three-field numerical runtime. Only the test adapter was fixed
+to project python/numpy/scipy; no auditor acceptance or runtime condition changed.
+The passing final coordinator source SHA is
+`26973426049e18c256887f28480fa4f1570d1439e58b13b3b7a89e415b2d8c81`;
+its author test SHA is
+`10e5c60b6cb2c12a1a1edd60070e1fd870f7db9b14177eb45b48ffbf0bfd4367`.
