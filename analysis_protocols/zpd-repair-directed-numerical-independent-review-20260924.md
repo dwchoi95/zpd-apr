@@ -1,6 +1,6 @@
 # Independent numerical auditor review: directed144
 
-2026-09-24,21:54 KST. **PASS for the pure verifier; release still requires a
+2026-09-24,21:56 KST. **PASS for the pure verifier; release still requires a
 clean frozen source tree and local/server regression tests.** Root reviewed the
 auditor written by the independent features agent. Root did not author its
 mathematics. No empirical corpus, outcome, training-label body or new fitted
@@ -9,9 +9,9 @@ model was opened for this review. All numerical witnesses below are synthetic.
 Reviewed final files:
 
 - `scripts/audit_zpd_repair_directed_independent.py`:
-  `c54c291ae17373bbe06aa788ba8ebaf4535b78b939fb9cf99556ed1081b95954`.
+  `a6eb4206cbfb3e780e7a5edd9f46f89485a7d7957f9b5fc5e36ed97a5f6a7f43`.
 - `tests/test_zpd_repair_directed_independent.py`:
-  `652d5f73440461e935a9d6f9cc1e2f93f3298ec1a830ebbbd39559d0ce1d48dc`.
+  `6b1a5c066fbd802fc3a80d2e2261b19ca318334054c1021e2e7added14d283cb`.
 
 ## Independence and verified contracts
 
@@ -62,7 +62,11 @@ iteration traces are not independently reconstructed.
    altered representation SHA and incorrect dimensions. Tolerance is reserved
    for independently recomputed numerical estimates, not fixed settings.
 
-No remaining substantive blocker was found within this bounded review.
+The author also made the fixed strong-convexity lower bound exactly1.0 and
+explicitly enforced the reported optimizer gradient norm ceiling independently
+of comparison tolerance. Root reviewed these final two additions and reran the
+complete final test module. No remaining substantive blocker was found within
+this bounded review.
 
 ## Verification evidence
 
@@ -70,7 +74,8 @@ Root executed the complete final test module independently of its author:
 
 `/opt/homebrew/bin/python3 -m unittest tests.test_zpd_repair_directed_independent -v`
 
-**10/10 PASS,16.408s.** This includes nonzero synthetic25-model cross-
+**10/10 PASS,16.320s on the final hashes above** (the immediately preceding
+revision also passed10/10 in16.408s). This includes nonzero synthetic25-model cross-
 implementation replay, analytic320/25-model all-method verification without
 fitting,1100-transition history coverage,12 varied pair-label patterns with
 exact arrays/metadata, extreme margins, unknown/tie/zero-D retention, wrong
