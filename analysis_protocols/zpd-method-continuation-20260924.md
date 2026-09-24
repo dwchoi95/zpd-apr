@@ -331,3 +331,25 @@ controls set to1. The supervisor applies the frozen32GiB/8h crossfit and1h
 independent-audit bounds. The queue's final seal is not the research objective's
 completion: actual repair and mechanism evidence still remain to be established.
 No existing result, user-owned change or paper figure was overwritten.
+
+## Actual-repair observed support completed — 2026-09-24 19:56 KST
+
+The next source-only stage was launched at19:55:53, without waiting for C3 or
+the hourly reporting boundary. Independent review plus exact-tree local/server
+495 ZPD and19 pilot tests passed. It completed all320 banks /2,544 candidates,
+with no exclusion, error or outcome/model/prediction access. Its existing tmux
+session exited naturally; the C3 supervisor remains separate and running.
+
+The local and remote seal matches:
+`64d8f2a11de01ee08a2ed0ac51ac44b1ad4ec56281eaac971eadbb88cc4270d0`.
+Full launch/provenance/counts and the continuation decision are recorded in
+`zpd-repair-feedback-support-decision-20260924.md`. H can distinguish edited
+candidates in222 banks; H/Jm contrasts occur in58 banks, with262 indistinguishable
+banks still retained. All five training folds have geometric variation support.
+These are candidate-selection feasibility counts, not repairs completed.
+
+Preparation continues immediately: the pure fixed-offset optimizer has passed
+independent synthetic review, and separate agents are implementing the strict
+fold-label provider and unchanged-preference candidate-pair builder. Root has
+implemented the exact-fraction assessment gate and requested independent review.
+No actual repair fit is yet released, and no scientific success is inferred.
