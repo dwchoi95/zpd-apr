@@ -1022,3 +1022,22 @@ case attempts; all320 recipients/23 problems/2544 bank candidates remain intact.
 Unsupported source identities remain unavailable. No candidate execution,
 assessment read, fit or scientific promotion is authorized at this boundary.
 At this entry replay is still0/16776; packaging and tests start immediately.
+
+## Actual replay v1 failed before work; startup correction,01:13 KST
+
+Both clean local andserver929 tests passed and46sources/87parents/runtime
+remained exact. The actual v1 service at01:04 failed before READY because an
+indirect sklearn/pandas/PyArrow import starts a native jemalloc background
+thread. No empirical body/source/case was released; full count remains0/16776.
+The FAILED evidence and separate no-first-snapshot cleanup limitation are
+preserved in zpd-statement-sample-replay-v1-failure-20260925.md. The exited unit
+was separately stopped with exact recorded identity; no worker/session remains.
+
+Import-only diagnosis found the actual prefixed allocator configuration
+JE_ARROW_MALLOC_CONF=background_thread:false eliminates that background thread
+without changing the default pool/version or evaluator. A narrowly scoped
+early-controller environment and loaded-native-binary pin amendment is now in
+independent code review for fresh v2 paths. Allsingleton/case/cgroup/deadline
+conditions remain unchanged; the failed generic environment attempts are not
+adopted. Parallel readiness-driver implementation remains labels-free and does
+not execute data or fit. Next hourly report02:01; continue after reviewed repair.

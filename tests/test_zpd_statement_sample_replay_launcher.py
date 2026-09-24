@@ -50,6 +50,7 @@ def fixture():
             supervised=driver.SUPERVISED,unit=driver.UNIT,configuration=driver.configuration(),
             prepared_complete_sha256=prep_pin,resource_probe_complete_sha256=probe_pin,source_sha256=sources,
             runtime=runtime,runtime_sha256=driver.core.sha(driver.core.encoded(runtime)),controller_runtime=driver.preparation.RUNTIME,
+            controller_native=dict(synthetic_native='no native dependency loaded'),
             protocol_sha256={n:sources[n] for n in (driver.PROTOCOL,driver.probe.PROTOCOL)},
             execution_authorized=True,fitting_authorized=False,decision_reason='Synthetic only')
         def reseal():
@@ -61,6 +62,7 @@ def fixture():
             stack.enter_context(patch.object(driver,'source_state',return_value=state))
             stack.enter_context(patch.object(driver.preparation,'runtime',return_value=driver.preparation.RUNTIME))
             stack.enter_context(patch.object(driver.probe,'runtime_identity',return_value=runtime))
+            stack.enter_context(patch.object(driver,'controller_native_identity',return_value=approval['controller_native']))
             stack.enter_context(patch.object(driver.host,'process_identity',return_value=dict(pid=123,start_ticks=456,control_group='/synthetic-unit')))
             stack.enter_context(patch.object(driver.host,'cgroup_path',return_value=project/'synthetic-cgroup'))
             stack.enter_context(patch.object(driver.host,'read_cgroup',return_value={'synthetic_live':True}))
@@ -127,6 +129,49 @@ class FakeUnit:
 
 
 class ReplayLauncherTests(unittest.TestCase):
+    def test_native_identity_uses_loaded_module_and_mapped_library_bytes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp).resolve();extension=root/'lib.synthetic.so';library=root/'libarrow.so.2500'
+            extension.write_bytes(b'synthetic extension');library.write_bytes(b'synthetic allocator')
+            modules={'pyarrow':SimpleNamespace(__version__='25.0.1'),
+                     'pyarrow.lib':SimpleNamespace(__file__=str(extension))}
+            original=Path.read_text
+            mapping='100-200 r--p 0000 00:01 123 '+str(library)+'\n'
+            def reading(path,*args,**kwargs):
+                if str(path)=='/proc/self/maps':return mapping
+                return original(path,*args,**kwargs)
+            with patch.dict(driver.sys.modules,modules),patch.object(driver.sys,'platform','linux'), \
+                 patch.dict(driver.os.environ,driver.ENVIRONMENT),patch.object(Path,'read_text',reading):
+                identity=driver.controller_native_identity()
+                self.assertEqual(identity['extension'],dict(path=str(extension),sha256=driver.sha_file(extension)))
+                self.assertEqual(identity['allocator_library'],dict(path=str(library),sha256=driver.sha_file(library)))
+                self.assertEqual(identity['environment'],driver.ENVIRONMENT)
+                with patch.dict(driver.os.environ,{'JE_ARROW_MALLOC_CONF':'background_thread:true'}):
+                    with self.assertRaisesRegex(ValueError,'environment'):driver.controller_native_identity()
+                mapping='100-200 r--p 0000 00:01 123 /different/libarrow.so.2500\n'
+                with self.assertRaises(ValueError):driver.controller_native_identity()
+                mapping=''
+                with self.assertRaisesRegex(ValueError,'exact one loaded'):driver.controller_native_identity()
+
+    def test_arrow_configuration_is_early_and_does_not_relax_singleton(self):
+        self.assertEqual(driver.ENVIRONMENT['JE_ARROW_MALLOC_CONF'],'background_thread:false')
+        source=Path(driver.__file__).read_text()
+        self.assertLess(source.index("os.environ['JE_ARROW_MALLOC_CONF']"),source.index('from scripts import'))
+        snap=dict(main_process=dict(pid=123),cgroup=dict(processes=[123],threads=[123,124]))
+        with self.assertRaisesRegex(ValueError,'unexpected processes or threads'):driver.only_keeper(snap)
+
+    def test_native_dependency_drift_refuses_before_output_creation(self):
+        with fixture() as f:
+            with patch.object(driver,'controller_native_identity',return_value=dict(changed=True)):
+                with self.assertRaisesRegex(ValueError,'native dependency'):driver.preflight(f['project'])
+            self.assertFalse((f['project']/driver.SUPERVISED).exists())
+
+    def test_native_dependency_drift_refuses_at_recheck(self):
+        with fixture() as f:
+            context=driver.preflight(f['project'])
+            with patch.object(driver,'controller_native_identity',return_value=dict(changed=True)):
+                with self.assertRaisesRegex(ValueError,'native dependency drift'):driver.recheck(context)
+
     def test_absent_release_refuses_before_body_runtime_or_output(self):
         with fixture() as f:
             (f['root']/driver.RELEASE).unlink()

@@ -30,7 +30,7 @@ from src.runner.models import CaseOutcome, TestCase
 VERSION = 'statement_sample_replay_core_v1'
 PROJECT = Path('/home/cdw/VSCode/zpd-apr')
 FAMILY = prepared.FAMILY
-OUTPUT = FAMILY + '/replay-v1'
+OUTPUT = FAMILY + '/replay-v2'
 PREPARED = prepared.OUTPUT
 # Supplied by the parent after independent preparation verification, not read
 # from an arbitrary caller manifest or borrowed from an execution runtime.

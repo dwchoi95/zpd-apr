@@ -437,3 +437,48 @@ tests must prove that a classification-relevant suffix beyond character 1024
 is seen before serialization, that the full-string hash is independent of the
 prefix, and that large/non-ASCII/surrogate diagnostics obey the fixed format.
 No old scientific result, evaluator source or execution limit is changed.
+
+## Appendix C. Controller allocator startup amendment,2026-09-25
+
+Empirical attempt v1 failed before READY/GO at01:04 KST; no roster body was
+loaded and no submission/case ran. All929 clean local and929 server regressions
+had passed, but the production preparation import chain includes scikit-learn,
+pandas and PyArrow, unlike the smaller trusted probe. A fresh import-only
+diagnostic showed a `jemalloc_bg_thd` in addition to the main thread. Preserve
+the v1 FAILED marker and all logs; synthetic tests alone did not certify this
+production startup dependency.
+
+The installed Arrow25.0.1 binary contains `JE_ARROW_MALLOC_CONF`; its vendored
+allocator uses the `je_arrow_` symbol prefix. The official jemalloc installation
+contract explains that the prefix also prefixes MALLOC_CONF; Arrow's official
+memory-pool source enables its vendored background thread on Linux:
+[jemalloc prefix contract](https://github.com/jemalloc/jemalloc/blob/dev/INSTALL.md),
+[Arrow allocator configuration](https://github.com/apache/arrow/blob/main/cpp/src/arrow/memory_pool_jemalloc.cc).
+These upstream sources explain the mechanism, not the identity of the installed
+binary; that identity is established separately from loaded module/maps hashes.
+
+Set only `JE_ARROW_MALLOC_CONF=background_thread:false` in the launcher before
+all third-party imports, for both outside coordinator and -m worker. Keep the
+five existing BLAS thread settings. Pin all six environment values in the
+configuration, verify them, and bind the actual loaded PyArrow extension and
+libarrow allocator library paths/SHA256 plus PyArrow version in the separate
+release's controller_native identity, checked before/after work. These two
+dlopen dependencies extend the former executable/ldd record; this is not a
+complete inventory of every transitive native dependency. Do not modify vendor
+binaries, package versions, default memory pool, runner, comparator, submitted
+program environment, resource caps, deadlines or the exact-main-only barriers.
+The sandbox still clears its environment independently of this controller key.
+
+Fresh import-only diagnostics with the correct prefixed setting retained the
+same default mimalloc pool and Arrow25.0.1, with exactly the main thread before
+and after runtime identity checks. The attempted generic MALLOC_CONF,
+ARROW_JEMALLOC_CONF and default-system-pool settings did not remove the thread;
+none is adopted. Do not whitelist, kill or ignore an unexpected native thread.
+
+Only a separately released fresh replay-v2/replay-supervised-v2 and v2 unit may
+continue after independent code review and exact-source tests. The accepted
+trusted resource probe, all cases/blocks, availability rules and scientific
+gates are unchanged. Startup/terminal singleton checks remain mandatory, and
+any new failure remains FAILED. The original no-first-snapshot cleanup error
+is preserved; manually stopping the already exited exact v1 unit is separately
+logged and does not retroactively certify its missing live cgroup evidence.

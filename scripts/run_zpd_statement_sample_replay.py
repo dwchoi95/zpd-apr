@@ -12,6 +12,9 @@ import os
 for _key in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS',
              'VECLIB_MAXIMUM_THREADS','NUMEXPR_NUM_THREADS'):
     os.environ[_key]='1'
+# Arrow's vendored allocator uses its build-time symbol prefix for configuration.
+# This must precede sklearn -> pandas -> pyarrow imports in BOTH -m processes.
+os.environ['JE_ARROW_MALLOC_CONF']='background_thread:false'
 import hashlib
 import json
 from pathlib import Path
@@ -30,10 +33,10 @@ ROOT=Path(__file__).resolve().parents[1]
 PROJECT=Path('/home/cdw/VSCode/zpd-apr')
 FAMILY=core.FAMILY
 OUTPUT=core.OUTPUT
-SUPERVISED=FAMILY+'/replay-supervised-v1'
+SUPERVISED=FAMILY+'/replay-supervised-v2'
 PROBE=probe.OUTPUT
-UNIT='zpd-statement-samples-replay-20260924-v1.service'
-RELEASE='analysis_protocols/zpd-statement-sample-replay-release-20260924.json'
+UNIT='zpd-statement-samples-replay-20260924-v2.service'
+RELEASE='analysis_protocols/zpd-statement-sample-replay-release-20260924-v2.json'
 SIDECAR=RELEASE+'.sha256'
 PROTOCOL='analysis_protocols/zpd-statement-sample-replay-prospective-20260924.md'
 METADATA_BYTES=16*1024**2
@@ -42,6 +45,7 @@ READY_SECONDS=30
 KEEPER_SECONDS=5
 ENVIRONMENT={k:'1' for k in ('OMP_NUM_THREADS','OPENBLAS_NUM_THREADS','MKL_NUM_THREADS',
                             'VECLIB_MAXIMUM_THREADS','NUMEXPR_NUM_THREADS')}
+ENVIRONMENT['JE_ARROW_MALLOC_CONF']='background_thread:false'
 SOURCES=tuple(sorted(set((*preparation.SOURCE_FILES,*probe.SOURCES,PROTOCOL,
     'scripts/zpd_statement_sample_replay.py','tests/test_zpd_statement_sample_replay.py',
     'scripts/run_zpd_statement_sample_replay.py','tests/test_zpd_statement_sample_replay_launcher.py'))))
@@ -78,6 +82,33 @@ def metadata(path,expected=None,bindings=None):
         require(key not in bindings or bindings[key]==pin,'consumed metadata drift')
         bindings[key]=pin
     return core.decode_json(raw)
+
+
+def controller_native_identity():
+    """Pin the two loaded Arrow binaries; no allocator calls or corpus reads.
+
+    These are dlopen dependencies absent from the controller executable's ldd
+    closure. This is not a claim to inventory every native package dependency.
+    """
+    require(sys.platform=='linux','Linux controller native identity required')
+    require(all(os.environ.get(k)==v for k,v in ENVIRONMENT.items()),'controller environment differs')
+    arrow=sys.modules.get('pyarrow');extension=sys.modules.get('pyarrow.lib')
+    require(arrow is not None and extension is not None,'expected loaded Arrow dependency missing')
+    path=canonical(extension.__file__)
+    require(path.is_file() and path.name.startswith('lib.') and path.suffix=='.so','loaded Arrow extension required')
+    mappings=Path('/proc/self/maps').read_text(encoding='utf-8').splitlines()
+    libraries=set()
+    for line in mappings:
+        fields=line.split(maxsplit=5)
+        if len(fields)==6 and re.fullmatch(r'libarrow\.so\.[0-9]+',Path(fields[5]).name):
+            libraries.add(canonical(fields[5]))
+    require(len(libraries)==1,'exact one loaded Arrow allocator library required')
+    library=next(iter(libraries))
+    require(library.parent==path.parent and library.is_file(),'Arrow binaries must share their authenticated package')
+    require(type(arrow.__version__) is str and bool(arrow.__version__),'Arrow version required')
+    return dict(kind='statement_replay_controller_native_v1',pyarrow_version=arrow.__version__,
+        environment=dict(ENVIRONMENT),extension=dict(path=str(path),sha256=sha_file(path)),
+        allocator_library=dict(path=str(library),sha256=sha_file(library)))
 
 
 def configuration():
@@ -179,7 +210,7 @@ def preflight(project,*,worker=False):
     side=sidecar.read_bytes();require(re.fullmatch(b'[0-9a-f]{64}\n',side) is not None,'strict release sidecar required')
     approval=metadata(release,side[:-1].decode('ascii'))
     required={'kind','project','output','supervised','unit','configuration','prepared_complete_sha256',
-        'resource_probe_complete_sha256','source_sha256','runtime','runtime_sha256','controller_runtime',
+        'resource_probe_complete_sha256','source_sha256','runtime','runtime_sha256','controller_runtime','controller_native',
         'protocol_sha256','execution_authorized','fitting_authorized','decision_reason'}
     core.exact_fields(approval,required)
     require(approval['kind']=='statement_sample_replay_release_v1' and approval['project']==str(PROJECT)
@@ -199,6 +230,7 @@ def preflight(project,*,worker=False):
     require(same(approval['controller_runtime'],preparation.RUNTIME)
         and same(preparation.runtime(),approval['controller_runtime'])
         and same(probe.runtime_identity(),approval['runtime']),'released exact runtime required')
+    require(same(controller_native_identity(),approval['controller_native']),'released controller native dependency differs')
     run=canonical(project/OUTPUT);outside=canonical(project/SUPERVISED)
     require(not run.exists(),'new replay output required; no retry')
     require(outside.is_dir() if worker else not outside.exists(),'fresh coordinator or existing owned worker boundary required')
@@ -213,6 +245,7 @@ def recheck(context):
     require(all(sha_file(ROOT/n)==v for n,v in approval['source_sha256'].items()),'source SHA drift')
     require(sha_file(ROOT/RELEASE)==context['release_sha256'] and sha_file(ROOT/SIDECAR)==context['sidecar_sha256'],'release drift')
     require(same(preparation.runtime(),approval['controller_runtime']) and same(probe.runtime_identity(),approval['runtime']),'runtime drift')
+    require(same(controller_native_identity(),approval['controller_native']),'controller native dependency drift')
     require(not (project/core.PREPARED/'FAILED.json').exists() and not (project/PROBE/'FAILED.json').exists(),'prerequisite failed')
     require(all(sha_file(path)==value for path,value in context['bindings'].items()),'input SHA drift')
 
