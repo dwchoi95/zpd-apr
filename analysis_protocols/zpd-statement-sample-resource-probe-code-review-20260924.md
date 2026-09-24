@@ -134,3 +134,15 @@ before the first and only live trusted-probe attempt.
 
 Amended release SHA:
 `9a6838ab152270de54ea323d17b880a933eef9dd8864084f92076c5b70ef181f`.
+
+The first server preflight at00:23 KST refused this release before creating any
+output or unit: JSON orchestration serialized three float timeout values as
+integers (5/600/30 rather than5.0/600.0/30.0). Numerical equality held but the
+intentionally strict canonical-byte comparison correctly failed. Root corrected
+only those release literals, preserving byte-strict comparison and all limits.
+No driver/runtime/test changed and no workload ran. The already deployed clean
+a6666d64d4922a299cc25bcec86a80bdecdbb0d9 snapshot remains preserved and unexecuted;
+its local61-test suite passed0.349s and server61-test suite passed0.148s.
+The corrected release SHA is029bad4308632e02fc73bda2080f078aa1f97013b9ee0266473fed9a9e8a0ffd.
+Subsequent packaging must assert configuration canonical-byte equality locally
+as well as SHA closure and repeat actual server preflight before any first run.

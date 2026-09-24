@@ -3,7 +3,7 @@
   "project": "/home/cdw/VSCode/zpd-apr",
   "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v1",
   "configuration": {
-    "barrier_seconds": 5,
+    "barrier_seconds": 5.0,
     "empirical_inputs": false,
     "envelopes": {
       "P1": {
@@ -93,8 +93,8 @@
     "sandbox_memory_mib": 2048,
     "sandbox_timeout_seconds": 2.5,
     "sandbox_workers": 8,
-    "suite_seconds": 600,
-    "unit_watchdog_seconds": 30
+    "suite_seconds": 600.0,
+    "unit_watchdog_seconds": 30.0
   },
   "source_sha256": {
     "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "648217b34c68cbf385b00eb39d38423c8435b923cd89898e4f62770f0a456367",
