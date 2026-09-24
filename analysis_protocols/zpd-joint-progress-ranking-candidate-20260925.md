@@ -89,6 +89,9 @@ No data-derived block rescaling or separate regularization is introduced.
 
 All arms serialize the same 4,131-column layout:
 
+The fixed fit/serialization order is `H,Jm,HS,U,L,CF,C_joint`. The table below
+groups nested controls first for explanation; its display order is not fit order.
+
 | Arm | Current 4,099 | Static/current-feedback 16 | Residual feedback 16 |
 | --- | --- | --- | --- |
 | C_joint | x_C | zero | zero |
