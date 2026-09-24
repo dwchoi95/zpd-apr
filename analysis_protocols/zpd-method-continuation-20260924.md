@@ -820,3 +820,28 @@ failed v1 and must not be launched again. Monitor this session to completion,
 then verify all25/320/11 artifacts and the independent audit before scientific
 interpretation. At this entry0/320 OOF examples are complete; actual RR/gates
 and a measured completion ETA are not yet available. Next hourly report23:01.
+
+## Newton-v2 complete; scientific gates still fail,23:01 KST
+
+Actual execution completed22:51:40:320/320 recipients,25/25 models,11 methods.
+The independent numerical/result audit passes, but both scientific gates fail.
+H achieves205 stable AC and53 regressions, versus structural C206 and52, with
+13 unknowns retained in each. H selects no no-ops. All25 gradients satisfy the
+strict1e-8 threshold; maximum7.62685389843476e-9. The numerical amendment fixed
+execution reliability, not actual repair or history-mechanism performance.
+
+Root synchronized without deletion and verified19 COMPLETE markers,146 artifact
+hashes,70 source/73 input bindings, all six original label hashes,25 numerical
+models, fold disjointness/full320 membership, and the successful ten-stage
+supervisor. No FAILED marker occurred in v2; its tmux session has exited.
+The old failed v1 remains preserved and unassessed. See the separate Newton
+completion record for exact pins and all-method counts.
+
+Next-stage work has already started with three independent bounded diagnoses:
+paired/fold/subgroup results, representation/transfer failure and one prospective
+method change, and metadata-only observed-testcase feedback eligibility. Do not
+reuse the legacy mixed Progress cache without exact source/suite/runtime binding
+and a defensible inference-time feedback-access contract. No rerun, gate change,
+control promotion or original-valid32 access occurred. The research goal remains
+active; no credible date for achieving a positive scientific result is known.
+Next regular report00:01 KST; proceed when ready rather than waiting for it.
