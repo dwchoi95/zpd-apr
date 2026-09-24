@@ -371,3 +371,47 @@ independent reviews and synthetic tests. The next research action is not being
 deferred until the next hourly report. Reporting remains supplementary to
 continuation. Next scheduled-in-goal reporting checkpoint is around21:01 KST;
 this does not claim a separately installed Scheduled automation.
+
+## C3 complete and independently verified — 2026-09-24 20:28 KST
+
+Fitting completed at20:16:18 (2,644.915 seconds). The already running supervisor
+immediately started independent replay at20:16:21; it completed at20:27:59
+(696.097 seconds for the audit). All35 saved models and29,740 OOF predictions
+were verified without refitting. One all-masked prefix remains retained but
+not scoreable, leaving29,739 evaluable prefixes and6,944 users. No runtime
+failure or duplicate experiment occurred.
+
+The local synchronized results passed all62 fit-output hashes, six supervisor
+hashes and two verifier-output hashes. Fit and audit primary results, all five
+bootstrap contrasts and the decision agree exactly.
+
+- Fit COMPLETE:`df328cb2e194eac9421bc8e80e2f30bddb6d34ee2ba4802e4f88e3358b31c875`.
+- Fit report:`f08a8485bb757cd6d2e13049f800800b2824326579a1a30610c5b84f09beb855`.
+- Audit COMPLETE:`dbc12887b90d66e3eafd3cd95173cf06f8661974f4cdd0c7eaf0f2ab5192fcae`.
+- Supervisor COMPLETE:`3fae00f70cea74c211e0b0e53c72a7292c623e40520db98aa757835608521167`.
+
+The scientific gate remains **FAIL**. H user-equal masked NLL is0.3340607695,
+versus Cn0.3541767073, Jm0.3341172457 and HS0.3340311480. H beats Cn/U/L/Jm
+under every predeclared check, but not HS: only2/5 fold wins and H−HS
+`+0.0000296215`, Bonferroni99% descriptive interval
+`[-0.0003473793,+0.0004580258]`. H−Jm is small but consistently negative:
+`-0.0000564762`, interval`[-0.0000909841,-0.0000203316]`.
+These are next-action predictive development results, not repair correctness,
+ordered-history proof or learner benefit. No full-train refit/model promotion.
+
+Continuation did not wait for a reporting boundary: actual-repair geometry
+was already complete320/320 at19:56, and its separate stage engine and pure
+numerical/result auditor were independently reviewed and committed as
+`7f206868`. The engine's17 synthetic tests and auditor's14 author/root tests
+passed; a complete committed ZPD regression run is in progress. Production
+guard/process orchestration, independent review, frozen release and exact
+server snapshot tests still precede actual repair fitting. No repair fit has
+started at this checkpoint, and no change to its frozen comparison/gate follows
+from the new C3 result.
+
+At20:31 the committed71-module ZPD suite completed589/589 tests in163.226
+seconds;19/19 pilot tests also passed. This is a local working-checkout test,
+not a substitute for final clean-snapshot server tests. C3's tmux session exited
+naturally after its terminal seal; no process was forcibly terminated. The
+independent guard/supervisor review and implementation continue in parallel
+with a saved-prediction-only C3 failure diagnosis.
