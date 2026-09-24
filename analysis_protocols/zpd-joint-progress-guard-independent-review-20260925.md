@@ -117,3 +117,35 @@ timeouts,32GiB/threads, exact clean Linux closure and stage timings require thei
 separate checks. Full numerical reconstruction and actual gate equality remain
 mandatory after a separately authorized run. A functional PASS cannot replace
 those obligations or predict repair improvement.
+
+## Source-closure-only addendum
+
+2026-09-25. **Scoped closure-update PASS.** The earlier findings, test results
+and scope above are retained verbatim; this addendum does not reinterpret their
+evidence or issue a release.
+
+Reviewed the exact diff from guard SHA
+`691ce21aedd79bacb9185afbb047e18701c9881178ac5d3883b8b36ac22cfb8c`
+to `77ea59568dd5416827ac0ec13afd6a64cc97ba30dfaa13004b682b194a5aa607`.
+Only five literal entries were appended to `NEW_SOURCES`:
+
+- `scripts/probe_zpd_joint_progress_resources.py`
+- `tests/test_zpd_joint_progress_resources.py`
+- `tests/test_zpd_joint_progress_resources_review.py`
+- `analysis_protocols/zpd-joint-progress-resources-independent-review-20260925.md`
+- `analysis_protocols/zpd-joint-progress-linux-core-pretest-20260925.md`
+
+A separate source-only byte comparison removed exactly these five added lines
+and reproduced the complete prior reviewed file byte-for-byte. AST inventory
+inspection confirmed unique canonical permitted code/protocol names, with all
+five paths present. There is no changed guard logic, release schema, numerical
+constant, scientific predicate, threshold, original input pin or authorization
+path. The new entries become mandatory exact tracked release/source bindings
+under the unchanged guard checks; they do not bypass any prerequisite.
+
+This narrow check did not execute the resource probe, rerun its tests, inspect
+actual inputs, or independently verify the reported Linux results. Those retain
+their separate raw records and reviews. No empirical access, fit, SSH, release
+or commit was performed. Parent-managed focused/full regressions and clean
+resource measurements remain separate evidence; the earlier 24-test count is
+not relabeled as a new run of this source revision.
