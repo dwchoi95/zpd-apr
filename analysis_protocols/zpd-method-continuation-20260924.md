@@ -717,3 +717,38 @@ This is an actual experiment launch, not only a future plan. Do not start a
 second run or infer a positive result before complete320/25/11 assessment plus
 independent verification. Monitor the existing session and proceed to sealed
 result diagnosis once it ends; next regular report remains23:01 KST.
+
+## Directed144 operational failure and numerical next step,22:18 KST
+
+The actual run stopped at22:05:38 in fold2/HS: the fixed L-BFGS-B optimizer
+returned success=false/status2/ABNORMAL after5 iterations and47 evaluations.
+Infinity gradient1.1316785480941505e-8 did not satisfy the frozen internal1e-8
+gtol. The separate1e-6 certificate limit cannot override unsuccessful status.
+The guard correctly failed closed. There are131/320 sealed OOF predictions,
+10 models in completed folds and2 unsealed models in the failed fold. No global
+prediction seal, assessment, numerical audit or run COMPLETE exists. New repair
+RR and scientific gates remain **unassessed**, not a performance failure.
+
+At22:07:15 the matching tmux session/workers were absent. Failed artifacts and
+logs were synchronized locally without overwriting older results. The separate
+operational audit verified all source67/input73 manifest bindings, exact131
+disjoint held IDs, failed markers and absent downstream artifacts. Prediction
+and model bodies were only stream-hashed, not mined for outcome choices.
+The22:08–22:10 preliminary completion estimate was retracted immediately after
+failure. No finite revised completion time is yet supported.
+
+The independent numerical diagnosis used only source, aggregate diagnostics
+and synthetic arrays. Near-optimum loss-difference cancellation is plausible:
+the exact-arithmetic strong-convexity gap bound from the recorded gradient is
+below one float64 ULP of the objective. The failed theta/line-search trace was
+not saved, so the exact production cause is not established. No empirical
+optimizer replay, cell rescue, status relaxation or partial-result assessment
+has occurred. The two raw independent reviews are preserved alongside this log.
+
+Next: freeze one analytic-damped-Newton numerical amendment with the identical
+objective/data/weights/controls/gates and fresh gradient<=1e-8 acceptance. Preserve
+v1 and all original1296 modules; use a new numerical model identity and separate
+run-v2 for a complete25-cell run only after independent implementation review,
+local/server tests and a new clean release. This is numerical reliability work,
+not evidence of a history effect or a new positive repair result. The next
+regular report remains23:01; a ready stage must proceed without waiting for it.
