@@ -1076,3 +1076,42 @@ Independent51 synthetic tests passed29.189s. It has no empirical release yet:
 an accepted complete replay, independent audit, external pins and clean tests
 are required before all320 observation-only readiness records can be generated.
 No repair improvement, fit or readiness decision is claimed at this point.
+
+## Replay v2 completed and independently accepted; readiness release,01:33 KST
+
+Actual replay completed327.070007s after start (approximately01:27:47). Outer
+COMPLETE3c47a7af72bff8b988b5f9a60bd92b7a7edb14807bff1248dff4a9fefad477d0
+and inner2b04d4b89ac77ffae07f6aea35383287ef4f7e0447fddac3df04f6122c90036f
+seal6056 source-block completions and16776case attempts. All1514 eligible
+identities are four-block full-categorical stable;30nonPython identities remain
+unavailable. No instability/unknown execution appeared. All320 recipients and
+1650 memberships remain; stable current320/320,prior652/665,donor648/665.
+No recipient was removed because of unsupported history.
+
+Root verified28 fixed files through the authenticated bridge and live post-run
+source/runtime/native/87parent checks. The separate scalar/lifecycle audit
+reported final PASS at01:33: all4blocks each1514sources/4194cases, per-block
+AC3313/WA409/RE368/CE93/TLE11; allcategoricalvectors andcoverage reconstructed
+without calling produceraggregate/ExecutionVector/evaluator. READY/GO/DONE/ACK,
+12cgroup captures, exactsingleton/end/normalexit and old-group cleanup passed.
+Observed peak3776389120bytes/tasks35; no new memory/pids events. The reviewer
+does not claim to reconstruct unpreserved stdout or independently re-execute
+the AC/WA oracle. Raw review is being saved separately without editing verdict.
+The final unit is not-found/inactive/dead/MainPID0, and its tmux session is gone.
+Sample-feedback stability is not repair effectiveness or a fit authorization.
+
+The next observation-only readiness release is
+fdbee69fe1d9a6c6ca37c5ffcb0c04de4aee78aa9ca5cebf7f38ae825a6a5bd6.
+It externally pins the accepted outer replay, preparation, unchanged old18
+support and56 reviewed source files. All56 bytes match the clean full-test
+pretest snapshot33e2486862fa61d0ab3af660232f37028ca84931,
+tree0d214fb5b3489f13401cfdb3f9c78f006b7a3085, with no empirical release present.
+Local935+19 tests291.030+0.008s and server935+19 tests142.337+0.005s passed.
+Local log1c8765bd503cd35a2c11d04b375befbe608433ccda176554dc6055c35351665d;
+serverlogce8894071e1d5aaa7a768f694d915a7670631db8f7a3d2239a898f0a9d05cba9.
+Final release metadata/sidecar will be committed in a new clean execution
+snapshot with exact-source51 integration tests and real preflight before the
+fresh readiness audit. No implementation byte is changed after the954-test
+pretest. The new release authorizes no program execution, repair-label access,
+model prediction access or fit. Allsix readiness conditions across allfive
+training complements remain fixed; failure must stop the fit branch.
