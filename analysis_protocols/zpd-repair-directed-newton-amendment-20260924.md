@@ -104,3 +104,16 @@ tests and source/runtime checks before the actual single launch.
 This file freezes the chosen algorithm before implementation/empirical use;
 any necessary mathematical correction must be separately recorded prospectively,
 not selected using new repair outcomes. No completion ETA is asserted here.
+
+## Prospective implementation clarification,22:22 KST
+
+Before any empirical use, fix dense symmetric Hessian assembly explicitly as
+`H=0.5*H_raw+0.5*H_raw.T` after `H_raw=I+.1 D.T diag(w*sigma(z)*sigma(-z)) D`.
+Check both arrays finite; this is symmetric evaluation of the same analytic
+Hessian, not added jitter, regularization or a spectral correction. All solve
+residual/a/q calculations use that identical symmetrized H. Bind this operation
+in numerical configuration. One linear solve count means one Cholesky plus its
+two triangular solves; Hessian and solve counters are separate. On nonfinite
+arithmetic preserve the last finite theta and completed finite trace entries,
+with a textual failure reason, rather than emitting invalid NaN/Infinity JSON.
+The maximum counts, success boundary and no-retry policy are unchanged.
