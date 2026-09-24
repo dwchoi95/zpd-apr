@@ -35,3 +35,25 @@ Reviewer: repair_structure_features, not the probe author. Scope: the exact
 
 The review is retained with its limitations. A successful timing probe does not
 close the synthetic full-solver or method-selection gates of the candidate plan.
+
+## Observed single probe result
+
+Executed once at approximately 03:21 KST on 2026-09-25; exit0. The GNU180-second
+watchdog did not time out. No surviving probe Python process remained afterward,
+and the source remained clean with the same revision/tree and script SHA.
+
+- Snapshot revision: `b797c3ef50e4ed957a7c1da7dfffeb5904eed25c`.
+- Tree: `27f07b7bbdf5ad2535dfa510f4b7bbeee1532b10`.
+- Bundle SHA: `31895213e147c7fba7d32f7bfab29e1af17e9fca310a8851a5b1218c1550ca31`.
+- Remote source: `.runtime/joint-linear-probe-20260925-v1` under the canonical
+  project; local source: `/private/tmp/zpd-joint-linear-probe.f35wDV/source`.
+- Hessian assembly: 2.055968626 seconds.
+- Cholesky plus two triangular solves: 0.239114388 seconds.
+- Total measured wall time: 2.483160091 seconds.
+- Normalized solve residual: 1.1491731905572793e-15 (limit1e-12).
+- Peak RSS: 837,800 KiB. Soft/hard address-space limits:34,359,738,368 bytes.
+- Empirical inputs opened:false; empirical fitting:false; full-solver test:false.
+
+This shows no immediate size/resource obstacle for this synthetic one-operation
+case. It supplies no empirical performance evidence and does not establish
+Newton convergence, robustness to actual scaling/correlation, or a35-fit ETA.
