@@ -302,3 +302,32 @@ by historical-feedback interaction design is documented separately, with no
 learned C3 weights transferred across incompatible fold schemes. Its required
 320-bank observation/source-language support checker is being prepared;
 that repair fit is not released by this C3 decision.
+
+## C3 crossfit launched — 2026-09-24 19:32 KST
+
+- Dev implementation/release:`1bb46ade569fe1aa1ca897cfbcfe374961ef0c83`.
+- Exact tree:`843f1b543f43bbb19c44ee8b5a576060535c9113`.
+- Clean parentless snapshot:`16cdef589588d425d90513849496362f2ecb0a2d`.
+- Local source:`/private/tmp/zpd-feedback-cv-source.hViqEo`.
+- Remote source:`.runtime/feedback-cv-20260924-v1` under the canonical project.
+- Bundle:`.runtime/zpd-feedback-cv-20260924-v1.bundle`, SHA256
+  `73625c6b871158c5fd9e4b58773b98f6581510a04b62612c28297f796a8cc6d7`.
+- Server exact-tree tests:**480 ZPD +19 pilot passed**. The final terminal-drift
+  regression is included. The prior six unrelated local fresh-holdout tests
+  remain outside this committed tree, as before.
+- On-server preflight independently ran producer/verifier approval checks on
+  the real support artifact:71,191 observations and18 input/release bindings
+  agree exactly; no fit was started by that check. Git source remained clean.
+- tmux:`zpd-feedback-cv-20260924`; supervisor PID1869881 and crossfit child
+  PID1869895 were verified live at19:32:25 KST. Initial operation is input and
+  feature preparation, not a completed fitted model or predictive result.
+- Supervisor output:`outputs/zpd-history-feedback-coupling-20260924/supervised-v1`.
+- Fit output:`outputs/zpd-history-feedback-coupling-20260924/run-v1`.
+- Launch log:`.runtime/feedback-cv-20260924-v1.log`.
+
+The committed supervisor was invoked with canonical `--project`, `--output`
+and `--run-output`, using `.runtime/fse-env/bin/python -B` and four BLAS thread
+controls set to1. The supervisor applies the frozen32GiB/8h crossfit and1h
+independent-audit bounds. The queue's final seal is not the research objective's
+completion: actual repair and mechanism evidence still remain to be established.
+No existing result, user-owned change or paper figure was overwritten.
