@@ -53,3 +53,28 @@ Synthetic timing does not justify changing any hard cap after empirical results.
 The separate full all-component clean Linux regression and controlled resource
 probe are still required before source/input/runtime release and the single
 joint empirical experiment. The prior progress32 result remains negative.
+
+## Later source-only actual input connection check
+
+From the clean all-component regression snapshot based on dev872592ae
+(remote revision`f48c0b6454052c2295687d8f9fcdbafb3d902f4f`,
+tree`ba64e87809663ef4bb5453fabc213b18857db97f`), a read-only invocation of the
+reviewed input loader/projector completed in18.784211 seconds (19.61s wall,
+peak624,892KiB). It authenticated71 source and102 input bindings, retained
+320 recipients/2544 candidates and produced all five own-fold fingerprints.
+No repair-label body was opened, no scaler/ranker was fitted, no cases were
+executed and no release or empirical output was written. Path-open spying
+rejected repair-label body names; source/input hashes were rechecked afterward.
+
+| Fold | Source-only capsule SHA256 |
+| --- | --- |
+| 0 | ac7d6cd972410a3a6bd43fd7c1aad7a8935b3a9ba3382493675603e678f58b14 |
+| 1 | fdbbb2f5c6eebfbbeb847383795e0b505e6ba1a4c176074eab259ad543a19238 |
+| 2 | 1b6162707268cf55101124a602c04e5b9d0608d0de495cc0a02060bdff3bb8e3 |
+| 3 | 26e0c45282dd3d0482aabbfa8f8647ea405004142b9d5f09da222e1ee6ddd0d9 |
+| 4 | bee6487b1697a41e8f5c71cedf3240a3db1f9478402ada0bc9eb36987a87e47c |
+
+Raw log SHA256`e37298cb232707cebd70ed1afb4028e5dd281e8f114c1210355ec5046182e9ad`,
+retained at remote `.runtime/joint4131-regression-20260925-v1/source-input-check.log`
+and local `archive/zpd-joint-progress-pretest-20260925/source-input-check.log`.
+This checks actual input connectivity/projection, not actual repair performance.
