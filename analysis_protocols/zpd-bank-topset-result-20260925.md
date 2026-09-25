@@ -35,6 +35,9 @@ banks, problems and folds match. Old-H to new-H paired changes: 103 selected
 candidates change; 16 AC gains and 10 AC losses; 11 regressions removed and
 10 introduced. This descriptive cross-run calculation is separate from the
 non-author audit, which did not inspect old empirical outcomes.
+In a separate follow-up, that independent auditor also authenticated both
+runs and confirmed these cross-run counts and bank seals. Its earlier raw
+review remains unchanged; no inferential comparison was added.
 
 ## Why the scientific result remains negative
 
@@ -88,6 +91,10 @@ tests and raw JSON are in `archive/zpd-bank-topset-result-audit-20260925`.
 The execution source is the clean b8edcfa83d081f1a48f57c60138a167f431e5889
 snapshot documented in the separate launch record. At 11:38:23 KST a live
 server check found no bank-topset process and no tmux session; none was killed.
+The accepted source archive is additionally preserved on both machines at
+`archive/zpd-bank-topset-release-20260925/accepted-source-v2.tar`, SHA256
+`12e7f528c2a240baa9d3361ef58001288e0c563731a81280a8df49a15aeff3e8`,
+so reproduction need not rely on the temporary packaging directory.
 
 ## Immediate next task, already delegated
 
