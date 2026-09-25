@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 from scripts import run_zpd_joint_progress_job as authority
 from scripts import run_zpd_bank_topset_cv as worker
@@ -23,6 +24,18 @@ FIELDS = {'kind','fold','inputs','transform','own_label_contract','source_state'
           'runtime','controller_native','release_sha256','original_job_sha256','original_transform_sha256'}
 NEW_SOURCES = (
     'src/__init__.py', 'src/codenet/__init__.py', 'src/repair/__init__.py', 'src/runner/__init__.py',
+    # Package initializers eagerly import these existing modules. Bind their
+    # committed bytes too; a minimal archive must not rely on the dirty parent
+    # checkout or an unpinned PYTHONPATH to satisfy their imports.
+    'src/cli.py', 'src/codenet/builder.py', 'src/codenet/context_filter.py',
+    'src/codenet/refiner.py', 'src/codenet/splitter.py',
+    'src/runner/compare.py', 'src/runner/dataset.py', 'src/runner/models.py', 'src/runner/python_runner.py',
+    'src/repair/candidates.py', 'src/repair/compare.py', 'src/repair/dataset.py',
+    'src/repair/evaluate.py', 'src/repair/evidence_order.py', 'src/repair/filtering.py',
+    'src/repair/inference.py', 'src/repair/lsgen.py', 'src/repair/outcomes.py',
+    'src/repair/pilot_contracts.py', 'src/repair/pilot_ranker.py', 'src/repair/prompts.py',
+    'src/repair/report.py', 'src/repair/sequential.py', 'src/repair/train.py',
+    'src/repair/zero_shot.py', 'src/repair/zpd_state.py',
     'scripts/zpd_bank_topset_objective.py', 'scripts/zpd_bank_topset_plan.py',
     'scripts/zpd_bank_topset_newton.py', 'scripts/run_zpd_bank_topset_cv.py',
     'scripts/run_zpd_bank_topset_job.py', 'scripts/supervise_zpd_bank_topset.py',
@@ -31,6 +44,7 @@ NEW_SOURCES = (
     'tests/test_zpd_bank_topset_newton.py', 'tests/test_zpd_bank_topset_cv.py',
     'tests/test_zpd_bank_topset_cv_numerical.py',
     'tests/test_zpd_bank_topset_release.py',
+    'tests/test_zpd_repair_pairwise.py',  # Existing synthetic fixture dependency.
     'tests/test_zpd_bank_topset_audit.py',
     'tests/test_zpd_bank_topset_audit_review.py',
     'analysis_protocols/zpd-bank-objective-design-20260925.md',
@@ -47,6 +61,11 @@ def check_sources(mapping):
     authority.require(type(mapping) is dict and set(mapping) == set(SOURCE_FILES),
         'exact original-plus-topset source closure required')
     authority.check_sources(mapping)
+    loaded = {str(Path(module.__file__).relative_to(authority.ROOT))
+        for module in tuple(sys.modules.values())
+        if getattr(module,'__file__',None) and str(module.__file__).endswith('.py')
+        and Path(module.__file__).is_relative_to(authority.ROOT)}
+    authority.require(loaded <= set(mapping), 'loaded local module outside declared source closure')
 
 
 def execute(project, fold, expected):

@@ -69,7 +69,7 @@ paper review. The earlier closed pure-objective review remains unchanged.
 ## Verification and remaining release conditions
 
 `python3 -m unittest tests.test_zpd_bank_topset_release tests.test_zpd_bank_topset_cv -v`
-passed **16/16**: 12 new release/isolation/barrier tests plus four existing own
+initially passed **16/16**: 12 new release/isolation/barrier tests plus four existing own
 worker tests. All files are temporary synthetic artifacts; source/native/resource
 checks, subprocess children, numerical fits and assessment are explicitly doubled.
 No mock output is an empirical model, numerical certificate or repaired program.
@@ -83,10 +83,10 @@ of the 16-test count and is not empirical evidence or a resource-envelope test.
 Reviewed hashes:
 
 - `scripts/run_zpd_bank_topset_cv.py`: `2ebcbdb9a1b1473714e9829d676379cd69084c1ad3b35a415047fa6aefb2d128`
-- `scripts/run_zpd_bank_topset_job.py`: `503b94ead967a0e180c449c0af2f1c4ef1970bd7a2ea0843fb6680bc700e8856`
+- `scripts/run_zpd_bank_topset_job.py`: `18adbf69a86e25b91081df73264ffa80507a5ef5753490312ba527bd151ae2e4`
 - `scripts/supervise_zpd_bank_topset.py`: `475dc84efd47be6a457639560d0a341b5cb352b29fbf46d5ad4d0d96cf16bb35`
 - `tests/test_zpd_bank_topset_cv.py`: `855285fc3a1c16c0f0cbaeac6bb90169ce2f4e798c8db7582205f855f4b0bb30`
-- `tests/test_zpd_bank_topset_release.py`: `46040f7c0ca994e3bc1cd2a29a759df18bdb4116de983e845bc3ad8d24dc550c`
+- `tests/test_zpd_bank_topset_release.py`: `ddb62799e57dd650eb8fe3dddcf026eef7712956a62f18fe864d20af6e05292c`
 
 Final source deltas add the explicit methodology-intervention report tag and
 named test/review dependencies and four package initializers to the source closure;
@@ -98,3 +98,22 @@ conditional source-level acceptance, NOT empirical release: independently
 accepted plan/solver/auditor checks, exact clean committed execution snapshot,
 snapshot tests, current remote no-duplicate checks and a separately authorized
 new release remain necessary. Any changed reviewed source needs a delta recheck.
+
+## Packaging-pretest delta review (no empirical retry)
+
+The parent reports preserved Linux snapshot v1 failed before any model fit with
+`ModuleNotFoundError: src.repair.compare`; only 14 pure-objective cases ran.
+Local full-checkout tests had not established minimal-archive import closure.
+Inspection confirms `src/repair/__init__.py` eagerly imports the missing module
+and others. The corrected inventory explicitly includes all 30 existing src
+Python files (independently checked: no missing/extra names), plus the missing
+`tests/test_zpd_repair_pairwise.py` fixture; the deduplicated closure is 246 files.
+`check_sources` now rejects any loaded local .py module absent from that map.
+A new synthetic sys.modules test proves mapped-local acceptance and undeclared-
+local rejection; the updated runner/CV suite passes **17/17** in 7.374 seconds.
+The earlier method/gate/scaler/controls remain unchanged. The dirty user-owned
+`src/repair/evaluate.py` was not edited; v2 must export committed HEAD bytes,
+not its dirty worktree version. This closes the inspected source-only inventory
+delta, not the Linux packaging gate: v2 clean/native/32-GiB pretest and exported
+byte verification still precede empirical release. v1 failure remains recorded;
+there was no failed empirical run to retry or outcome-dependent method change.

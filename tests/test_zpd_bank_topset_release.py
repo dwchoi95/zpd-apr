@@ -186,6 +186,14 @@ class SyntheticRelease(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'pinned artifact'):self.run_supervisor()
         self.decode.assert_not_called();self.child.assert_not_called();self.assertFalse(self.run.exists())
 
+    def test_loaded_local_module_requires_explicit_source_binding(self):
+        name='_synthetic_topset_import_inventory_review'
+        mapped=SimpleNamespace(__file__=str(self.snapshot/'scripts/run_zpd_bank_topset_job.py'))
+        with patch.dict(job.sys.modules,{name:mapped}):job.check_sources(self.release['source_sha256'])
+        missing=SimpleNamespace(__file__=str(self.snapshot/'src/unlisted_synthetic_module.py'))
+        with patch.dict(job.sys.modules,{name:missing}),self.assertRaisesRegex(ValueError,'loaded local module'):
+            job.check_sources(self.release['source_sha256'])
+
     def test_orphan_audit_output_blocks_before_any_new_fit(self):
         (self.root/'verified-v1').mkdir()
         with self.assertRaisesRegex(ValueError,'fresh|duplicate'):self.run_supervisor()
