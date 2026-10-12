@@ -1,0 +1,30 @@
+{
+  "version": "public_candidate_selection_v1",
+  "status": "prospective_development_component_not_method_promotion",
+  "date": "2026-10-12",
+  "motivation": "The completed ranker improves aggregate AC but not authentic-history contribution or nonAC preservation. Observe candidate behavior on authenticated public statement samples instead of predicting that behavior from edit similarity.",
+  "primary_component": "C_exec",
+  "population": {"examples": 320, "problems": 23, "candidate_memberships": 2544, "problem_folds": 5},
+  "selection": [
+    "Reuse every frozen OOF score; no fit, calibration, threshold search, new candidate or recipient exclusion.",
+    "Execute all unique existing candidate identities, including current/noop, only on the authenticated statement sample set.",
+    "Require four complete identical known verdict vectors under worker counts 1,8,8,1; otherwise public observation remains unavailable.",
+    "If current public observation is unavailable or the sample set is empty, retain the original frozen choice, explicitly marked fallback.",
+    "Otherwise retain candidates with stable public observations that preserve every currently passing public case, including the identical current/noop candidate.",
+    "Maximize public pass count, then frozen C_joint OOF score, then ascending candidate SHA256. This is C_exec.",
+    "For matched diagnostics, apply the identical admissible set and pass-count rule to all other frozen score arms, keeping noop exactly current. Do not choose the best arm after results.",
+    "Seal all320 predictions before opening the pinned existing private assessment-label file. The prediction worker does not open private testcase bodies."
+  ],
+  "execution": {"timeout_seconds": 2.5, "memory_mb_per_case": 2048, "case_workers": 1, "block_workers": [1,8,8,1], "max_wall_seconds": 21600, "aggregate_memory_bytes": 34359738368, "aggregate_tasks": 128, "network": false, "runner": "unchanged SandboxRunner and run_source via measured_block", "retries": 0},
+  "comparison": {
+    "component": "C_exec versus frozen C_joint, with pooled and equal-problem AC strictly higher and regression lower/upper nonworse, also on known_nonAC; known_AC AC nonworse, unknown counts nonincreasing, and nonworse AC in at least4/5 folds",
+    "zpd": "Run the unchanged fourteen-method assessment on all equally execution-filtered arms. All original correctness, regression, mechanism and joint-current gates remain required for any ZPD method claim.",
+    "scope": "Repeatedly exposed adaptive development only. No comparison with the separate997/250 Seen/Unseen paper evaluation and no claim of learning effects."
+  },
+  "continuation": {
+    "on_execution_error": "Retain partial journal and failure state; no implicit retry or private assessment.",
+    "on_component_failure": "Retain the complete negative result; decompose unavailable/current-all-pass/ranking failures without changing this rule.",
+    "on_component_success_only": "Keep as a development execution-selection component; no canonical promotion. Diagnose remaining errors and design a separately frozen next experiment. History failure remains visible.",
+    "on_all_gates_success": "Prepare independent verification and an untouched-cohort protocol; no automatic paper update."
+  }
+}
