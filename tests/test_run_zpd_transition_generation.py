@@ -322,6 +322,12 @@ class PrivateProjectionIntegrationTests(unittest.TestCase):
 
 
 class CoordinatorExitTests(unittest.TestCase):
+    def test_systemd_query_retains_empty_controlgroup_property(self):
+        with patch.object(run.subprocess, 'check_output', return_value='ControlGroup=\nSubState=exited\n') as query:
+            values = run.props('synthetic.service')
+        self.assertEqual(values['ControlGroup'], '')
+        self.assertIn('--all', query.call_args.args[0])
+
     def test_exact_normal_exit_required_not_only_zero_status(self):
         self.assertTrue(run.normal_exit(success_exit()))
         for key, replacement in (('Result', 'timeout'), ('Result', 'oom-kill'),

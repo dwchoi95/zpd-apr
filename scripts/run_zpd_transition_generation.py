@@ -32,7 +32,9 @@ def unit(phase):
 
 
 def props(name):
-    raw = subprocess.check_output(['/usr/bin/systemctl', '--user', 'show', name], text=True, timeout=10)
+    # Default `show` omits empty fields, including ControlGroup after successful
+    # cgroup removal. Keep the explicit empty value; a missing key is not proof.
+    raw = subprocess.check_output(['/usr/bin/systemctl', '--user', 'show', '--all', name], text=True, timeout=10)
     return dict(line.split('=', 1) for line in raw.splitlines() if '=' in line)
 
 
