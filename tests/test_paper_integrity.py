@@ -28,8 +28,9 @@ class PaperIntegrityTest(unittest.TestCase):
     def test_fse_submission_contract_is_present(self) -> None:
         tex = PAPER.read_text(encoding="utf-8")
         self.assertIn(
-            r"\documentclass[acmsmall,screen,review,anonymous]{acmart}", tex
+            r"\documentclass[sigconf,screen,review,anonymous]{acmart}", tex
         )
+        self.assertIn(r"\acmBooktitle{", tex)
         conclusion = tex.index(r"\section{Conclusion}")
         availability_heading = tex.index(r"\section{Data and Artifact Availability}")
         availability = tex.index(r"\label{sec:data-availability}")

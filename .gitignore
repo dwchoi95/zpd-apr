@@ -30,3 +30,6 @@ tmp/pdfs/
 .DS_Store
 *.swp
 tmp_*.sh
+
+# third-party papers kept locally as style references
+paper/guidelines/*.pdf
