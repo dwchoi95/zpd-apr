@@ -93,7 +93,7 @@ def remote_snapshot(project=REMOTE_PROJECT):
                     p=read(path); row.update(state='running',phase=p.get('phase'),
                         completed_examples=p.get('completed_examples',0),total_examples=p.get('total_examples',320),
                         completed_case_attempts=p.get('completed_case_attempts'),total_case_attempts=p.get('total_case_attempts'),
-                        elapsed_seconds=p.get('elapsed_seconds'))
+                        elapsed_seconds=p.get('elapsed_seconds'),attempt_statuses=p.get('attempt_statuses'))
                 else: row['state']='starting'
         rows.append(row)
     return dict(checked_at=datetime.now(KST).isoformat(),experiments=rows)
@@ -130,7 +130,10 @@ def korean_report(snapshot):
         elif r['state']=='error':line=label+': 오류 발생, 재실행하지 않음'
         elif r['state']=='not_started':line=label+': 아직 시작 안 됨'
         else:
-            line=f"{label}: {r.get('phase','준비')} {r['completed_examples']}/{r['total_examples']} 예제, 오류 기록 없음"
+            line=f"{label}: {r.get('phase','준비')} {r['completed_examples']}/{r['total_examples']} 예제, 실행장애 기록 없음"
+            if r.get('attempt_statuses',{}):
+                failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
+                if failed:line+=f', 생성 실패 {failed}회 (제외·재시도 없음)'
             if r.get('completed_case_attempts') is not None:
                 line+=f", 테스트 {r['completed_case_attempts']}/{r['total_case_attempts']}"
             elapsed,done,total=r.get('elapsed_seconds'),r['completed_examples'],r['total_examples']

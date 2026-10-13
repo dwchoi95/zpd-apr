@@ -51,6 +51,14 @@ class WatchTests(unittest.TestCase):
         command=run.call_args.args[0]
         self.assertEqual(command[-1],body);self.assertNotIn(body,command[-2])
 
+    def test_completed_attempt_failures_visible_without_worker_crash(self):
+        row=dict(family=m.FAMILIES[1],state='running',phase='generation',completed_examples=27,total_examples=320,
+                 elapsed_seconds=95,attempt_statuses={'success':214,'resource_failure':2})
+        report=m.korean_report(dict(checked_at='2026-10-13T21:11:18+09:00',experiments=[row]))
+        self.assertIn('생성 실패 2회',report)
+        self.assertIn('27/320',report)
+        self.assertIn('현 단계 예상',report)
+
     def test_local_observer_never_sends_chat_and_readonly_remote_command(self):
         snapshot=dict(checked_at='now',experiments=[])
         with tempfile.TemporaryDirectory() as d,patch.object(m,'LOCAL_STATE',Path(d)), \
