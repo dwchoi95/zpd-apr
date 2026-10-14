@@ -22,7 +22,20 @@ class WatchTests(unittest.TestCase):
     def test_no_output_means_not_started_not_complete(self):
         with tempfile.TemporaryDirectory() as d:
             s=m.remote_snapshot(Path(d))
-        self.assertEqual([r['state'] for r in s['experiments']],['not_started','not_started'])
+        self.assertEqual([r['state'] for r in s['experiments']],['not_started']*len(m.FAMILIES))
+
+    def test_full_source_family_reports_without_relaunch(self):
+        row=dict(family='zpd-full-source-20261014',state='running',phase='generation',
+                 completed_examples=16,total_examples=320,elapsed_seconds=60)
+        report=m.korean_report(dict(checked_at='2026-10-14T13:00:00+09:00',experiments=[row]))
+        self.assertIn('전체 소스 이력 표현',report)
+        self.assertIn('16/320',report)
+        self.assertIn('공개 테스트 선택',report)
+
+    def test_latest_family_is_first_in_notification(self):
+        rows=[dict(family=f,state='not_started') for f in m.FAMILIES]
+        report=m.korean_report(dict(experiments=rows))
+        self.assertTrue(report.startswith('전체 소스 이력 표현'))
 
     def test_failure_takes_precedence(self):
         with tempfile.TemporaryDirectory() as d:

@@ -22,7 +22,9 @@ REMOTE_PROJECT = Path('/home/cdw/VSCode/zpd-apr')
 REMOTE_SCRIPT = REMOTE_PROJECT/'.runtime/zpd-observer-20261013-v1/watch_zpd_completion.py'
 LOCAL_STATE = Path('/Users/cdw/VSCode/zpd-apr/.runtime/zpd-observer-20261013-v1')
 KST = timezone(timedelta(hours=9))
-FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013')
+FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
+            'zpd-full-source-20261014')
+FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현')))
 
 
 def sha(path):
@@ -115,10 +117,10 @@ def due(snapshot,state,now):
 def korean_report(snapshot):
     if snapshot.get('connection_error'):
         return 'UbuntuServer 확인 실패: '+snapshot['connection_error'][:160]+' (실험 재실행 없음)'
-    names={FAMILIES[0]:'후보 진단',FAMILIES[1]:'현재 코드 마지막 배치'}
     lines=[]
-    for r in snapshot['experiments']:
-        label=names[r['family']]
+    # macOS may collapse long notification bodies: show the newest run first.
+    for r in reversed(snapshot['experiments']):
+        label=FAMILY_NAMES[r['family']]
         if r['state']=='complete':
             line=f"{label}: 완료 320/320, {r['completed_at'][11:16]} KST"
             if r['family']==FAMILIES[0]:
