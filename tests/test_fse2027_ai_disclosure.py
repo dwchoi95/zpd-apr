@@ -9,10 +9,10 @@ PAPER = ROOT / "paper" / "main.tex"
 class FSE2027AIDisclosureTest(unittest.TestCase):
     def test_methods_discloses_research_lifecycle_ai_use(self) -> None:
         text = PAPER.read_text(encoding="utf-8")
-        experiments = text.split("\\section{Experiments}", 1)[1].split(
-            "\\section{Related Work}", 1
+        ethics = text.split("\\section{Ethics and Research Transparency}", 1)[1].split(
+            "\\section{Data and Artifact Availability}", 1
         )[0]
-        normalized = " ".join(experiments.split())
+        normalized = " ".join(ethics.split())
         for required in (
             "OpenAI Codex",
             "propose control and validation-selection",

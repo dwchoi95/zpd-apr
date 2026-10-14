@@ -52,22 +52,48 @@ def verify(expected: Path, checked_in: Path, paper: Path) -> dict[str, object]:
         rf"\\input\{{{re.escape(input_stem)}\}}",
         rf"\\input\{{{re.escape(checked_in.name)}\}}",
     )
-    if not any(re.search(pattern, paper_text) for pattern in input_patterns):
-        raise ValueError(f"paper does not input {checked_in.name}")
+    embedded = re.search(r"% BEGIN GENERATED RESULT BRIDGE\n(.*?)% END GENERATED RESULT BRIDGE", paper_text, re.S)
+    if embedded and embedded.group(1).encode() != expected_bytes:
+        raise ValueError("embedded paper result bridge differs from generated evidence")
+    literal = paper.with_suffix('.evidence-bindings.json')
+    literal_names = set()
+    if not embedded and not any(re.search(pattern, paper_text) for pattern in input_patterns):
+        if not literal.is_file():
+            raise ValueError(f"paper does not input {checked_in.name} and lacks literal evidence bindings")
+        definitions = dict(re.findall(r"\\newcommand\{\\(\w+)\}\{(.*)\}", expected_bytes.decode()))
+        definitions.update(tool=r'\textsc{ZPDPatch}', progress=r'\textsc{Progress}', strict=r'\textsc{Strict}', answer=r'\textsc{Answer}')
+        rows = json.loads(literal.read_text())['bindings']
+        if not rows:
+            raise ValueError('empty literal evidence bindings')
+        for row in rows:
+            names_in_template = set(re.findall(r'\\([A-Za-z]+)\b', row['template'])) & definitions.keys()
+            if names_in_template != set(row['commands']):
+                raise ValueError('literal binding command list differs from template')
+            expanded = re.sub(r'\\([A-Za-z]+)\b', lambda match: definitions.get(match[1], match[0]), row['template'])
+            expanded = re.sub(r'(?<=[\d\]])\{\}', '', expanded)
+            if expanded not in paper_text:
+                raise ValueError('literal evidence snippet differs: ' + expanded[:100])
+            literal_names.update(row['commands'])
+    if embedded:
+        paper_text = paper_text[:embedded.start()] + paper_text[embedded.end():]
 
     names = command_names(expected_bytes.decode("utf-8"))
+    required_prefixes = REQUIRED_RESULT_PREFIXES + tuple(
+        prefix for prefix in ('Factorial', 'PairedJava')
+        if any(name.startswith(prefix) for name in names)
+    )
     missing_families = [
-        prefix for prefix in REQUIRED_RESULT_PREFIXES
+        prefix for prefix in required_prefixes
         if not any(name.startswith(prefix) for name in names)
     ]
     if missing_families:
         raise ValueError(f"result bridge lacks required families: {missing_families}")
 
     referenced = {
-        name for name in names if re.search(rf"\\{re.escape(name)}\b", paper_text)
+        name for name in names if name in literal_names or re.search(rf"\\{re.escape(name)}\b", paper_text)
     }
     unreferenced_families = [
-        prefix for prefix in REQUIRED_RESULT_PREFIXES
+        prefix for prefix in required_prefixes
         if not any(name.startswith(prefix) for name in referenced)
     ]
     if unreferenced_families:

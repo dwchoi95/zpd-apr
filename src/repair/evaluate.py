@@ -112,7 +112,8 @@ def evaluate_generations(
         )
         fixed_execution_time = time.perf_counter() - fixed_started
         fixed_pass_rate = _pass_rate(fixed_outcome)
-        changed = fixed_code.strip() != buggy_code.strip()
+        # Leading whitespace is executable Python syntax, not presentation.
+        changed = fixed_code != buggy_code
         repaired = changed and fixed_pass_rate == 1.0
         return {
             **generation,

@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "scope": "Literal manuscript snippets validated against evidence-derived values; not a LaTeX input",
+  "bindings": [
+    {
+      "template": "Notably, the strongest learned configuration in this stack is the current-only terminal triple at \\CurrentOnlyAnswerThreeSeenRR\\% Seen and \\CurrentOnlyAnswerThreeUnseenRR\\% Unseen, which we therefore report as the unrestricted deployment default.",
+      "commands": [
+        "CurrentOnlyAnswerThreeSeenRR",
+        "CurrentOnlyAnswerThreeUnseenRR"
+      ]
+    },
+    {
+      "template": "Replacing each same-user intermediate target with an outcome-equivalent peer target raises coverage from \\CrossUserTargetSameUserSeenRR\\% to \\CrossUserTargetOtherUserSeenRR\\% on Seen and from \\CrossUserTargetSameUserUnseenRR\\% to \\CrossUserTargetOtherUserUnseenRR\\% on Unseen, that is, by 4.3 points [-7.71, -0.84] and 6.0 points [-11.79, -0.41] in the paired same-minus-peer direction, with exact McNemar \\(p=0.005\\) and \\(p=0.032\\)",
+      "commands": [
+        "CrossUserTargetOtherUserSeenRR",
+        "CrossUserTargetOtherUserUnseenRR",
+        "CrossUserTargetSameUserSeenRR",
+        "CrossUserTargetSameUserUnseenRR"
+      ]
+    },
+    {
+      "template": "On 181 student-held-out trajectories, terminal targets repair 155 trajectories and intermediate targets 92, a difference of 34.8 points with student-cluster interval \\PairedJavaStudentRRCI and exercise-cluster interval \\PairedJavaExerciseRRCI",
+      "commands": [
+        "PairedJavaExerciseRRCI",
+        "PairedJavaStudentRRCI"
+      ]
+    },
+    {
+      "template": "of \\PairedJavaJointRepairs joint repairs, intermediate targets retain \\PairedJavaLexicalRetention more lexical-token points and \\PairedJavaLineRetention more line points",
+      "commands": [
+        "PairedJavaJointRepairs",
+        "PairedJavaLexicalRetention",
+        "PairedJavaLineRetention"
+      ]
+    },
+    {
+      "template": "Replacing greedy decoding by one stochastic draw costs 7.6 points \\StochasticOneMinusGreedyOneSeenCI, whereas execution-selecting three of those identical fixed draws contributes \\SameDrawThreeMinusOneSeen points \\SameDrawThreeMinusOneSeenCI",
+      "commands": [
+        "SameDrawThreeMinusOneSeen",
+        "SameDrawThreeMinusOneSeenCI",
+        "StochasticOneMinusGreedyOneSeenCI"
+      ]
+    },
+    {
+      "template": "Through \\(T=1.0\\) the one-draw rate stays within \\SweepTOnePointZeroSeenSingleRR--\\SweepTPointTwoSeenSingleRR\\% on Seen, the three-draw union reaches \\SweepTOnePointZeroSeenRR/\\SweepTOnePointZeroUnseenRR\\%, and at \\(T=1.5\\) the decoder collapses to \\SweepTOnePointFiveSeenRR/\\SweepTOnePointFiveUnseenRR\\%",
+      "commands": [
+        "SweepTOnePointFiveSeenRR",
+        "SweepTOnePointFiveUnseenRR",
+        "SweepTOnePointZeroSeenRR",
+        "SweepTOnePointZeroSeenSingleRR",
+        "SweepTOnePointZeroUnseenRR",
+        "SweepTPointTwoSeenSingleRR"
+      ]
+    },
+    {
+      "template": "Fine-tuning contributes a second, larger effect: the matched base-model three-draw union reaches only \\BaseStochasticThreeSeenRR/\\BaseStochasticThreeUnseenRR\\%, so adaptation adds \\AnswerStochasticMinusBaseSeen points \\AnswerStochasticMinusBaseSeenCI on Seen and \\AnswerStochasticMinusBaseUnseen points \\AnswerStochasticMinusBaseUnseenCI on Unseen.",
+      "commands": [
+        "AnswerStochasticMinusBaseSeen",
+        "AnswerStochasticMinusBaseSeenCI",
+        "AnswerStochasticMinusBaseUnseen",
+        "AnswerStochasticMinusBaseUnseenCI",
+        "BaseStochasticThreeSeenRR",
+        "BaseStochasticThreeUnseenRR"
+      ]
+    },
+    {
+      "template": "At matched temperature, replacing three draws of one checkpoint by one draw from each of three checkpoints changes RR by \\(-0.1\\) points \\CheckpointStochasticMinusSameCheckpointSeenCI on Seen and \\CheckpointStochasticMinusSameCheckpointUnseen points \\CheckpointStochasticMinusSameCheckpointUnseenCI on Unseen",
+      "commands": [
+        "CheckpointStochasticMinusSameCheckpointSeenCI",
+        "CheckpointStochasticMinusSameCheckpointUnseen",
+        "CheckpointStochasticMinusSameCheckpointUnseenCI"
+      ]
+    },
+    {
+      "template": "A current-only four-cell comparison on a single inference stack agrees: three greedy checkpoints gain \\FactorialGreedyThreeMinusOneSeen \\FactorialGreedyThreeMinusOneSeenCI and \\FactorialGreedyThreeMinusOneUnseen \\FactorialGreedyThreeMinusOneUnseenCI points over one, but under the matched stochastic decoder distinct checkpoints add only \\FactorialDistinctMinusSameSeen points \\FactorialDistinctMinusSameSeenCI and \\FactorialDistinctMinusSameUnseen points \\FactorialDistinctMinusSameUnseenCI",
+      "commands": [
+        "FactorialDistinctMinusSameSeen",
+        "FactorialDistinctMinusSameSeenCI",
+        "FactorialDistinctMinusSameUnseen",
+        "FactorialDistinctMinusSameUnseenCI",
+        "FactorialGreedyThreeMinusOneSeen",
+        "FactorialGreedyThreeMinusOneSeenCI",
+        "FactorialGreedyThreeMinusOneUnseen",
+        "FactorialGreedyThreeMinusOneUnseenCI"
+      ]
+    },
+    {
+      "template": "Absolute greedy-three coverage is \\FactorialGreedyThreeSeenRR/\\FactorialGreedyThreeUnseenRR\\% on that stack against \\CurrentOnlyAnswerThreeSeenRR/\\CurrentOnlyAnswerThreeUnseenRR\\% on the historical one, so stack sensitivity is material and no backend-independent deployment advantage follows.",
+      "commands": [
+        "CurrentOnlyAnswerThreeSeenRR",
+        "CurrentOnlyAnswerThreeUnseenRR",
+        "FactorialGreedyThreeSeenRR",
+        "FactorialGreedyThreeUnseenRR"
+      ]
+    },
+    {
+      "template": "the primary five-fold cross-fitted mixed-minus-terminal contrast is \\(+2.2\\) points \\CrossFitMixedMinusAnswerNineSeenCI and the non-cross-fitted estimate \\(+1.7\\) [-0.79, 4.29]",
+      "commands": [
+        "CrossFitMixedMinusAnswerNineSeenCI"
+      ]
+    },
+    {
+      "template": "at the portfolio level, removing history instead improves frozen mixed and terminal RR by \\PromptFrozenMixedCurrentMinusFullSeen/\\PromptFrozenAnswerNineCurrentMinusFullSeen Seen points and \\PromptFrozenMixedCurrentMinusFullUnseen/\\PromptFrozenAnswerNineCurrentMinusFullUnseen Unseen points, with all intervals excluding zero",
+      "commands": [
+        "PromptFrozenAnswerNineCurrentMinusFullSeen",
+        "PromptFrozenAnswerNineCurrentMinusFullUnseen",
+        "PromptFrozenMixedCurrentMinusFullSeen",
+        "PromptFrozenMixedCurrentMinusFullUnseen"
+      ]
+    },
+    {
+      "template": "Because trajectory availability rather than randomized difficulty defines the split, the higher absolute rate does not mean that unseen problems are easier: a pre-repair audit that matches all 54 Unseen problems to distinct Seen problems on six outcome-free difficulty covariates turns the raw gap into \\(-4.6\\) problem-balanced points \\DifficultyMatchedUnseenMinusSeenCI, which is why we rely on within-split paired contrasts.",
+      "commands": [
+        "DifficultyMatchedUnseenMinusSeenCI"
+      ]
+    },
+    {
+      "template": "repeating the procedure on all 328 Seen problems with a distinct seed yields \\SeenHiddenMixedHiddenConfirmation\\% and \\SeenHiddenAnswerNineHiddenConfirmation\\% confirmation",
+      "commands": [
+        "SeenHiddenAnswerNineHiddenConfirmation",
+        "SeenHiddenMixedHiddenConfirmation"
+      ]
+    },
+    {
+      "template": "The conventional endpoint is also not load-bearing: across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, the deployed configuration reaches \\AllPrefixSeenRR\\% and \\AllPrefixUnseenRR\\% RR, and the early, middle, and last thirds reach \\AllPrefixEarlySeenRR\\%, \\AllPrefixMiddleSeenRR\\%, and \\AllPrefixLastSeenRR\\% on Seen and \\AllPrefixEarlyUnseenRR\\%, \\AllPrefixMiddleUnseenRR\\%, and \\AllPrefixLastUnseenRR\\% on Unseen.",
+      "commands": [
+        "AllPrefixEarlySeenRR",
+        "AllPrefixEarlyUnseenRR",
+        "AllPrefixLastSeenRR",
+        "AllPrefixLastUnseenRR",
+        "AllPrefixMiddleSeenRR",
+        "AllPrefixMiddleUnseenRR",
+        "AllPrefixSeenRR",
+        "AllPrefixUnseenRR"
+      ]
+    },
+    {
+      "template": "At 1.5B parameters three checkpoints still gain \\ScaleAnswerThreeMinusOneSeen points over one \\ScaleAnswerThreeMinusOneSeenCI, but mixed-minus-terminal is \\(-0.8\\) \\ScaleMixedMinusAnswerNineSeenCI",
+      "commands": [
+        "ScaleAnswerThreeMinusOneSeen",
+        "ScaleAnswerThreeMinusOneSeenCI",
+        "ScaleMixedMinusAnswerNineSeenCI"
+      ]
+    },
+    {
+      "template": "on Java the same contrast is positive on four held-out exercises (\\CodeWorkoutProblemMixedMinusAnswerNine points \\CodeWorkoutProblemMixedMinusAnswerNineCI) and inconclusive on held-out students (0.6 [-1.20, 2.59])",
+      "commands": [
+        "CodeWorkoutProblemMixedMinusAnswerNine",
+        "CodeWorkoutProblemMixedMinusAnswerNineCI"
+      ]
+    },
+    {
+      "template": "The exercise estimate rests on four clusters only: refitting with one exercise left out keeps the contrast between \\ExerciseSensitivityLOOMinimum and \\ExerciseSensitivityLOOMaximum points, and single exercises range from \\ExerciseSensitivityPerMinimum to \\ExerciseSensitivityPerMaximum points",
+      "commands": [
+        "ExerciseSensitivityLOOMaximum",
+        "ExerciseSensitivityLOOMinimum",
+        "ExerciseSensitivityPerMaximum",
+        "ExerciseSensitivityPerMinimum"
+      ]
+    },
+    {
+      "template": "Models retrained on them agree with the canonical ones on \\VerdictOrderStrictAgreementSeen\\% and \\VerdictOrderProgressAgreementSeen\\% of Seen repair decisions (Section~\\ref{sec:generality}), so we read the ranking as operational rather than universal.",
+      "commands": [
+        "VerdictOrderProgressAgreementSeen",
+        "VerdictOrderStrictAgreementSeen"
+      ]
+    },
+    {
+      "template": "retraining both relations under the binary verdict order changes intermediate-target RR by \\VerdictOrderProgressCanonicalMinusAlternativeSeen and \\(-2.8\\) points",
+      "commands": [
+        "VerdictOrderProgressCanonicalMinusAlternativeSeen"
+      ]
+    },
+    {
+      "template": "Exact matches between a returned repair and a training-time accepted program occur in \\SeenOverlapMixedExactRate\\% and \\SeenOverlapAnswerNineExactRate\\% of selections, near-duplicates above a 0.90 token-similarity threshold in \\SeenOverlapMixedNearNinetyRate\\% and \\SeenOverlapAnswerNineNearNinetyRate\\%, and the median maximum similarity to any same-problem training target is \\SeenOverlapMixedMedianSimilarity\\% and \\SeenOverlapAnswerNineMedianSimilarity\\%, so non-exact reuse is bounded rather than excluded",
+      "commands": [
+        "SeenOverlapAnswerNineExactRate",
+        "SeenOverlapAnswerNineMedianSimilarity",
+        "SeenOverlapAnswerNineNearNinetyRate",
+        "SeenOverlapMixedExactRate",
+        "SeenOverlapMixedMedianSimilarity",
+        "SeenOverlapMixedNearNinetyRate"
+      ]
+    }
+  ]
+}

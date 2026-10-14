@@ -96,6 +96,8 @@ def build(
     paired_target: dict[str, Any] | None = None,
     cross_user_target: dict[str, Any] | None = None,
     all_prefix: dict[str, Any] | None = None,
+    current_factorial: dict[str, Any] | None = None,
+    paired_java: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     result: dict[str, Any] = {
         "canonical": {},
@@ -136,6 +138,10 @@ def build(
         result["cross_user_target_control"] = cross_user_target
     if all_prefix is not None:
         result["all_prefix_control"] = all_prefix
+    if current_factorial is not None:
+        result["current_only_factorial"] = current_factorial
+    if paired_java is not None:
+        result["paired_java_control"] = paired_java
     for split in ("seen", "unseen"):
         row = answer9["splits"][split]
         rr = metric(row["zpdpatch_minus_answer_9choose3"])
@@ -798,6 +804,33 @@ def macros(result: dict[str, Any]) -> str:
             values[f"VerdictOrder{relation_prefix}Agreement{split_prefix}"] = pct(
                 row["repair_agreement"]["decision_agreement"]
             )
+    if "current_only_factorial" in result:
+        for split, row in result["current_only_factorial"]["splits"].items():
+            for method, name in (("greedy1", "GreedyOne"), ("greedy3", "GreedyThree"), ("same3", "SameThree"), ("distinct3", "DistinctThree")):
+                prefix = f"Factorial{name}{split.title()}"
+                values[prefix + "RR"] = pct(row["methods"][method]["rr"])
+                for field, suffix in (("mean_early_stop_calls", "Calls"), ("mean_amortized_generation_seconds", "GenSec"), ("mean_candidate_execution_seconds", "ExecSec")):
+                    values[prefix + suffix] = f'{row["costs"][method][field]:.2f}'
+            for contrast, name in (("distinct3_minus_same3", "DistinctMinusSame"), ("greedy3_minus_greedy1", "GreedyThreeMinusOne")):
+                effect = metric(row["comparisons"][contrast])
+                prefix = f"Factorial{name}{split.title()}"
+                values[prefix] = pct(effect["left_minus_right_instance_weighted"])
+                values[prefix + "CI"] = ci(effect)
+    if "paired_java_control" in result:
+        row = result["paired_java_control"]
+        for method in ("progress", "answer"):
+            values[f"PairedJava{method.title()}RR"] = pct(row["methods"][method]["rr"])
+        for cluster in ("student", "exercise"):
+            effect = metric(row[f"{cluster}_cluster_comparison"])
+            values[f"PairedJava{cluster.title()}RRDelta"] = pct(effect["left_minus_right_instance_weighted"])
+            values[f"PairedJava{cluster.title()}RRCI"] = ci(effect)
+        preservation = row["joint_preservation"]
+        values["PairedJavaJointRepairs"] = str(preservation["joint_repairs"])
+        for metric_name, name in (("lexical_retention", "Lexical"), ("line_retention", "Line")):
+            metric_row = preservation["metrics"][metric_name]
+            values[f"PairedJava{name}Retention"] = pct(metric_row["mean_difference"])
+            for cluster, key in (("Student", "user_id"), ("Exercise", "problem_id")):
+                values[f"PairedJava{name}{cluster}CI"] = interval(metric_row["cluster_intervals"][key]["ci95"])
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )
@@ -834,6 +867,8 @@ def main() -> None:
     parser.add_argument("--paired-target", type=Path)
     parser.add_argument("--cross-user-target", type=Path)
     parser.add_argument("--all-prefix", type=Path)
+    parser.add_argument("--current-factorial", type=Path)
+    parser.add_argument("--paired-java", type=Path)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -867,6 +902,8 @@ def main() -> None:
         read(args.paired_target) if args.paired_target else None,
         read(args.cross_user_target) if args.cross_user_target else None,
         read(args.all_prefix) if args.all_prefix else None,
+        read(args.current_factorial) if args.current_factorial else None,
+        read(args.paired_java) if args.paired_java else None,
     )
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)

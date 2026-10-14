@@ -1,4 +1,6 @@
 import tempfile
+import json
+import re
 import unittest
 from pathlib import Path
 
@@ -60,6 +62,16 @@ class PaperResultBridgeTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "differs"):
                 verify(expected, checked_in, paper)
 
+    def test_accepts_exact_inline_bridge_and_rejects_definition_only_use(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            expected, checked_in, paper = self.materialize(Path(directory))
+            text = paper.read_text().replace('\\input{fse2027-result-bridge}', '% BEGIN GENERATED RESULT BRIDGE\n' + BRIDGE + '% END GENERATED RESULT BRIDGE')
+            paper.write_text(text)
+            self.assertTrue(verify(expected, checked_in, paper)['byte_identical'])
+            paper.write_text(text.replace('% END GENERATED RESULT BRIDGE\n\\ScaleMixedSeenRR', '% END GENERATED RESULT BRIDGE\nScale omitted'))
+            with self.assertRaisesRegex(ValueError, 'Scale'):
+                verify(expected, checked_in, paper)
+
     def test_rejects_unconsumed_result_family(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             expected, checked_in, paper = self.materialize(Path(directory))
@@ -70,6 +82,19 @@ class PaperResultBridgeTest(unittest.TestCase):
                 encoding="utf-8",
             )
             with self.assertRaisesRegex(ValueError, "Prompt"):
+                verify(expected, checked_in, paper)
+
+    def test_literal_paper_is_checked_against_evidence_values(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            expected, checked_in, paper = self.materialize(Path(directory))
+            definitions = dict(re.findall(r'\\newcommand\{\\(\w+)\}\{(.*)\}', BRIDGE))
+            bindings = [{'template': name + ': \\' + name, 'commands': [name]} for name in definitions]
+            paper.with_suffix('.evidence-bindings.json').write_text(json.dumps({'bindings': bindings}))
+            literal = '\n'.join(name + ': ' + value for name, value in definitions.items())
+            paper.write_text(literal)
+            self.assertTrue(verify(expected, checked_in, paper)['byte_identical'])
+            paper.write_text(literal.replace('61.0', '99.0'))
+            with self.assertRaisesRegex(ValueError, 'literal evidence snippet differs'):
                 verify(expected, checked_in, paper)
 
     def test_finalizer_enforces_bridge_audit(self) -> None:

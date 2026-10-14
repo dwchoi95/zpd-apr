@@ -2,6 +2,18 @@
 
 This is an implementation/evidence handoff, not an independent Overall Merit assessment.
 
+## Later completion update
+
+Both scheduled runs completed on September 15 (factorial 13:59 KST, Java 14:33 KST). Their full analyses reproduce exactly from raw evaluations. The pending statuses below are retained as the earlier handoff, not current job state.
+
+The new results are integrated into Tables 10 and 11. A raw-record invariant check found a `.strip()` change-detection error on one indentation repair, also affecting three old paired-target Progress member outputs on that same instance. Corrected derived datasets preserve the originals; the explicit whitespace amendment records their hashes. No training or execution was repeated or selectively excluded.
+
+The manuscript now has no custom `newcommand` or result-file `input`. Literal evidence bindings preserve numeric checks. The body/reference boundary is 18+3 pages; all 21 pages have been rendered and visually inspected. The addendum audit passes raw-ID coverage, selector replay, student disjointness, literal number validation and page bounds. The previous full evidence seal remains historical.
+
+A fresh PDF-only reviewer, `fse_review_20260915_literal`, completed its review. The unedited verdict is **4/6 — Weak Accept**, using the reviewer's explicitly declared six-point scale (Accept is 5/6), not an official numeric FSE scale and not an Accept result. The raw review is `fse2027-independent-review-2026-09-15-literal-ko.md`. Remaining concerns include the current-only stochastic edit-budget comparator, inference-stack comparability, reproducible retention definitions, seed-wise effects, exclusion accounting, and anonymous artifact access. A direct external peer-target replication remains unimplemented.
+
+Final validation: the remote test suite passed 181 tests; local focused tests passed 17 tests. The addendum audit reports zero raw selector mismatches and zero manuscript user-defined newcommands. These checks do not constitute a fresh full evidence seal.
+
 ## Completed
 
 - Corrected unlimited versus finite-TED eligibility. Raw paired-target controller replay has zero discrepancies; each split has 20 joint repairs whose source AST is undefined.

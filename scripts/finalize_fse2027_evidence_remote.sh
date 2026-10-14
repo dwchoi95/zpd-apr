@@ -36,6 +36,7 @@ fi
 
 "${PYTHON}" scripts/verify_paper_budget_table.py \
   --paper "${WORK_ROOT}/paper/main.tex" \
+  --figure-script "${WORK_ROOT}/scripts/plot_fse2027_figures.py" \
   --lsgen "${RUN_ROOT}/analysis/fse2027-lsgen-budget-controller.json" \
   --current-only "${RUN_ROOT}/analysis/fse2027-current-only-deployment-ladder.json" \
   --output "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
@@ -90,6 +91,11 @@ required_analysis=(
   "${RUN_ROOT}/analysis/fse2027-effect-heterogeneity.json"
   "${RUN_ROOT}/analysis/fse2027-cross-user-target-control.json"
   "${RUN_ROOT}/analysis/fse2027-all-prefix-control.json"
+  "${RUN_ROOT}/analysis/fse2027-current-only-factorial-corrected.json"
+  "${RUN_ROOT}/analysis/fse2027-paired-target-control-corrected.json"
+  "${RUN_ROOT}/analysis/fse2027-paired-java-control.json"
+  "${RUN_ROOT}/analysis/fse2027-whitespace-metric-amendment.json"
+  "${RUN_ROOT}/analysis/fse2027-paired-whitespace-amendment.json"
   "${RUN_ROOT}/analysis/fse2027-protocol-provenance-audit.json"
   "${RUN_ROOT}/analysis/fse2027-prompt-current-only-dataset-audit.json"
   "${RUN_ROOT}/analysis/fse2027-paper-budget-table-audit.json"
@@ -161,11 +167,21 @@ done
   --breadth-controls "${RUN_ROOT}/analysis/fse2027-breadth-controls-extended.json" \
   --difficulty-match "${RUN_ROOT}/analysis/fse2027-difficulty-matched-holdout.json" \
   --breadth-curve "${RUN_ROOT}/analysis/fse2027-answer-breadth-cost-curve.json" \
-  --paired-target "${RUN_ROOT}/analysis/fse2027-paired-target-control.json" \
+  --paired-target "${RUN_ROOT}/analysis/fse2027-paired-target-control-corrected.json" \
   --cross-user-target "${RUN_ROOT}/analysis/fse2027-cross-user-target-control.json" \
   --all-prefix "${RUN_ROOT}/analysis/fse2027-all-prefix-control.json" \
+  --current-factorial "${RUN_ROOT}/analysis/fse2027-current-only-factorial-corrected.json" \
+  --paired-java "${RUN_ROOT}/analysis/fse2027-paired-java-control.json" \
   --output-json "${RUN_ROOT}/analysis/fse2027-result-bridge.json" \
   --output-tex "${RUN_ROOT}/analysis/fse2027-result-bridge.tex"
+
+"${PYTHON}" scripts/build_fse2027_evidence_bindings.py \
+  --bridge "${WORK_ROOT}/paper/fse2027-result-bridge.tex" \
+  --paper "${WORK_ROOT}/paper/main.tex" \
+  --output "${RUN_ROOT}/analysis/fse2027-evidence-bindings.json"
+
+diff "${RUN_ROOT}/analysis/fse2027-evidence-bindings.json" \
+  "${WORK_ROOT}/paper/main.evidence-bindings.json"
 
 "${PYTHON}" scripts/verify_fse2027_paper_result_bridge.py \
   --expected "${RUN_ROOT}/analysis/fse2027-result-bridge.tex" \
@@ -198,9 +214,11 @@ checkpoint_args=(
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/codeworkout-problem-holdout"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/canonical-v5-verdict-order/accepted-vs-failure"
   --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/cross-user-target-control"
+  --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/paired-target-control"
+  --checkpoint-root "${WORK_ROOT}/checkpoints/split-90-10/paired-java-control"
 )
 external_args=(--external-root "${WORK_ROOT}/archive/external/tiktoc")
-for index in 1 3 5 7 9 11 13 15; do
+for ((index=1; index<${#checkpoint_args[@]}; index+=2)); do
   if [[ ! -d "${checkpoint_args[index]}" ]]; then
     echo "missing checkpoint root: ${checkpoint_args[index]}" >&2
     exit 1

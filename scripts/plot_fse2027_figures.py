@@ -92,7 +92,7 @@ def budget_figure(series, out):
 
 
 def breadth_figure(data, out):
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.1))
+    fig, axes = plt.subplots(2, 1, figsize=(3.33, 3.6), constrained_layout=True)
     left, right = axes
     for split, colour, marker in (('seen', ACCENT, 'o'), ('unseen', BASE, '^')):
         label = 'Seen' if split == 'seen' else 'Unseen'
@@ -104,7 +104,7 @@ def breadth_figure(data, out):
     left.set_ylabel('Repair rate (%)')
     left.set_ylim(0, 90)
     left.set_title('(a) Breadth under a fixed decoder')
-    left.legend(loc='lower left', ncol=2, columnspacing=1.0, handlelength=2.2)
+    left.legend(loc='lower left', ncol=2, columnspacing=0.8, handlelength=1.6, fontsize=5.8)
 
     for split, colour, marker in (('seen', ACCENT, 'o'), ('unseen', BASE, '^')):
         label = 'Seen' if split == 'seen' else 'Unseen'
@@ -121,7 +121,7 @@ def breadth_figure(data, out):
     right.set_ylabel('Union repair rate (%)')
     right.set_ylim(30, 95)
     right.set_title('(b) Coverage and cost of additional draws')
-    right.legend(loc='lower right', handlelength=2.2)
+    right.legend(loc='lower right', handlelength=1.6)
 
     for ax in axes:
         ax.grid(axis='y')
