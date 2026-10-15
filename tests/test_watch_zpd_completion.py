@@ -35,7 +35,7 @@ class WatchTests(unittest.TestCase):
     def test_latest_family_is_first_in_notification(self):
         rows=[dict(family=f,state='not_started') for f in m.FAMILIES]
         report=m.korean_report(dict(experiments=rows))
-        self.assertTrue(report.startswith('동일 조건 C/H 신규 학습'))
+        self.assertTrue(report.startswith('C/H 학습 완료 후 평가 복구'))
 
     def test_failure_takes_precedence(self):
         with tempfile.TemporaryDirectory() as d:
@@ -97,7 +97,7 @@ class PairedHistoryWatchTests(unittest.TestCase):
     def snapshot(self):
         return m.remote_snapshot(self.project)
 
-    def row(self):return self.snapshot()['experiments'][-1]
+    def row(self):return next(r for r in self.snapshot()['experiments'] if r['family']==m.PAIRED_FAMILY)
 
     def terminal(self,full_report=False,cleanup=True):
         counts={a:dict(stable_ac=n,regressions=7,unknown=11) for a,n in zip(('C','H','HS','U'),(201,202,199,198))}
@@ -178,7 +178,7 @@ class PairedHistoryWatchTests(unittest.TestCase):
         self.terminal();outer=m.read(self.root/'VERIFIED_COMPLETE.json');outer['phases'].pop('capacity')
         self.write(Path('VERIFIED_COMPLETE.json'),outer)
         self.assertEqual(self.row()['state'],'error')
-        self.assertEqual(len(self.snapshot()['experiments']),4)
+        self.assertEqual(len(self.snapshot()['experiments']),len(m.FAMILIES))
 
     def test_dynamic_binding_and_exit_code_substate_must_be_valid(self):
         for mutation in ('wrong_dynamic_pin','wrong_parent','bad_code','running','dynamic_bytes'):
@@ -208,7 +208,7 @@ class PairedHistoryWatchTests(unittest.TestCase):
         self.write(Path('STATUS.json'),dict(phase='cache',completed_phases=[]))
         snapshot=self.snapshot();state={'last_notification':1000}
         self.assertFalse(m.due(snapshot,state,1200));self.assertTrue(m.due(snapshot,state,4600))
-        self.terminal();snapshot=self.snapshot();row=snapshot['experiments'][-1]
+        self.terminal();snapshot=self.snapshot();row=self.row()
         self.assertTrue(m.due(snapshot,state,1200))
         state['terminal']={m.PAIRED_FAMILY:m.terminal_key(row)}
         self.assertFalse(m.due(snapshot,state,1200))

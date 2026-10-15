@@ -24,10 +24,12 @@ REMOTE_SCRIPT = REMOTE_PROJECT/'.runtime/zpd-observer-20261013-v1/watch_zpd_comp
 LOCAL_STATE = Path('/Users/cdw/VSCode/zpd-apr/.runtime/zpd-observer-20261013-v1')
 KST = timezone(timedelta(hours=9))
 FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
-            'zpd-full-source-20261014', 'zpd-paired-history-run-20261015')
+            'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
+            'zpd-paired-inference-20261016')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
-                                 '동일 조건 C/H 신규 학습')))
+                                 '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구')))
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
+RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 PAIRED_UNIT_PREFIX = 'zpd-paired-history-20261015-v1'
 PAIRED_PHASES = ('cache', 'materialize', 'capacity', 'train-C', 'train-H', 'generation', 'public', 'private')
 PAIRED_STATUS = {'cache':'cache-v1/cache/STATUS.json',
@@ -63,6 +65,16 @@ def verify_files(directory, marker):
 def verify_terminal(directory, outer):
     if directory.name == PAIRED_FAMILY:
         return verify_paired_terminal(directory, outer)
+    if directory.name == RECOVERY_FAMILY:
+        require(outer['status']=='complete' and outer['layout_variant']=='paired_history_ipc_recovery_v1'
+                and set(outer['phases'])=={'generation','public','private'},
+                'recovery completion identity differs')
+        verify_files(directory,'VERIFIED_COMPLETE.json')
+        for phase in ('generation','public','private'):
+            cert=read(directory/(phase+'-VERIFIED_COMPLETE.json'))
+            require(cert['cleanup_verified'] is True and cert['release_sha256']==outer['release_sha256']
+                    and cert['exit']['ExecMainCode']=='1' and cert['exit']['SubState']=='exited',
+                    'recovery normal exit/cleanup not certified')
     if 'worker_certificate_sha256' in outer:
         require(sha(directory/'WORKER_VERIFIED_COMPLETE.json')==outer['worker_certificate_sha256'], 'worker certificate differs')
         cert=read(directory/'WORKER_VERIFIED_COMPLETE.json')
@@ -179,23 +191,25 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family==PAIRED_FAMILY and (root/'COORDINATOR.json').is_file():
+            if family in (PAIRED_FAMILY,RECOVERY_FAMILY) and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
-            if family==PAIRED_FAMILY:
+            if family in (PAIRED_FAMILY,RECOVERY_FAMILY):
                 failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
             if failures:
                 row.update(state='error',errors=[str(p.relative_to(root)) for p in failures])
-            elif family==PAIRED_FAMILY:
+            elif family in (PAIRED_FAMILY,RECOVERY_FAMILY):
                 try:
                     if (root/'VERIFIED_COMPLETE.json').exists():
                         outer=read(root/'VERIFIED_COMPLETE.json')
-                        results=verify_paired_terminal(root,outer)
+                        results=verify_terminal(root,outer)
                         row.update(state='complete',completed_examples=320,certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),
                             completed_at=datetime.fromtimestamp((root/'VERIFIED_COMPLETE.json').stat().st_mtime,KST).isoformat(),
                             results=results,matched_fresh_training=True,
                             training_population=read(root/'REPORT.json').get('training_population',{}))
-                    else:row.update(paired_progress(root))
+                    else:
+                        row.update(paired_progress(root))
+                        if family==RECOVERY_FAMILY:row['unit_prefix']='zpd-paired-inference-20261016-v1'
                 except (OSError,ValueError,KeyError,TypeError) as exc:
                     row.update(state='error',errors=['paired observer validation: '+str(exc)[:240]])
             elif (root/'VERIFIED_COMPLETE.json').exists():
@@ -239,7 +253,7 @@ def korean_report(snapshot):
         label=FAMILY_NAMES[r['family']]
         if r['state']=='complete':
             line=f"{label}: 완료 320/320, {r['completed_at'][11:16]} KST"
-            if r['family']==PAIRED_FAMILY:
+            if r['family'] in (PAIRED_FAMILY,RECOVERY_FAMILY):
                 line+='; 신규 C/H 어댑터별 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
                 population=r.get('training_population',{}).get('train',{})
                 if population:
@@ -255,7 +269,7 @@ def korean_report(snapshot):
         elif r['state']=='not_started':line=label+': 아직 시작 안 됨'
         else:
             phase=r.get('pipeline_phase',r.get('phase'))
-            display=PAIRED_LABELS.get(phase,phase or '준비') if r['family']==PAIRED_FAMILY else r.get('phase','준비')
+            display=PAIRED_LABELS.get(phase,phase or '준비') if r['family'] in (PAIRED_FAMILY,RECOVERY_FAMILY) else r.get('phase','준비')
             line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
@@ -273,7 +287,7 @@ def korean_report(snapshot):
                 line+=f", 현 단계 예상 {estimate:%H:%M} KST (단순 속도 추정)"
             else:line+=', 종료시각 추정 중'
             next_phase={'generation':'공개 테스트 선택','public_selection':'전체 테스트 평가','private_execution':'자동 결과 집계'}
-            if r['family']==PAIRED_FAMILY:
+            if r['family'] in (PAIRED_FAMILY,RECOVERY_FAMILY):
                 after={a:b for a,b in zip(PAIRED_PHASES,PAIRED_PHASES[1:])}
                 line+=', 다음: '+PAIRED_LABELS.get(after.get(phase),'결과 검증')
             else:line+=', 다음: '+next_phase.get(r.get('phase'),'결과 검증')
