@@ -23,8 +23,19 @@ REMOTE_SCRIPT = REMOTE_PROJECT/'.runtime/zpd-observer-20261013-v1/watch_zpd_comp
 LOCAL_STATE = Path('/Users/cdw/VSCode/zpd-apr/.runtime/zpd-observer-20261013-v1')
 KST = timezone(timedelta(hours=9))
 FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
-            'zpd-full-source-20261014')
-FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현')))
+            'zpd-full-source-20261014', 'zpd-paired-history-run-20261015')
+FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
+                                 '동일 조건 C/H 신규 학습')))
+PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
+PAIRED_UNIT_PREFIX = 'zpd-paired-history-20261015-v1'
+PAIRED_PHASES = ('cache', 'materialize', 'capacity', 'train-C', 'train-H', 'generation', 'public', 'private')
+PAIRED_STATUS = {'cache':'cache-v1/cache/STATUS.json',
+    'train-C':'train-C-v1/training/STATUS.json', 'train-H':'train-H-v1/training/STATUS.json',
+    'generation':'generation-v1/STATUS.json', 'public':'public-v1/STATUS.json',
+    'private':'private-v1/evaluation/STATUS.json'}
+PAIRED_LABELS = {'cache':'공개 샘플 캐시', 'materialize':'학습 입력·토큰 점검', 'capacity':'학습 용량 점검',
+    'train-C':'C 어댑터 학습', 'train-H':'H 어댑터 학습', 'generation':'후보 생성',
+    'public':'공개 샘플 선택', 'private':'전체 테스트 평가', 'complete':'최종 봉인 대기'}
 
 
 def sha(path):
@@ -49,6 +60,8 @@ def verify_files(directory, marker):
 
 
 def verify_terminal(directory, outer):
+    if directory.name == PAIRED_FAMILY:
+        return verify_paired_terminal(directory, outer)
     if 'worker_certificate_sha256' in outer:
         require(sha(directory/'WORKER_VERIFIED_COMPLETE.json')==outer['worker_certificate_sha256'], 'worker certificate differs')
         cert=read(directory/'WORKER_VERIFIED_COMPLETE.json')
@@ -73,6 +86,92 @@ def verify_terminal(directory, outer):
     return {a:r['full']['results'][a]['counts'] for a in ('C','H','HS','U')}
 
 
+def report_counts(report):
+    counts = report.get('counts')
+    if counts is None:
+        counts = {a:report['full']['results'][a]['counts'] for a in ('C','H','HS','U')}
+    require({'C','H','HS','U'}<=set(counts), 'all matched-training arms required')
+    counts={a:counts[a] for a in ('C','H','HS','U')}
+    require(all(type(counts[a]['stable_ac']) is int and 0<=counts[a]['stable_ac']<=320 for a in counts),
+            'invalid final stable-AC counts')
+    return counts
+
+
+def verify_paired_terminal(directory, outer):
+    """Only eight normal exits, cleanup and sealed results establish completion."""
+    require(outer['status']=='complete' and set(outer['phases'])==set(PAIRED_PHASES), 'all eight phases required')
+    dynamic=read(directory/'INFERENCE_RELEASE_COMPLETE.json')
+    require(dynamic['status']=='complete' and dynamic['parent_release_sha256']==outer['release_sha256']
+            and dynamic['inference_release_sha256']==outer['inference_release_sha256']
+            ==sha(directory/'inference-release.json'), 'dynamic inference release binding differs')
+    for phase,pin in outer['phases'].items():
+        path=directory/(phase+'-VERIFIED_COMPLETE.json')
+        require(sha(path)==pin, 'paired phase certificate differs')
+        cert=read(path)
+        require(cert['status']=='complete' and cert['cleanup_verified'] is True
+                and cert['exit']['Result']=='success' and cert['exit']['ExecMainStatus']=='0'
+                and cert['exit']['MainPID']=='0' and cert['exit']['ExecMainCode']=='1'
+                and cert['exit']['SubState']=='exited', 'paired worker exit/cleanup not certified')
+        expected=outer['inference_release_sha256'] if phase in PAIRED_PHASES[-3:] else outer['release_sha256']
+        require(cert['parent_release_sha256']==outer['release_sha256'] and cert['release_sha256']==expected,
+                'paired certificate release differs')
+        stage=directory/(phase+'-v1')
+        require(sha(stage/'STAGE_COMPLETE.json')==cert['complete_sha256'], 'paired stage seal differs')
+        seal=verify_files(stage,'STAGE_COMPLETE.json')
+        require(seal['phase']==phase and seal['release_sha256']==expected, 'paired stage identity differs')
+    require('REPORT.json' in outer['files_sha256'], 'paired final report not sealed')
+    verify_files(directory,'VERIFIED_COMPLETE.json')
+    result=report_counts(read(directory/'REPORT.json'))
+    private=report_counts(read(directory/'private-v1/evaluation/report.json'))
+    require(result==private, 'paired final/private result counts differ')
+    return result
+
+
+def paired_progress(root):
+    """Parent phase wins over stale completed cache/training status files."""
+    parent=read(root/'STATUS.json') if (root/'STATUS.json').is_file() else {}
+    phase=parent.get('phase')
+    if phase is None:
+        phase=next((p for p in reversed(PAIRED_PHASES) if (root/(p+'-v1')).is_dir()),None)
+    row=dict(state='running' if phase is not None else 'starting', phase=phase or 'preparing',
+        pipeline_phase=phase, completed_examples=0,total_examples=0,progress_unit='단계',
+        completed_phases=parent.get('completed_phases',[]),unit=parent.get('unit'),unit_prefix=PAIRED_UNIT_PREFIX)
+    if phase in ('failed','error','rejected'):
+        row.update(state='error',errors=['coordinator phase: '+phase]);return row
+    paths=[]
+    if phase in PAIRED_STATUS:paths.append(root/PAIRED_STATUS[phase])
+    if phase in PAIRED_PHASES:paths.append(root/(phase+'-v1')/'STATUS.json')
+    path=next((p for p in paths if p.is_file()),None)
+    if path is not None:
+        status=read(path);row['worker_phase']=status.get('phase')
+        if status.get('phase') in ('failed','error','rejected'):
+            row.update(state='error',errors=[str(path.relative_to(root))+': '+status['phase']]);return row
+        row.update(elapsed_seconds=status.get('elapsed_seconds'),attempt_statuses=status.get('attempt_statuses'))
+        if phase=='cache':
+            row.update(completed_examples=status.get('terminal_source_blocks',status.get('completed_source_blocks',0)),
+                total_examples=status.get('planned_source_blocks',0),progress_unit='소스 블록',
+                completed_source_blocks=status.get('completed_source_blocks'),
+                terminal_source_blocks=status.get('terminal_source_blocks'),
+                completed_case_attempts=status.get('completed_case_attempts'),
+                total_case_attempts=status.get('planned_case_attempts'),
+                unique_sources=status.get('unique_sources'),unavailable_unique_sources=status.get('unavailable_unique_sources'),
+                current_block=status.get('current_block'),journaled_case_attempts=status.get('journaled_case_attempts'))
+        else:
+            row.update(completed_examples=status.get('completed_examples',0),
+                total_examples=status.get('total_examples',320 if phase in ('generation','public','private') else 0),
+                progress_unit='예제',completed_case_attempts=status.get('completed_case_attempts'),
+                total_case_attempts=status.get('total_case_attempts'))
+    else:
+        row.update(completed_examples=len(row['completed_phases']),total_examples=len(PAIRED_PHASES),progress_unit='단계')
+    materialized=root/'materialize-v1/materialized'
+    if (materialized/'COMPLETE.json').is_file() and (materialized/'report.json').is_file():
+        row['training_population']=read(materialized/'report.json').get('counts',{})
+    if phase=='capacity':
+        path=root/'capacity-v1/probe/capacity_report.json'
+        if path.is_file():row['capacity_report_present']=True
+    return row
+
+
 def remote_snapshot(project=REMOTE_PROJECT):
     rows=[]
     for family in FAMILIES:
@@ -80,8 +179,22 @@ def remote_snapshot(project=REMOTE_PROJECT):
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
+            if family==PAIRED_FAMILY:
+                failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
             if failures:
                 row.update(state='error',errors=[str(p.relative_to(root)) for p in failures])
+            elif family==PAIRED_FAMILY:
+                try:
+                    if (root/'VERIFIED_COMPLETE.json').exists():
+                        outer=read(root/'VERIFIED_COMPLETE.json')
+                        results=verify_paired_terminal(root,outer)
+                        row.update(state='complete',completed_examples=320,certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),
+                            completed_at=datetime.fromtimestamp((root/'VERIFIED_COMPLETE.json').stat().st_mtime,KST).isoformat(),
+                            results=results,matched_fresh_training=True,
+                            training_population=read(root/'REPORT.json').get('training_population',{}))
+                    else:row.update(paired_progress(root))
+                except (OSError,ValueError,KeyError,TypeError) as exc:
+                    row.update(state='error',errors=['paired observer validation: '+str(exc)[:240]])
             elif (root/'VERIFIED_COMPLETE.json').exists():
                 outer=read(root/'VERIFIED_COMPLETE.json');require(outer['status']=='complete','outer status differs')
                 row.update(state='complete',completed_examples=320,certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),
@@ -123,7 +236,13 @@ def korean_report(snapshot):
         label=FAMILY_NAMES[r['family']]
         if r['state']=='complete':
             line=f"{label}: 완료 320/320, {r['completed_at'][11:16]} KST"
-            if r['family']==FAMILIES[0]:
+            if r['family']==PAIRED_FAMILY:
+                line+='; 신규 C/H 어댑터별 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
+                population=r.get('training_population',{}).get('train',{})
+                if population:
+                    line+=f"; 학습 원천 {population['candidate_examples']}→적격 {population['retained_examples']}예제"
+                line+='. 적응적 개발 결과; 모델 승격·교육 효과 주장 없음'
+            elif r['family']==FAMILIES[0]:
                 c,h=r['results']['C'],r['results']['H']
                 line+=f". C 정답 {c['selected_stable_ac']}, H 정답 {h['selected_stable_ac']} (H 후보 상한 {h['oracle_upper']})"
             else:
@@ -132,19 +251,29 @@ def korean_report(snapshot):
         elif r['state']=='error':line=label+': 오류 발생, 재실행하지 않음'
         elif r['state']=='not_started':line=label+': 아직 시작 안 됨'
         else:
-            line=f"{label}: {r.get('phase','준비')} {r['completed_examples']}/{r['total_examples']} 예제, 실행장애 기록 없음"
+            phase=r.get('pipeline_phase',r.get('phase'))
+            display=PAIRED_LABELS.get(phase,phase or '준비') if r['family']==PAIRED_FAMILY else r.get('phase','준비')
+            line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
                 if failed:line+=f', 생성 실패 {failed}회 (제외·재시도 없음)'
             if r.get('completed_case_attempts') is not None:
                 line+=f", 테스트 {r['completed_case_attempts']}/{r['total_case_attempts']}"
+            if r['family']==PAIRED_FAMILY and phase=='cache' and r.get('unavailable_unique_sources'):
+                line+=f", 공개 샘플 없음 {r['unavailable_unique_sources']}개 소스 (실패 아님)"
+            population=r.get('training_population',{}).get('train',{})
+            if r['family']==PAIRED_FAMILY and population:
+                line+=f", 학습 원천 {population['candidate_examples']}→적격 {population['retained_examples']}예제"
             elapsed,done,total=r.get('elapsed_seconds'),r['completed_examples'],r['total_examples']
             if elapsed and 10<=done<total:
                 estimate=datetime.fromisoformat(snapshot['checked_at'])+timedelta(seconds=elapsed*(total-done)/done)
                 line+=f", 현 단계 예상 {estimate:%H:%M} KST (단순 속도 추정)"
             else:line+=', 종료시각 추정 중'
             next_phase={'generation':'공개 테스트 선택','public_selection':'전체 테스트 평가','private_execution':'자동 결과 집계'}
-            line+=', 다음: '+next_phase.get(r.get('phase'),'결과 검증')
+            if r['family']==PAIRED_FAMILY:
+                after={a:b for a,b in zip(PAIRED_PHASES,PAIRED_PHASES[1:])}
+                line+=', 다음: '+PAIRED_LABELS.get(after.get(phase),'결과 검증')
+            else:line+=', 다음: '+next_phase.get(r.get('phase'),'결과 검증')
         lines.append(line)
     return '\n'.join(lines)
 
