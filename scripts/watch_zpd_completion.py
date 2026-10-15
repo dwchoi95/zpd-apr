@@ -175,7 +175,10 @@ def paired_progress(root):
                 progress_unit='예제',completed_case_attempts=status.get('completed_case_attempts'),
                 total_case_attempts=status.get('total_case_attempts'))
     else:
-        row.update(completed_examples=len(row['completed_phases']),total_examples=len(PAIRED_PHASES),progress_unit='단계')
+        if phase in ('generation','public','private'):
+            row.update(completed_examples=0,total_examples=320,progress_unit='예제')
+        else:
+            row.update(completed_examples=len(row['completed_phases']),total_examples=len(PAIRED_PHASES),progress_unit='단계')
     materialized=root/'materialize-v1/materialized'
     if (materialized/'COMPLETE.json').is_file() and (materialized/'report.json').is_file():
         row['training_population']=read(materialized/'report.json').get('counts',{})

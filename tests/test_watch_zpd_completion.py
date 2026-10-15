@@ -99,6 +99,13 @@ class PairedHistoryWatchTests(unittest.TestCase):
 
     def row(self):return next(r for r in self.snapshot()['experiments'] if r['family']==m.PAIRED_FAMILY)
 
+    def test_initializing_generation_reports_examples_not_eight_training_stages(self):
+        self.write(Path('STATUS.json'),dict(phase='generation',completed_phases=[]))
+        row=self.row()
+        self.assertEqual(row['completed_examples'],0)
+        self.assertEqual(row['total_examples'],320)
+        self.assertEqual(row['progress_unit'],'예제')
+
     def terminal(self,full_report=False,cleanup=True):
         counts={a:dict(stable_ac=n,regressions=7,unknown=11) for a,n in zip(('C','H','HS','U'),(201,202,199,198))}
         report={'full':{'results':{a:{'counts':v} for a,v in counts.items()}}}
