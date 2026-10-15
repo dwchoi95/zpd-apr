@@ -1,9 +1,10 @@
-"""Read-only SSH observer: hourly Mac reports and prompt terminal notifications.
+"""Read-only SSH observer with opt-in local Codex continuation dispatch.
 
-This is NOT a ChatGPT scheduled task and cannot resume an agent conversation.
-It never launches, retries, stops, or changes an experiment. macOS launchd runs
-it every five minutes; completion/error changes and hourly reports notify the
-logged-in user while the Mac is awake and UbuntuServer is reachable.
+This is NOT a native ChatGPT scheduled task. It never directly launches, retries,
+stops, or changes an experiment. With explicit continuation.json registration,
+terminal events enqueue a follow-up in the existing chat through `codex queue`.
+macOS launchd runs every five minutes. --no-notify disables both notifications
+and continuation dispatch for a read-only check.
 """
 from __future__ import annotations
 import argparse
@@ -178,6 +179,8 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
+            if family==PAIRED_FAMILY and (root/'COORDINATOR.json').is_file():
+                row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
             if family==PAIRED_FAMILY:
                 failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
@@ -307,7 +310,24 @@ def observe(no_notify=False):
             snapshot=dict(checked_at=datetime.now(KST).isoformat(),connection_error=str(exc)[:240],experiments=[])
         now=time.time(); report=korean_report(snapshot)
         result=dict(snapshot=snapshot,korean_report=report,notification_requested=False,
-                    chat_message_sent=False,experiment_mutations=False)
+                    chat_message_sent=False,chat_message_queued=False,experiment_mutations=False)
+        if not no_notify:
+            try:
+                if __package__:
+                    from .zpd_completion_continuation import dispatch
+                else:
+                    from zpd_completion_continuation import dispatch
+                followup=dispatch(snapshot,LOCAL_STATE/'continuation.json',LOCAL_STATE/'continuation-state')
+                result['agent_continuation']=followup
+                result['chat_message_queued']=bool(followup['queued'])
+                if followup['queued']:
+                    report+='\n완료 후 결과 분석·다음 작업을 현재 대화에 자동 예약했습니다.'
+                elif followup['status']=='attention_required':
+                    report+='\n자동 후속 예약의 수신 확인이 필요합니다. 중복 전송하지 않았습니다.'
+            except (OSError,ValueError,KeyError,TypeError) as exc:
+                result['continuation_error']=type(exc).__name__+': '+str(exc)[:240]
+                report+='\n자동 후속 예약 점검 오류: 실험 재실행 없음.'
+        result['korean_report']=report
         if not no_notify and due(snapshot,state,now):
             try:
                 notify(report);result['notification_requested']=True
