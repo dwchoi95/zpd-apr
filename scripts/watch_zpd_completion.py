@@ -25,11 +25,13 @@ LOCAL_STATE = Path('/Users/cdw/VSCode/zpd-apr/.runtime/zpd-observer-20261013-v1'
 KST = timezone(timedelta(hours=9))
 FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
-            'zpd-paired-inference-20261016')
+            'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
-                                 '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구')))
+                                 '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단')))
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
+CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
+MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY)
 PAIRED_UNIT_PREFIX = 'zpd-paired-history-20261015-v1'
 PAIRED_PHASES = ('cache', 'materialize', 'capacity', 'train-C', 'train-H', 'generation', 'public', 'private')
 PAIRED_STATUS = {'cache':'cache-v1/cache/STATUS.json',
@@ -65,8 +67,9 @@ def verify_files(directory, marker):
 def verify_terminal(directory, outer):
     if directory.name == PAIRED_FAMILY:
         return verify_paired_terminal(directory, outer)
-    if directory.name == RECOVERY_FAMILY:
-        require(outer['status']=='complete' and outer['layout_variant']=='paired_history_ipc_recovery_v1'
+    if directory.name in (RECOVERY_FAMILY,CROSSED_FAMILY):
+        variant = 'crossed_adapter_input_diagnostic_v1' if directory.name == CROSSED_FAMILY else 'paired_history_ipc_recovery_v1'
+        require(outer['status']=='complete' and outer['layout_variant']==variant
                 and set(outer['phases'])=={'generation','public','private'},
                 'recovery completion identity differs')
         verify_files(directory,'VERIFIED_COMPLETE.json')
@@ -75,6 +78,12 @@ def verify_terminal(directory, outer):
             require(cert['cleanup_verified'] is True and cert['release_sha256']==outer['release_sha256']
                     and cert['exit']['ExecMainCode']=='1' and cert['exit']['SubState']=='exited',
                     'recovery normal exit/cleanup not certified')
+        if directory.name == CROSSED_FAMILY:
+            report=read(directory/'REPORT.json')
+            require(outer['development_decision']==report['decision']=='diagnostic_only_no_promotion'
+                    and report['model_promotion'] is False
+                    and report['adapter_arm_map']==dict(C='H',H='C',HS='C',U='C'),
+                    'crossed diagnostic claim boundary differs')
     if 'worker_certificate_sha256' in outer:
         require(sha(directory/'WORKER_VERIFIED_COMPLETE.json')==outer['worker_certificate_sha256'], 'worker certificate differs')
         cert=read(directory/'WORKER_VERIFIED_COMPLETE.json')
@@ -194,14 +203,14 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family in (PAIRED_FAMILY,RECOVERY_FAMILY) and (root/'COORDINATOR.json').is_file():
+            if family in MATCHED_FAMILIES and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
-            if family in (PAIRED_FAMILY,RECOVERY_FAMILY):
+            if family in MATCHED_FAMILIES:
                 failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
             if failures:
                 row.update(state='error',errors=[str(p.relative_to(root)) for p in failures])
-            elif family in (PAIRED_FAMILY,RECOVERY_FAMILY):
+            elif family in MATCHED_FAMILIES:
                 try:
                     if (root/'VERIFIED_COMPLETE.json').exists():
                         outer=read(root/'VERIFIED_COMPLETE.json')
@@ -213,6 +222,7 @@ def remote_snapshot(project=REMOTE_PROJECT):
                     else:
                         row.update(paired_progress(root))
                         if family==RECOVERY_FAMILY:row['unit_prefix']='zpd-paired-inference-20261016-v1'
+                        if family==CROSSED_FAMILY:row['unit_prefix']='zpd-crossed-inference-20261016-v1'
                 except (OSError,ValueError,KeyError,TypeError) as exc:
                     row.update(state='error',errors=['paired observer validation: '+str(exc)[:240]])
             elif (root/'VERIFIED_COMPLETE.json').exists():
@@ -256,12 +266,13 @@ def korean_report(snapshot):
         label=FAMILY_NAMES[r['family']]
         if r['state']=='complete':
             line=f"{label}: 완료 320/320, {r['completed_at'][11:16]} KST"
-            if r['family'] in (PAIRED_FAMILY,RECOVERY_FAMILY):
+            if r['family'] in MATCHED_FAMILIES:
                 line+='; 신규 C/H 어댑터별 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
                 population=r.get('training_population',{}).get('train',{})
                 if population:
                     line+=f"; 학습 원천 {population['candidate_examples']}→적격 {population['retained_examples']}예제"
                 line+='. 적응적 개발 결과; 모델 승격·교육 효과 주장 없음'
+                if r['family']==CROSSED_FAMILY:line+='; C 입력=H 어댑터, H/HS/U 입력=C 어댑터 (교차 진단 전용)'
             elif r['family']==FAMILIES[0]:
                 c,h=r['results']['C'],r['results']['H']
                 line+=f". C 정답 {c['selected_stable_ac']}, H 정답 {h['selected_stable_ac']} (H 후보 상한 {h['oracle_upper']})"
@@ -272,7 +283,7 @@ def korean_report(snapshot):
         elif r['state']=='not_started':line=label+': 아직 시작 안 됨'
         else:
             phase=r.get('pipeline_phase',r.get('phase'))
-            display=PAIRED_LABELS.get(phase,phase or '준비') if r['family'] in (PAIRED_FAMILY,RECOVERY_FAMILY) else r.get('phase','준비')
+            display=PAIRED_LABELS.get(phase,phase or '준비') if r['family'] in MATCHED_FAMILIES else r.get('phase','준비')
             line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
@@ -290,7 +301,7 @@ def korean_report(snapshot):
                 line+=f", 현 단계 예상 {estimate:%H:%M} KST (단순 속도 추정)"
             else:line+=', 종료시각 추정 중'
             next_phase={'generation':'공개 테스트 선택','public_selection':'전체 테스트 평가','private_execution':'자동 결과 집계'}
-            if r['family'] in (PAIRED_FAMILY,RECOVERY_FAMILY):
+            if r['family'] in MATCHED_FAMILIES:
                 after={a:b for a,b in zip(PAIRED_PHASES,PAIRED_PHASES[1:])}
                 line+=', 다음: '+PAIRED_LABELS.get(after.get(phase),'결과 검증')
             else:line+=', 다음: '+next_phase.get(r.get('phase'),'결과 검증')

@@ -95,7 +95,7 @@ class RecoveryObserverTests(unittest.TestCase):
             root.mkdir(parents=True)
             (root/'COORDINATOR.json').write_text(json.dumps({'release_sha256':'a'*64}))
             (root/'VERIFIED_COMPLETE.json').write_text(json.dumps({'status':'complete','phases':{}}))
-            row=observer.remote_snapshot(project)['experiments'][-1]
+            row=next(r for r in observer.remote_snapshot(project)['experiments'] if r['family']==observer.RECOVERY_FAMILY)
             self.assertEqual(row['state'],'error')
             self.assertEqual(row['release_sha256'],'a'*64)
 
@@ -107,7 +107,7 @@ class RecoveryObserverTests(unittest.TestCase):
             (root/'STATUS.json').write_text(json.dumps({'phase':'public','completed_phases':['generation']}))
             (root/'generation-v1/STATUS.json').write_text(json.dumps({'phase':'generation','completed_examples':320}))
             (root/'public-v1/STATUS.json').write_text(json.dumps({'phase':'public_selection','completed_examples':12,'total_examples':320}))
-            row=observer.remote_snapshot(project)['experiments'][-1]
+            row=next(r for r in observer.remote_snapshot(project)['experiments'] if r['family']==observer.RECOVERY_FAMILY)
             self.assertEqual(row['completed_examples'],12);self.assertEqual(row['phase'],'public')
             self.assertEqual(row['release_sha256'],'a'*64);self.assertEqual(row['state'],'running')
             self.assertIn('공개 샘플 선택',observer.korean_report({'checked_at':'2026-10-16T06:00:00+09:00','experiments':[row]}))
