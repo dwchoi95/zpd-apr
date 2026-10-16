@@ -25,13 +25,16 @@ LOCAL_STATE = Path('/Users/cdw/VSCode/zpd-apr/.runtime/zpd-observer-20261013-v1'
 KST = timezone(timedelta(hours=9))
 FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
-            'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016')
+            'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
+            'zpd-anchored-diagnosis-20261016')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
-                                 '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅')))
+                                 '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
+                                 '고정 라우팅 후보 누락분 진단')))
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
 ANCHORED_FAMILY = 'zpd-anchored-routing-20261016'
+DIAGNOSIS_FAMILY = 'zpd-anchored-diagnosis-20261016'
 MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY, ANCHORED_FAMILY)
 PAIRED_UNIT_PREFIX = 'zpd-paired-history-20261015-v1'
 PAIRED_PHASES = ('cache', 'materialize', 'capacity', 'train-C', 'train-H', 'generation', 'public', 'private')
@@ -92,6 +95,7 @@ def verify_terminal(directory, outer):
                     and report['generated_during_this_run']==0 and report['routing']['slots_per_arm']==2,
                     'anchored routing claim boundary differs')
     if 'worker_certificate_sha256' in outer:
+        require(outer['status']=='complete', 'incomplete diagnostic outer seal')
         require(sha(directory/'WORKER_VERIFIED_COMPLETE.json')==outer['worker_certificate_sha256'], 'worker certificate differs')
         cert=read(directory/'WORKER_VERIFIED_COMPLETE.json')
         require(cert['cleanup_verified'] is True and cert['exit']['Result']=='success'
@@ -100,6 +104,11 @@ def verify_terminal(directory, outer):
         verify_files(directory/'run-v1','COMPLETE.json')
         require(sha(directory/'diagnosis-complete-v1/COMPLETE.json')==outer['diagnosis_complete_sha256'], 'diagnosis seal differs')
         dc=read(directory/'diagnosis-complete-v1/COMPLETE.json')
+        if directory.name==DIAGNOSIS_FAMILY:
+            require(cert['release_sha256']==dc['release_sha256']==outer['release_sha256']
+                    and dc['worker_complete_sha256']==cert['complete_sha256']
+                    and dc['full_source_coverage'] is True and outer['model_promotion'] is False,
+                    'diagnostic release or claim boundary differs')
         require(sha(directory/'diagnosis-complete-v1/report.json')==dc['report_sha256'], 'diagnosis report differs')
         r=read(directory/'diagnosis-complete-v1/report.json')
         return {a:{k:r['per_arm'][a][k] for k in ('selected_stable_ac','oracle_lower','oracle_upper','missed_known_ac')}
@@ -210,13 +219,31 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family in MATCHED_FAMILIES and (root/'COORDINATOR.json').is_file():
+            if family in (*MATCHED_FAMILIES,DIAGNOSIS_FAMILY) and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
             if family in MATCHED_FAMILIES:
                 failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
             if failures:
                 row.update(state='error',errors=[str(p.relative_to(root)) for p in failures])
+            elif family==DIAGNOSIS_FAMILY:
+                try:
+                    if (root/'VERIFIED_COMPLETE.json').is_file():
+                        outer=read(root/'VERIFIED_COMPLETE.json')
+                        require(outer['release_sha256']==row.get('release_sha256'), 'diagnostic coordinator identity differs')
+                        row.update(state='complete',completed_examples=320,
+                            certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),
+                            completed_at=datetime.fromtimestamp((root/'VERIFIED_COMPLETE.json').stat().st_mtime,KST).isoformat(),
+                            results=verify_terminal(root,outer))
+                    elif (root/'run-v1/STATUS.json').is_file():
+                        progress=read(root/'run-v1/STATUS.json')
+                        row.update({k:progress[k] for k in ('phase','completed_examples','total_examples',
+                            'completed_unique_sources','total_unique_sources','completed_case_attempts',
+                            'total_case_attempts','completed_source_blocks','total_source_blocks','elapsed_seconds') if k in progress})
+                        row['state']='running'
+                    else:row['state']='starting'
+                except (OSError,ValueError,KeyError,TypeError) as exc:
+                    row.update(state='error',errors=['diagnostic observer validation: '+str(exc)[:240]])
             elif family in MATCHED_FAMILIES:
                 try:
                     if (root/'VERIFIED_COMPLETE.json').exists():
@@ -282,7 +309,7 @@ def korean_report(snapshot):
                 line+='. 적응적 개발 결과; 모델 승격·교육 효과 주장 없음'
                 if r['family']==CROSSED_FAMILY:line+='; C 입력=H 어댑터, H/HS/U 입력=C 어댑터 (교차 진단 전용)'
                 if r['family']==ANCHORED_FAMILY:line+='; 공통 C 후보 1개+조건별 H 어댑터 후보 1개 (추가 생성 없음)'
-            elif r['family']==FAMILIES[0]:
+            elif r['family'] in (FAMILIES[0],DIAGNOSIS_FAMILY):
                 c,h=r['results']['C'],r['results']['H']
                 line+=f". C 정답 {c['selected_stable_ac']}, H 정답 {h['selected_stable_ac']} (H 후보 상한 {h['oracle_upper']})"
             else:
@@ -294,6 +321,7 @@ def korean_report(snapshot):
             phase=r.get('pipeline_phase',r.get('phase'))
             display=PAIRED_LABELS.get(phase,phase or '준비') if r['family'] in MATCHED_FAMILIES else r.get('phase','준비')
             if r['family']==ANCHORED_FAMILY and phase=='generation':display='봉인 후보 구성 (재생성 없음)'
+            if r['family']==DIAGNOSIS_FAMILY:display='미평가 후보 진단'
             line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
@@ -306,6 +334,17 @@ def korean_report(snapshot):
             if r['family']==PAIRED_FAMILY and population:
                 line+=f", 학습 원천 {population['candidate_examples']}→적격 {population['retained_examples']}예제"
             elapsed,done,total=r.get('elapsed_seconds'),r['completed_examples'],r['total_examples']
+            if r['family']==DIAGNOSIS_FAMILY:
+                # Recipients finish only during block four; source-block work
+                # is observable earlier. Estimate remains explicitly provisional.
+                done,total=r.get('completed_case_attempts',0),r.get('total_case_attempts',0)
+                if elapsed and done>=100 and total>done:
+                    estimate=datetime.fromisoformat(snapshot['checked_at'])+timedelta(seconds=elapsed*(total-done)/done)
+                    line+=f", 예상 {estimate:%H:%M} KST (테스트 속도 추정; 블록별 병렬도 차이)"
+                else:line+=', 종료시각 추정 중'
+                line+=', 다음: 생성 한계와 선택 손실 분리 (성능 개선 판정 아님)'
+                lines.append(line)
+                continue
             if elapsed and 10<=done<total:
                 estimate=datetime.fromisoformat(snapshot['checked_at'])+timedelta(seconds=elapsed*(total-done)/done)
                 line+=f", 현 단계 예상 {estimate:%H:%M} KST (단순 속도 추정)"

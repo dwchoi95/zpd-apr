@@ -111,7 +111,7 @@ class RoutingTests(unittest.TestCase):
             (root/'COORDINATOR.json').write_text(json.dumps(dict(release_sha256='a'*64)))
             (root/'STATUS.json').write_text(json.dumps(dict(phase='public',completed_phases=['generation'])))
             (root/'public-v1/STATUS.json').write_text(json.dumps(dict(completed_examples=23,total_examples=320)))
-            row=observer.remote_snapshot(project)['experiments'][-1]
+            row=next(r for r in observer.remote_snapshot(project)['experiments'] if r['family']==observer.ANCHORED_FAMILY)
             self.assertEqual(row['completed_examples'],23);self.assertEqual(row['release_sha256'],'a'*64)
             self.assertEqual(row['unit_prefix'],m.UNIT_PREFIX)
 
