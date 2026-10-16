@@ -215,5 +215,17 @@
     "prior_public_seconds": 430.12,
     "prior_private_seconds": 6306.6
   },
-  "performance_improvement_established": false
+  "performance_improvement_established": false,
+  "subsequent_live_check": {
+    "checked_at": "2026-10-16T13:53:49.483251+09:00",
+    "phase": "train-C",
+    "completed_phases": ["materialize", "capacity"],
+    "unit": "zpd-edit-balanced-20261016-v1-train-C.service",
+    "main_pid": 640989,
+    "active_state": "active",
+    "sub_state": "running",
+    "training_journal_present": false,
+    "meaning": "C training process started; paired preflight/model initialization precedes successful example consumption",
+    "failure_markers": []
+  }
 }
