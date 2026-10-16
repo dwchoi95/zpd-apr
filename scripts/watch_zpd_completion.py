@@ -25,13 +25,14 @@ LOCAL_STATE = Path('/Users/cdw/VSCode/zpd-apr/.runtime/zpd-observer-20261013-v1'
 KST = timezone(timedelta(hours=9))
 FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
-            'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016')
+            'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
-                                 '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단')))
+                                 '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅')))
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
-MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY)
+ANCHORED_FAMILY = 'zpd-anchored-routing-20261016'
+MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY, ANCHORED_FAMILY)
 PAIRED_UNIT_PREFIX = 'zpd-paired-history-20261015-v1'
 PAIRED_PHASES = ('cache', 'materialize', 'capacity', 'train-C', 'train-H', 'generation', 'public', 'private')
 PAIRED_STATUS = {'cache':'cache-v1/cache/STATUS.json',
@@ -67,8 +68,9 @@ def verify_files(directory, marker):
 def verify_terminal(directory, outer):
     if directory.name == PAIRED_FAMILY:
         return verify_paired_terminal(directory, outer)
-    if directory.name in (RECOVERY_FAMILY,CROSSED_FAMILY):
-        variant = 'crossed_adapter_input_diagnostic_v1' if directory.name == CROSSED_FAMILY else 'paired_history_ipc_recovery_v1'
+    if directory.name in (RECOVERY_FAMILY,CROSSED_FAMILY,ANCHORED_FAMILY):
+        variant = {RECOVERY_FAMILY:'paired_history_ipc_recovery_v1', CROSSED_FAMILY:'crossed_adapter_input_diagnostic_v1',
+                   ANCHORED_FAMILY:'current_anchored_equal_budget_routing_v1'}[directory.name]
         require(outer['status']=='complete' and outer['layout_variant']==variant
                 and set(outer['phases'])=={'generation','public','private'},
                 'recovery completion identity differs')
@@ -84,6 +86,11 @@ def verify_terminal(directory, outer):
                     and report['model_promotion'] is False
                     and report['adapter_arm_map']==dict(C='H',H='C',HS='C',U='C'),
                     'crossed diagnostic claim boundary differs')
+        if directory.name == ANCHORED_FAMILY:
+            report=read(directory/'REPORT.json')
+            require(report['model_promotion'] is False and report['adaptive_replay'] is True
+                    and report['generated_during_this_run']==0 and report['routing']['slots_per_arm']==2,
+                    'anchored routing claim boundary differs')
     if 'worker_certificate_sha256' in outer:
         require(sha(directory/'WORKER_VERIFIED_COMPLETE.json')==outer['worker_certificate_sha256'], 'worker certificate differs')
         cert=read(directory/'WORKER_VERIFIED_COMPLETE.json')
@@ -223,6 +230,7 @@ def remote_snapshot(project=REMOTE_PROJECT):
                         row.update(paired_progress(root))
                         if family==RECOVERY_FAMILY:row['unit_prefix']='zpd-paired-inference-20261016-v1'
                         if family==CROSSED_FAMILY:row['unit_prefix']='zpd-crossed-inference-20261016-v1'
+                        if family==ANCHORED_FAMILY:row['unit_prefix']='zpd-anchored-routing-20261016-v1'
                 except (OSError,ValueError,KeyError,TypeError) as exc:
                     row.update(state='error',errors=['paired observer validation: '+str(exc)[:240]])
             elif (root/'VERIFIED_COMPLETE.json').exists():
@@ -273,6 +281,7 @@ def korean_report(snapshot):
                     line+=f"; 학습 원천 {population['candidate_examples']}→적격 {population['retained_examples']}예제"
                 line+='. 적응적 개발 결과; 모델 승격·교육 효과 주장 없음'
                 if r['family']==CROSSED_FAMILY:line+='; C 입력=H 어댑터, H/HS/U 입력=C 어댑터 (교차 진단 전용)'
+                if r['family']==ANCHORED_FAMILY:line+='; 공통 C 후보 1개+조건별 H 어댑터 후보 1개 (추가 생성 없음)'
             elif r['family']==FAMILIES[0]:
                 c,h=r['results']['C'],r['results']['H']
                 line+=f". C 정답 {c['selected_stable_ac']}, H 정답 {h['selected_stable_ac']} (H 후보 상한 {h['oracle_upper']})"
@@ -284,6 +293,7 @@ def korean_report(snapshot):
         else:
             phase=r.get('pipeline_phase',r.get('phase'))
             display=PAIRED_LABELS.get(phase,phase or '준비') if r['family'] in MATCHED_FAMILIES else r.get('phase','준비')
+            if r['family']==ANCHORED_FAMILY and phase=='generation':display='봉인 후보 구성 (재생성 없음)'
             line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
