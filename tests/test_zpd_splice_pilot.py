@@ -97,14 +97,15 @@ class PilotTests(unittest.TestCase):
             m.core.write_new(root/'COORDINATOR.json',dict(release_sha256='a'*64))
             m.core.write_new(root/'materialize-v1/STATUS.json',dict(phase='materialize',completed_examples=128,total_examples=23564,elapsed_seconds=10))
             with patch.object(w,'splice_properties',return_value=dict(MainPID='5',ActiveState='active')):
-                row=w.remote_snapshot(Path(temp))['experiments'][-1]
+                getrow=lambda:next(r for r in w.remote_snapshot(Path(temp))['experiments'] if r['family']==w.SPLICE_FAMILY)
+                row=getrow()
                 self.assertEqual(row['completed_examples'],128);self.assertEqual(row['total_examples'],23564)
                 report=w.korean_report(dict(checked_at='2026-10-17T04:00:00+09:00',experiments=[row]))
                 self.assertIn('128/23564',report)
                 m.core.write_new(root/'VERIFIED_COMPLETE.json',dict(status='complete'))
-                self.assertEqual(w.remote_snapshot(Path(temp))['experiments'][-1]['state'],'running')
+                self.assertEqual(getrow()['state'],'running')
             with patch.object(w,'splice_properties',return_value=dict(MainPID='0',ActiveState='failed')):
-                self.assertEqual(w.remote_snapshot(Path(temp))['experiments'][-1]['state'],'error')
+                self.assertEqual(getrow()['state'],'error')
 
 
 if __name__=='__main__':unittest.main()

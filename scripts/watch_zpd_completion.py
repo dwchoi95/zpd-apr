@@ -27,12 +27,14 @@ FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
             'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016',
-            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017')
+            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261017')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
                                  '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습',
-                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증')))
+                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가')))
 SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
+SPLICE_TRAINING_FAMILY = 'zpd-splice-training-20261017'
+SPLICE_TRAINING_UNIT_PREFIX = 'zpd-splice-training-20261017-v1'
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
@@ -44,7 +46,7 @@ TIE_FAMILY = 'zpd-anchor-tie-20261016'
 TIE_UNIT = 'zpd-anchor-tie-20261016-v1-coordinator.service'
 BALANCED_FAMILY = 'zpd-edit-balanced-20261016'
 BALANCED_UNIT_PREFIX = 'zpd-edit-balanced-20261016-v1'
-MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY, ANCHORED_FAMILY, BALANCED_FAMILY)
+MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY, ANCHORED_FAMILY, BALANCED_FAMILY, SPLICE_TRAINING_FAMILY)
 PAIRED_UNIT_PREFIX = 'zpd-paired-history-20261015-v1'
 PAIRED_PHASES = ('cache', 'materialize', 'capacity', 'train-C', 'train-H', 'generation', 'public', 'private')
 PAIRED_STATUS = {'cache':'cache-v1/cache/STATUS.json',
@@ -123,9 +125,12 @@ def verify_terminal(directory, outer):
         require(report['adaptive_cache_replay'] is True and report['new_execution'] is False
                 and report['model_promotion'] is False, 'cache replay claim differs')
         return report_counts(report)
-    if directory.name in (PAIRED_FAMILY, BALANCED_FAMILY):
-        phases = PAIRED_PHASES[1:] if directory.name == BALANCED_FAMILY else PAIRED_PHASES
+    if directory.name in (PAIRED_FAMILY, BALANCED_FAMILY, SPLICE_TRAINING_FAMILY):
+        phases = PAIRED_PHASES if directory.name == PAIRED_FAMILY else PAIRED_PHASES[1:]
         result = verify_paired_terminal(directory, outer, phases)
+        if directory.name == SPLICE_TRAINING_FAMILY:
+            require(read(directory/'REPORT.json')['splice_intervention']['codec']=='original_line_splices_v1',
+                'splice training codec differs')
         if directory.name == BALANCED_FAMILY:
             require(read(directory/'REPORT.json')['objective_intervention']['objective']['version']
                     == 'edit_copy_balanced_ce_v1', 'balanced objective report differs')
@@ -344,8 +349,8 @@ def remote_snapshot(project=REMOTE_PROJECT):
             elif family in MATCHED_FAMILIES:
                 try:
                     if (root/'VERIFIED_COMPLETE.json').exists():
-                        if family==BALANCED_FAMILY:
-                            values=balanced_properties()
+                        if family in (BALANCED_FAMILY,SPLICE_TRAINING_FAMILY):
+                            values=balanced_properties() if family==BALANCED_FAMILY else splice_training_properties()
                             if values.get('MainPID') not in (None,'0'):
                                 row.update(state='running',phase='normal_exit_pending',completed_examples=320)
                                 rows.append(row);continue
@@ -354,7 +359,7 @@ def remote_snapshot(project=REMOTE_PROJECT):
                                 and values.get('ExecMainStatus')=='0' and values.get('SubState')=='exited',
                                 'balanced coordinator normal exit/cleanup not established')
                         outer=read(root/'VERIFIED_COMPLETE.json')
-                        if family==BALANCED_FAMILY:
+                        if family in (BALANCED_FAMILY,SPLICE_TRAINING_FAMILY):
                             require(outer['release_sha256']==row.get('release_sha256'), 'balanced coordinator release differs')
                         results=verify_terminal(root,outer)
                         row.update(state='complete',completed_examples=320,certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),
@@ -367,6 +372,7 @@ def remote_snapshot(project=REMOTE_PROJECT):
                         if family==CROSSED_FAMILY:row['unit_prefix']='zpd-crossed-inference-20261016-v1'
                         if family==ANCHORED_FAMILY:row['unit_prefix']='zpd-anchored-routing-20261016-v1'
                         if family==BALANCED_FAMILY:row['unit_prefix']=BALANCED_UNIT_PREFIX
+                        if family==SPLICE_TRAINING_FAMILY:row['unit_prefix']=SPLICE_TRAINING_UNIT_PREFIX
                 except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
                     row.update(state='error',errors=['paired observer validation: '+str(exc)[:240]])
             elif (root/'VERIFIED_COMPLETE.json').exists():
@@ -397,6 +403,12 @@ def terminal_key(row):
 def splice_properties():
     raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
         'zpd-splice-pilot-20261017-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
+def splice_training_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        SPLICE_TRAINING_UNIT_PREFIX+'-coordinator.service'],text=True,timeout=10)
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 

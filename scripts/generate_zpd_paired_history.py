@@ -30,7 +30,7 @@ def adapter_roles(release):
     return paths
 
 
-def generation(inputs, release, output):
+def generation(inputs, release, output, *, terminalize=None):
     """Drop-in core worker generation; no fallback adapter or dropped slot."""
     from importlib.metadata import version
     for package, expected in release['gpu_versions'].items():
@@ -77,7 +77,8 @@ def generation(inputs, release, output):
                 core.require(len(result.outputs) == 1, 'one output per attempt required')
                 item = result.outputs[0]
                 terminal_rows.append(dict(**row,
-                    attempt=core.terminal(row['draw_index'], row['seed'], item.text, item.finish_reason),
+                    attempt=(core.terminal(row['draw_index'], row['seed'], item.text, item.finish_reason)
+                             if terminalize is None else terminalize(row, item.text, item.finish_reason)),
                     raw_text=item.text, finish_reason=item.finish_reason))
         for row in terminal_rows:
             prompt = rendered[row['prompt_id']]; role = ADAPTER_ARM_MAP[row['arm']]
