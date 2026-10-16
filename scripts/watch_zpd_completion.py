@@ -26,10 +26,10 @@ KST = timezone(timedelta(hours=9))
 FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
-            'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016')
+            'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
-                                 '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선')))
+                                 '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습')))
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
@@ -37,7 +37,9 @@ ANCHORED_FAMILY = 'zpd-anchored-routing-20261016'
 DIAGNOSIS_FAMILY = 'zpd-anchored-diagnosis-20261016'
 TIE_FAMILY = 'zpd-anchor-tie-20261016'
 TIE_UNIT = 'zpd-anchor-tie-20261016-v1-coordinator.service'
-MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY, ANCHORED_FAMILY)
+BALANCED_FAMILY = 'zpd-edit-balanced-20261016'
+BALANCED_UNIT_PREFIX = 'zpd-edit-balanced-20261016-v1'
+MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY, ANCHORED_FAMILY, BALANCED_FAMILY)
 PAIRED_UNIT_PREFIX = 'zpd-paired-history-20261015-v1'
 PAIRED_PHASES = ('cache', 'materialize', 'capacity', 'train-C', 'train-H', 'generation', 'public', 'private')
 PAIRED_STATUS = {'cache':'cache-v1/cache/STATUS.json',
@@ -91,8 +93,13 @@ def verify_terminal(directory, outer):
         require(report['adaptive_cache_replay'] is True and report['new_execution'] is False
                 and report['model_promotion'] is False, 'cache replay claim differs')
         return report_counts(report)
-    if directory.name == PAIRED_FAMILY:
-        return verify_paired_terminal(directory, outer)
+    if directory.name in (PAIRED_FAMILY, BALANCED_FAMILY):
+        phases = PAIRED_PHASES[1:] if directory.name == BALANCED_FAMILY else PAIRED_PHASES
+        result = verify_paired_terminal(directory, outer, phases)
+        if directory.name == BALANCED_FAMILY:
+            require(read(directory/'REPORT.json')['objective_intervention']['objective']['version']
+                    == 'edit_copy_balanced_ce_v1', 'balanced objective report differs')
+        return result
     if directory.name in (RECOVERY_FAMILY,CROSSED_FAMILY,ANCHORED_FAMILY):
         variant = {RECOVERY_FAMILY:'paired_history_ipc_recovery_v1', CROSSED_FAMILY:'crossed_adapter_input_diagnostic_v1',
                    ANCHORED_FAMILY:'current_anchored_equal_budget_routing_v1'}[directory.name]
@@ -157,9 +164,9 @@ def report_counts(report):
     return counts
 
 
-def verify_paired_terminal(directory, outer):
+def verify_paired_terminal(directory, outer, phases=PAIRED_PHASES):
     """Only eight normal exits, cleanup and sealed results establish completion."""
-    require(outer['status']=='complete' and set(outer['phases'])==set(PAIRED_PHASES), 'all eight phases required')
+    require(outer['status']=='complete' and set(outer['phases'])==set(phases), 'all fixed phases required')
     dynamic=read(directory/'INFERENCE_RELEASE_COMPLETE.json')
     require(dynamic['status']=='complete' and dynamic['parent_release_sha256']==outer['release_sha256']
             and dynamic['inference_release_sha256']==outer['inference_release_sha256']
@@ -189,6 +196,7 @@ def verify_paired_terminal(directory, outer):
 
 def paired_progress(root):
     """Parent phase wins over stale completed cache/training status files."""
+    phases = PAIRED_PHASES[1:] if root.name == BALANCED_FAMILY else PAIRED_PHASES
     parent=read(root/'STATUS.json') if (root/'STATUS.json').is_file() else {}
     phase=parent.get('phase')
     if phase is None:
@@ -225,7 +233,7 @@ def paired_progress(root):
         if phase in ('generation','public','private'):
             row.update(completed_examples=0,total_examples=320,progress_unit='예제')
         else:
-            row.update(completed_examples=len(row['completed_phases']),total_examples=len(PAIRED_PHASES),progress_unit='단계')
+            row.update(completed_examples=len(row['completed_phases']),total_examples=len(phases),progress_unit='단계')
     materialized=root/'materialize-v1/materialized'
     if (materialized/'COMPLETE.json').is_file() and (materialized/'report.json').is_file():
         row['training_population']=read(materialized/'report.json').get('counts',{})
@@ -290,7 +298,18 @@ def remote_snapshot(project=REMOTE_PROJECT):
             elif family in MATCHED_FAMILIES:
                 try:
                     if (root/'VERIFIED_COMPLETE.json').exists():
+                        if family==BALANCED_FAMILY:
+                            values=balanced_properties()
+                            if values.get('MainPID') not in (None,'0'):
+                                row.update(state='running',phase='normal_exit_pending',completed_examples=320)
+                                rows.append(row);continue
+                            require(values.get('MainPID')=='0' and values.get('ControlGroup')==''
+                                and values.get('Result')=='success' and values.get('ExecMainCode')=='1'
+                                and values.get('ExecMainStatus')=='0' and values.get('SubState')=='exited',
+                                'balanced coordinator normal exit/cleanup not established')
                         outer=read(root/'VERIFIED_COMPLETE.json')
+                        if family==BALANCED_FAMILY:
+                            require(outer['release_sha256']==row.get('release_sha256'), 'balanced coordinator release differs')
                         results=verify_terminal(root,outer)
                         row.update(state='complete',completed_examples=320,certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),
                             completed_at=datetime.fromtimestamp((root/'VERIFIED_COMPLETE.json').stat().st_mtime,KST).isoformat(),
@@ -301,7 +320,8 @@ def remote_snapshot(project=REMOTE_PROJECT):
                         if family==RECOVERY_FAMILY:row['unit_prefix']='zpd-paired-inference-20261016-v1'
                         if family==CROSSED_FAMILY:row['unit_prefix']='zpd-crossed-inference-20261016-v1'
                         if family==ANCHORED_FAMILY:row['unit_prefix']='zpd-anchored-routing-20261016-v1'
-                except (OSError,ValueError,KeyError,TypeError) as exc:
+                        if family==BALANCED_FAMILY:row['unit_prefix']=BALANCED_UNIT_PREFIX
+                except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
                     row.update(state='error',errors=['paired observer validation: '+str(exc)[:240]])
             elif (root/'VERIFIED_COMPLETE.json').exists():
                 outer=read(root/'VERIFIED_COMPLETE.json');require(outer['status']=='complete','outer status differs')
@@ -330,6 +350,12 @@ def terminal_key(row):
 
 def tie_properties():
     raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',TIE_UNIT],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
+def balanced_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        BALANCED_UNIT_PREFIX+'-coordinator.service'],text=True,timeout=10)
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 

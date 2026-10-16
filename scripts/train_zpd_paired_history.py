@@ -170,13 +170,19 @@ def validate_preflight(paired):
                 and [r['example_id'] for r in features[arm]] == ids, 'encoded feature pin/order differs')
         for row, pin in zip(features[arm], report['per_example'], strict=True):
             n = pin['arms'][arm]['prompt_tokens']; t = pin['target_tokens']; full = n + t
+            if 'objective' in report:
+                from scripts.zpd_edit_balanced_objective import expected_weights
+                target_weights = expected_weights(report, pin)
+            else:
+                require(report['edit_token_weight'] == 1.0, 'uniform target objective required')
+                target_weights = [1.0] * t
             require(row['example_id'] == pin['example_id'] and n > 0 and t > 0
                     and n <= caps['max_input_tokens'] and t <= caps['max_output_tokens']
                     and full <= caps['max_full_tokens'] and full == pin['arms'][arm]['total_tokens'],
                     'feature token caps differ')
             require(len(row['input_ids']) == full and row['attention_mask'] == [1] * full
                     and row['labels'] == [-100] * n + row['input_ids'][n:]
-                    and row['loss_weights'] == [0.0] * n + [1.0] * t
+                    and row['loss_weights'] == [0.0] * n + target_weights
                     and row['input_ids'][-1] == report['eos_token_id']
                     and sha(encoded(row['input_ids'][n:])) == pin['target_token_ids_sha256'],
                     'target/masking contract differs')
@@ -342,6 +348,7 @@ def train_arm(arm, paired, validation_paired, *, base_model, output_dir, seed=20
     """
     require(arm in ARMS, 'C or H arm required')
     train_report = validate_preflight(paired); valid_report = validate_preflight(validation_paired)
+    require(train_report.get('objective') == valid_report.get('objective'), 'train/valid objectives differ')
     require(train_report['caps'] == valid_report['caps'] == CAPS, 'frozen training token caps required')
     require(not (set(train_report['example_ids']) & set(valid_report['example_ids'])),
             'training/validation example IDs overlap')
@@ -377,13 +384,15 @@ def train_arm(arm, paired, validation_paired, *, base_model, output_dir, seed=20
                 'complete unmerged adapter files required')
         summary = dict(version=VERSION, arm=arm, status='complete', actual_fit=True,
             model_promotion=False, method_improvement_established=False, base_model=str(base_model), seed=seed,
-            config=deepcopy(CONFIG), lora=deepcopy(LORA), edit_token_weight=1.0,
+            config=deepcopy(CONFIG), lora=deepcopy(LORA), edit_token_weight=train_report['edit_token_weight'],
             completed_steps=int(trainer.state.global_step), completed_epochs=float(trainer.state.epoch),
             coverage=coverage, validation_examples=valid_report['examples'],
             validation=validations[0], validation_role='descriptive_only_no_checkpoint_selection',
             checkpoint_selection='fixed_final_epoch', initial_adapter=initial, final_adapter=final,
             train_preflight_sha256=sha(encoded(train_report)), validation_preflight_sha256=sha(encoded(valid_report)),
             adapter_files_sha256=files, runtime_versions=_versions(), truncation=False, exclusions=0)
+        if 'objective' in train_report:
+            summary['objective'] = deepcopy(train_report['objective'])
         _write(output / 'training_summary.json', summary)
         journal.status('complete')
         _write(output / 'COMPLETE.json', dict(status='complete', provisional_until_normal_exit=True,
