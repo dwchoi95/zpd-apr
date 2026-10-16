@@ -27,11 +27,12 @@ FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
             'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016',
-            'zpd-edit-balanced-diagnosis-20261017')
+            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
                                  '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습',
-                                 '균형 학습 후보·회귀 원인 진단')))
+                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증')))
+SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
@@ -77,6 +78,31 @@ def verify_files(directory, marker):
 
 
 def verify_terminal(directory, outer):
+    if directory.name==SPLICE_FAMILY:
+        require(outer['status']=='complete' and outer['model_promotion'] is False
+            and set(outer['phases']) in ({'materialize'},{'materialize','capacity'}), 'splice pilot identity differs')
+        verify_files(directory,'VERIFIED_COMPLETE.json')
+        for phase,pin in outer['phases'].items():
+            cert_path=directory/(phase+'-VERIFIED_COMPLETE.json')
+            require(sha(cert_path)==pin,'splice child certificate drift')
+            cert=read(cert_path);stage=directory/(phase+'-v1');e=cert['exit']
+            require(cert['release_sha256']==outer['release_sha256'] and cert['cleanup_verified'] is True
+                and all(e.get(k)==v for k,v in dict(Result='success',ExecMainCode='1',ExecMainStatus='0',MainPID='0',SubState='exited').items())
+                and sha(stage/'STAGE_COMPLETE.json')==cert['complete_sha256'],'splice child not verified')
+            seal=verify_files(stage,'STAGE_COMPLETE.json')
+            require(seal['release_sha256']==outer['release_sha256'] and seal['phase']==phase
+                and {str(p.relative_to(stage)) for p in stage.rglob('*') if p.is_file()}
+                ==set(seal['files_sha256'])|{'STAGE_COMPLETE.json'},'splice stage inventory differs')
+        report=read(directory/'REPORT.json')
+        require(report['decision']==outer['decision'] and report['actual_fit'] is False
+            and report['model_promotion'] is False and report['performance_measured'] is False,'splice claim differs')
+        require((report['decision']=='ready_for_training')==('capacity' in outer['phases']), 'splice capacity decision differs')
+        if report['decision']=='ready_for_training':
+            require(report['capacity']['status']=='passed' and report['capacity']['optimizer_steps']==0
+                and report['capacity']['actual_fit'] is False and report['capacity']['published_adapter'] is False,
+                'splice no-fit capacity required')
+        else:require(report['decision']=='hold' and report['materialization']['overflow'],'splice hold reason missing')
+        return dict(decision=report['decision'],performance_measured=False)
     if directory.name==TIE_FAMILY:
         require(outer['status']=='complete' and outer['layout_variant']=='public_anchor_tie_preference_v1'
                 and outer['model_promotion'] is False and outer['provisional_until_coordinator_normal_exit'] is True
@@ -256,13 +282,17 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY) and (root/'COORDINATOR.json').is_file():
+            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY,SPLICE_FAMILY) and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
             if family in MATCHED_FAMILIES:
                 failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
             if failures:
                 row.update(state='error',errors=[str(p.relative_to(root)) for p in failures])
+            elif family==SPLICE_FAMILY:
+                try:row.update(splice_progress(root))
+                except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
+                    row.update(state='error',errors=['splice observer validation: '+str(exc)[:240]])
             elif family==TIE_FAMILY:
                 try:
                     if (root/'VERIFIED_COMPLETE.json').is_file():
@@ -364,6 +394,37 @@ def terminal_key(row):
     return None
 
 
+def splice_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        'zpd-splice-pilot-20261017-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
+def splice_progress(root):
+    row=dict(state='starting',completed_examples=0,total_examples=23564)
+    if not (root/'COORDINATOR.json').is_file():return row
+    props=splice_properties()
+    require(props.get('ActiveState')!='failed','splice coordinator failed')
+    if (root/'VERIFIED_COMPLETE.json').is_file():
+        if props.get('MainPID') not in (None,'0'):
+            return dict(row,state='running',phase='normal_exit_pending')
+        require(all(props.get(k)==v for k,v in dict(MainPID='0',ControlGroup='',Result='success',
+            ExecMainCode='1',ExecMainStatus='0',SubState='exited').items()),'splice coordinator normal exit required')
+        outer=read(root/'VERIFIED_COMPLETE.json')
+        require(outer['release_sha256']==read(root/'COORDINATOR.json')['release_sha256'],'splice release differs')
+        results=verify_terminal(root,outer)
+        return dict(row,state='complete',completed_examples=23564,results=results,
+            certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),
+            completed_at=datetime.fromtimestamp((root/'VERIFIED_COMPLETE.json').stat().st_mtime,KST).isoformat())
+    require(props.get('MainPID') not in (None,'0'),'splice coordinator exited without seal')
+    state=read(root/'STATUS.json') if (root/'STATUS.json').is_file() else {}
+    phase=state.get('phase','materialize');path=root/'materialize-v1/STATUS.json'
+    if path.is_file():row.update(read(path))
+    row.update(state='running',phase=phase)
+    if phase=='capacity':row.update(completed_examples=23564,total_examples=23564)
+    return row
+
+
 def tie_properties():
     raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',TIE_UNIT],text=True,timeout=10)
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
@@ -396,8 +457,11 @@ def korean_report(snapshot):
     for r in reversed(snapshot['experiments']):
         label=FAMILY_NAMES[r['family']]
         if r['state']=='complete':
-            line=f"{label}: 완료 320/320, {r['completed_at'][11:16]} KST"
-            if r['family'] in MATCHED_FAMILIES:
+            total=r.get('total_examples',320)
+            line=f"{label}: 완료 {total}/{total}, {r['completed_at'][11:16]} KST"
+            if r['family']==SPLICE_FAMILY:
+                line+=f"; 사전 검증 {r['results']['decision']}, 학습·성능 평가 아님. 다음: 인증된 준비 결과에 따른 학습 결정"
+            elif r['family'] in MATCHED_FAMILIES:
                 line+='; 신규 C/H 어댑터별 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
                 population=r.get('training_population',{}).get('train',{})
                 if population:
@@ -421,6 +485,7 @@ def korean_report(snapshot):
             display=PAIRED_LABELS.get(phase,phase or '준비') if r['family'] in MATCHED_FAMILIES else r.get('phase','준비')
             if r['family']==ANCHORED_FAMILY and phase=='generation':display='봉인 후보 구성 (재생성 없음)'
             if r['family'] in DIAGNOSIS_FAMILIES:display='미평가 후보 진단'
+            if r['family']==SPLICE_FAMILY:display=PAIRED_LABELS.get(phase,phase)
             line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')

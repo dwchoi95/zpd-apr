@@ -126,16 +126,17 @@ class ObserverTests(unittest.TestCase):
             m.core.write_new(root/'run-v1/STATUS.json',dict(phase='missing_candidate_replay',
                 completed_examples=5,total_examples=320,completed_case_attempts=900,total_case_attempts=90024,
                 completed_unique_sources=0,total_unique_sources=1071,elapsed_seconds=60))
-            row=watch.remote_snapshot(Path(tmp))['experiments'][-1]
+            getrow=lambda:next(r for r in watch.remote_snapshot(Path(tmp))['experiments'] if r['family']==watch.BALANCED_DIAGNOSIS_FAMILY)
+            row=getrow()
             self.assertEqual(row['state'],'running');self.assertEqual(row['release_sha256'],'a'*64)
             self.assertEqual(row['completed_case_attempts'],900)
             report=watch.korean_report(dict(checked_at='2026-10-17T02:00:00+09:00',experiments=[row]))
             self.assertIn('900/90024',report);self.assertIn('블록별 병렬도 차이',report)
             m.core.write_new(root/'VERIFIED_COMPLETE.json',dict(status='complete'))
             with patch.object(watch,'balanced_diagnosis_properties',return_value={'MainPID':'99'}):
-                self.assertEqual(watch.remote_snapshot(Path(tmp))['experiments'][-1]['state'],'running')
+                self.assertEqual(getrow()['state'],'running')
             with patch.object(watch,'balanced_diagnosis_properties',return_value={'MainPID':'0','Result':'exit-code'}):
-                self.assertEqual(watch.remote_snapshot(Path(tmp))['experiments'][-1]['state'],'error')
+                self.assertEqual(getrow()['state'],'error')
 
 
 if __name__=='__main__':unittest.main()
