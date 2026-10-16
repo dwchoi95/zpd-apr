@@ -1,0 +1,195 @@
+{
+  "version": "anchored_diagnosis_result_v1",
+  "family": "zpd-anchored-diagnosis-20261016",
+  "trigger_event_id": "3e9896b4ce35ea11944414a86e591b6ba9fa924f01541862171114b85a1116a1",
+  "release_sha256": "c83ead25339b6eec4af7026fd1bd48473c2b80e28d31942c2680eae3dc8b0317",
+  "verified_complete_sha256": "139ecc7285b9555c71e73896d4bac6747e511373de5f95df9ae00bd593d8de9a",
+  "report_sha256": "b886c965eb8137d763516a77bb5a6e3f5ebc1d0b7346b639317179f42402c99a",
+  "completed_at": "2026-10-16T13:14:16+09:00",
+  "all_hashes_source_pins_and_normal_exits_verified": true,
+  "empty_worker_and_coordinator_cgroups": true,
+  "execution": {
+    "completed_case_attempts": 44420,
+    "completed_examples": 320,
+    "completed_source_blocks": 2176,
+    "completed_unique_sources": 544,
+    "elapsed_seconds": 2726.6292384429835,
+    "phase": "complete",
+    "total_case_attempts": 44420,
+    "total_examples": 320,
+    "total_source_blocks": 2176,
+    "total_unique_sources": 544
+  },
+  "coverage": {
+    "candidate_references": 3676,
+    "generated_candidate_references": 2475,
+    "generated_unique_source_tasks": 1143,
+    "missing_unique_source_tasks": 0,
+    "observed_unique_source_tasks": 1439,
+    "stable_observed_vectors": 1404,
+    "unique_source_tasks": 1439,
+    "unstable_observed_vectors": 35
+  },
+  "per_arm": {
+    "C": {
+      "attempts": {
+        "success": 640
+      },
+      "covered_unique_source_tasks": 921,
+      "eligible_candidate_references": 922,
+      "examples": 320,
+      "examples_with_missing": 0,
+      "executed_unknown_candidate_references": 52,
+      "generated_only_oracle_lower": 207,
+      "generated_only_oracle_upper": 231,
+      "generated_unique_source_tasks": 618,
+      "known_ac_candidate_references": 336,
+      "known_ac_with_selected_unknown": 2,
+      "known_candidate_references": 870,
+      "missed_known_ac": 11,
+      "missing_candidate_references": 0,
+      "missing_unique_source_tasks": 0,
+      "oracle_lower": 213,
+      "oracle_upper": 235,
+      "proven_no_ac": 85,
+      "selected_stable_ac": 200,
+      "selected_stable_nonac": 98,
+      "selected_unknown": 22,
+      "source_only_oracle_lower": 224,
+      "source_only_oracle_upper": 235,
+      "unique_source_tasks": 921,
+      "unresolved_no_known_ac": 22,
+      "unselected_covered_references": 602
+    },
+    "H": {
+      "attempts": {
+        "resource_failure": 3,
+        "success": 637
+      },
+      "covered_unique_source_tasks": 914,
+      "eligible_candidate_references": 916,
+      "examples": 320,
+      "examples_with_missing": 0,
+      "executed_unknown_candidate_references": 47,
+      "generated_only_oracle_lower": 206,
+      "generated_only_oracle_upper": 225,
+      "generated_unique_source_tasks": 614,
+      "known_ac_candidate_references": 330,
+      "known_ac_with_selected_unknown": 1,
+      "known_candidate_references": 869,
+      "missed_known_ac": 16,
+      "missing_candidate_references": 0,
+      "missing_unique_source_tasks": 0,
+      "oracle_lower": 211,
+      "oracle_upper": 229,
+      "proven_no_ac": 91,
+      "selected_stable_ac": 194,
+      "selected_stable_nonac": 107,
+      "selected_unknown": 19,
+      "source_only_oracle_lower": 222,
+      "source_only_oracle_upper": 229,
+      "unique_source_tasks": 914,
+      "unresolved_no_known_ac": 18,
+      "unselected_covered_references": 596
+    },
+    "HS": {
+      "attempts": {
+        "resource_failure": 3,
+        "success": 637
+      },
+      "covered_unique_source_tasks": 916,
+      "eligible_candidate_references": 918,
+      "examples": 320,
+      "examples_with_missing": 0,
+      "executed_unknown_candidate_references": 48,
+      "generated_only_oracle_lower": 207,
+      "generated_only_oracle_upper": 227,
+      "generated_unique_source_tasks": 616,
+      "known_ac_candidate_references": 333,
+      "known_ac_with_selected_unknown": 1,
+      "known_candidate_references": 870,
+      "missed_known_ac": 14,
+      "missing_candidate_references": 0,
+      "missing_unique_source_tasks": 0,
+      "oracle_lower": 213,
+      "oracle_upper": 232,
+      "proven_no_ac": 88,
+      "selected_stable_ac": 198,
+      "selected_stable_nonac": 103,
+      "selected_unknown": 19,
+      "source_only_oracle_lower": 224,
+      "source_only_oracle_upper": 232,
+      "unique_source_tasks": 916,
+      "unresolved_no_known_ac": 19,
+      "unselected_covered_references": 598
+    },
+    "U": {
+      "attempts": {
+        "resource_failure": 3,
+        "success": 637
+      },
+      "covered_unique_source_tasks": 920,
+      "eligible_candidate_references": 920,
+      "examples": 320,
+      "examples_with_missing": 0,
+      "executed_unknown_candidate_references": 51,
+      "generated_only_oracle_lower": 215,
+      "generated_only_oracle_upper": 236,
+      "generated_unique_source_tasks": 622,
+      "known_ac_candidate_references": 339,
+      "known_ac_with_selected_unknown": 3,
+      "known_candidate_references": 869,
+      "missed_known_ac": 18,
+      "missing_candidate_references": 0,
+      "missing_unique_source_tasks": 0,
+      "oracle_lower": 220,
+      "oracle_upper": 239,
+      "proven_no_ac": 81,
+      "selected_stable_ac": 199,
+      "selected_stable_nonac": 101,
+      "selected_unknown": 20,
+      "source_only_oracle_lower": 232,
+      "source_only_oracle_upper": 239,
+      "unique_source_tasks": 920,
+      "unresolved_no_known_ac": 19,
+      "unselected_covered_references": 600
+    }
+  },
+  "public_tie_misses": {
+    "C": {
+      "misses": 11,
+      "correct_in_public_top": 11,
+      "anchor_correct": 7
+    },
+    "H": {
+      "misses": 16,
+      "correct_in_public_top": 16,
+      "anchor_correct": 12
+    },
+    "HS": {
+      "misses": 14,
+      "correct_in_public_top": 14,
+      "anchor_correct": 11
+    },
+    "U": {
+      "misses": 18,
+      "correct_in_public_top": 18,
+      "anchor_correct": 14
+    }
+  },
+  "known_candidate_coverage_H_only": {
+    "C": 8,
+    "HS": 1,
+    "U": 10
+  },
+  "known_candidate_coverage_control_only": {
+    "C": 10,
+    "HS": 3,
+    "U": 19
+  },
+  "original_gate": "HOLD",
+  "model_promotion": false,
+  "method_improvement_established": false,
+  "confirmatory": false,
+  "next_task": "zpd-anchor-tie-20261016"
+}

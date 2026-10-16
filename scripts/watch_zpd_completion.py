@@ -26,15 +26,17 @@ KST = timezone(timedelta(hours=9))
 FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
-            'zpd-anchored-diagnosis-20261016')
+            'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
-                                 '고정 라우팅 후보 누락분 진단')))
+                                 '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선')))
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
 ANCHORED_FAMILY = 'zpd-anchored-routing-20261016'
 DIAGNOSIS_FAMILY = 'zpd-anchored-diagnosis-20261016'
+TIE_FAMILY = 'zpd-anchor-tie-20261016'
+TIE_UNIT = 'zpd-anchor-tie-20261016-v1-coordinator.service'
 MATCHED_FAMILIES = (PAIRED_FAMILY, RECOVERY_FAMILY, CROSSED_FAMILY, ANCHORED_FAMILY)
 PAIRED_UNIT_PREFIX = 'zpd-paired-history-20261015-v1'
 PAIRED_PHASES = ('cache', 'materialize', 'capacity', 'train-C', 'train-H', 'generation', 'public', 'private')
@@ -69,6 +71,26 @@ def verify_files(directory, marker):
 
 
 def verify_terminal(directory, outer):
+    if directory.name==TIE_FAMILY:
+        require(outer['status']=='complete' and outer['layout_variant']=='public_anchor_tie_preference_v1'
+                and outer['model_promotion'] is False and outer['provisional_until_coordinator_normal_exit'] is True
+                and set(outer['phases'])=={'selection','assessment'}, 'tie replay identity differs')
+        verify_files(directory,'VERIFIED_COMPLETE.json')
+        for phase,pin in outer['phases'].items():
+            cert_path=directory/(phase+'-VERIFIED_COMPLETE.json')
+            require(sha(cert_path)==pin,'tie child certificate drift')
+            cert=read(cert_path);stage=directory/(phase+'-v1')
+            require(cert['status']=='complete' and cert['returncode']==0
+                    and cert['release_sha256']==outer['release_sha256']
+                    and sha(stage/'STAGE_COMPLETE.json')==cert['complete_sha256'],'tie child exit or seal differs')
+            seal=verify_files(stage,'STAGE_COMPLETE.json')
+            require(seal['release_sha256']==outer['release_sha256'] and seal['phase']==phase
+                    and {str(p.relative_to(stage)) for p in stage.rglob('*') if p.is_file()}
+                    ==set(seal['files_sha256'])|{'STAGE_COMPLETE.json'}, 'tie stage inventory differs')
+        report=read(directory/'REPORT.json')
+        require(report['adaptive_cache_replay'] is True and report['new_execution'] is False
+                and report['model_promotion'] is False, 'cache replay claim differs')
+        return report_counts(report)
     if directory.name == PAIRED_FAMILY:
         return verify_paired_terminal(directory, outer)
     if directory.name in (RECOVERY_FAMILY,CROSSED_FAMILY,ANCHORED_FAMILY):
@@ -219,13 +241,34 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family in (*MATCHED_FAMILIES,DIAGNOSIS_FAMILY) and (root/'COORDINATOR.json').is_file():
+            if family in (*MATCHED_FAMILIES,DIAGNOSIS_FAMILY,TIE_FAMILY) and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
             if family in MATCHED_FAMILIES:
                 failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
             if failures:
                 row.update(state='error',errors=[str(p.relative_to(root)) for p in failures])
+            elif family==TIE_FAMILY:
+                try:
+                    if (root/'VERIFIED_COMPLETE.json').is_file():
+                        p=tie_properties()
+                        if p.get('MainPID') not in (None,'0'):
+                            row.update(state='running',phase='normal_exit_pending',completed_examples=320)
+                        else:
+                            require(p.get('MainPID')=='0' and p.get('ControlGroup')==''
+                                and p.get('Result')=='success' and p.get('ExecMainCode')=='1'
+                                and p.get('ExecMainStatus')=='0' and p.get('SubState')=='exited',
+                                'tie coordinator normal exit/cleanup not established')
+                            outer=read(root/'VERIFIED_COMPLETE.json')
+                            require(outer['release_sha256']==row.get('release_sha256'),'tie coordinator release differs')
+                            row.update(state='complete',completed_examples=320,
+                                certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),results=verify_terminal(root,outer),
+                                completed_at=datetime.fromtimestamp((root/'VERIFIED_COMPLETE.json').stat().st_mtime,KST).isoformat())
+                    elif (root/'STATUS.json').is_file():
+                        progress=read(root/'STATUS.json');row.update(state='running',**progress)
+                    else:row['state']='starting'
+                except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
+                    row.update(state='error',errors=['tie observer validation: '+str(exc)[:240]])
             elif family==DIAGNOSIS_FAMILY:
                 try:
                     if (root/'VERIFIED_COMPLETE.json').is_file():
@@ -285,6 +328,11 @@ def terminal_key(row):
     return None
 
 
+def tie_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',TIE_UNIT],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
 def due(snapshot,state,now):
     changed=any(terminal_key(r) and state.get('terminal',{}).get(r['family'])!=terminal_key(r)
                 for r in snapshot.get('experiments',[]))
@@ -312,6 +360,9 @@ def korean_report(snapshot):
             elif r['family'] in (FAMILIES[0],DIAGNOSIS_FAMILY):
                 c,h=r['results']['C'],r['results']['H']
                 line+=f". C 정답 {c['selected_stable_ac']}, H 정답 {h['selected_stable_ac']} (H 후보 상한 {h['oracle_upper']})"
+            elif r['family']==TIE_FAMILY:
+                line+='; 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
+                line+='; 기존 실행 캐시 재평가, 독립 검증 아님. 다음: 고정 gate 검토'
             else:
                 c,h=r['results']['C'],r['results']['H']
                 line+=f". C 정답 {c['stable_ac']}, H 정답 {h['stable_ac']}. 다음: 개선 여부 검토"
