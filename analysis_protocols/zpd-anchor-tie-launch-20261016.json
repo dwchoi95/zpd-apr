@@ -1,0 +1,92 @@
+{
+  "version": "public_anchor_tie_launch_v1",
+  "checked_at": "2026-10-16T13:28:33.341902+09:00",
+  "trigger_event_id": "3e9896b4ce35ea11944414a86e591b6ba9fa924f01541862171114b85a1116a1",
+  "family": "zpd-anchor-tie-20261016",
+  "release_sha256": "f2ca99301cee4ae630c0f801025d1457b71807a8ce622dfa9dea55a637fd0683",
+  "source_commit": "a1fd2d922c8f55ce42e00cec9bd7847647d9cde5",
+  "remote_snapshot": "/home/cdw/VSCode/zpd-apr/.runtime/anchor-tie-20261016-v1",
+  "remote_revision": "d050c7c2684cfa56636def02f3d0e4575ad3b4ab",
+  "source_archive_sha256": "29d2b1661c1692aa8bcadbeae85e98bacfc788b8478839d8223136ee95f0ce0f",
+  "preflight": "passed",
+  "local_tests_passed": 146,
+  "remote_tests_passed": 143,
+  "remote_tests_skipped": 3,
+  "skip_reason": "Three old local-archive tests passed locally; isolated remote snapshot lacks those archives. Live predecessor authentication separately passed.",
+  "source_pins": 593,
+  "coordinator_unit": "zpd-anchor-tie-20261016-v1-coordinator.service",
+  "coordinator_limit_seconds": 600,
+  "coordinator_normal_exit_verified": true,
+  "coordinator_pid_at_terminal": 0,
+  "coordinator_cgroup_empty": true,
+  "no_other_running_zpd_or_gpu_job_before_launch": true,
+  "canonical_dirty_checkout_untouched": true,
+  "observer_source_sha256": "14b538f1e844e9d36996557f35a36fbfeb0384e12b0bc4f1e1a302654d92a846",
+  "continuation_config_sha256": "960ba380ae8492cfb7404043a7de6fa113d374355ce5ffe4f2584f239379833f",
+  "live_readback": {
+    "family": "zpd-anchor-tie-20261016",
+    "state": "complete",
+    "completed_examples": 320,
+    "total_examples": 320,
+    "release_sha256": "f2ca99301cee4ae630c0f801025d1457b71807a8ce622dfa9dea55a637fd0683",
+    "certificate_sha256": "a0d208e6b1b2f9d7dbcc219ab8e9e48280117e3184b735f690bb9617ed714659",
+    "results": {
+      "C": {
+        "noop_selected": 44,
+        "stable_ac": 192,
+        "stable_regression": 14,
+        "unknown": 21
+      },
+      "H": {
+        "noop_selected": 37,
+        "stable_ac": 195,
+        "stable_regression": 13,
+        "unknown": 20
+      },
+      "HS": {
+        "noop_selected": 38,
+        "stable_ac": 198,
+        "stable_regression": 12,
+        "unknown": 20
+      },
+      "U": {
+        "noop_selected": 40,
+        "stable_ac": 202,
+        "stable_regression": 12,
+        "unknown": 19
+      }
+    },
+    "completed_at": "2026-10-16T13:28:20.894992+09:00"
+  },
+  "continuation": {
+    "status": "queued",
+    "queued": [
+      {
+        "family": "zpd-anchor-tie-20261016",
+        "queue_message_id": "01a142f8-0706-7ee3-bf73-2aeb7020bb1c",
+        "event_id": "536c853babafdb3cc0b8b9659227869f56fbce828c0da528e0e021608bc128aa"
+      }
+    ],
+    "unconfirmed": [],
+    "previously_queued": [
+      "zpd-paired-history-run-20261015",
+      "zpd-paired-inference-20261016",
+      "zpd-crossed-inference-20261016",
+      "zpd-anchored-routing-20261016",
+      "zpd-anchored-diagnosis-20261016"
+    ],
+    "experiments_executed_by_bridge": false,
+    "permission_overrides": false
+  },
+  "old_dispatch_latches_preserved": true,
+  "permission_overrides": false,
+  "poll_interval_seconds": 300,
+  "hourly_notification_interval_seconds": 3600,
+  "new_testcase_executions": 0,
+  "new_generation": false,
+  "selection_sealed_before_private_assessment": true,
+  "next_analysis_queued_in_current_chat": true,
+  "completed": true,
+  "remaining_examples": 0,
+  "eta": "completed; next training-objective stage not yet timed"
+}

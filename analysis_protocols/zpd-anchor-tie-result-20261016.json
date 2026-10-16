@@ -1,0 +1,139 @@
+{
+  "version": "public_anchor_tie_result_v1",
+  "family": "zpd-anchor-tie-20261016",
+  "release_sha256": "f2ca99301cee4ae630c0f801025d1457b71807a8ce622dfa9dea55a637fd0683",
+  "source_commit": "a1fd2d922c8f55ce42e00cec9bd7847647d9cde5",
+  "verified_complete_sha256": "a0d208e6b1b2f9d7dbcc219ab8e9e48280117e3184b735f690bb9617ed714659",
+  "report_sha256": "4550b0d9a95f5d1e417d110e63a6bfea2370e5b9eb942d8772543db30f711bad",
+  "before_counts": {
+    "C": {
+      "noop_selected": 39,
+      "stable_ac": 200,
+      "stable_regression": 15,
+      "unknown": 22
+    },
+    "H": {
+      "noop_selected": 31,
+      "stable_ac": 194,
+      "stable_regression": 19,
+      "unknown": 19
+    },
+    "HS": {
+      "noop_selected": 33,
+      "stable_ac": 198,
+      "stable_regression": 17,
+      "unknown": 19
+    },
+    "U": {
+      "noop_selected": 35,
+      "stable_ac": 199,
+      "stable_regression": 18,
+      "unknown": 20
+    },
+    "noop": {
+      "noop_selected": 320,
+      "stable_ac": 17,
+      "stable_regression": 0,
+      "unknown": 15
+    }
+  },
+  "after_counts": {
+    "C": {
+      "noop_selected": 44,
+      "stable_ac": 192,
+      "stable_regression": 14,
+      "unknown": 21
+    },
+    "H": {
+      "noop_selected": 37,
+      "stable_ac": 195,
+      "stable_regression": 13,
+      "unknown": 20
+    },
+    "HS": {
+      "noop_selected": 38,
+      "stable_ac": 198,
+      "stable_regression": 12,
+      "unknown": 20
+    },
+    "U": {
+      "noop_selected": 40,
+      "stable_ac": 202,
+      "stable_regression": 12,
+      "unknown": 19
+    },
+    "noop": {
+      "noop_selected": 320,
+      "stable_ac": 17,
+      "stable_regression": 0,
+      "unknown": 15
+    }
+  },
+  "within_arm_jointly_known_transitions": {
+    "C": {
+      "changed": 108,
+      "joint_known": 298,
+      "ac_gained": 7,
+      "ac_lost": 15,
+      "regression_prevented": 3,
+      "regression_introduced": 2
+    },
+    "H": {
+      "changed": 93,
+      "joint_known": 300,
+      "ac_gained": 12,
+      "ac_lost": 10,
+      "regression_prevented": 6,
+      "regression_introduced": 0
+    },
+    "HS": {
+      "changed": 93,
+      "joint_known": 300,
+      "ac_gained": 11,
+      "ac_lost": 10,
+      "regression_prevented": 5,
+      "regression_introduced": 0
+    },
+    "U": {
+      "changed": 112,
+      "joint_known": 300,
+      "ac_gained": 14,
+      "ac_lost": 11,
+      "regression_prevented": 9,
+      "regression_introduced": 3
+    }
+  },
+  "development_gate": {
+    "checks": {
+      "all_five_folds_ac_nonworse_vs_C": false,
+      "complete_execution": true,
+      "pooled_regression_nonincrease_vs_C": true,
+      "pooled_regression_upper_nonincrease_vs_C": true,
+      "pooled_unknown_nonincrease_vs_C": true,
+      "strict_pooled_ac_H_over_C": true,
+      "strict_pooled_ac_H_over_HS": false,
+      "strict_pooled_ac_H_over_U": false
+    },
+    "decision": "hold",
+    "nonworse_ac_folds": {
+      "0": true,
+      "1": true,
+      "2": false,
+      "3": true,
+      "4": false
+    },
+    "passed": false,
+    "required_nonworse_ac_folds": 5,
+    "scope": "Predeclared pooled descriptive new-generation gate; equal-problem and current-status slices are reported separately."
+  },
+  "normal_child_exits_and_coordinator_exit_verified": true,
+  "all_artifact_hashes_verified": true,
+  "new_generation": false,
+  "new_execution": false,
+  "adaptive_cache_replay": true,
+  "model_promotion": false,
+  "confirmatory": false,
+  "educational_benefit_established": false,
+  "interpretation": "H AC improves by one and regressions decline, but H still trails HS/U and the original C. New H>C partly reflects C degradation. History gate fails; no promotion.",
+  "next_task": "Follow the pre-execution protocol: no more tie-rule tuning on this cohort. Inspect and change the matched C/H training objective toward trajectory-local improvement supervision, retaining controls and gates."
+}
