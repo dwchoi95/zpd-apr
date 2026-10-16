@@ -26,15 +26,19 @@ KST = timezone(timedelta(hours=9))
 FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
-            'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016')
+            'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016',
+            'zpd-edit-balanced-diagnosis-20261017')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
-                                 '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습')))
+                                 '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습',
+                                 '균형 학습 후보·회귀 원인 진단')))
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
 ANCHORED_FAMILY = 'zpd-anchored-routing-20261016'
 DIAGNOSIS_FAMILY = 'zpd-anchored-diagnosis-20261016'
+BALANCED_DIAGNOSIS_FAMILY = 'zpd-edit-balanced-diagnosis-20261017'
+DIAGNOSIS_FAMILIES = (DIAGNOSIS_FAMILY, BALANCED_DIAGNOSIS_FAMILY)
 TIE_FAMILY = 'zpd-anchor-tie-20261016'
 TIE_UNIT = 'zpd-anchor-tie-20261016-v1-coordinator.service'
 BALANCED_FAMILY = 'zpd-edit-balanced-20261016'
@@ -133,11 +137,14 @@ def verify_terminal(directory, outer):
         verify_files(directory/'run-v1','COMPLETE.json')
         require(sha(directory/'diagnosis-complete-v1/COMPLETE.json')==outer['diagnosis_complete_sha256'], 'diagnosis seal differs')
         dc=read(directory/'diagnosis-complete-v1/COMPLETE.json')
-        if directory.name==DIAGNOSIS_FAMILY:
+        if directory.name in DIAGNOSIS_FAMILIES:
             require(cert['release_sha256']==dc['release_sha256']==outer['release_sha256']
                     and dc['worker_complete_sha256']==cert['complete_sha256']
                     and dc['full_source_coverage'] is True and outer['model_promotion'] is False,
                     'diagnostic release or claim boundary differs')
+            if directory.name==BALANCED_DIAGNOSIS_FAMILY:
+                require(cert['exit']['ExecMainCode']=='1' and cert['exit']['SubState']=='exited',
+                        'balanced diagnosis worker normal exit not established')
         require(sha(directory/'diagnosis-complete-v1/report.json')==dc['report_sha256'], 'diagnosis report differs')
         r=read(directory/'diagnosis-complete-v1/report.json')
         return {a:{k:r['per_arm'][a][k] for k in ('selected_stable_ac','oracle_lower','oracle_upper','missed_known_ac')}
@@ -249,7 +256,7 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family in (*MATCHED_FAMILIES,DIAGNOSIS_FAMILY,TIE_FAMILY) and (root/'COORDINATOR.json').is_file():
+            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY) and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
             if family in MATCHED_FAMILIES:
@@ -277,9 +284,18 @@ def remote_snapshot(project=REMOTE_PROJECT):
                     else:row['state']='starting'
                 except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
                     row.update(state='error',errors=['tie observer validation: '+str(exc)[:240]])
-            elif family==DIAGNOSIS_FAMILY:
+            elif family in DIAGNOSIS_FAMILIES:
                 try:
                     if (root/'VERIFIED_COMPLETE.json').is_file():
+                        if family==BALANCED_DIAGNOSIS_FAMILY:
+                            values=balanced_diagnosis_properties()
+                            if values.get('MainPID') not in (None,'0'):
+                                row.update(state='running',phase='normal_exit_pending',completed_examples=320)
+                                rows.append(row);continue
+                            require(values.get('MainPID')=='0' and values.get('ControlGroup')==''
+                                and values.get('Result')=='success' and values.get('ExecMainCode')=='1'
+                                and values.get('ExecMainStatus')=='0' and values.get('SubState')=='exited',
+                                'balanced diagnosis coordinator normal exit/cleanup not established')
                         outer=read(root/'VERIFIED_COMPLETE.json')
                         require(outer['release_sha256']==row.get('release_sha256'), 'diagnostic coordinator identity differs')
                         row.update(state='complete',completed_examples=320,
@@ -293,7 +309,7 @@ def remote_snapshot(project=REMOTE_PROJECT):
                             'total_case_attempts','completed_source_blocks','total_source_blocks','elapsed_seconds') if k in progress})
                         row['state']='running'
                     else:row['state']='starting'
-                except (OSError,ValueError,KeyError,TypeError) as exc:
+                except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
                     row.update(state='error',errors=['diagnostic observer validation: '+str(exc)[:240]])
             elif family in MATCHED_FAMILIES:
                 try:
@@ -359,6 +375,12 @@ def balanced_properties():
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 
+def balanced_diagnosis_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        'zpd-edit-balanced-diagnosis-20261017-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
 def due(snapshot,state,now):
     changed=any(terminal_key(r) and state.get('terminal',{}).get(r['family'])!=terminal_key(r)
                 for r in snapshot.get('experiments',[]))
@@ -383,7 +405,7 @@ def korean_report(snapshot):
                 line+='. 적응적 개발 결과; 모델 승격·교육 효과 주장 없음'
                 if r['family']==CROSSED_FAMILY:line+='; C 입력=H 어댑터, H/HS/U 입력=C 어댑터 (교차 진단 전용)'
                 if r['family']==ANCHORED_FAMILY:line+='; 공통 C 후보 1개+조건별 H 어댑터 후보 1개 (추가 생성 없음)'
-            elif r['family'] in (FAMILIES[0],DIAGNOSIS_FAMILY):
+            elif r['family'] in (FAMILIES[0],*DIAGNOSIS_FAMILIES):
                 c,h=r['results']['C'],r['results']['H']
                 line+=f". C 정답 {c['selected_stable_ac']}, H 정답 {h['selected_stable_ac']} (H 후보 상한 {h['oracle_upper']})"
             elif r['family']==TIE_FAMILY:
@@ -398,7 +420,7 @@ def korean_report(snapshot):
             phase=r.get('pipeline_phase',r.get('phase'))
             display=PAIRED_LABELS.get(phase,phase or '준비') if r['family'] in MATCHED_FAMILIES else r.get('phase','준비')
             if r['family']==ANCHORED_FAMILY and phase=='generation':display='봉인 후보 구성 (재생성 없음)'
-            if r['family']==DIAGNOSIS_FAMILY:display='미평가 후보 진단'
+            if r['family'] in DIAGNOSIS_FAMILIES:display='미평가 후보 진단'
             line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
@@ -411,7 +433,7 @@ def korean_report(snapshot):
             if r['family']==PAIRED_FAMILY and population:
                 line+=f", 학습 원천 {population['candidate_examples']}→적격 {population['retained_examples']}예제"
             elapsed,done,total=r.get('elapsed_seconds'),r['completed_examples'],r['total_examples']
-            if r['family']==DIAGNOSIS_FAMILY:
+            if r['family'] in DIAGNOSIS_FAMILIES:
                 # Recipients finish only during block four; source-block work
                 # is observable earlier. Estimate remains explicitly provisional.
                 done,total=r.get('completed_case_attempts',0),r.get('total_case_attempts',0)

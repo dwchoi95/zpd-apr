@@ -190,13 +190,13 @@ class ObserverTests(unittest.TestCase):
             project=Path(tmp);root=project/'outputs'/watch.BALANCED_FAMILY;root.mkdir(parents=True)
             m.core.write_new(root/'COORDINATOR.json',dict(release_sha256='a'*64))
             m.core.write_new(root/'STATUS.json',dict(phase='capacity',completed_phases=['materialize']))
-            row=watch.remote_snapshot(project)['experiments'][-1]
+            row=next(r for r in watch.remote_snapshot(project)['experiments'] if r['family']==watch.BALANCED_FAMILY)
             self.assertEqual(row['total_examples'],7);self.assertEqual(row['completed_examples'],1)
             self.assertEqual(row['unit_prefix'],watch.BALANCED_UNIT_PREFIX)
             (root/'STATUS.json').write_text(json.dumps(dict(phase='train-C',completed_phases=['materialize','capacity'])))
             status=root/'train-C-v1/training';status.mkdir(parents=True)
             m.core.write_new(status/'STATUS.json',dict(phase='training',completed_examples=16,total_examples=19199,elapsed_seconds=30))
-            row=watch.remote_snapshot(project)['experiments'][-1]
+            row=next(r for r in watch.remote_snapshot(project)['experiments'] if r['family']==watch.BALANCED_FAMILY)
             self.assertEqual(row['completed_examples'],16);self.assertEqual(row['total_examples'],19199)
             self.assertIn('C 어댑터 학습 16/19199 예제',watch.korean_report(
                 dict(checked_at='2026-10-16T14:00:00+09:00',experiments=[row])))
@@ -207,10 +207,10 @@ class ObserverTests(unittest.TestCase):
             m.core.write_new(root/'COORDINATOR.json',dict(release_sha256='a'*64))
             m.core.write_new(root/'VERIFIED_COMPLETE.json',dict(status='complete'))
             with patch.object(watch,'balanced_properties',return_value=dict(MainPID='99')):
-                row=watch.remote_snapshot(Path(tmp))['experiments'][-1]
+                row=next(r for r in watch.remote_snapshot(Path(tmp))['experiments'] if r['family']==watch.BALANCED_FAMILY)
                 self.assertEqual(row['state'],'running')
             with patch.object(watch,'balanced_properties',return_value=dict(MainPID='0',Result='exit-code')):
-                row=watch.remote_snapshot(Path(tmp))['experiments'][-1]
+                row=next(r for r in watch.remote_snapshot(Path(tmp))['experiments'] if r['family']==watch.BALANCED_FAMILY)
                 self.assertEqual(row['state'],'error')
 
 
