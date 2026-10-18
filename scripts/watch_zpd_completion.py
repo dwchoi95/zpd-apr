@@ -27,11 +27,11 @@ FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
             'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016',
-            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261018')
+            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261018', 'zpd-splice-diagnosis-20261019')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
                                  '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습',
-                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가')))
+                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가', '줄 구간 수정 실패·후보 진단')))
 SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
 SPLICE_TRAINING_FAMILY = 'zpd-splice-training-20261018'
 SPLICE_TRAINING_UNIT_PREFIX = 'zpd-splice-training-20261018-v2'
@@ -41,7 +41,8 @@ CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
 ANCHORED_FAMILY = 'zpd-anchored-routing-20261016'
 DIAGNOSIS_FAMILY = 'zpd-anchored-diagnosis-20261016'
 BALANCED_DIAGNOSIS_FAMILY = 'zpd-edit-balanced-diagnosis-20261017'
-DIAGNOSIS_FAMILIES = (DIAGNOSIS_FAMILY, BALANCED_DIAGNOSIS_FAMILY)
+SPLICE_DIAGNOSIS_FAMILY = 'zpd-splice-diagnosis-20261019'
+DIAGNOSIS_FAMILIES = (DIAGNOSIS_FAMILY, BALANCED_DIAGNOSIS_FAMILY, SPLICE_DIAGNOSIS_FAMILY)
 TIE_FAMILY = 'zpd-anchor-tie-20261016'
 TIE_UNIT = 'zpd-anchor-tie-20261016-v1-coordinator.service'
 BALANCED_FAMILY = 'zpd-edit-balanced-20261016'
@@ -173,7 +174,7 @@ def verify_terminal(directory, outer):
                     and dc['worker_complete_sha256']==cert['complete_sha256']
                     and dc['full_source_coverage'] is True and outer['model_promotion'] is False,
                     'diagnostic release or claim boundary differs')
-            if directory.name==BALANCED_DIAGNOSIS_FAMILY:
+            if directory.name in (BALANCED_DIAGNOSIS_FAMILY,SPLICE_DIAGNOSIS_FAMILY):
                 require(cert['exit']['ExecMainCode']=='1' and cert['exit']['SubState']=='exited',
                         'balanced diagnosis worker normal exit not established')
         require(sha(directory/'diagnosis-complete-v1/report.json')==dc['report_sha256'], 'diagnosis report differs')
@@ -322,8 +323,9 @@ def remote_snapshot(project=REMOTE_PROJECT):
             elif family in DIAGNOSIS_FAMILIES:
                 try:
                     if (root/'VERIFIED_COMPLETE.json').is_file():
-                        if family==BALANCED_DIAGNOSIS_FAMILY:
-                            values=balanced_diagnosis_properties()
+                        if family in (BALANCED_DIAGNOSIS_FAMILY,SPLICE_DIAGNOSIS_FAMILY):
+                            values=(splice_diagnosis_properties() if family==SPLICE_DIAGNOSIS_FAMILY
+                                    else balanced_diagnosis_properties())
                             if values.get('MainPID') not in (None,'0'):
                                 row.update(state='running',phase='normal_exit_pending',completed_examples=320)
                                 rows.append(row);continue
@@ -451,6 +453,12 @@ def balanced_properties():
 def balanced_diagnosis_properties():
     raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
         'zpd-edit-balanced-diagnosis-20261017-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
+def splice_diagnosis_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        'zpd-splice-diagnosis-20261019-v1-coordinator.service'],text=True,timeout=10)
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 

@@ -35,7 +35,7 @@ class WatchTests(unittest.TestCase):
     def test_latest_family_is_first_in_notification(self):
         rows=[dict(family=f,state='not_started') for f in m.FAMILIES]
         report=m.korean_report(dict(experiments=rows))
-        self.assertTrue(report.startswith('줄 구간 수정 C/H 학습·평가'))
+        self.assertTrue(report.startswith('줄 구간 수정 실패·후보 진단'))
 
     def test_failure_takes_precedence(self):
         with tempfile.TemporaryDirectory() as d:
