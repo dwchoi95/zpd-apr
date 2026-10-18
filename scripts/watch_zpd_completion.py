@@ -27,12 +27,14 @@ FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
             'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016',
-            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261018', 'zpd-splice-diagnosis-20261019')
+            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261018', 'zpd-splice-diagnosis-20261019', 'zpd-anchor-pilot-20261019')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
                                  '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습',
-                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가', '줄 구간 수정 실패·후보 진단')))
+                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가', '줄 구간 수정 실패·후보 진단', '원문 지정 수정 방식 사전 검증')))
 SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
+ANCHOR_PILOT_FAMILY = 'zpd-anchor-pilot-20261019'
+PILOT_FAMILIES = (SPLICE_FAMILY, ANCHOR_PILOT_FAMILY)
 SPLICE_TRAINING_FAMILY = 'zpd-splice-training-20261018'
 SPLICE_TRAINING_UNIT_PREFIX = 'zpd-splice-training-20261018-v2'
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
@@ -81,7 +83,7 @@ def verify_files(directory, marker):
 
 
 def verify_terminal(directory, outer):
-    if directory.name==SPLICE_FAMILY:
+    if directory.name in PILOT_FAMILIES:
         require(outer['status']=='complete' and outer['model_promotion'] is False
             and set(outer['phases']) in ({'materialize'},{'materialize','capacity'}), 'splice pilot identity differs')
         verify_files(directory,'VERIFIED_COMPLETE.json')
@@ -97,6 +99,9 @@ def verify_terminal(directory, outer):
                 and {str(p.relative_to(stage)) for p in stage.rglob('*') if p.is_file()}
                 ==set(seal['files_sha256'])|{'STAGE_COMPLETE.json'},'splice stage inventory differs')
         report=read(directory/'REPORT.json')
+        expected_codec = ('unique_original_content_edits_v1' if directory.name == ANCHOR_PILOT_FAMILY
+                          else 'original_line_splices_v1')
+        require(report['materialization']['codec'] == expected_codec, 'pilot codec identity differs')
         require(report['decision']==outer['decision'] and report['actual_fit'] is False
             and report['model_promotion'] is False and report['performance_measured'] is False,'splice claim differs')
         require((report['decision']=='ready_for_training')==('capacity' in outer['phases']), 'splice capacity decision differs')
@@ -288,14 +293,14 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY,SPLICE_FAMILY) and (root/'COORDINATOR.json').is_file():
+            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY,*PILOT_FAMILIES) and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
             if family in MATCHED_FAMILIES:
                 failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
             if failures:
                 row.update(state='error',errors=[str(p.relative_to(root)) for p in failures])
-            elif family==SPLICE_FAMILY:
+            elif family in PILOT_FAMILIES:
                 try:row.update(splice_progress(root))
                 except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
                     row.update(state='error',errors=['splice observer validation: '+str(exc)[:240]])
@@ -417,7 +422,7 @@ def splice_training_properties():
 def splice_progress(root):
     row=dict(state='starting',completed_examples=0,total_examples=23564)
     if not (root/'COORDINATOR.json').is_file():return row
-    props=splice_properties()
+    props=anchor_pilot_properties() if root.name == ANCHOR_PILOT_FAMILY else splice_properties()
     require(props.get('ActiveState')!='failed','splice coordinator failed')
     if (root/'VERIFIED_COMPLETE.json').is_file():
         if props.get('MainPID') not in (None,'0'):
@@ -437,6 +442,12 @@ def splice_progress(root):
     row.update(state='running',phase=phase)
     if phase=='capacity':row.update(completed_examples=23564,total_examples=23564)
     return row
+
+
+def anchor_pilot_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        'zpd-anchor-pilot-20261019-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 
 def tie_properties():
@@ -479,7 +490,7 @@ def korean_report(snapshot):
         if r['state']=='complete':
             total=r.get('total_examples',320)
             line=f"{label}: 완료 {total}/{total}, {r['completed_at'][11:16]} KST"
-            if r['family']==SPLICE_FAMILY:
+            if r['family'] in PILOT_FAMILIES:
                 line+=f"; 사전 검증 {r['results']['decision']}, 학습·성능 평가 아님. 다음: 인증된 준비 결과에 따른 학습 결정"
             elif r['family'] in MATCHED_FAMILIES:
                 line+='; 신규 C/H 어댑터별 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
@@ -507,7 +518,7 @@ def korean_report(snapshot):
             display=PAIRED_LABELS.get(phase,phase or '준비') if r['family'] in MATCHED_FAMILIES else r.get('phase','준비')
             if r['family']==ANCHORED_FAMILY and phase=='generation':display='봉인 후보 구성 (재생성 없음)'
             if r['family'] in DIAGNOSIS_FAMILIES:display='미평가 후보 진단'
-            if r['family']==SPLICE_FAMILY:display=PAIRED_LABELS.get(phase,phase)
+            if r['family'] in PILOT_FAMILIES:display=PAIRED_LABELS.get(phase,phase)
             line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
