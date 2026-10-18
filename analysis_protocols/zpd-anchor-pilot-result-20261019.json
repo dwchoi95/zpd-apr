@@ -1,0 +1,143 @@
+{
+  "version": "anchor_pilot_authenticated_result_v1",
+  "event_id": "af3eab16ddb03b3ac0a5c27e21a2992f4a7d2dac4f68e11c3c88ea48abd6c4cd",
+  "family": "zpd-anchor-pilot-20261019",
+  "release_sha256": "0a1d990d1f82953299e3d514d5d6a8a97eb8020de54c5f451b5cf44bdb854566",
+  "normal_exit_kst": "2026-10-19T07:09:33+09:00",
+  "source_model_all_phase_hashes_and_exits_verified": true,
+  "recorded_child_cgroups_absent": true,
+  "no_other_running_zpd_or_gpu_jobs": true,
+  "failures": [],
+  "artifacts_sha256": {
+    "VERIFIED_COMPLETE.json": "26388b2d6e9cbf7a34c427cf162e2337ddf67f007e7ea868e6eee66d796eb415",
+    "REPORT.json": "fd47750c3a7d92c79a6708630c81d89b193a35dcc01af4111efccc845dbdf829",
+    "materialize-v1/materialized/COMPLETE.json": "8fe5a8c63821d68ac68b257d8421bd7fbdaa986434171a385a28e3ef15907cdd",
+    "capacity-v1/probe/capacity_report.json": "d05f8d8c1922a79a42637d7d9801795195735552defa12c18e2b0a2380be1fbf",
+    "materialize-v1/anchor-statistics.json": "b4c7b7d8148ba3f1a6569e950fbd6a3798405e1f7a4f266fdb0e6212f5f2e6cd"
+  },
+  "report": {
+    "actual_fit": false,
+    "capacity": {
+      "actual_fit": false,
+      "adaptive_batching": false,
+      "arms": {
+        "C": {
+          "elapsed_seconds": 2.4573457911610603,
+          "example_ids": [
+            "p02991:u297574184:S3-to-S4",
+            "p02733:u263830634:S4-to-S5"
+          ],
+          "loss": 0.44821783900260925,
+          "peak_allocated_bytes": 18846056448,
+          "peak_reserved_bytes": 19755171840,
+          "tokens": [
+            2537,
+            2374
+          ]
+        },
+        "H": {
+          "elapsed_seconds": 4.835730431135744,
+          "example_ids": [
+            "p02991:u297574184:S3-to-S4",
+            "p02733:u263830634:S4-to-S5"
+          ],
+          "loss": 0.46199843287467957,
+          "peak_allocated_bytes": 26975658496,
+          "peak_reserved_bytes": 29622272000,
+          "tokens": [
+            4625,
+            4574
+          ]
+        }
+      },
+      "initial_adapter": {
+        "sha256": "7b85da6a010dc3d0386c4a145db7843ef7871acbb2dd598e8adbb5c777640374",
+        "tensors": 392,
+        "trainable_parameters": 40370176
+      },
+      "longest_paired_indices": [
+        3118,
+        10296
+      ],
+      "mode": "capacity_probe",
+      "no_retry": true,
+      "optimizer_steps": 0,
+      "preflight_sha256": "6ff743a9bfa4d6279c406d83236712b76c363739fea1e0e3677347a8eef84986",
+      "published_adapter": false,
+      "runtime_versions": {
+        "accelerate": "1.15.0",
+        "bitsandbytes": "0.50.2",
+        "peft": "0.20.0",
+        "torch": "2.10.0",
+        "transformers": "4.57.6"
+      },
+      "status": "passed",
+      "version": "paired_history_training_v1"
+    },
+    "completed_examples": 23564,
+    "decision": "ready_for_training",
+    "educational_benefit_established": false,
+    "materialization": {
+      "actual_fit": false,
+      "codec": "unique_original_content_edits_v1",
+      "counts": {
+        "train": {
+          "all_roundtrips_exact": true,
+          "examples": 19199,
+          "max_new_prompt_tokens": {
+            "C": 3632,
+            "H": 4042
+          },
+          "max_new_target_tokens": 1512,
+          "new_target_tokens": 3042679,
+          "old_target_tokens": 2738138,
+          "original_order_sha256": "c422974efda9f3af7f8f45fd9269dea4f6a745c6520603df7b7f96c07aeb0591"
+        },
+        "valid": {
+          "all_roundtrips_exact": true,
+          "examples": 4365,
+          "max_new_prompt_tokens": {
+            "C": 3605,
+            "H": 4037
+          },
+          "max_new_target_tokens": 1127,
+          "new_target_tokens": 689759,
+          "old_target_tokens": 628890,
+          "original_order_sha256": "ecfb80013efcdec636443e12ecc5c1d51c6941f14a3d456da9f5e319b2f9fb87"
+        }
+      },
+      "decision": "ready_for_capacity",
+      "filtered_examples": 0,
+      "overflow": [],
+      "reused_complete_sha256": "daab8a4aa855c1e33f2da5ea814f8b64d82d56083bad6e627f0712408c0d0cca",
+      "status": "complete",
+      "truncation": false
+    },
+    "model_promotion": false,
+    "performance_measured": false,
+    "status": "complete",
+    "total_examples": 23564
+  },
+  "anchor_statistics": {
+    "train": {
+      "examples": 19199,
+      "full_original_anchors": 808,
+      "total_edits": 48658,
+      "total_replacement_bytes": 3661532,
+      "total_search_bytes": 3452407
+    },
+    "valid": {
+      "examples": 4365,
+      "full_original_anchors": 157,
+      "total_edits": 11088,
+      "total_replacement_bytes": 841715,
+      "total_search_bytes": 767341
+    }
+  },
+  "decision": "ready_for_training",
+  "performance_improvement_measured": false,
+  "model_promotion": false,
+  "prior_scientific_gate": "HOLD",
+  "archive_note": "Local report/hash/audit archive excludes four large JSONL training files and temporary runtime caches. All original files retained and authenticated remotely.",
+  "next": "Fresh matched exact-content-anchor C/H training and unchanged C/H/HS/U assessment in a new release."
+}
