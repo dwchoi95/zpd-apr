@@ -1,0 +1,131 @@
+{
+  "version": "splice_diagnosis_started_v1",
+  "checked_at": "2026-10-19T05:37:17.274011+09:00",
+  "trigger_event_id": "6caa5e8cb3f959ca75273fda2e1cde562b3badc827e8725de21aab19714b583f",
+  "family": "zpd-splice-diagnosis-20261019",
+  "release_sha256": "2e6a1572cd538af84756fe04bc1f498bbe732066ec76728736fbb4785e3a2984",
+  "source_commit": "c5b63d29",
+  "release_commit": "0006c9cc",
+  "source_archive_sha256": "d1de57a18fb4b747092124a50fe17f201527c1aa5cc86204521d7e3d5a933c21",
+  "remote_snapshot": "/home/cdw/VSCode/zpd-apr/.runtime/splice-diagnosis-20261019-v1",
+  "remote_revision": "2433d4d7c92a7dca637a243250581fb995ef5723",
+  "source_pins": 611,
+  "local_tests": {
+    "run": 190,
+    "passed": 186,
+    "skipped": 4
+  },
+  "remote_tests": {
+    "run": 190,
+    "passed": 187,
+    "skipped": 3
+  },
+  "preflight": "passed",
+  "coordinator": {
+    "pid": 2026514,
+    "started_at": "2026-10-19T05:36:48+09:00",
+    "wall_seconds": 22500,
+    "memory_bytes": 8589934592
+  },
+  "worker": {
+    "pid": 2026531,
+    "started_at": "2026-10-19T05:36:50+09:00",
+    "wall_seconds": 21600,
+    "memory_bytes": 34359738368,
+    "tasks": 128,
+    "block_workers": [
+      1,
+      8,
+      8,
+      1
+    ]
+  },
+  "progress": {
+    "family": "zpd-splice-diagnosis-20261019",
+    "state": "running",
+    "completed_examples": 11,
+    "total_examples": 320,
+    "release_sha256": "2e6a1572cd538af84756fe04bc1f498bbe732066ec76728736fbb4785e3a2984",
+    "phase": "missing_candidate_replay",
+    "completed_unique_sources": 0,
+    "total_unique_sources": 1162,
+    "completed_case_attempts": 520,
+    "total_case_attempts": 97232,
+    "completed_source_blocks": 26,
+    "total_source_blocks": 4648,
+    "elapsed_seconds": 17.48923969315365
+  },
+  "progress_note": "Recipients requiring no supplementary sources count complete immediately. New unique sources finish only after all four blocks.",
+  "eta": {
+    "initial_speed_estimate_kst": "2026-10-19T06:31:00+09:00",
+    "basis": "520 case attempts in 17.49 seconds; early provisional extrapolation, differing block concurrency and source runtimes",
+    "guaranteed": false
+  },
+  "registration": {
+    "config_sha256": "06ed44590f227daa30a39221fec9956277e7f3d3f37ac7f9e4438e3f767c8b2e",
+    "observer_sha256": "fc13d33cfe3721a1133429cedc2854fe903a62d90b8dff68d364f9e02b3ea719",
+    "prior_latch_unchanged_sha256": "7828e0c415fff45a4d2e378c4300bf6c1900a59c2038aaa1e0ecdd87321013d7",
+    "agent_continuation": {
+      "status": "idle",
+      "queued": [],
+      "unconfirmed": [],
+      "previously_queued": [
+        "zpd-paired-history-run-20261015",
+        "zpd-paired-inference-20261016",
+        "zpd-crossed-inference-20261016",
+        "zpd-anchored-routing-20261016",
+        "zpd-anchored-diagnosis-20261016",
+        "zpd-anchor-tie-20261016",
+        "zpd-edit-balanced-20261016",
+        "zpd-edit-balanced-diagnosis-20261017",
+        "zpd-splice-pilot-20261017",
+        "zpd-splice-training-20261018"
+      ],
+      "experiments_executed_by_bridge": false,
+      "permission_overrides": false
+    },
+    "check_interval_seconds": 300,
+    "notification_interval_seconds": 3600,
+    "hourly_channel": "macOS Korean notification and durable LATEST_REPORT.json",
+    "completion_channel": "existing conversation via codex queue",
+    "official_docs": "https://learn.chatgpt.com/docs/cli/reference"
+  },
+  "parent": {
+    "family": "zpd-splice-training-20261018",
+    "release_sha256": "ecdebd932bd361b65f74611ae22956c45326af2bd42aeb0fd63f0c381d0971ed",
+    "complete_sha256": "ba3fea1881bb711017dd09e56edf70f05f4c28c2102c2fc8558bef7339d12061",
+    "normal_coordinator_and_all_child_exits_verified": true,
+    "source_model_artifact_training_pair_verified": true,
+    "gate": "hold",
+    "selected_stable_ac": {
+      "C": 108,
+      "H": 101,
+      "HS": 98,
+      "U": 103
+    },
+    "selected_regressions": {
+      "C": 14,
+      "H": 16,
+      "HS": 16,
+      "U": 13
+    },
+    "selected_unknown": {
+      "C": 16,
+      "H": 17,
+      "HS": 17,
+      "U": 16
+    }
+  },
+  "existing_sources_reused": 823,
+  "existing_unknown_sources_not_retried": 24,
+  "missing_sources": 1162,
+  "total_testcase_attempts": 97232,
+  "no_other_running_zpd_or_gpu_job_before_launch": true,
+  "gpu_training_launched": false,
+  "original_predictions_and_vectors_unchanged": true,
+  "gate_changed": false,
+  "model_promotion": false,
+  "canonical_dirty_checkout_untouched": true,
+  "source_snapshot_clean": true,
+  "paper_changed": false
+}
