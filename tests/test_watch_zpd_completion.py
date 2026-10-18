@@ -37,6 +37,28 @@ class WatchTests(unittest.TestCase):
         report=m.korean_report(dict(experiments=rows))
         self.assertTrue(report.startswith('원문 지정 수정 C/H 학습·평가'))
 
+    def test_reuse_pipelines_have_seven_not_eight_phases(self):
+        for family in (m.BALANCED_FAMILY,m.SPLICE_TRAINING_FAMILY,m.ANCHOR_TRAINING_FAMILY):
+            with tempfile.TemporaryDirectory() as d:
+                root=Path(d)/family;root.mkdir()
+                (root/'STATUS.json').write_text(json.dumps(dict(phase='materialize',completed_phases=[])))
+                row=m.paired_progress(root)
+                self.assertEqual(row['total_examples'],7)
+                self.assertEqual(row['progress_unit'],'단계')
+
+    def test_training_preparation_reports_zero_consumed_of_full_population(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)/m.ANCHOR_TRAINING_FAMILY
+            materialized=root/'materialize-v1/materialized';materialized.mkdir(parents=True)
+            (materialized/'COMPLETE.json').write_text('{}')
+            (materialized/'report.json').write_text(json.dumps(dict(counts=dict(train=dict(examples=19199)))))
+            (root/'STATUS.json').write_text(json.dumps(dict(phase='train-C',completed_phases=['materialize','capacity'])))
+            row=m.paired_progress(root)
+            self.assertEqual((row['completed_examples'],row['total_examples'],row['progress_unit']),(0,19199,'예제'))
+            worker=root/'train-C-v1/training';worker.mkdir(parents=True)
+            (worker/'STATUS.json').write_text(json.dumps(dict(phase='training',completed_examples=16,total_examples=19199)))
+            self.assertEqual(m.paired_progress(root)['completed_examples'],16)
+
     def test_failure_takes_precedence(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d)/'outputs'/m.FAMILIES[0];root.mkdir(parents=True)

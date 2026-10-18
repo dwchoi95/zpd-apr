@@ -245,7 +245,8 @@ def verify_paired_terminal(directory, outer, phases=PAIRED_PHASES):
 
 def paired_progress(root):
     """Parent phase wins over stale completed cache/training status files."""
-    phases = PAIRED_PHASES[1:] if root.name == BALANCED_FAMILY else PAIRED_PHASES
+    phases = (PAIRED_PHASES[1:] if root.name in
+              (BALANCED_FAMILY, SPLICE_TRAINING_FAMILY, ANCHOR_TRAINING_FAMILY) else PAIRED_PHASES)
     parent=read(root/'STATUS.json') if (root/'STATUS.json').is_file() else {}
     phase=parent.get('phase')
     if phase is None:
@@ -286,6 +287,11 @@ def paired_progress(root):
     materialized=root/'materialize-v1/materialized'
     if (materialized/'COMPLETE.json').is_file() and (materialized/'report.json').is_file():
         row['training_population']=read(materialized/'report.json').get('counts',{})
+        if path is None and phase in ('train-C','train-H'):
+            train=row['training_population'].get('train',{})
+            total=train.get('examples',train.get('retained_examples'))
+            if type(total) is int and total>0:
+                row.update(completed_examples=0,total_examples=total,progress_unit='예제',worker_phase='preparing')
     if phase=='capacity':
         path=root/'capacity-v1/probe/capacity_report.json'
         if path.is_file():row['capacity_report_present']=True
