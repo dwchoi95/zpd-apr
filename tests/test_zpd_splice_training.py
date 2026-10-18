@@ -24,6 +24,34 @@ def fixture():
 
 
 class ContractTests(unittest.TestCase):
+    def test_collected_child_requires_certified_normal_exit_and_absent_group(self):
+        unit=m.pilot.UNIT_PREFIX+'-materialize.service'
+        path='/user.slice/user-1000.slice/'+unit
+        normal=dict(Result='success',ExecMainCode='1',ExecMainStatus='0',MainPID='0',SubState='exited')
+        cert=dict(release_sha256=m.PILOT_RELEASE,cleanup_verified=True,cgroup_removed=True,
+            returned_control_group='',recorded_control_group=path,exit=normal)
+        props=dict(LoadState='not-found',ActiveState='inactive',SubState='dead',MainPID='0',ControlGroup='')
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            m.verify_released_child(props,cert,unit,root)
+            m.verify_released_child(dict(normal,LoadState='loaded',ControlGroup=''),cert,unit,root)
+            for field,value in [('MainPID','42'),('ControlGroup',path),('ActiveState','active'),('SubState','running')]:
+                with self.assertRaises(ValueError):m.verify_released_child(dict(props,**{field:value}),cert,unit,root)
+            for field,value in [('release_sha256','foreign'),('cleanup_verified',False),('cgroup_removed',False),
+                ('returned_control_group',path),('recorded_control_group','/user.slice/../'+unit),
+                ('recorded_control_group','/user.slice/foreign.service'),('exit',dict(normal,ExecMainStatus='1'))]:
+                with self.assertRaises(ValueError):m.verify_released_child(props,dict(cert,**{field:value}),unit,root)
+            with self.assertRaises(ValueError):
+                m.verify_released_child(dict(props,LoadState='loaded'),cert,unit,root)
+            (root/path.lstrip('/')).mkdir(parents=True)
+            with self.assertRaises(ValueError):m.verify_released_child(props,cert,unit,root)
+
+    def test_observer_completed_pilot_population_schema(self):
+        row=dict(family=watch.SPLICE_TRAINING_FAMILY,state='complete',total_examples=320,
+            completed_at='2026-10-18T18:00:00+09:00',results={a:dict(stable_ac=1) for a in m.core.ARMS},
+            training_population=dict(train=dict(examples=19199)))
+        self.assertIn('동일 학습 19199예제',watch.korean_report(dict(experiments=[row])))
+
     def test_transform_only_system_and_bound_hashes_no_mutation(self):
         old=fixture();before=deepcopy(old);new=m.transform_inputs(old)
         self.assertEqual(old,before)

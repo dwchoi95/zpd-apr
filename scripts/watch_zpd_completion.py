@@ -27,14 +27,14 @@ FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
             'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016',
-            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261017')
+            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261018')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
                                  '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습',
                                  '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가')))
 SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
-SPLICE_TRAINING_FAMILY = 'zpd-splice-training-20261017'
-SPLICE_TRAINING_UNIT_PREFIX = 'zpd-splice-training-20261017-v1'
+SPLICE_TRAINING_FAMILY = 'zpd-splice-training-20261018'
+SPLICE_TRAINING_UNIT_PREFIX = 'zpd-splice-training-20261018-v2'
 PAIRED_FAMILY = 'zpd-paired-history-run-20261015'
 RECOVERY_FAMILY = 'zpd-paired-inference-20261016'
 CROSSED_FAMILY = 'zpd-crossed-inference-20261016'
@@ -476,8 +476,10 @@ def korean_report(snapshot):
             elif r['family'] in MATCHED_FAMILIES:
                 line+='; 신규 C/H 어댑터별 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
                 population=r.get('training_population',{}).get('train',{})
-                if population:
+                if 'candidate_examples' in population and 'retained_examples' in population:
                     line+=f"; 학습 원천 {population['candidate_examples']}→적격 {population['retained_examples']}예제"
+                elif 'examples' in population:
+                    line+=f"; 동일 학습 {population['examples']}예제"
                 line+='. 적응적 개발 결과; 모델 승격·교육 효과 주장 없음'
                 if r['family']==CROSSED_FAMILY:line+='; C 입력=H 어댑터, H/HS/U 입력=C 어댑터 (교차 진단 전용)'
                 if r['family']==ANCHORED_FAMILY:line+='; 공통 C 후보 1개+조건별 H 어댑터 후보 1개 (추가 생성 없음)'

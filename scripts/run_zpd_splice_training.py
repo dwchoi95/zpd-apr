@@ -19,12 +19,12 @@ from scripts import generate_zpd_paired_history as generator
 
 core=parent.core
 PROJECT=parent.PROJECT
-FAMILY=PROJECT/'outputs/zpd-splice-training-20261017'
-UNIT_PREFIX='zpd-splice-training-20261017-v1'
-VERSION='splice_paired_training_release_v1'
+FAMILY=PROJECT/'outputs/zpd-splice-training-20261018'
+UNIT_PREFIX='zpd-splice-training-20261018-v2'
+VERSION='splice_paired_training_release_v2'
 PHASES=parent.PHASES[1:]
 PHASE_SECONDS={p:parent.PHASE_SECONDS[p] for p in PHASES}
-RPC_BASE=PROJECT/'tmp/sp-1017-v1'
+RPC_BASE=PROJECT/'tmp/sp-1018-v2'
 OLD_RELEASE='2323a878e1dad79ac8bbfde048581670ca8de8c3280f6903433c8edf09b3036b'
 PILOT_RELEASE='0e73285574e1e30f4ddb8294b91b3a0faef6fa51a472acb578b90a501fb8298d'
 PILOT_COMPLETE='10f1b7a13a4e58234c00a518924e8dc4296ba0b6ae46c8339adf78d793b45539'
@@ -32,7 +32,8 @@ MATERIALIZED=pilot.ROOT/'materialize-v1/materialized'
 MATERIALIZED_SHA='63f27c7c9c68cec2d2432e03ac42fdca7a32a8b2ada94f12f79e6ea7fb241b0c'
 CAPACITY_SHA='b59038eec44b0546c7a3e31ec6672ed1cf9710039d946f86d26f8e71fba580d2'
 REQUIRED={'scripts/run_zpd_splice_training.py','tests/test_zpd_splice_training.py',
-          'analysis_protocols/zpd-splice-training-20261017.md'}
+          'analysis_protocols/zpd-splice-training-20261017.md',
+          'analysis_protocols/zpd-splice-training-20261018.md'}
 BASE_BARRIER=parent.source_barrier
 BASE_EARLY=parent.run_early_phase
 BASE_VALIDATE=parent.validate_phase_result
@@ -96,15 +97,33 @@ def generation(inputs,release,output):
         terminalize=lambda row,text,reason:terminal(row,text,reason,sources[row['example_id']]))
 
 
+def verify_released_child(props,cert,unit,cgroup_root=Path('/sys/fs/cgroup')):
+    core.require(cert['release_sha256']==PILOT_RELEASE and cert['cleanup_verified'] is True
+        and cert['cgroup_removed'] is True and cert['returned_control_group']==''
+        and core.normal_exit(cert['exit']), 'pilot child exit/cleanup not certified')
+    recorded=cert['recorded_control_group']
+    core.require(recorded.startswith('/user.slice/') and '..' not in Path(recorded).parts
+        and recorded.endswith('/'+unit), 'pilot child cgroup binding differs')
+    core.require(not (cgroup_root/recorded.lstrip('/')).exists(), 'pilot child cgroup reappeared')
+    core.require(props.get('MainPID')=='0' and props.get('ControlGroup')=='', 'pilot child still active')
+    if props.get('LoadState')=='not-found':
+        core.require(props.get('ActiveState')=='inactive' and props.get('SubState')=='dead',
+            'unloaded pilot child not inactive')
+    else:
+        core.require(core.normal_exit(props), 'retained pilot child did not exit normally')
+
+
 def verify_pilot():
     from scripts.watch_zpd_completion import verify_terminal
     outer=core.read_pinned(pilot.ROOT/'VERIFIED_COMPLETE.json',PILOT_COMPLETE)
     core.require(outer['release_sha256']==PILOT_RELEASE and outer['decision']=='ready_for_training','pilot not ready')
     verify_terminal(pilot.ROOT,outer)
-    for phase in ('coordinator',*pilot.PHASES):
-        p=core.props(pilot.UNIT_PREFIX+'-'+phase+'.service')
-        core.require(p.get('MainPID')=='0' and p.get('ControlGroup')=='' and p.get('Result')=='success'
-            and p.get('ExecMainCode')=='1' and p.get('ExecMainStatus')=='0','pilot not normally released')
+    p=core.props(pilot.UNIT_PREFIX+'-coordinator.service')
+    core.require(core.normal_exit(p) and p.get('ControlGroup')=='', 'pilot coordinator not normally released')
+    for phase in pilot.PHASES:
+        unit=pilot.UNIT_PREFIX+'-'+phase+'.service'
+        cert=core.read_pinned(pilot.ROOT/(phase+'-VERIFIED_COMPLETE.json'),outer['phases'][phase])
+        verify_released_child(core.props(unit),cert,unit)
     seal=parent.read_sealed(MATERIALIZED,MATERIALIZED_SHA)
     cap=core.read_pinned(pilot.ROOT/'capacity-v1/probe/capacity_report.json',CAPACITY_SHA)
     core.require(cap['status']=='passed' and cap['optimizer_steps']==0 and cap['actual_fit'] is False
