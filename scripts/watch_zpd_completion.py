@@ -36,9 +36,12 @@ SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
 ANCHOR_PILOT_FAMILY = 'zpd-anchor-pilot-20261019'
 PREFERENCE_PILOT_FAMILY = 'zpd-preference-pilot-20261020'
 PREFERENCE_IDENTITY_FAMILY = 'zpd-preference-identity-pilot-20261020'
-FAMILIES += (PREFERENCE_PILOT_FAMILY, PREFERENCE_IDENTITY_FAMILY)
+PREFERENCE_TRAINING_FAMILY = 'zpd-preference-training-20261020'
+PREFERENCE_PHASES = ('reference-C','reference-H','train-C','train-H')
+FAMILIES += (PREFERENCE_PILOT_FAMILY, PREFERENCE_IDENTITY_FAMILY, PREFERENCE_TRAINING_FAMILY)
 FAMILY_NAMES[PREFERENCE_PILOT_FAMILY] = '성공·실패 선호학습 사전 검증'
 FAMILY_NAMES[PREFERENCE_IDENTITY_FAMILY] = '동일 코드 쌍 보존 선호학습 사전 검증'
+FAMILY_NAMES[PREFERENCE_TRAINING_FAMILY] = '고정 참조 C/H 선호학습'
 PILOT_FAMILIES = (SPLICE_FAMILY, ANCHOR_PILOT_FAMILY, PREFERENCE_PILOT_FAMILY, PREFERENCE_IDENTITY_FAMILY)
 SPLICE_TRAINING_FAMILY = 'zpd-splice-training-20261018'
 SPLICE_TRAINING_UNIT_PREFIX = 'zpd-splice-training-20261018-v2'
@@ -100,6 +103,42 @@ def verify_files(directory, marker):
 
 
 def verify_terminal(directory, outer):
+    if directory.name == PREFERENCE_TRAINING_FAMILY:
+        require(outer['status']=='complete' and outer['version']=='matched_immutable_reference_dpo_release_v1'
+            and outer['model_promotion'] is False and outer['decision']=='ready_for_inference'
+            and set(outer['phases'])==set(PREFERENCE_PHASES),'preference training identity differs')
+        verify_files(directory,'VERIFIED_COMPLETE.json')
+        stage_seals={}
+        for phase,pin in outer['phases'].items():
+            path=directory/(phase+'-VERIFIED_COMPLETE.json');require(sha(path)==pin,'preference child drift')
+            cert=read(path);stage=directory/(phase+'-v1');e=cert['exit']
+            require(cert['release_sha256']==outer['release_sha256'] and cert['cleanup_verified'] is True
+                and cert['cgroup_removed'] is True and cert['returned_control_group']==''
+                and all(e.get(k)==v for k,v in dict(Result='success',ExecMainCode='1',ExecMainStatus='0',MainPID='0',SubState='exited').items())
+                and sha(stage/'STAGE_COMPLETE.json')==cert['complete_sha256'],'preference child not normally certified')
+            seal=verify_files(stage,'STAGE_COMPLETE.json');stage_seals[phase]=seal
+            require(seal['release_sha256']==outer['release_sha256'] and seal['phase']==phase
+                and {str(p.relative_to(stage)) for p in stage.rglob('*') if p.is_file()}
+                ==set(seal['files_sha256'])|{'STAGE_COMPLETE.json'},'preference stage inventory differs')
+        report=read(directory/'REPORT.json')
+        require(report['decision']=='ready_for_inference' and report['actual_fit'] is True
+            and report['performance_measured'] is False and report['model_promotion'] is False
+            and report['completed_examples']==report['total_examples']==38398,'preference claim differs')
+        for arm in ('C','H'):
+            fit=read(directory/('train-'+arm+'-v1/training/training_summary.json'))
+            ref=read(directory/('reference-'+arm+'-v1/reference/reference_summary.json'))
+            require(fit==report['arms'][arm] and fit['arm']==ref['arm']==arm and fit['actual_fit'] is True
+                and fit['completed_epochs']==1 and fit['completed_examples']==fit['total_examples']==19199
+                and fit['validation_examples']==4365 and fit['identity_examples']==10
+                and fit['reference_immutable'] is True and fit['exclusions']==0 and fit['truncation'] is False
+                and ref['actual_fit'] is False and ref['optimizer_steps']==0 and ref['immutable'] is True
+                and fit['initial_adapter']==ref['initial_adapter']==ref['final_adapter']
+                and fit['final_adapter']!=fit['initial_adapter']
+                and fit['reference_complete_sha256']==stage_seals['reference-'+arm]['files_sha256']['reference/COMPLETE.json'],
+                'full-epoch immutable-reference evidence differs')
+        require(report['arms']['C']['order_sha256']==report['arms']['H']['order_sha256'],'paired fit order differs')
+        return dict(decision='ready_for_inference',performance_measured=False,actual_fit=True,
+            train_examples_per_arm=19199,validation_examples_per_arm=4365)
     if directory.name in PILOT_FAMILIES:
         require(outer['status']=='complete' and outer['model_promotion'] is False
             and set(outer['phases']) in ({'materialize'},{'materialize','capacity'}), 'splice pilot identity differs')
@@ -377,13 +416,17 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY,LIKELIHOOD_FAMILY,*PILOT_FAMILIES) and (root/'COORDINATOR.json').is_file():
+            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY,LIKELIHOOD_FAMILY,*PILOT_FAMILIES,PREFERENCE_TRAINING_FAMILY) and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
             if family in MATCHED_FAMILIES:
                 failures+=sorted(p for p in root.rglob('REJECTED_COMPLETE.json') if p.is_file())
             if failures:
                 row.update(state='error',errors=[str(p.relative_to(root)) for p in failures])
+            elif family == PREFERENCE_TRAINING_FAMILY:
+                try:row.update(preference_training_progress(root))
+                except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
+                    row.update(state='error',errors=['preference training observer: '+str(exc)[:240]])
             elif family in PILOT_FAMILIES:
                 try:row.update(splice_progress(root))
                 except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
@@ -574,6 +617,38 @@ def preference_pilot_properties():
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 
+def preference_training_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        'zpd-preference-training-20261020-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
+def preference_training_progress(root):
+    props=preference_training_properties()
+    require(props.get('ActiveState')!='failed','preference coordinator failed')
+    if (root/'VERIFIED_COMPLETE.json').is_file():
+        if props.get('MainPID') not in (None,'0'):
+            return dict(state='running',phase='normal_exit_pending',completed_examples=38398,total_examples=38398)
+        require(all(props.get(k)==v for k,v in dict(Result='success',ExecMainCode='1',ExecMainStatus='0',MainPID='0',SubState='exited').items())
+            and props.get('ControlGroup')=='','preference coordinator normal exit required')
+        results=verify_terminal(root,read(root/'VERIFIED_COMPLETE.json'))
+        return dict(state='complete',completed_examples=38398,total_examples=38398,results=results,
+            certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),
+            completed_at=datetime.fromtimestamp((root/'VERIFIED_COMPLETE.json').stat().st_mtime,KST).isoformat())
+    parent=read(root/'STATUS.json') if (root/'STATUS.json').is_file() else {}
+    phase=parent.get('phase','reference-C')
+    require(phase in PREFERENCE_PHASES,'unexpected preference phase')
+    kind='reference' if phase.startswith('reference-') else 'training'
+    row=dict(state='running',phase=phase,pipeline_phase=phase,completed_examples=0,
+        total_examples=23564 if kind=='reference' else 19199,progress_unit='예제')
+    status=root/(phase+'-v1')/kind/'STATUS.json'
+    if status.is_file():row.update(read(status))
+    completed=19199 if 'train-C' in parent.get('completed_phases',[]) else 0
+    if kind=='training':completed+=row.get('training_completed_examples',row['completed_examples'])
+    row.update(training_completed_examples_total=completed,training_total_examples=38398)
+    return row
+
+
 def preference_identity_properties():
     raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
         'zpd-preference-identity-pilot-20261020-v1-coordinator.service'],text=True,timeout=10)
@@ -652,6 +727,8 @@ def korean_report(snapshot):
             line=f"{label}: 완료 {total}/{total}, {r['completed_at'][11:16]} KST"
             if r['family'] in PILOT_FAMILIES:
                 line+=f"; 사전 검증 {r['results']['decision']}, 학습·성능 평가 아님. 다음: 인증된 준비 결과에 따른 학습 결정"
+            elif r['family']==PREFERENCE_TRAINING_FAMILY:
+                line+='; C/H 각각 전체 19,199개 학습 완료. 성능 평가 전. 다음: 고정 C/H/HS/U 추론·평가'
             elif r['family'] in MATCHED_FAMILIES:
                 line+='; 신규 C/H 어댑터별 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
                 population=r.get('training_population',{}).get('train',{})
@@ -679,7 +756,13 @@ def korean_report(snapshot):
             if r['family']==ANCHORED_FAMILY and phase=='generation':display='봉인 후보 구성 (재생성 없음)'
             if r['family'] in DIAGNOSIS_FAMILIES:display='미평가 후보 진단'
             if r['family'] in PILOT_FAMILIES:display=PAIRED_LABELS.get(phase,phase)
+            if r['family']==PREFERENCE_TRAINING_FAMILY:
+                display={'reference-C':'C 고정 참조 점수 저장','reference-H':'H 고정 참조 점수 저장',
+                    'train-C':'C 선호학습','train-H':'H 선호학습'}.get(phase,phase)
+                if str(r.get('phase','')).startswith('validation-'):display=r['phase'][-1]+' 최종 검증 손실 측정'
             line=f"{label}: {display} {r['completed_examples']}/{r['total_examples']} {r.get('progress_unit','예제')}, 실행장애 기록 없음"
+            if r['family']==PREFERENCE_TRAINING_FAMILY:
+                line+=f"; 학습 누적 {r.get('training_completed_examples_total',0)}/38,398개"
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
                 if failed:line+=f', 생성 실패 {failed}회 (제외·재시도 없음)'
@@ -715,7 +798,10 @@ def korean_report(snapshot):
                 line+=f", 현 단계 예상 {estimate:%H:%M} KST (단순 속도 추정)"
             else:line+=', 종료시각 추정 중'
             next_phase={'likelihood_selection':'봉인 후 기존 캐시 평가','selection':'봉인 후 기존 캐시 평가','generation':'공개 테스트 선택','public_selection':'전체 테스트 평가','private_execution':'자동 결과 집계'}
-            if r['family'] in MATCHED_FAMILIES:
+            if r['family']==PREFERENCE_TRAINING_FAMILY:
+                after=dict(zip(PREFERENCE_PHASES,(*PREFERENCE_PHASES[1:],'고정 C/H/HS/U 추론·평가')))
+                line+=', 다음: '+after.get(phase,'정상 종료·결과 검증')
+            elif r['family'] in MATCHED_FAMILIES:
                 after={a:b for a,b in zip(PAIRED_PHASES,PAIRED_PHASES[1:])}
                 line+=', 다음: '+PAIRED_LABELS.get(after.get(phase),'결과 검증')
             else:line+=', 다음: '+next_phase.get(r.get('phase'),'결과 검증')
