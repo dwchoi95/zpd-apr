@@ -27,11 +27,11 @@ FAMILIES = ('zpd-transition-diagnosis-20261013', 'zpd-current-last-20261013',
             'zpd-full-source-20261014', 'zpd-paired-history-run-20261015',
             'zpd-paired-inference-20261016', 'zpd-crossed-inference-20261016', 'zpd-anchored-routing-20261016',
             'zpd-anchored-diagnosis-20261016', 'zpd-anchor-tie-20261016', 'zpd-edit-balanced-20261016',
-            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261018', 'zpd-splice-diagnosis-20261019', 'zpd-anchor-pilot-20261019', 'zpd-anchor-training-20261019', 'zpd-anchor-diagnosis-20261019', 'zpd-public-revision-20261019', 'zpd-revision-diagnosis-20261019', 'zpd-counterexample-revision-20261020', 'zpd-deanchored-revision-20261020', 'zpd-deanchored-diagnosis-20261020')
+            'zpd-edit-balanced-diagnosis-20261017', 'zpd-splice-pilot-20261017', 'zpd-splice-training-20261018', 'zpd-splice-diagnosis-20261019', 'zpd-anchor-pilot-20261019', 'zpd-anchor-training-20261019', 'zpd-anchor-diagnosis-20261019', 'zpd-public-revision-20261019', 'zpd-revision-diagnosis-20261019', 'zpd-counterexample-revision-20261020', 'zpd-deanchored-revision-20261020', 'zpd-deanchored-diagnosis-20261020', 'zpd-likelihood-selection-20261020')
 FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배치', '전체 소스 이력 표현',
                                  '동일 조건 C/H 신규 학습', 'C/H 학습 완료 후 평가 복구', '어댑터·입력 교차 진단', '현재 코드 후보 고정 라우팅',
                                  '고정 라우팅 후보 누락분 진단', '공개 동점 후보 선택 개선', '수정·보존 균형 학습',
-                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가', '줄 구간 수정 실패·후보 진단', '원문 지정 수정 방식 사전 검증', '원문 지정 수정 C/H 학습·평가', '원문 지정 후보·회귀 원인 진단', '공개 실행 피드백 기반 두 번째 후보 생성', '공개 피드백 수정 후보·복사 실패 진단', '공개 실패 반례 기반 조건부 수정', '실패 생성 코드 비노출 반례 수정', '비노출 반례 후보·공개 비공개 전이 진단')))
+                                 '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가', '줄 구간 수정 실패·후보 진단', '원문 지정 수정 방식 사전 검증', '원문 지정 수정 C/H 학습·평가', '원문 지정 후보·회귀 원인 진단', '공개 실행 피드백 기반 두 번째 후보 생성', '공개 피드백 수정 후보·복사 실패 진단', '공개 실패 반례 기반 조건부 수정', '실패 생성 코드 비노출 반례 수정', '비노출 반례 후보·공개 비공개 전이 진단', '이력 조건부 확률 후보 선택')))
 SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
 ANCHOR_PILOT_FAMILY = 'zpd-anchor-pilot-20261019'
 PILOT_FAMILIES = (SPLICE_FAMILY, ANCHOR_PILOT_FAMILY)
@@ -56,6 +56,7 @@ ANCHOR_DIAGNOSIS_FAMILY = 'zpd-anchor-diagnosis-20261019'
 REVISION_DIAGNOSIS_FAMILY = 'zpd-revision-diagnosis-20261019'
 DEANCHORED_DIAGNOSIS_FAMILY = 'zpd-deanchored-diagnosis-20261020'
 DIAGNOSIS_FAMILIES = (DIAGNOSIS_FAMILY, BALANCED_DIAGNOSIS_FAMILY, SPLICE_DIAGNOSIS_FAMILY, ANCHOR_DIAGNOSIS_FAMILY, REVISION_DIAGNOSIS_FAMILY, DEANCHORED_DIAGNOSIS_FAMILY)
+LIKELIHOOD_FAMILY = 'zpd-likelihood-selection-20261020'
 TIE_FAMILY = 'zpd-anchor-tie-20261016'
 TIE_UNIT = 'zpd-anchor-tie-20261016-v1-coordinator.service'
 BALANCED_FAMILY = 'zpd-edit-balanced-20261016'
@@ -122,8 +123,8 @@ def verify_terminal(directory, outer):
                 'splice no-fit capacity required')
         else:require(report['decision']=='hold' and report['materialization']['overflow'],'splice hold reason missing')
         return dict(decision=report['decision'],performance_measured=False)
-    if directory.name==TIE_FAMILY:
-        require(outer['status']=='complete' and outer['layout_variant']=='public_anchor_tie_preference_v1'
+    if directory.name in (TIE_FAMILY,LIKELIHOOD_FAMILY):
+        require(outer['status']=='complete' and outer['layout_variant']==('public_tie_conditional_mean_logprob_v1' if directory.name==LIKELIHOOD_FAMILY else 'public_anchor_tie_preference_v1')
                 and outer['model_promotion'] is False and outer['provisional_until_coordinator_normal_exit'] is True
                 and set(outer['phases'])=={'selection','assessment'}, 'tie replay identity differs')
         verify_files(directory,'VERIFIED_COMPLETE.json')
@@ -131,7 +132,10 @@ def verify_terminal(directory, outer):
             cert_path=directory/(phase+'-VERIFIED_COMPLETE.json')
             require(sha(cert_path)==pin,'tie child certificate drift')
             cert=read(cert_path);stage=directory/(phase+'-v1')
-            require(cert['status']=='complete' and cert['returncode']==0
+            normal=(cert.get('returncode')==0) if directory.name==TIE_FAMILY else (cert['exit']['ExecMainCode']=='1'
+                and cert['exit']['ExecMainStatus']=='0' and cert['exit']['Result']=='success' and cert['exit']['MainPID']=='0'
+                and cert['exit']['SubState']=='exited' and cert['cleanup_verified'] is True and cert['cgroup_removed'] is True)
+            require(cert['status']=='complete' and normal
                     and cert['release_sha256']==outer['release_sha256']
                     and sha(stage/'STAGE_COMPLETE.json')==cert['complete_sha256'],'tie child exit or seal differs')
             seal=verify_files(stage,'STAGE_COMPLETE.json')
@@ -139,6 +143,12 @@ def verify_terminal(directory, outer):
                     and {str(p.relative_to(stage)) for p in stage.rglob('*') if p.is_file()}
                     ==set(seal['files_sha256'])|{'STAGE_COMPLETE.json'}, 'tie stage inventory differs')
         report=read(directory/'REPORT.json')
+        if directory.name==LIKELIHOOD_FAMILY:
+            seal=read(directory/'selection-v1/PREDICTIONS_COMPLETE.json')
+            require(seal['release_sha256']==outer['release_sha256'] and seal['private_assessment_accessed'] is False
+                and seal['choices']==1280 and sha(directory/'selection-v1/predictions.json')==seal['predictions_sha256']
+                and sha(directory/'assessment-v1/report.json')==sha(directory/'REPORT.json')
+                and report['layout_variant']==outer['layout_variant'], 'likelihood selection/assessment binding differs')
         require(report['adaptive_cache_replay'] is True and report['new_execution'] is False
                 and report['model_promotion'] is False, 'cache replay claim differs')
         return report_counts(report)
@@ -344,7 +354,7 @@ def remote_snapshot(project=REMOTE_PROJECT):
         root=project/'outputs'/family
         row=dict(family=family,state='not_started',completed_examples=0,total_examples=320)
         if root.exists():
-            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY,*PILOT_FAMILIES) and (root/'COORDINATOR.json').is_file():
+            if family in (*MATCHED_FAMILIES,*DIAGNOSIS_FAMILIES,TIE_FAMILY,LIKELIHOOD_FAMILY,*PILOT_FAMILIES) and (root/'COORDINATOR.json').is_file():
                 row['release_sha256']=read(root/'COORDINATOR.json').get('release_sha256')
             failures=sorted(p for p in root.rglob('*FAILED*.json') if p.is_file())
             if family in MATCHED_FAMILIES:
@@ -355,10 +365,10 @@ def remote_snapshot(project=REMOTE_PROJECT):
                 try:row.update(splice_progress(root))
                 except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
                     row.update(state='error',errors=['splice observer validation: '+str(exc)[:240]])
-            elif family==TIE_FAMILY:
+            elif family in (TIE_FAMILY,LIKELIHOOD_FAMILY):
                 try:
                     if (root/'VERIFIED_COMPLETE.json').is_file():
-                        p=tie_properties()
+                        p=likelihood_properties() if family==LIKELIHOOD_FAMILY else tie_properties()
                         if p.get('MainPID') not in (None,'0'):
                             row.update(state='running',phase='normal_exit_pending',completed_examples=320)
                         else:
@@ -372,7 +382,10 @@ def remote_snapshot(project=REMOTE_PROJECT):
                                 certificate_sha256=sha(root/'VERIFIED_COMPLETE.json'),results=verify_terminal(root,outer),
                                 completed_at=datetime.fromtimestamp((root/'VERIFIED_COMPLETE.json').stat().st_mtime,KST).isoformat())
                     elif (root/'STATUS.json').is_file():
-                        progress=read(root/'STATUS.json');row.update(state='running',**progress)
+                        progress=read(root/'STATUS.json')
+                        if family==LIKELIHOOD_FAMILY and progress.get('phase')=='selection' and (root/'selection-v1/STATUS.json').is_file():
+                            progress=read(root/'selection-v1/STATUS.json')
+                        row.update(state='running',**progress)
                     else:row['state']='starting'
                 except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError) as exc:
                     row.update(state='error',errors=['tie observer validation: '+str(exc)[:240]])
@@ -533,6 +546,12 @@ def anchor_pilot_properties():
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 
+def likelihood_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        'zpd-likelihood-selection-20261020-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
 def tie_properties():
     raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',TIE_UNIT],text=True,timeout=10)
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
@@ -606,7 +625,7 @@ def korean_report(snapshot):
             elif r['family'] in (FAMILIES[0],*DIAGNOSIS_FAMILIES):
                 c,h=r['results']['C'],r['results']['H']
                 line+=f". C 정답 {c['selected_stable_ac']}, H 정답 {h['selected_stable_ac']} (H 후보 상한 {h['oracle_upper']})"
-            elif r['family']==TIE_FAMILY:
+            elif r['family'] in (TIE_FAMILY,LIKELIHOOD_FAMILY):
                 line+='; 정답 '+', '.join(f"{a} {r['results'][a]['stable_ac']}/320" for a in ('C','H','HS','U'))
                 line+='; 기존 실행 캐시 재평가, 독립 검증 아님. 다음: 고정 gate 검토'
             else:
@@ -624,6 +643,8 @@ def korean_report(snapshot):
             if r.get('attempt_statuses',{}):
                 failed=sum(n for status,n in r['attempt_statuses'].items() if status!='success')
                 if failed:line+=f', 생성 실패 {failed}회 (제외·재시도 없음)'
+            if r.get('completed_candidates') is not None:
+                line+=f", 후보 점수 {r['completed_candidates']}/{r['total_candidates']}"
             if r.get('completed_case_attempts') is not None:
                 line+=f", 테스트 {r['completed_case_attempts']}/{r['total_case_attempts']}"
             if r['family']==PAIRED_FAMILY and phase=='cache' and r.get('unavailable_unique_sources'):
@@ -647,7 +668,7 @@ def korean_report(snapshot):
                 estimate=datetime.fromisoformat(snapshot['checked_at'])+timedelta(seconds=elapsed*(total-done)/done)
                 line+=f", 현 단계 예상 {estimate:%H:%M} KST (단순 속도 추정)"
             else:line+=', 종료시각 추정 중'
-            next_phase={'generation':'공개 테스트 선택','public_selection':'전체 테스트 평가','private_execution':'자동 결과 집계'}
+            next_phase={'likelihood_selection':'봉인 후 기존 캐시 평가','selection':'봉인 후 기존 캐시 평가','generation':'공개 테스트 선택','public_selection':'전체 테스트 평가','private_execution':'자동 결과 집계'}
             if r['family'] in MATCHED_FAMILIES:
                 after={a:b for a,b in zip(PAIRED_PHASES,PAIRED_PHASES[1:])}
                 line+=', 다음: '+PAIRED_LABELS.get(after.get(phase),'결과 검증')
