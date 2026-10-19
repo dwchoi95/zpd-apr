@@ -103,6 +103,46 @@ class PureTests(unittest.TestCase):
                 run.core.write_new(root/'VERIFIED_COMPLETE.json',dict(status='complete'))
                 self.assertEqual(w.preference_training_progress(root)['state'],'running')
 
+    def test_observer_terminal_seals_and_no_performance_claim(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)/w.PREFERENCE_TRAINING_FAMILY;root.mkdir()
+            digest='a'*64;arms={};phases={};refpins={}
+            for phase in run.PHASES:
+                arm=phase[-1];stage=root/(phase+'-v1');stage.mkdir()
+                initial=dict(sha256='original-'+arm)
+                if phase.startswith('reference-'):
+                    dest=stage/'reference';dest.mkdir()
+                    ref=dict(arm=arm,actual_fit=False,optimizer_steps=0,immutable=True,
+                        initial_adapter=initial,final_adapter=initial)
+                    m.core.write_new(dest/'reference_summary.json',ref);m.seal(dest)
+                    refpins[arm]=m.core.sha_file(dest/'COMPLETE.json')
+                else:
+                    dest=stage/'training';dest.mkdir()
+                    fit=dict(arm=arm,actual_fit=True,completed_epochs=1,completed_examples=19199,total_examples=19199,
+                        validation_examples=4365,identity_examples=10,reference_immutable=True,exclusions=0,
+                        truncation=False,initial_adapter=initial,final_adapter=dict(sha256='new-'+arm),
+                        reference_complete_sha256=refpins[arm],order_sha256='common')
+                    arms[arm]=fit;m.core.write_new(dest/'training_summary.json',fit);m.seal(dest)
+                m.core.seal_stage(stage,phase,digest)
+                cert=dict(release_sha256=digest,cleanup_verified=True,cgroup_removed=True,returned_control_group='',
+                    exit=dict(Result='success',ExecMainCode='1',ExecMainStatus='0',MainPID='0',SubState='exited'),
+                    complete_sha256=m.core.sha_file(stage/'STAGE_COMPLETE.json'))
+                cp=root/(phase+'-VERIFIED_COMPLETE.json');m.core.write_new(cp,cert);phases[phase]=m.core.sha_file(cp)
+            report=dict(decision='ready_for_inference',actual_fit=True,performance_measured=False,model_promotion=False,
+                completed_examples=38398,total_examples=38398,arms=arms)
+            m.core.write_new(root/'REPORT.json',report)
+            outer=dict(status='complete',version=run.VERSION,model_promotion=False,decision='ready_for_inference',
+                phases=phases,release_sha256=digest,files_sha256={'REPORT.json':m.core.sha_file(root/'REPORT.json')})
+            m.core.write_new(root/'VERIFIED_COMPLETE.json',outer)
+            result=w.verify_terminal(root,outer);self.assertFalse(result['performance_measured'])
+            with patch.object(w,'preference_training_properties',return_value=dict(MainPID='0',ActiveState='failed')):
+                with self.assertRaises(ValueError):w.preference_training_progress(root)
+            # A valid-looking report without its normally certified worker is not complete.
+            bad=deepcopy(outer);bad['phases'].pop('train-H')
+            with self.assertRaises(ValueError):w.verify_terminal(root,bad)
+            (root/'train-H-v1/training/unsealed.txt').write_text('extra')
+            with self.assertRaises(ValueError):w.verify_terminal(root,outer)
+
 
 @unittest.skipUnless(all(importlib.util.find_spec(x) for x in ('torch','transformers','peft')),'optional torch runtime absent')
 class NumericalTests(unittest.TestCase):
