@@ -59,7 +59,10 @@ def barrier(path, digest, revision=None):
     old = core.read_pinned(own / 'analysis_protocols/zpd-likelihood-selection-release-20261020.json', PARENT_RELEASE)
     core.require(REQUIRED <= set(r['source_sha256']), 'pilot sources missing')
     for name, pin in old['source_sha256'].items():
-        if name not in ('scripts/watch_zpd_completion.py', 'tests/test_watch_zpd_completion.py'):
+        # The previous turn's candidate-count ETA fix also added a reporter test
+        # in test_zpd_likelihood_selection.py after that experiment was frozen.
+        if name not in ('scripts/watch_zpd_completion.py', 'tests/test_watch_zpd_completion.py',
+                        'tests/test_zpd_likelihood_selection.py'):
             core.require(r['source_sha256'].get(name) == pin, 'unrelated source changed: ' + name)
     for name, pin in r['source_sha256'].items():
         p = own / name
