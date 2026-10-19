@@ -35,9 +35,11 @@ FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배
 SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
 ANCHOR_PILOT_FAMILY = 'zpd-anchor-pilot-20261019'
 PREFERENCE_PILOT_FAMILY = 'zpd-preference-pilot-20261020'
-FAMILIES += (PREFERENCE_PILOT_FAMILY,)
+PREFERENCE_IDENTITY_FAMILY = 'zpd-preference-identity-pilot-20261020'
+FAMILIES += (PREFERENCE_PILOT_FAMILY, PREFERENCE_IDENTITY_FAMILY)
 FAMILY_NAMES[PREFERENCE_PILOT_FAMILY] = '성공·실패 선호학습 사전 검증'
-PILOT_FAMILIES = (SPLICE_FAMILY, ANCHOR_PILOT_FAMILY, PREFERENCE_PILOT_FAMILY)
+FAMILY_NAMES[PREFERENCE_IDENTITY_FAMILY] = '동일 코드 쌍 보존 선호학습 사전 검증'
+PILOT_FAMILIES = (SPLICE_FAMILY, ANCHOR_PILOT_FAMILY, PREFERENCE_PILOT_FAMILY, PREFERENCE_IDENTITY_FAMILY)
 SPLICE_TRAINING_FAMILY = 'zpd-splice-training-20261018'
 SPLICE_TRAINING_UNIT_PREFIX = 'zpd-splice-training-20261018-v2'
 ANCHOR_TRAINING_FAMILY = 'zpd-anchor-training-20261019'
@@ -114,7 +116,8 @@ def verify_terminal(directory, outer):
                 and {str(p.relative_to(stage)) for p in stage.rglob('*') if p.is_file()}
                 ==set(seal['files_sha256'])|{'STAGE_COMPLETE.json'},'splice stage inventory differs')
         report=read(directory/'REPORT.json')
-        expected_codec = ('paired_native_verdict_dpo_capacity_v1' if directory.name == PREFERENCE_PILOT_FAMILY
+        expected_codec = ('paired_native_verdict_dpo_identity_v1' if directory.name == PREFERENCE_IDENTITY_FAMILY
+                          else 'paired_native_verdict_dpo_capacity_v1' if directory.name == PREFERENCE_PILOT_FAMILY
                           else 'unique_original_content_edits_v1' if directory.name == ANCHOR_PILOT_FAMILY
                           else 'original_line_splices_v1')
         require(report['materialization']['codec'] == expected_codec, 'pilot codec identity differs')
@@ -126,7 +129,23 @@ def verify_terminal(directory, outer):
                 and report['capacity']['actual_fit'] is False and report['capacity']['published_adapter'] is False,
                 'splice no-fit capacity required')
         else:require(report['decision']=='hold' and report['materialization']['overflow'],'splice hold reason missing')
-        return dict(decision=report['decision'],performance_measured=False)
+        result=dict(decision=report['decision'],performance_measured=False)
+        if directory.name == PREFERENCE_IDENTITY_FAMILY:
+            identity=read(directory/'materialize-v1/identity-summary.json')
+            require(identity['original_HOLD_preserved'] is True and identity['no_exclusions'] is True
+                and identity['native_verdicts_relabelled'] is False and identity['performance_gate_changed'] is False,
+                'identity audit claims changed')
+            require(identity['counts']['train']['examples']==19199 and identity['counts']['valid']['examples']==4365
+                and identity['counts']['train']['retained_identity_ties']==10
+                and identity['counts']['valid']['retained_identity_ties']==3, 'original identity population differs')
+            result['identity_counts']=identity['counts']
+            if report['decision']=='ready_for_training':
+                probes=report['capacity']['probes']
+                require(probes and {p['arm'] for p in probes}=={'C','H'} and any(p['identity_tie'] for p in probes)
+                    and any(not p['identity_tie'] for p in probes)
+                    and all(p['gradient_norm']==0 if p['identity_tie'] else p['gradient_norm']>0 for p in probes),
+                    'identity/strict gradient probes missing or invalid')
+        return result
     if directory.name in (TIE_FAMILY,LIKELIHOOD_FAMILY):
         require(outer['status']=='complete' and outer['layout_variant']==('public_tie_conditional_mean_logprob_v1' if directory.name==LIKELIHOOD_FAMILY else 'public_anchor_tie_preference_v1')
                 and outer['model_promotion'] is False and outer['provisional_until_coordinator_normal_exit'] is True
@@ -522,7 +541,8 @@ def revision_properties():
 def splice_progress(root):
     row=dict(state='starting',completed_examples=0,total_examples=23564)
     if not (root/'COORDINATOR.json').is_file():return row
-    props=(preference_pilot_properties() if root.name == PREFERENCE_PILOT_FAMILY
+    props=(preference_identity_properties() if root.name == PREFERENCE_IDENTITY_FAMILY
+           else preference_pilot_properties() if root.name == PREFERENCE_PILOT_FAMILY
            else anchor_pilot_properties() if root.name == ANCHOR_PILOT_FAMILY else splice_properties())
     require(props.get('ActiveState')!='failed','splice coordinator failed')
     if (root/'VERIFIED_COMPLETE.json').is_file():
@@ -544,13 +564,19 @@ def splice_progress(root):
     if phase=='capacity':
         row.update(completed_examples=23564,total_examples=23564)
         capacity=root/'capacity-v1/STATUS.json'
-        if root.name == PREFERENCE_PILOT_FAMILY and capacity.is_file():row.update(read(capacity))
+        if root.name in (PREFERENCE_PILOT_FAMILY,PREFERENCE_IDENTITY_FAMILY) and capacity.is_file():row.update(read(capacity))
     return row
 
 
 def preference_pilot_properties():
     raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
         'zpd-preference-pilot-20261020-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
+
+
+def preference_identity_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        'zpd-preference-identity-pilot-20261020-v1-coordinator.service'],text=True,timeout=10)
     return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 
