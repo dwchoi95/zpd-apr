@@ -34,7 +34,10 @@ FAMILY_NAMES = dict(zip(FAMILIES, ('후보 진단', '현재 코드 마지막 배
                                  '균형 학습 후보·회귀 원인 진단', '줄 구간 수정 방식 사전 검증', '줄 구간 수정 C/H 학습·평가', '줄 구간 수정 실패·후보 진단', '원문 지정 수정 방식 사전 검증', '원문 지정 수정 C/H 학습·평가', '원문 지정 후보·회귀 원인 진단', '공개 실행 피드백 기반 두 번째 후보 생성', '공개 피드백 수정 후보·복사 실패 진단', '공개 실패 반례 기반 조건부 수정', '실패 생성 코드 비노출 반례 수정', '비노출 반례 후보·공개 비공개 전이 진단', '이력 조건부 확률 후보 선택')))
 SPLICE_FAMILY = 'zpd-splice-pilot-20261017'
 ANCHOR_PILOT_FAMILY = 'zpd-anchor-pilot-20261019'
-PILOT_FAMILIES = (SPLICE_FAMILY, ANCHOR_PILOT_FAMILY)
+PREFERENCE_PILOT_FAMILY = 'zpd-preference-pilot-20261020'
+FAMILIES += (PREFERENCE_PILOT_FAMILY,)
+FAMILY_NAMES[PREFERENCE_PILOT_FAMILY] = '성공·실패 선호학습 사전 검증'
+PILOT_FAMILIES = (SPLICE_FAMILY, ANCHOR_PILOT_FAMILY, PREFERENCE_PILOT_FAMILY)
 SPLICE_TRAINING_FAMILY = 'zpd-splice-training-20261018'
 SPLICE_TRAINING_UNIT_PREFIX = 'zpd-splice-training-20261018-v2'
 ANCHOR_TRAINING_FAMILY = 'zpd-anchor-training-20261019'
@@ -111,7 +114,8 @@ def verify_terminal(directory, outer):
                 and {str(p.relative_to(stage)) for p in stage.rglob('*') if p.is_file()}
                 ==set(seal['files_sha256'])|{'STAGE_COMPLETE.json'},'splice stage inventory differs')
         report=read(directory/'REPORT.json')
-        expected_codec = ('unique_original_content_edits_v1' if directory.name == ANCHOR_PILOT_FAMILY
+        expected_codec = ('paired_native_verdict_dpo_capacity_v1' if directory.name == PREFERENCE_PILOT_FAMILY
+                          else 'unique_original_content_edits_v1' if directory.name == ANCHOR_PILOT_FAMILY
                           else 'original_line_splices_v1')
         require(report['materialization']['codec'] == expected_codec, 'pilot codec identity differs')
         require(report['decision']==outer['decision'] and report['actual_fit'] is False
@@ -518,7 +522,8 @@ def revision_properties():
 def splice_progress(root):
     row=dict(state='starting',completed_examples=0,total_examples=23564)
     if not (root/'COORDINATOR.json').is_file():return row
-    props=anchor_pilot_properties() if root.name == ANCHOR_PILOT_FAMILY else splice_properties()
+    props=(preference_pilot_properties() if root.name == PREFERENCE_PILOT_FAMILY
+           else anchor_pilot_properties() if root.name == ANCHOR_PILOT_FAMILY else splice_properties())
     require(props.get('ActiveState')!='failed','splice coordinator failed')
     if (root/'VERIFIED_COMPLETE.json').is_file():
         if props.get('MainPID') not in (None,'0'):
@@ -536,8 +541,17 @@ def splice_progress(root):
     phase=state.get('phase','materialize');path=root/'materialize-v1/STATUS.json'
     if path.is_file():row.update(read(path))
     row.update(state='running',phase=phase)
-    if phase=='capacity':row.update(completed_examples=23564,total_examples=23564)
+    if phase=='capacity':
+        row.update(completed_examples=23564,total_examples=23564)
+        capacity=root/'capacity-v1/STATUS.json'
+        if root.name == PREFERENCE_PILOT_FAMILY and capacity.is_file():row.update(read(capacity))
     return row
+
+
+def preference_pilot_properties():
+    raw=subprocess.check_output(['/usr/bin/systemctl','--user','show','--all',
+        'zpd-preference-pilot-20261020-v1-coordinator.service'],text=True,timeout=10)
+    return dict(line.split('=',1) for line in raw.splitlines() if '=' in line)
 
 
 def anchor_pilot_properties():
@@ -645,6 +659,8 @@ def korean_report(snapshot):
                 if failed:line+=f', 생성 실패 {failed}회 (제외·재시도 없음)'
             if r.get('completed_candidates') is not None:
                 line+=f", 후보 점수 {r['completed_candidates']}/{r['total_candidates']}"
+            if r.get('completed_probes') is not None:
+                line+=f", 무갱신 역전파 {r['completed_probes']}/{r['total_probes']}"
             if r.get('completed_case_attempts') is not None:
                 line+=f", 테스트 {r['completed_case_attempts']}/{r['total_case_attempts']}"
             if r['family']==PAIRED_FAMILY and phase=='cache' and r.get('unavailable_unique_sources'):
