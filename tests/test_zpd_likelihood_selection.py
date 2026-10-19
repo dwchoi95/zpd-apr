@@ -179,5 +179,11 @@ class LifecycleTests(unittest.TestCase):
             self.assertTrue((Path(d)/'new/COORDINATOR_FAILED.json').is_file())
             self.assertFalse((Path(d)/'new/assessment-v1').exists())
 
+    def test_observer_eta_uses_work_not_already_resolved_examples(self):
+        r=dict(family=watch.LIKELIHOOD_FAMILY,state='running',phase='likelihood_selection',completed_examples=30,
+            total_examples=320,completed_candidates=100,total_candidates=1000,elapsed_seconds=60)
+        text=watch.korean_report(dict(checked_at='2026-10-20T06:00:00+09:00',experiments=[r]))
+        self.assertIn('30/320',text);self.assertIn('100/1000',text);self.assertIn('06:09 KST',text)
+
 
 if __name__=='__main__':unittest.main()

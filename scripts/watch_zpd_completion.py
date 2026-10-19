@@ -653,6 +653,10 @@ def korean_report(snapshot):
             if r['family']==PAIRED_FAMILY and population:
                 line+=f", 학습 원천 {population['candidate_examples']}→적격 {population['retained_examples']}예제"
             elapsed,done,total=r.get('elapsed_seconds'),r['completed_examples'],r['total_examples']
+            if r['family']==LIKELIHOOD_FAMILY and r.get('completed_candidates') is not None:
+                # Publicly unique winners require no model calls and can make
+                # initial recipient completion misleading for timing.
+                done,total=r['completed_candidates'],r['total_candidates']
             if r['family'] in DIAGNOSIS_FAMILIES:
                 # Recipients finish only during block four; source-block work
                 # is observable earlier. Estimate remains explicitly provisional.
