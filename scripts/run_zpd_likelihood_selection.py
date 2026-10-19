@@ -206,7 +206,10 @@ def command(phase,path,digest):
     cmd=['/usr/bin/systemd-run','--user','--unit='+UNIT_PREFIX+'-'+phase+'.service','--service-type=exec']
     cmd+=['--property='+k+'='+v for k,v in props.items()]
     env=dict(PYTHONDONTWRITEBYTECODE='1',OPENBLAS_NUM_THREADS='1',OMP_NUM_THREADS='1',HF_HUB_OFFLINE='1',TRANSFORMERS_OFFLINE='1',
-        TMPDIR=str(PROJECT/'.staging/likelihood-selection-20261020-v1/tmp'))
+        TMPDIR=str(PROJECT/'.staging/likelihood-selection-20261020-v1/tmp'),
+        CUDA_CACHE_PATH=str(PROJECT/'.staging/likelihood-selection-20261020-v1/cuda-cache'),
+        TRITON_CACHE_DIR=str(PROJECT/'.staging/likelihood-selection-20261020-v1/triton-cache'),
+        TORCH_HOME=str(PROJECT/'.cache/torch'),HF_HOME=str(PROJECT/'.cache/huggingface'))
     cmd+=['--setenv='+k+'='+v for k,v in env.items()]
     return cmd+[str(PROJECT/'.runtime/fse-env/bin/python'),'-m','scripts.run_zpd_likelihood_selection','worker',
         '--phase',phase,'--release',str(path),'--release-sha',digest]

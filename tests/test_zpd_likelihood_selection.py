@@ -151,6 +151,9 @@ class LifecycleTests(unittest.TestCase):
             c=run.command(phase,Path('/snapshot/analysis_protocols/r.json'),'x')
             for v in ('--property=Restart=no','--setenv=HF_HUB_OFFLINE=1','--property=RuntimeMaxSec=21600'):
                 self.assertIn(v,c)
+            for key in ('CUDA_CACHE_PATH','TRITON_CACHE_DIR','TORCH_HOME','HF_HOME','TMPDIR'):
+                values=[v.split('=',2)[2] for v in c if v.startswith('--setenv='+key+'=')]
+                self.assertEqual(len(values),1);self.assertTrue(Path(values[0]).is_relative_to(run.PROJECT))
 
     def test_observer_actual_release_progress_and_normal_exit(self):
         with tempfile.TemporaryDirectory() as d:
