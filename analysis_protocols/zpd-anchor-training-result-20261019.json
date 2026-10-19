@@ -1,0 +1,231 @@
+{
+  "version": "anchor_training_authenticated_result_v1",
+  "trigger_event_id": "17ef205ff647fdadf95b217e15dab13eb8a67c14990764b048f7bed8ce41eb45",
+  "family": "zpd-anchor-training-20261019",
+  "release_sha256": "9be858d732c64bbb0a21c0a1ce06bf9dc0d6e6393b2fb4f16214e6046700d61f",
+  "normal_exit_kst": "2026-10-19T19:07:08+09:00",
+  "remote_revision": "231e025646cbdb98b980bd88c1ca409b462367da",
+  "authenticated": {
+    "source_pins": 618,
+    "model_pins": true,
+    "seven_stage_inventories": true,
+    "training_pair": true,
+    "normal_coordinator_and_children": true,
+    "cgroups_removed": true,
+    "failure_markers": []
+  },
+  "artifacts_sha256": {
+    "VERIFIED_COMPLETE.json": "beba4ee71d5d7a8d65a528e595b12c124aff03b61984f72d48723b0102338d1a",
+    "REPORT.json": "0a967562fd1a8c133079c426ce49d6f535f592a29f9a71a77c6bf2c455162f74",
+    "inference-release.json": "09cdb5b048e2650f536346eda3c50aa467875cdddf4b15d2591a13af0e1e51c7"
+  },
+  "training": {
+    "C": {
+      "coverage": {
+        "arm": "C",
+        "completed_examples": 19199,
+        "consumed_order_sha256": "c422974efda9f3af7f8f45fd9269dea4f6a745c6520603df7b7f96c07aeb0591",
+        "coverage_semantics": "successful_training_step_calls_not_optimizer_update_estimate",
+        "elapsed_seconds": 13729.887480932288,
+        "phase": "training_complete",
+        "planned_order_sha256": "c422974efda9f3af7f8f45fd9269dea4f6a745c6520603df7b7f96c07aeb0591",
+        "successful_training_microbatches": 9600,
+        "total_examples": 19199,
+        "unique_completed_examples": 19199
+      },
+      "validation_examples": 4365,
+      "validation": {
+        "epoch": 1.0,
+        "eval_loss": 0.27413156628608704,
+        "eval_runtime": 853.8774,
+        "eval_samples_per_second": 5.112,
+        "eval_steps_per_second": 2.557,
+        "step": 1200
+      },
+      "initial_adapter": {
+        "sha256": "7b85da6a010dc3d0386c4a145db7843ef7871acbb2dd598e8adbb5c777640374",
+        "tensors": 392,
+        "trainable_parameters": 40370176
+      },
+      "final_adapter": {
+        "sha256": "e087879be2344158df6b0db8799be0ddf458a5306560a28ab6502716b3e3bc22",
+        "tensors": 392,
+        "trainable_parameters": 40370176
+      },
+      "exclusions": 0,
+      "truncation": false
+    },
+    "H": {
+      "coverage": {
+        "arm": "H",
+        "completed_examples": 19199,
+        "consumed_order_sha256": "c422974efda9f3af7f8f45fd9269dea4f6a745c6520603df7b7f96c07aeb0591",
+        "coverage_semantics": "successful_training_step_calls_not_optimizer_update_estimate",
+        "elapsed_seconds": 19993.980827700812,
+        "phase": "training_complete",
+        "planned_order_sha256": "c422974efda9f3af7f8f45fd9269dea4f6a745c6520603df7b7f96c07aeb0591",
+        "successful_training_microbatches": 9600,
+        "total_examples": 19199,
+        "unique_completed_examples": 19199
+      },
+      "validation_examples": 4365,
+      "validation": {
+        "epoch": 1.0,
+        "eval_loss": 0.2706333100795746,
+        "eval_runtime": 1218.7732,
+        "eval_samples_per_second": 3.581,
+        "eval_steps_per_second": 1.791,
+        "step": 1200
+      },
+      "initial_adapter": {
+        "sha256": "7b85da6a010dc3d0386c4a145db7843ef7871acbb2dd598e8adbb5c777640374",
+        "tensors": 392,
+        "trainable_parameters": 40370176
+      },
+      "final_adapter": {
+        "sha256": "d3cc97d200a6ac3f4f6be1452a581dc4d76150740f971886b61ad4ea7feed0b9",
+        "tensors": 392,
+        "trainable_parameters": 40370176
+      },
+      "exclusions": 0,
+      "truncation": false
+    }
+  },
+  "completed_examples": 320,
+  "total_examples": 320,
+  "counts": {
+    "C": {
+      "noop_selected": 72,
+      "stable_ac": 136,
+      "stable_regression": 18,
+      "unknown": 19
+    },
+    "H": {
+      "noop_selected": 70,
+      "stable_ac": 138,
+      "stable_regression": 26,
+      "unknown": 19
+    },
+    "HS": {
+      "noop_selected": 71,
+      "stable_ac": 138,
+      "stable_regression": 24,
+      "unknown": 20
+    },
+    "U": {
+      "noop_selected": 93,
+      "stable_ac": 136,
+      "stable_regression": 16,
+      "unknown": 18
+    },
+    "noop": {
+      "noop_selected": 320,
+      "stable_ac": 19,
+      "stable_regression": 0,
+      "unknown": 16
+    }
+  },
+  "development_gate": {
+    "checks": {
+      "all_five_folds_ac_nonworse_vs_C": false,
+      "complete_execution": true,
+      "pooled_regression_nonincrease_vs_C": false,
+      "pooled_regression_upper_nonincrease_vs_C": false,
+      "pooled_unknown_nonincrease_vs_C": true,
+      "strict_pooled_ac_H_over_C": true,
+      "strict_pooled_ac_H_over_HS": false,
+      "strict_pooled_ac_H_over_U": true
+    },
+    "decision": "hold",
+    "nonworse_ac_folds": {
+      "0": true,
+      "1": true,
+      "2": false,
+      "3": true,
+      "4": false
+    },
+    "passed": false,
+    "required_nonworse_ac_folds": 5,
+    "scope": "Predeclared pooled descriptive new-generation gate; equal-problem and current-status slices are reported separately."
+  },
+  "paired_H": {
+    "C": {
+      "ac_gained": 33,
+      "ac_lost": 31,
+      "edited_to_edited": 173,
+      "examples": 320,
+      "from_noop": 34,
+      "not_jointly_known": 20,
+      "regression_introduced": 19,
+      "regression_prevented": 11,
+      "selected_candidate_changed": 239,
+      "to_noop": 32
+    },
+    "HS": {
+      "ac_gained": 6,
+      "ac_lost": 6,
+      "edited_to_edited": 47,
+      "examples": 320,
+      "from_noop": 5,
+      "not_jointly_known": 20,
+      "regression_introduced": 4,
+      "regression_prevented": 2,
+      "selected_candidate_changed": 56,
+      "to_noop": 4
+    },
+    "U": {
+      "ac_gained": 30,
+      "ac_lost": 29,
+      "edited_to_edited": 168,
+      "examples": 320,
+      "from_noop": 49,
+      "not_jointly_known": 21,
+      "regression_introduced": 19,
+      "regression_prevented": 7,
+      "selected_candidate_changed": 243,
+      "to_noop": 26
+    }
+  },
+  "archive": {
+    "root": "archive/zpd-anchor-training-20261019",
+    "verified_stage_files": 2606,
+    "omitted_from_local_copy_only": [
+      "materialize-v1/materialized/train-C.jsonl",
+      "materialize-v1/materialized/train-H.jsonl",
+      "materialize-v1/materialized/valid-C.jsonl",
+      "materialize-v1/materialized/valid-H.jsonl",
+      "train-C-v1/training/adapter/README.md",
+      "train-C-v1/training/adapter/adapter_config.json",
+      "train-C-v1/training/adapter/adapter_model.safetensors",
+      "train-C-v1/training/adapter/added_tokens.json",
+      "train-C-v1/training/adapter/chat_template.jinja",
+      "train-C-v1/training/adapter/merges.txt",
+      "train-C-v1/training/adapter/special_tokens_map.json",
+      "train-C-v1/training/adapter/tokenizer.json",
+      "train-C-v1/training/adapter/tokenizer_config.json",
+      "train-C-v1/training/adapter/vocab.json",
+      "train-H-v1/training/adapter/README.md",
+      "train-H-v1/training/adapter/adapter_config.json",
+      "train-H-v1/training/adapter/adapter_model.safetensors",
+      "train-H-v1/training/adapter/added_tokens.json",
+      "train-H-v1/training/adapter/chat_template.jinja",
+      "train-H-v1/training/adapter/merges.txt",
+      "train-H-v1/training/adapter/special_tokens_map.json",
+      "train-H-v1/training/adapter/tokenizer.json",
+      "train-H-v1/training/adapter/tokenizer_config.json",
+      "train-H-v1/training/adapter/vocab.json"
+    ],
+    "all_remote_files_preserved_and_verified": true
+  },
+  "next_task": "zpd-anchor-diagnosis-20261019",
+  "model_promotion": false,
+  "history_order_benefit_established": false,
+  "educational_benefit_established": false,
+  "comparison": {
+    "previous_integer_splice_selected_H": 101,
+    "current_anchor_selected_H": 138,
+    "earlier_uniform_full_source_selected_H": 192,
+    "not_overall_best": true
+  },
+  "claim_limit": "Adaptive development result; H ties HS and safety/fold gates fail. No promotion or confirmatory inference."
+}
