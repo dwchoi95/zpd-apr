@@ -1,0 +1,208 @@
+"""Withhold failed generated code; identical public-only routing, slots and gate."""
+from __future__ import annotations
+import argparse
+from contextlib import contextmanager
+from copy import deepcopy
+import json
+from pathlib import Path
+
+from scripts import run_zpd_transition_generation as core
+from scripts import run_zpd_full_source as driver
+from scripts import run_zpd_crossed_inference as origins
+from scripts import run_zpd_counterexample_revision as parent
+from scripts import run_zpd_paired_inference_recovery as ipc
+from scripts import zpd_deanchored_revision as representation
+from scripts import generate_zpd_counterexample_revision as generator
+
+PROJECT=core.PROJECT
+FAMILY=PROJECT/'outputs/zpd-deanchored-revision-20261020'
+UNIT_PREFIX='zpd-deanchored-revision-20261020-v1'
+RPC_BASE=PROJECT/'tmp/dr-1020-v1'
+VARIANT=representation.VERSION
+PHASES=core.PHASES
+PARENT_SHA='c2dc1f4f6835f75edeaf18d379732cc36e813a2e78e34bc1b309e2635b4ef31c'
+PARENT_COMPLETE='c585b18697f47a14d7b59f01e4a7f5760c54dfc10571123da14f0b6876c200df'
+ORIGIN=ipc.FAMILY
+ORIGIN_PINS={
+    'generation-v1/attempts.json':'294eca31854a53d72ac30f11a0cac8f738fc78d39d1d094855bd1fcd0c7d04c7',
+    'public-v1/public-vectors.json':'e6d68001bd9b340ef1ed8a5d6c0e66cb9d8d95e3dc251a0a7b03350e17b700c2',
+    'public-v1/completions.jsonl':'c129df439fc4678ec8375303ac68b436464e39d64e047267fd61b636a9e7607e',
+}
+REQUIRED={'scripts/zpd_deanchored_revision.py','scripts/run_zpd_deanchored_revision.py',
+    'tests/test_zpd_deanchored_revision.py','analysis_protocols/zpd-deanchored-revision-20261020.md'}
+OBSERVER_ONLY={'scripts/watch_zpd_completion.py','tests/test_watch_zpd_completion.py'}
+BASE_INPUTS=core.inputs_for
+BASE_COMMAND=driver.command
+
+
+def contract():
+    return dict(version=VARIANT,predecessor_release_sha256=PARENT_SHA,
+        predecessor_complete_sha256=PARENT_COMPLETE,origin_release_sha256=origins.PREVIOUS_SHA,
+        origin_complete_sha256=origins.PREVIOUS_COMPLETE,origin_files_sha256=ORIGIN_PINS,
+        first_slot_reused_exactly=True,revised_slot=1,candidate_budget_per_arm=2,
+        generated_proposal_code_shown=False,original_student_sources_removed=0,
+        original_routing_unchanged=True,
+        planned_new_slots=334,existing_slots=2226,all_public_pass_still_revised=False,
+        policy="stable_public_failure_repair_else_independent",
+        failure_counts=dict(C=80,H=87,HS=82,U=85),
+        unchanged_independent_second_slots=946,explicit_sample_inputs_and_expected_outputs=True,
+        failed_first_slot_preserved=True,unavailable_feedback_not_failure=True,
+        full_original_history_preserved=True,private_feedback_used=False,
+        fitting=False,selector_changed=False,gate_changed=False,model_promotion=False,
+        adaptive_development=True,rpc_base_path=str(RPC_BASE))
+
+
+def public_inputs(release):
+    """Only original prompts, generated sources and public executions enter here."""
+    old=BASE_INPUTS(release)
+    data={n:core.read_pinned(ORIGIN/n,pin) for n,pin in ORIGIN_PINS.items()}
+    return representation.transform(old,data['generation-v1/attempts.json'],
+        data['public-v1/public-vectors.json'],data['public-v1/completions.jsonl'])
+
+
+def inputs_for(release):
+    plan,_=public_inputs(release)
+    core.require(core.sha(core.encoded(plan))==release['revision_inputs_sha256'], 'frozen revision plan drift')
+    return plan
+
+
+def predecessor():
+    from scripts.watch_zpd_completion import verify_terminal
+    outer=core.read_pinned(parent.FAMILY/'VERIFIED_COMPLETE.json',PARENT_COMPLETE)
+    core.require(outer['release_sha256']==PARENT_SHA,'parent release differs')
+    verify_terminal(parent.FAMILY,outer)
+    props=core.props(parent.UNIT_PREFIX+'-coordinator.service')
+    core.require(core.normal_exit(props) and props.get('ControlGroup')=='','parent coordinator not released')
+    for phase in PHASES:
+        cert=core.read_pinned(parent.FAMILY/(phase+'-VERIFIED_COMPLETE.json'),outer['phases'][phase])
+        core.verify_stage(parent.FAMILY/(phase+'-v1'),phase,PARENT_SHA)
+        group=cert['recorded_control_group'];name=parent.UNIT_PREFIX+'-'+phase+'.service'
+        core.require(core.normal_exit(cert['exit']) and cert['cleanup_verified'] is True
+            and group.startswith('/user.slice/') and '..' not in Path(group).parts
+            and group.endswith('/'+name) and not (Path('/sys/fs/cgroup')/group.lstrip('/')).exists(),
+            'parent phase normal exit/group removal required')
+        live=core.props(name)
+        core.require(live.get('MainPID')=='0' and live.get('ControlGroup')=='', 'parent phase still active')
+    core.require(not list(parent.FAMILY.rglob('*FAILED*.json')),'parent failure marker')
+    original=core.inputs_for
+    core.inputs_for=BASE_INPUTS
+    try:return origins.verify_predecessor()
+    finally:core.inputs_for=original
+
+
+def validate_release(release,old,latest):
+    core.require(release.get('public_revision')==contract() and release['family_path']==str(FAMILY)
+        and release['layout_variant']==VARIANT and 'recovery' not in release,'exact revision amendment required')
+    mutable={'family_path','layout_variant','source_sha256','recovery','public_revision',
+        'tokenization_sha256','revision_inputs_sha256','revision_audit_sha256','overflow_attempts'}
+    core.require({k:v for k,v in release.items() if k not in mutable}==
+        {k:v for k,v in old.items() if k not in mutable},'frozen model/scientific fields changed')
+    core.require(REQUIRED<=set(release['source_sha256']),'missing revision source pins')
+    for n,pin in latest['source_sha256'].items():
+        if n not in OBSERVER_ONLY:core.require(release['source_sha256'].get(n)==pin,'existing source changed: '+n)
+
+
+def source_barrier(path,digest,revision=None):
+    current=core.clean_source();root=Path.cwd().resolve();path=Path(path).absolute()
+    core.require(root==Path(__file__).resolve().parents[1]==Path(core.__file__).resolve().parents[1]
+        and path.resolve()==path and path.is_relative_to(root),'clean shared snapshot release required')
+    core.require(revision is None or current==revision,'snapshot revision drift')
+    r=core.load_release(path,digest)
+    for n in r['source_sha256']:
+        p=Path(n);core.require(not p.is_absolute() and '..' not in p.parts and p.resolve()==p.absolute(),'unsafe source path')
+    latest=core.read_pinned(root/'analysis_protocols/zpd-counterexample-revision-release-20261020.json',PARENT_SHA)
+    validate_release(r,predecessor(),latest)
+    ipc.parent.read_sealed(ipc.parent.INPUTS.parent,r['inputs_complete_sha256'])
+    plan,audit=public_inputs(r)
+    core.require(core.sha(core.encoded(plan))==r['revision_inputs_sha256']
+        and core.sha(core.encoded(audit))==r['revision_audit_sha256'],'revision preparation drift')
+    core.require(all(audit['counts'][a].get('counterexample_repair',0)==n
+        for a,n in contract()['failure_counts'].items()), 'frozen branch counts differ')
+    ipc.validate_rpc_path(RPC_BASE)
+    return current,r
+
+
+def generation(inputs,release,output):
+    plan,audit=public_inputs(release);core.require(inputs==plan,'generation input differs')
+    ledger=core.read_pinned(ORIGIN/'generation-v1/attempts.json',ORIGIN_PINS['generation-v1/attempts.json'])
+    reused=representation.reused_rows(plan,audit,ledger)
+    core.require(len(reused)==2226 and all(audit['counts'][a].get('counterexample_repair',0)==n
+        for a,n in contract()['failure_counts'].items()), 'fixed public-only branch differs')
+    core.write_new(output/'revision-inputs.json',inputs);core.write_new(output/'revision-audit.json',audit)
+    generator.generation(inputs,release,output,reused)
+
+
+def command(phase,path,digest,snapshot=None):
+    cmd=BASE_COMMAND(phase,path,digest,snapshot)
+    cmd=['scripts.run_zpd_deanchored_revision' if v=='scripts.run_zpd_full_source' else
+         '--setenv=TMPDIR='+str(RPC_BASE) if v.startswith('--setenv=TMPDIR=') else v for v in cmd]
+    cmd.insert(cmd.index(str(PROJECT/('.runtime/fse-vllm/bin/python' if phase=='generation' else '.runtime/fse-env/bin/python'))),
+        '--setenv=VLLM_RPC_BASE_PATH='+str(RPC_BASE))
+    return cmd
+
+
+def summarize_private(report,digest,report_sha):
+    core.require(report['execution_complete'] is True and report['full']['examples']==320,'complete 320 required')
+    result=deepcopy(report)
+    result.update(version=VARIANT,layout_variant=VARIANT,release_sha256=digest,private_report_sha256=report_sha,
+        public_revision=contract(),examples=320,counts={a:deepcopy(report['full']['results'][a]['counts']) for a in report['methods']},
+        model_promotion=False,historical_gates_passed=False,confirmatory=False,educational_benefit_established=False,
+        prior_uniform_full_source_reference=dict(C=209,H=192,HS=198,U=206,examples=320,contemporaneous=False),
+        prior_counterexample_revision_reference=dict(C=197,H=188,HS=191,U=202,examples=320,contemporaneous=False),
+        prior_unconditional_revision_reference=dict(C=194,H=193,HS=192,U=202,examples=320,contemporaneous=False),
+        limitations=['Adaptive exposed development cohort; no confirmatory or educational claim.',
+            'First slots and 946 independent second slots reused; only 334 public-failing branches newly generated.',
+            'Generated proposal code omitted; routing and evidence preserved. Prompt length and explanatory wording change, so not a pure semantic or compute-identical ablation.',
+            'Public sample agreement is not private correctness; all unknowns, overflows and gates retained.'])
+    return result
+
+
+@contextmanager
+def configured():
+    updates=dict(FAMILY=FAMILY,UNIT_PREFIX=UNIT_PREFIX,VARIANT=VARIANT,source_barrier=source_barrier,
+        command=command,summarize_private=summarize_private)
+    saved={k:getattr(driver,k) for k in updates};old=(core.inputs_for,core.generation)
+    for k,v in updates.items():setattr(driver,k,v)
+    core.inputs_for,core.generation=inputs_for,generation
+    try:
+        with driver.configured_core():yield
+    finally:
+        core.inputs_for,core.generation=old
+        for k,v in saved.items():setattr(driver,k,v)
+
+
+def worker(phase,path,digest):
+    with configured():
+        revision,_=source_barrier(path,digest)
+        if phase=='generation':
+            old=ipc.RPC_BASE;ipc.RPC_BASE=RPC_BASE
+            try:core.write_new(FAMILY/'IPC_PREFLIGHT.json',ipc.probe_ipc())
+            finally:ipc.RPC_BASE=old
+        core.worker(phase,path,digest);source_barrier(path,digest,revision)
+
+
+def supervise(path,digest):
+    with configured():
+        source_barrier(path,digest)
+        core.require(not FAMILY.exists() and not RPC_BASE.exists(),'fresh family/IPC required')
+        for phase in PHASES:core.require(core.props(driver.unit(phase)).get('LoadState')=='not-found','duplicate unit')
+        RPC_BASE.mkdir(parents=True,mode=0o700)
+        return driver.supervise(path,digest)
+
+
+def main():
+    p=argparse.ArgumentParser(__doc__);p.add_argument('mode',choices=('verify','tokenize','worker','supervise'))
+    p.add_argument('--phase',choices=PHASES);p.add_argument('--release',type=Path,required=True);p.add_argument('--release-sha',required=True)
+    a=p.parse_args()
+    if a.mode=='tokenize':
+        r=core.read_pinned(a.release,a.release_sha);plan,audit=public_inputs(r)
+        rendered,report=core.render_inputs(plan,r['base_model'])
+        print(json.dumps(dict(tokenization_sha256=core.sha(core.encoded(report)),
+            revision_inputs_sha256=core.sha(core.encoded(plan)),revision_audit_sha256=core.sha(core.encoded(audit)),
+            arms=report['arms'],feedback=audit['counts'],overflow_attempts=sum(not rendered[t['prompt_id']]['fits'] for t in plan['attempts']))))
+    elif a.mode=='worker':worker(a.phase,a.release,a.release_sha)
+    elif a.mode=='supervise':supervise(a.release,a.release_sha)
+    else:print(json.dumps(dict(verified_revision=source_barrier(a.release,a.release_sha)[0])))
+
+
+if __name__=='__main__':main()
