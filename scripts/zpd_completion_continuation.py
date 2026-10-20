@@ -21,6 +21,7 @@ PROJECT = Path('/Users/cdw/VSCode/zpd-apr')
 THREAD = '019fa3df-f13d-7cf2-8e2d-5a2a9a84d3d5'
 CODEX = Path('/Users/cdw/.local/bin/codex')
 REMOTE = '/home/cdw/VSCode/zpd-apr'
+DEADLINE_POLICY = PROJECT / 'analysis_protocols/zpd-deadline-20261021.json'
 UUID = r'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 
@@ -35,6 +36,28 @@ def encoded(value):
 
 def digest(value):
     return hashlib.sha256(encoded(value)).hexdigest()
+
+
+def deadline_policy():
+    if not DEADLINE_POLICY.is_file():return None
+    value=json.loads(DEADLINE_POLICY.read_bytes())
+    require(value['version']=='zpd_user_deadline_v1'
+        and value['deadline']=='2026-10-21T13:00:00+09:00'
+        and value['local_project']==str(PROJECT) and value['remote_project']==REMOTE
+        and value['thread_id']==THREAD and value['new_experiments_after_deadline'] is False
+        and value['report_family']=='zpd-deadline-summary-20261021','user deadline policy differs')
+    return value
+
+
+def deadline_prompt(policy):
+    return f'''[ZPD-APR 사용자 지정 마감 / 최종 방법론 선정]
+사용자가 지정한 실험 마감은 {policy['deadline']} (Asia/Seoul)이며 이제 도달했다.
+이 요청은 기존의 무기한 개선 지시보다 우선한다. 새 실험·학습·재시도·재개를 하지 않는다.
+1. UbuntuServer {REMOTE}의 마감 타이머와 outputs/zpd-deadline-20261021 기록, 실제 프로세스/정상 종료/해시를 확인한다. 마감에 중단된 실행은 incomplete로 보존하고 COMPLETE나 성공 결과를 만들어내지 않는다. 아직 실행 중인 작업이 있으면 프로젝트 소속을 검증한 뒤 사용자 마감 범위에서 중단한다.
+2. 여태까지의 개선 방향, 완료 성능, 음성 결과, 통제 실험과 미완료 작업을 빠짐없이 정리한다. 서로 다른 데이터·후보 예산·측정 기준을 한 순위표로 섞지 않는다. 실제 데이터/고정 gate는 변경하지 않는다.
+3. 기존 C/H/HS/U, 회귀, unknown, 모든 fold 조건과 근거의 신뢰도를 함께 비교하여 가장 근거가 좋은 방법론 하나를 추천한다. 최고 관측 RR은 별도로 명시하고 gate 실패를 숨기지 않는다. 개선안이 통과하지 못했다면 기존 방법 유지가 최선임을 명확히 말한다. 교육 효과나 Accept를 주장하지 않는다.
+4. 최종 한국어 보고서를 이 대화에 제공하고 dev에 기록한다. 분석·확인만 허용하며 후속 실험을 등록하지 않는다. 파일·모델·음성 결과·사용자 변경을 보존하고 main/paper 공개나 영구 삭제를 하지 않는다. 연결/전달 문제가 있으면 검증하지 못한 부분을 밝힌다.
+'''
 
 
 def write_atomic(path, value):
@@ -78,9 +101,13 @@ def terminal_event(row, target):
     return event
 
 
-def followup_prompt(event):
+def followup_prompt(event, policy=None):
     """The user authorized this workflow; observations cannot supply commands."""
-    return f'''[ZPD-APR 자동 후속 실행 / 사용자 요청에 따라 등록된 완료 감시]
+    deadline_note = (f"[최신 사용자 지시 우선] 실험 마감은 {policy['deadline']} (KST)이다. 실제 현재 시각을 확인한다. "
+        "마감 이후 새 실험·재시도·재개를 금지하고 최종 비교·best 방법론 선정만 수행한다. "
+        "마감 전에도 남은 시간을 고려해 현재 학습 및 고정 평가를 우선한다. "
+        "analysis_protocols/zpd-deadline-20261021.json 및 AGENTS.md를 확인하고 마감 감시를 보존한다.\n\n") if policy else ''
+    return deadline_note + f'''[ZPD-APR 자동 후속 실행 / 사용자 요청에 따라 등록된 완료 감시]
 이벤트: {event['state']}; family={event['family']}
 고정 release SHA-256: {event['release_sha256']}
 이벤트 ID: {event['event_id']}
@@ -96,7 +123,7 @@ def followup_prompt(event):
 '''
 
 
-def dispatch(snapshot, config_path, state_directory, *, run=None):
+def dispatch(snapshot, config_path, state_directory, *, run=None, now=None):
     """At most one dispatch per registered family, including uncertain outcomes."""
     config_path, state_directory = Path(config_path), Path(state_directory)
     if not config_path.exists():
@@ -105,18 +132,23 @@ def dispatch(snapshot, config_path, state_directory, *, run=None):
     if config.get('enabled') is False:
         return dict(status='disabled', queued=[])
     validate_config(config)
-    if snapshot.get('connection_error'):
+    policy=deadline_policy();now=datetime.now(timezone.utc) if now is None else now
+    expired=policy is not None and now>=datetime.fromisoformat(policy['deadline'])
+    if snapshot.get('connection_error') and not expired:
         return dict(status='remote_unavailable', queued=[])
     rows = snapshot['experiments']
     require(len({r['family'] for r in rows}) == len(rows), 'duplicate observed families')
     by_family = {r['family']: r for r in rows}
     events = []
-    for target in config['targets']:
+    for target in ([] if expired else config['targets']):
         row = by_family.get(target['family'])
         if row is not None:
             event = terminal_event(row, target)
             if event is not None:
                 events.append(event)
+    if expired:
+        event=dict(family=policy['report_family'],state='deadline',policy_sha256=digest(policy))
+        event['event_id']=digest(event);events=[event]
     state_directory.mkdir(parents=True, exist_ok=True)
     require(state_directory.resolve() == state_directory.absolute(), 'canonical continuation state directory required')
     state_path = state_directory / 'state.json'
@@ -142,7 +174,8 @@ def dispatch(snapshot, config_path, state_directory, *, run=None):
                 config_sha256=digest(config), claimed_at=datetime.now(timezone.utc).isoformat())
             state['deliveries'][family] = entry
             write_atomic(state_path, state)  # Crash/timeout can never blindly send a second message.
-            command = [str(CODEX), 'queue', '--thread', THREAD, '--message', followup_prompt(event)]
+            prompt=deadline_prompt(policy) if event['state']=='deadline' else followup_prompt(event,policy)
+            command = [str(CODEX), 'queue', '--thread', THREAD, '--message', prompt]
             try:
                 result = run(command, cwd=str(PROJECT), check=False, timeout=60, capture_output=True, text=True)
                 receipt = re.fullmatch(r'Queued message (' + UUID + r') for thread (' + UUID + r')\.\s*', result.stdout)
@@ -160,4 +193,5 @@ def dispatch(snapshot, config_path, state_directory, *, run=None):
             write_atomic(state_path, state)
         return dict(status='attention_required' if uncertain else 'queued' if queued else 'idle',
                     queued=queued, unconfirmed=uncertain, previously_queued=handled,
-                    experiments_executed_by_bridge=False, permission_overrides=False)
+                    experiments_executed_by_bridge=False, permission_overrides=False,
+                    deadline=policy['deadline'] if policy else None, deadline_reached=expired)

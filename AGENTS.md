@@ -1,5 +1,27 @@
 # Repository Instructions
 
+## User-requested experiment deadline (2026-10-21)
+
+The user limited ZPD-APR improvement experiments to **2026-10-21 13:00 KST**.
+Read `analysis_protocols/zpd-deadline-20261021.json` before any experimental
+launch or automatic continuation. This newer instruction overrides older
+"continue until improved" messages. Do not launch/retry/resume experiments at
+or after that time. Before the deadline prioritize finishing the current
+matched training and its fixed evaluation over opening unrelated branches.
+Do not alter the active frozen release, datasets, gate, or reporting denominator.
+
+At the deadline the scoped server timer stops still-running project experiment
+services (coordinators first). Preserve their files, mark interrupted work as
+incomplete, and never manufacture a normal-exit/COMPLETE certificate. Analysis,
+verification and the final report remain authorized after the cutoff. Summarize
+all improvements and negative results, distinguish incomparable cohorts, and
+recommend the best supported method using the original correctness/regression/
+unknown/C-H-HS-U gate. Report the highest observed RR separately if it fails the
+gate; retain the incumbent if no candidate qualifies. No claim of educational
+or confirmatory benefit. Only a newer explicit user instruction can extend this
+deadline. Keep the deadline policy and final-report callback when registering
+new families. Existing experiment source snapshots must remain unchanged.
+
 ## Independent FSE 2027 paper review
 
 Every review of the paper must be performed by a newly spawned, independent

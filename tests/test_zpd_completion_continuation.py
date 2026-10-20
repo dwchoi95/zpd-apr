@@ -13,6 +13,8 @@ from scripts import watch_zpd_completion as observer
 
 class ContinuationTests(unittest.TestCase):
     def setUp(self):
+        self.deadline_mock=patch.object(m,'deadline_policy',return_value=None).start()
+        self.addCleanup(patch.stopall)
         self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
         self.path = self.root / 'config.json'; self.state = self.root / 'state'
