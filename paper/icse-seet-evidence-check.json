@@ -1,0 +1,28 @@
+{
+  "byte_identical": true,
+  "checked_in": "paper/fse2027-result-bridge.tex",
+  "commands": 531,
+  "expected": "tmp/pdfs/seet-evidence-regenerated.tex",
+  "paper": "paper/main.tex",
+  "referenced_commands": 108,
+  "required_prefixes": [
+    "Scale",
+    "CodeWorkoutProblem",
+    "Prompt",
+    "CrossFit",
+    "VerdictOrder",
+    "CurrentOnly",
+    "ExerciseSensitivity",
+    "Stochastic",
+    "SeenHidden",
+    "SeenOverlap",
+    "Sweep",
+    "CheckpointStochastic",
+    "BaseStochastic",
+    "DifficultyMatched",
+    "CrossUserTarget",
+    "AllPrefix"
+  ],
+  "schema_version": 1,
+  "sha256": "4dd321c056e97e8ad1fb205725fcb8ccbc9f3c9d49365ae613497208e7cd8202"
+}

@@ -22,6 +22,8 @@ class FSE2027PDFPageLimitTest(unittest.TestCase):
         "Poppler tools are required",
     )
     def test_current_paper_respects_fse_boundary(self) -> None:
+        if r"\documentclass[10pt,conference]{IEEEtran}" in (ROOT / "paper" / "main.tex").read_text():
+            self.skipTest("Venue changed to ICSE-SEET; test_icse_seet_pdf enforces its boundary")
         result = verify(ROOT / "paper" / "main.pdf")
         self.assertLessEqual(result["total_pages"], PAGE_LIMIT)
         self.assertLessEqual(result["body_last_page"], BODY_LAST_PAGE)

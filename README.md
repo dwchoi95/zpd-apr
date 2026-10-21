@@ -55,7 +55,7 @@ run.py          단일 CLI entrypoint
 src/            데이터, 학습, 생성, 실행, 분석 구현
 scripts/        canonical-v5 및 FSE 2027 재현 스크립트
 tests/          unit/property/artifact tests
-paper/          FSE 2027 원고, 그림, 모의 리뷰(dev branch only)
+paper/          ICSE-SEET 2027 원고 및 과거 FSE 리뷰 기록(dev branch only)
 ```
 
 `data/`, `outputs/`, `checkpoints/`, model cache는 Git에 포함하지 않는다.
@@ -215,6 +215,13 @@ bash -n scripts/run_fse2027_codeworkout_remote.sh
 bash -n scripts/run_fse2027_lsgen_budget_remote.sh
 ```
 
-FSE 2027 원고는 `paper/main.tex`이며 현재 PDF는 본문 18쪽 이내와 참고문헌 3쪽으로
-빌드된다. 최종 결과 반영 후에도 18+4 제한과 시각 레이아웃을 다시 검사한다.
-독립 심사는 `paper/reviews/PROTOCOL.ko.md`의 무이력·새 리뷰어 절차를 따른다.
+현재 제출 대상은 **ICSE-SEET 2027 Research Paper**다. `paper/main.tex`와
+`paper/main.pdf`는 `\documentclass[10pt,conference]{IEEEtran}`을 사용하며,
+본문 10쪽과 참고문헌 전용 2쪽으로 빌드된다. 제목 24pt, 본문 10pt와 IEEE
+기본 여백·간격을 유지한다. `python3 scripts/verify_icse_seet_pdf.py`로 형식과
+페이지 경계, 폰트, 첫 언급 전 float 배치를 검사한다.
+
+최종 재작성 및 점검 기록은 `paper/icse-seet-rewrite-status-20261021.ko.md`에
+있다. 실험 파일의 `fse2027` 이름과 이전 모의 리뷰는 이력 보존을 위해 유지하며,
+현재 원고의 심사 결과로 취급하지 않는다. 구 한국어 번역 `main.ko.tex`는
+이번 영문 최종본과 동기화되지 않았다. 원고와 아티팩트는 공개 푸시하지 않는다.
