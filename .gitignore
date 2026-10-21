@@ -3,10 +3,16 @@ __pycache__/
 *.egg-info/
 
 env/
+.venv/
 .env
 .env.*
 !.env.example
 .hf-cache/
+.uv-cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.code-review-graph/
 .ipynb_checkpoints/
 
 data/

@@ -54,13 +54,13 @@ class EvidenceBindingsTest(unittest.TestCase):
     def test_moved_clause_is_rejected(self) -> None:
         moved = ROOT / "paper" / ".moved-main.tex"
         moved.write_text(
-            PAPER.read_text().replace("the current-only terminal triple at", "the triple at")
+            PAPER.read_text().replace("at 72.0\\% Seen and 81.2\\% Unseen.", "at these two split rates.")
         )
         try:
             _, problems = build(BRIDGE, moved)
         finally:
             moved.unlink()
-        self.assertTrue(any("locator occurs 0 times" in problem for problem in problems), problems)
+        self.assertTrue(any("literal snippet occurs 0 times" in problem for problem in problems), problems)
 
 
 if __name__ == "__main__":

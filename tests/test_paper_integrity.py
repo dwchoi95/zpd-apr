@@ -25,22 +25,17 @@ class PaperIntegrityTest(unittest.TestCase):
         self.assertEqual(cited - entries, set(), "undefined citation keys")
         self.assertEqual(entries - cited, set(), "uncited bibliography entries")
 
-    def test_fse_submission_contract_is_present(self) -> None:
+    def test_seet_submission_contract_is_present(self) -> None:
         tex = PAPER.read_text(encoding="utf-8")
-        self.assertIn(
-            r"\documentclass[sigconf,screen,review,anonymous]{acmart}", tex
-        )
-        self.assertIn(r"\acmBooktitle{", tex)
+        self.assertIn(r"\documentclass[10pt,conference]{IEEEtran}", tex)
+        self.assertNotIn("acmart", tex)
         conclusion = tex.index(r"\section{Conclusion}")
-        availability_heading = tex.index(r"\section{Data and Artifact Availability}")
-        availability = tex.index(r"\label{sec:data-availability}")
+        availability = tex.index(r"\section*{Data Availability}")
         bibliography = tex.index(r"\bibliography{references}")
-        self.assertLess(conclusion, availability_heading)
-        self.assertLess(availability_heading, availability)
+        self.assertLess(conclusion, availability)
         self.assertLess(availability, bibliography)
-        self.assertIn("anonymized replication package", tex[availability:])
-        self.assertIn(r"\texttt{ARTIFACT.md}", tex[availability:])
-        self.assertIn("OpenAI Codex was used interactively", tex)
+        self.assertIn("anonymous supplement", tex[availability:])
+        self.assertIn("OpenAI Codex assisted", tex)
 
     def test_every_paper_table_has_an_artifact_mapping(self) -> None:
         tex = PAPER.read_text(encoding="utf-8")
@@ -55,7 +50,11 @@ class PaperIntegrityTest(unittest.TestCase):
             (ROOT / relative).read_text(encoding="utf-8")
             for relative in ("paper/main.tex", "ARTIFACT.md")
         )
-        self.assertIn(r"\author{Anonymous Author(s)}", text)
+        # IEEEtran blinds by declaring no author; acmart would print an anonymous marker.
+        self.assertTrue(
+            re.search(r"\\author\{\s*\}", text) or r"\author{Anonymous Author(s)}" in text,
+            "submission declares a non-empty author block",
+        )
         for forbidden in (
             "github.com/dwchoi",
             "/home/cdw",

@@ -69,7 +69,7 @@ def check_source(source: str) -> None:
         raise ValueError("required IEEEtran class/options missing")
     if r"\bibliographystyle{IEEEtran}" not in source:
         raise ValueError("IEEE reference style missing")
-    forbidden = r"\\(?:geometry|fontsize|baselinestretch|newcommand|resizebox|tiny|vspace|enlargethispage)\b|compsoc|\\(?:setlength|addtolength)\s*\{?\\(?:textwidth|textheight|columnsep|baselineskip|topmargin|oddsidemargin)"
+    forbidden = r"\\(?:geometry|fontsize|baselinestretch|newcommand|resizebox|tiny|vspace|enlargethispage)\b|compsoc|algorithm2e|\\begin\{algorithm\}|\\(?:setlength|addtolength)\s*\{?\\(?:textwidth|textheight|columnsep|baselineskip|topmargin|oddsidemargin)"
     if re.search(forbidden, source):
         raise ValueError("nonstandard layout/font override or user macro found")
     if any(tag in source for tag in (r"\acmConference", r"\ccsdesc", r"\settopmatter")):
@@ -100,14 +100,19 @@ def check_float_order(pdf: Path) -> dict:
             content = " ".join(text for _, text in nodes)
             lines.append((content, (page_number, column, y), (nodes[0][0], y)))
     result = {}
-    for kind, numbers in (("Table", ("I", "II", "III", "IV", "V", "VI", "VII")), ("Figure", ("1",)), ("Algorithm", ("1", "2"))):
+    # The float inventory comes from the rendered captions, so adding or removing one needs no edit here.
+    found = {
+        "Table": sorted({m[1] for row in lines if (m := re.match(r"^TABLE\s+([IVX]+)$", row[0]))}),
+        "Figure": sorted({m[1] for row in lines if (m := re.match(r"^Fig\.\s+(\d+)\.", row[0]))}, key=int),
+    }
+    if not found["Table"] or not found["Figure"]:
+        raise ValueError(f"no float captions found: {found}")
+    for kind, numbers in found.items():
         for number in numbers:
             if kind == "Table":
                 caption = re.compile(rf"^TABLE\s+{number}$")
-            elif kind == "Figure":
-                caption = re.compile(rf"^Fig\.\s+{number}\.")
             else:
-                caption = re.compile(rf"^Algorithm\s+{number}:")
+                caption = re.compile(rf"^Fig\.\s+{number}\.")
             mention = re.compile(rf"\b{kind}\s+{number}\b(?!:)")
             captions = [row for row in lines if caption.search(row[0])]
             references = [row for row in lines if mention.search(row[0]) and not caption.search(row[0])]
@@ -120,8 +125,16 @@ def check_float_order(pdf: Path) -> dict:
     return result
 
 
+def source_title(source_text: str) -> str:
+    """The rendered title is compared with the source title, so a retitle cannot silently pass."""
+    title = re.search(r"\\title\{(.*?)\}\s*$", source_text, re.M | re.S)[1]
+    plain = re.sub(r"\\[A-Za-z]+\{([^{}]*)\}", r"\1", title).replace("~", " ")
+    return re.sub(r"\s+", " ", plain).strip()
+
+
 def verify(pdf: Path, source: Path) -> dict:
-    check_source(source.read_text())
+    source_text = source.read_text()
+    check_source(source_text)
     info = run("pdfinfo", str(pdf))
     count = int(re.search(r"^Pages:\s+(\d+)", info, re.M)[1])
     pages = [run("pdftotext", "-f", str(n), "-l", str(n), "-raw", str(pdf), "-") for n in range(1, count + 1)]
@@ -129,9 +142,10 @@ def verify(pdf: Path, source: Path) -> dict:
     result["float_order"] = check_float_order(pdf)
     xml = ET.fromstring(run("pdftohtml", "-xml", "-i", "-zoom", "1", "-stdout", str(pdf)))
     fonts = {node.get("id"): float(node.get("size")) for node in xml.iter("fontspec")}
-    title_nodes = [node for node in xml.find("page").findall("text") if "ZPDPatch: Evaluating" in "".join(node.itertext())]
-    if not title_nodes or any(fonts[node.get("font")] != 24 for node in title_nodes):
-        raise ValueError("title not rendered in 24pt")
+    title_nodes = [node for node in xml.find("page").findall("text") if fonts[node.get("font")] == 24]
+    rendered = re.sub(r"\s+", " ", " ".join("".join(node.itertext()) for node in title_nodes)).strip()
+    if rendered != source_title(source_text):
+        raise ValueError(f"24pt title text differs from the source title: {rendered!r}")
     body_nodes = [node for node in xml.iter("text") if "Automated program repair (APR)" in "".join(node.itertext())]
     if not body_nodes or any(fonts[node.get("font")] != 10 for node in body_nodes):
         raise ValueError("body sample not rendered in 10pt")

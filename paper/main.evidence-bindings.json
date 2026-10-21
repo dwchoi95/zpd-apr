@@ -80,7 +80,7 @@
       ]
     },
     {
-      "template": "Among \\PairedJavaJointRepairs joint repairs, Progress targets retain \\PairedJavaLexicalRetention more lexical-token points and \\PairedJavaLineRetention more line points, with intervals \\PairedJavaLexicalStudentCI and \\PairedJavaLineStudentCI.",
+      "template": "Among \\PairedJavaJointRepairs joint repairs, Progress targets increase lexical-token retention by \\PairedJavaLexicalRetention points and line retention by \\PairedJavaLineRetention points, with intervals \\PairedJavaLexicalStudentCI and \\PairedJavaLineStudentCI.",
       "commands": [
         "PairedJavaJointRepairs",
         "PairedJavaLexicalRetention",
@@ -142,16 +142,68 @@
       ]
     },
     {
-      "template": "Absolute greedy-three coverage is \\FactorialGreedyThreeSeenRR/\\FactorialGreedyThreeUnseenRR\\% on that stack against \\CurrentOnlyAnswerThreeSeenRR/\\CurrentOnlyAnswerThreeUnseenRR\\% on the historical one.",
+      "template": "Absolute Seen/Unseen rates on that stack are \\FactorialGreedyOneSeenRR/\\FactorialGreedyOneUnseenRR\\% for one greedy checkpoint, \\FactorialGreedyThreeSeenRR/\\FactorialGreedyThreeUnseenRR\\% for three greedy checkpoints, \\FactorialSameThreeSeenRR/\\FactorialSameThreeUnseenRR\\% for a same-checkpoint stochastic triple, and \\FactorialDistinctThreeSeenRR/\\FactorialDistinctThreeUnseenRR\\% for a distinct-checkpoint triple, against \\CurrentOnlyAnswerThreeSeenRR/\\CurrentOnlyAnswerThreeUnseenRR\\% on the historical one.",
       "commands": [
         "CurrentOnlyAnswerThreeSeenRR",
         "CurrentOnlyAnswerThreeUnseenRR",
+        "FactorialDistinctThreeSeenRR",
+        "FactorialDistinctThreeUnseenRR",
+        "FactorialGreedyOneSeenRR",
+        "FactorialGreedyOneUnseenRR",
         "FactorialGreedyThreeSeenRR",
-        "FactorialGreedyThreeUnseenRR"
+        "FactorialGreedyThreeUnseenRR",
+        "FactorialSameThreeSeenRR",
+        "FactorialSameThreeUnseenRR"
       ]
     },
     {
-      "template": "removing history improves frozen mixed and terminal RR by \\PromptFrozenMixedCurrentMinusFullSeen/\\PromptFrozenAnswerNineCurrentMinusFullSeen Seen points and \\PromptFrozenMixedCurrentMinusFullUnseen/\\PromptFrozenAnswerNineCurrentMinusFullUnseen Unseen points, with all intervals excluding zero.",
+      "template": "Terminal targets repair more trajectories on \\PairedJavaExercisesTerminalHigher of the \\PairedJavaExerciseCount exercises, tie on \\PairedJavaExercisesTied, and lose on none; the \\PairedJavaExerciseDeficitTotal additional repairs are concentrated rather than uniform, reaching \\PairedJavaExerciseDeficitMaximum on one exercise where progress targets repair \\PairedJavaWorstExerciseProgressRepairs of \\PairedJavaWorstExerciseExamples trajectories against \\PairedJavaWorstExerciseTerminalRepairs.",
+      "commands": [
+        "PairedJavaExerciseCount",
+        "PairedJavaExerciseDeficitMaximum",
+        "PairedJavaExerciseDeficitTotal",
+        "PairedJavaExercisesTerminalHigher",
+        "PairedJavaExercisesTied",
+        "PairedJavaWorstExerciseExamples",
+        "PairedJavaWorstExerciseProgressRepairs",
+        "PairedJavaWorstExerciseTerminalRepairs"
+      ]
+    },
+    {
+      "template": "the lexical-retention difference is exactly zero for \\PairedJavaLexicalRetentionTieShare\\% of students, positive for \\PairedJavaLexicalRetentionGainShare\\%, and negative for \\PairedJavaLexicalRetentionLossShare\\%, with median \\PairedJavaLexicalRetentionMedian points, upper quartile \\PairedJavaLexicalRetentionUpperQuartile, minimum \\PairedJavaLexicalRetentionMinimum, and maximum \\PairedJavaLexicalRetentionMaximum; line retention behaves the same, zero for \\PairedJavaLineRetentionTieShare\\% with maximum \\PairedJavaLineRetentionMaximum.",
+      "commands": [
+        "PairedJavaLexicalRetentionGainShare",
+        "PairedJavaLexicalRetentionLossShare",
+        "PairedJavaLexicalRetentionMaximum",
+        "PairedJavaLexicalRetentionMedian",
+        "PairedJavaLexicalRetentionMinimum",
+        "PairedJavaLexicalRetentionTieShare",
+        "PairedJavaLexicalRetentionUpperQuartile",
+        "PairedJavaLineRetentionMaximum",
+        "PairedJavaLineRetentionTieShare"
+      ]
+    },
+    {
+      "template": "Per-budget Seen rates are \\CurrentOnlyAnswerThreeTEDFiveSeenRR/22.5/4.8\\% at TED 5, \\CurrentOnlyAnswerThreeTEDTenSeenRR/32.4/8.0 at 10, \\CurrentOnlyAnswerThreeTEDTwentySeenRR/44.0/13.9 at 20, \\CurrentOnlyAnswerThreeTEDFortySeenRR/50.9/30.4 at 40, \\CurrentOnlyAnswerThreeTEDEightySeenRR/56.0/50.8 at 80, and \\CurrentOnlyAnswerThreeTEDOneSixtySeenRR/57.9/67.6 at 160",
+      "commands": [
+        "CurrentOnlyAnswerThreeTEDEightySeenRR",
+        "CurrentOnlyAnswerThreeTEDFiveSeenRR",
+        "CurrentOnlyAnswerThreeTEDFortySeenRR",
+        "CurrentOnlyAnswerThreeTEDOneSixtySeenRR",
+        "CurrentOnlyAnswerThreeTEDTenSeenRR",
+        "CurrentOnlyAnswerThreeTEDTwentySeenRR"
+      ]
+    },
+    {
+      "template": "On Unseen, Mixed versus current-only Answer-3Seed is 38.8\\% versus \\CurrentOnlyAnswerThreeTEDFiveUnseenRR\\% at 5, 48.0\\% versus \\CurrentOnlyAnswerThreeTEDTenUnseenRR\\% at 10, and 57.6\\% versus \\CurrentOnlyAnswerThreeTEDTwentyUnseenRR\\% at 20",
+      "commands": [
+        "CurrentOnlyAnswerThreeTEDFiveUnseenRR",
+        "CurrentOnlyAnswerThreeTEDTenUnseenRR",
+        "CurrentOnlyAnswerThreeTEDTwentyUnseenRR"
+      ]
+    },
+    {
+      "template": "The gains are \\PromptFrozenMixedCurrentMinusFullSeen/\\PromptFrozenAnswerNineCurrentMinusFullSeen Seen points and \\PromptFrozenMixedCurrentMinusFullUnseen/\\PromptFrozenAnswerNineCurrentMinusFullUnseen Unseen points for Mixed/Answer, with all intervals excluding zero.",
       "commands": [
         "PromptFrozenAnswerNineCurrentMinusFullSeen",
         "PromptFrozenAnswerNineCurrentMinusFullUnseen",

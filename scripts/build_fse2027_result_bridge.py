@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import statistics
 from pathlib import Path
 from typing import Any
 
@@ -831,6 +832,37 @@ def macros(result: dict[str, Any]) -> str:
             values[f"PairedJava{name}Retention"] = pct(metric_row["mean_difference"])
             for cluster, key in (("Student", "user_id"), ("Exercise", "problem_id")):
                 values[f"PairedJava{name}{cluster}CI"] = interval(metric_row["cluster_intervals"][key]["ci95"])
+        # Per-student and per-exercise distribution of the same frozen rows: a mean
+        # difference hides how often the preserved code actually differs for a learner.
+        rows = row["joint_preservation_rows"]
+        for metric_name, name in (("lexical_retention", "Lexical"), ("line_retention", "Line")):
+            differences = sorted(entry[metric_name] for entry in rows)
+            quartiles = statistics.quantiles(differences, n=4)
+            values[f"PairedJava{name}RetentionMedian"] = pct(statistics.median(differences))
+            values[f"PairedJava{name}RetentionUpperQuartile"] = pct(quartiles[2])
+            values[f"PairedJava{name}RetentionMaximum"] = pct(max(differences))
+            values[f"PairedJava{name}RetentionMinimum"] = pct(min(differences))
+            for label, count in (
+                ("GainShare", sum(1 for value in differences if value > 0)),
+                ("TieShare", sum(1 for value in differences if value == 0)),
+                ("LossShare", sum(1 for value in differences if value < 0)),
+            ):
+                values[f"PairedJava{name}Retention{label}"] = pct(count / len(differences))
+        exercises = row["per_exercise"]
+        deficits = {
+            name: exercises["answer"][name]["repairs"] - exercises["progress"][name]["repairs"]
+            for name in exercises["progress"]
+        }
+        values["PairedJavaExerciseCount"] = str(len(deficits))
+        values["PairedJavaExercisesTerminalHigher"] = str(sum(1 for gap in deficits.values() if gap > 0))
+        values["PairedJavaExercisesTied"] = str(sum(1 for gap in deficits.values() if gap == 0))
+        values["PairedJavaExercisesProgressHigher"] = str(sum(1 for gap in deficits.values() if gap < 0))
+        values["PairedJavaExerciseDeficitTotal"] = str(sum(deficits.values()))
+        values["PairedJavaExerciseDeficitMaximum"] = str(max(deficits.values()))
+        worst = max(deficits, key=lambda name: (deficits[name], exercises["progress"][name]["n"]))
+        values["PairedJavaWorstExerciseExamples"] = str(exercises["progress"][worst]["n"])
+        values["PairedJavaWorstExerciseProgressRepairs"] = str(exercises["progress"][worst]["repairs"])
+        values["PairedJavaWorstExerciseTerminalRepairs"] = str(exercises["answer"][worst]["repairs"])
     return "".join(
         f"\\newcommand{{\\{name}}}{{{value}}}\n" for name, value in sorted(values.items())
     )

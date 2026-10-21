@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Verify the paper's deployment-frontier figure and prose against sealed JSON evidence.
+"""Verify the paper's reported deployment frontier against sealed JSON evidence.
 
-The frontier was a table until the figure replaced it, so this check now binds the two
-places the numbers survive: the guard literals in the figure script, which must equal
-the evidence series, and the budget-20 and summary values quoted in the prose.
+The frontier has been a table, a figure, and reported rates in prose. This check binds
+wherever the numbers currently live: the per-budget rates and summary contrasts quoted
+in the manuscript, plus the figure script's guard literals when the paper includes that
+figure.
 """
 
 from __future__ import annotations
@@ -52,13 +53,20 @@ def expected_claims(lsgen: dict[str, Any], current_only: dict[str, Any]) -> list
     lo, hi = (100 * value for value in effect["problem_cluster_95ci"])
     mean = lsgen["mean_over_predeclared_budgets"]["budget_indexed_unconstrained"]
     mean_lo, mean_hi = (100 * value for value in mean["problem_cluster_95ci"])
-    crossover = -100 * lsgen["per_budget"][str(BUDGETS[-1])]["budget_indexed_unconstrained_minus_lsgen"]["rr_difference"]
+    triples = [
+        f"{series['Current $A_3$'][i]}/{series['ZPDPatch'][i]}/{series['LSGen'][i]}"
+        for i in range(len(BUDGETS))
+    ]
+    frontier = (
+        rf"Per-budget Seen rates are {triples[0]}\% at TED 5, " +
+        ", ".join(f"{triple} at {budget}" for triple, budget in zip(triples[1:-1], BUDGETS[1:-1])) +
+        f", and {triples[-1]} at {BUDGETS[-1]}"
+    )
     return [
-        rf"accepted repair for {series['ZPDPatch'][index]}\% of inputs",
-        rf"against {series['LSGen'][index]}\% with always-three LSGen",
-        f"difference of {rate(effect['rr_difference'])} points [{lo:.2f}, {hi:.2f}]",
-        f"mean difference is {rate(mean['difference'])} points [{mean_lo:.2f}, {mean_hi:.2f}]",
-        f"leads by {crossover:.1f} points",
+        frontier,
+        rf"At TED 20, Mixed repairs {series['ZPDPatch'][index]}\% of Seen inputs versus LSGen's {series['LSGen'][index]}\%",
+        f"difference [{lo:.2f}, {hi:.2f}]",
+        f"over LSGen is {rate(mean['difference'])} points [{mean_lo:.2f}, {mean_hi:.2f}]",
     ]
 
 
@@ -72,22 +80,29 @@ def figure_literals(script: Path) -> dict[str, list[float]]:
 def verify(paper: Path, figure_script: Path, lsgen_path: Path, current_only_path: Path) -> dict[str, Any]:
     lsgen, current_only = read_json(lsgen_path), read_json(current_only_path)
     series = expected_series(lsgen, current_only)
-    literals = figure_literals(figure_script)
-    if literals != series:
-        raise ValueError(f"figure guard values differ from evidence: {literals} vs {series}")
-
     paper_text = paper.read_text()
-    if FIGURE not in paper_text or r"\ref{fig:budget}" not in paper_text:
-        raise ValueError("paper does not include and reference the deployment-frontier figure")
+
+    # The frontier reaches the reader either as the generated figure or as reported rates.
+    checked_figure = FIGURE in paper_text
+    if checked_figure:
+        literals = figure_literals(figure_script)
+        if literals != series:
+            raise ValueError(f"figure guard values differ from evidence: {literals} vs {series}")
+        if r"\ref{fig:budget}" not in paper_text:
+            raise ValueError("paper includes the frontier figure without referencing it")
+
     claims = expected_claims(lsgen, current_only)
     missing = [claim for claim in claims if claim not in paper_text]
     if missing:
         raise ValueError("paper frontier prose differs from evidence: " + repr(missing))
+    if series["LSGen"][-1] <= series["ZPDPatch"][-1]:
+        raise ValueError("evidence no longer shows the reported crossover at the broadest budget")
 
     return {
-        "schema_version": 3,
+        "schema_version": 4,
         "paper": str(paper),
-        "figure_script": str(figure_script),
+        "figure_script": str(figure_script) if checked_figure else None,
+        "checked_figure_guards": checked_figure,
         "budgets": list(BUDGETS),
         "verified_series": sorted(series),
         "verified_claims": len(claims),

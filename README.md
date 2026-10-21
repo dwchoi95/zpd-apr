@@ -4,6 +4,21 @@ ZPDPatch는 실제 학생 submission trajectory에서 실행으로 관측된 개
 자동 채굴하고, Progress--Strict--Answer adapter portfolio로 다음 repair를 생성하는
 trajectory-derived program repair 프로젝트이다.
 
+## Current Paper and Project Status
+
+현재 제출 대상은 **ICSE-SEET 2027 Research Paper**다. 최신 파일은 다음과 같다.
+
+- 원고: [`paper/main.pdf`](paper/main.pdf), [`paper/main.tex`](paper/main.tex)
+- 최종 수정·검증 기록: [`paper/submission/revision-response-20261021.ko.txt`](paper/submission/revision-response-20261021.ko.txt)
+- 로컬 익명 재분석 자료: [`paper/submission/icse-seet-analysis-20261021.zip`](paper/submission/icse-seet-analysis-20261021.zip)
+- 근거·재현 범위와 한계: [`ARTIFACT.md`](ARTIFACT.md)
+- 실험 마감 및 방법론 선정: [`analysis_protocols/zpd-final-methodology-report-20261021.ko.md`](analysis_protocols/zpd-final-methodology-report-20261021.ko.md)
+
+실험은 **2026-10-21 13:00 KST에 종료**했다. 아래의 학습·추론·평가·최종화
+명령은 과거 재현 절차를 보존한 것이며, 사용자가 마감을 명시적으로 연장하기
+전에는 실행하거나 재개하지 않는다. 저장 결과의 읽기 전용 검산은 가능하다.
+원고·리뷰·제출 보조자료는 dev에서만 관리하며 main에 공개하지 않는다.
+
 ## Latest Canonical Version
 
 최신 방법론은 **canonical-v5**이다.
@@ -55,10 +70,19 @@ run.py          단일 CLI entrypoint
 src/            데이터, 학습, 생성, 실행, 분석 구현
 scripts/        canonical-v5 및 FSE 2027 재현 스크립트
 tests/          unit/property/artifact tests
+analysis_protocols/ 고정 명세, 실험 마감, 결과와 판정 기록
 paper/          ICSE-SEET 2027 원고 및 과거 FSE 리뷰 기록(dev branch only)
+paper/submission/ 최신 제출용 로컬 자료와 검증 기록
+archive/        과거 산출물과 복구 가능한 로컬 정리본(Git 제외)
 ```
 
 `data/`, `outputs/`, `checkpoints/`, model cache는 Git에 포함하지 않는다.
+
+2026-10-21 로컬 정리에서는 논문 미리보기·빌드 중간 파일, Python/test 캐시,
+구형 루트 임시 스크립트만 `archive/repo-cleanup-20261021/files/`로 옮겼다.
+원래 경로와 SHA-256은 같은 폴더의 `manifest.json`에 기록되어 있다.
+실험 데이터·결과·체크포인트·동결 소스, 리뷰 원문, 최종 PDF/ZIP과 Git 이력은
+정리 대상이 아니다. 과거 `fse2027` 파일명도 근거 추적을 위해 유지한다.
 
 ## Environment
 
@@ -91,7 +115,7 @@ Adapter별 supervision은 다음과 같다.
 Strict와 Progress의 비교 기준은 직전 원본 submission이 아니라 마지막으로 보존된
 submission이다.
 
-## Canonical-v5 Reproduction
+## Canonical-v5 Reproduction (Historical; Do Not Launch)
 
 전체 canonical-v5 데이터와 testcase cache를 준비한다. 이 단계는 이전 canonical
 버전의 산출물에 의존하지 않는다.

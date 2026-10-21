@@ -36,15 +36,22 @@ def findings(text: str) -> dict[str, list[str]]:
 
 def verify(pdf: Path, sources: list[Path]) -> dict[str, object]:
     metadata = command("pdfinfo", str(pdf))
-    author = re.search(r"^Author:\s*(.*?)\s*$", metadata, re.M)
+    author = re.search(r"^Author:[ \t]*(.*)$", metadata, re.M)
     if author and author.group(1) and "anonymous" not in author.group(1).lower():
         raise ValueError(f"author-revealing PDF metadata: {author.group(1)!r}")
     pdf_text = command("pdftotext", str(pdf), "-")
-    if "ANONYMOUS AUTHOR(S)" not in pdf_text.upper():
-        raise ValueError("PDF does not contain the anonymous author marker")
+    texts = {str(source): source.read_text() for source in sources}
+    # acmart prints an anonymous marker; IEEEtran blinds by declaring no author at all.
+    blinded = "ANONYMOUS AUTHOR(S)" in pdf_text.upper() or any(
+        re.search(r"\\author\{", text) and not any(
+            block.strip() for block in re.findall(r"\\author\{([^{}]*)\}", text)
+        )
+        for text in texts.values()
+    )
+    if not blinded:
+        raise ValueError("PDF carries neither an anonymous author marker nor an empty author block")
     scanned = {str(pdf): findings(metadata + "\n" + pdf_text)}
-    for source in sources:
-        scanned[str(source)] = findings(source.read_text())
+    scanned.update({path: findings(text) for path, text in texts.items()})
     violations = {path: rows for path, rows in scanned.items() if rows}
     if violations:
         raise ValueError("author-revealing content found: " + repr(violations))

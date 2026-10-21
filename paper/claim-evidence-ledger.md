@@ -22,6 +22,7 @@ Analysis paths below are relative to
 | Current-only terminal triple repairs 718/997 Seen and 203/250 Unseen inputs. | Abstract, Introduction, RQ1 | `fse2027-current-only-deployment-ladder.json` | LSGen is higher on Seen; current-only Answer-9Choose3 is 205/250 on Unseen. No backend-independent dominance. |
 | Matched Progress targets lose 19.2/11.2 RR points but preserve more source on joint repairs. | RQ2 | `fse2027-paired-target-control-corrected.json` | 7,389 train / 931 validation per arm; Progress may include accepted targets. Joint-success locality is conditional, not education. |
 | Java direct matched-target training reproduces both directions. | RQ2 | `fse2027-paired-java-control.json` | 181 student-held-out inputs; 155 Answer versus 92 Progress successes, 90 joint repairs. Not a peer-control replication. |
+| The Java tradeoff is uneven: terminal targets lead on 15 of 17 exercises (63 extra repairs, up to 12 on one exercise), and the retention advantage is zero for 63.3% of joint-repair students, positive for 31.1%, negative for 5.6%. | RQ2, Abstract, Conclusion | `per_exercise` and `joint_preservation_rows` of `fse2027-paired-java-control.json`, summarized by `scripts/build_fse2027_result_bridge.py` into `PairedJava*` commands | Descriptive distribution over the same frozen rows; it identifies who receives a different repair, not who benefits. Two exercises tie and none favors Progress. |
 | Matched peer replacement increases coverage by 4.3/6.0 points. | RQ2 | `fse2027-cross-user-target-control.json`, `fse2027-peer-distributions.json` | Effect of the entire matching/replacement rule, not isolated user-identity causality. |
 | Candidate breadth contributes 15.1 points on fixed draws; adaptation also contributes. | RQ3 | `fse2027-result-bridge.json`, same-draw and base-model analyses referenced by that bridge | Expected uniform single draw versus identical three-draw union. Do not substitute the separate 20-draw stream's first-draw contrast. |
 | Checkpoint and history benefits are not consistently supported under matched controls. | RQ3 | `fse2027-current-only-factorial-corrected.json`, bridge prompt/cross-fit/checkpoint results | Historical Transformers and vLLM are separate stacks; non-significance is not equivalence. |
@@ -57,6 +58,41 @@ page limits. References deliberately start on a fresh page. Full rendered-page
 inspection is recorded in the rewrite status report and is distinct from an
 independent scientific review.
 
-No anonymous artifact deposit, submission, public push, new experiment, or
-independent paper review was performed in this writing turn. The older Korean
-translation is preserved but is not the synchronized final manuscript.
+The local analysis supplement is `submission/icse-seet-analysis-20261021.zip`.
+It contains pseudonymized, code-free paired outcomes, original aggregate
+results, metric implementations, original-input hashes, and a standalone
+verifier. It does not include checkpoint weights or student programs and
+does not replace full execution reproduction. No anonymous deposit, submission,
+public push, new experiment, or independent paper review was performed in this
+writing turn. The older Korean translation is preserved but is not synchronized.
+
+## Final-review corrections (2026-10-21)
+
+- Unseen Mixed/Zero-shot has 142 joint repairs, of which 122 have both TEDs;
+  matched-target joint populations remain separately 299/154 (TED 278/134).
+- Peer coverage is 5,231/21,416 training and 306/2,685 validation Progress records.
+- Frozen history-selected triples give 70.3/82.4% Mixed and 70.9/80.8% Answer
+  with current-only input; these are not current-only reselected portfolios.
+- Table III's unpaired TED columns are over successful, defined-TED returns.
+- The four-test Holm family is Strict/Progress by Seen/Unseen. Reported
+  McNemar tests assume independent pairs; problem-cluster intervals carry the
+  dependency-aware uncertainty, with 10,000 draws and 95% percentile bounds.
+- Canonical Python uses a subprocess per test (2.5s, 2048MB), not a declared
+  network-disabled Python container. Its exact minor interpreter version is
+  not pinned in the locally retained canonical manifest. Java uses a Java-21
+  network-disabled container with a shared 16GB limit and 15s each for compile
+  and whole-harness execution. The manuscript no longer equates these budgets.
+- Development stability requires four complete, identical outcome vectors
+  with worker order 1/8/8/1 for source and candidate. Regression upper bound
+  is (regressions + unknowns)/n, not a statistical confidence interval.
+- The 341-case paraphrase could not be linked to a retained median-case record
+  locally. It is omitted, rather than asserted from the unrelated largest-gap
+  case file. No quantitative result or stored negative example was removed.
+- LSGen already mines chronological submission pairs and reports 0--3
+  iteration results. See `literature-breadth-correction-20261021.txt`; historical
+  coding is preserved, and the manuscript no longer asserts three missing
+  single-opportunity controls.
+- Algorithm bodies now use algorithmicx in standard IEEE figure floats; no
+  algorithm2e caption overrides, custom font sizes, or user-defined commands.
+- Bibliography fixes cover CodeNet, TIKTOC, LSGen, PyFiXV, Feedback-Ladders and
+  case-protected method names. This is not a new full-text audit of all 62 sources.
