@@ -1,0 +1,209 @@
+{
+  "checked_at": "2026-10-21T14:42:27.786164+09:00",
+  "host": "ubuntu",
+  "project": "/home/cdw/VSCode/zpd-apr",
+  "cutoff_audits": {
+    "outputs/zpd-deadline-20261021/cutoff-1792555200817016443.json": {
+      "sha256": "adca6cc32b466fbc4babb41729b01cb9338877d4f05eb14880a827307fa492b1",
+      "body": {
+        "status": "enforced",
+        "deadline": "2026-10-21T13:00:00+09:00",
+        "checked_at": "2026-10-21T04:00:00.816958+00:00",
+        "stopped_units": [],
+        "remaining_units": [],
+        "artifacts_deleted": false,
+        "experiment_completion_claimed": false,
+        "reason": "user_deadline_not_scientific_failure"
+      }
+    }
+  },
+  "timer": {
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "Result": "success"
+  },
+  "active_units": "",
+  "gpu_processes": "",
+  "matching_live_experiment_processes": [],
+  "canonical_git_status": " M scripts/build_fse2027_result_bridge.py\n M scripts/finalize_fse2027_evidence_remote.sh\n M scripts/verify_fse2027_paper_result_bridge.py\n M scripts/verify_fse2027_pdf_page_limit.py\n M src/repair/evaluate.py\n M tests/test_evaluate_streaming.py\n M tests/test_fse2027_paper_result_bridge.py\n?? .cache/\n?? .config/\n?? .runtime/\n?? .staging/\n?? .sync-incoming/\n?? analysis_protocols/fse2027-review-20260915.json\n?? data-canonical-v5/\n?? scripts/analyze_current_only_factorial.py\n?? scripts/analyze_paired_java_control.py\n?? scripts/audit_fse2027_review_consistency.py\n?? scripts/audit_peer_target_distributions.py\n?? scripts/correct_current_only_whitespace_metric.py\n?? scripts/run_fse2027_current_only_factorial_remote.sh\n?? scripts/run_fse2027_paired_java_remote.sh\n?? scripts/verify_fse2027_review_addendum.py\n?? tests/test_review_consistency_contract.py\n?? third_party/\n?? tmp/\n",
+  "training": {
+    "release_sha256": "44e2e0389e5eb86b2dfd98373be59294f1552b6060e9abd30b8d797db2e12fa0",
+    "source_pins_verified": 661,
+    "full_barrier_verified_this_turn": true,
+    "snapshot_git_status": "",
+    "coordinator": {
+      "ActiveState": "active",
+      "SubState": "exited",
+      "MainPID": "0",
+      "ControlGroup": "",
+      "Result": "success",
+      "ExecMainCode": "1",
+      "ExecMainStatus": "0",
+      "ExecMainExitTimestamp": "Wed 2026-10-21 05:04:11 KST",
+      "WorkingDirectory": "/home/cdw/VSCode/zpd-apr/.runtime/preference-training-20261020-v1"
+    },
+    "outer_sha256": "ce663bf02760b210a5f8ce47d465cdc65cb80b88491cdd4effdd9acc61b1fd68",
+    "outer": {
+      "decision": "ready_for_inference",
+      "files_sha256": {
+        "REPORT.json": "dbc1f470f310e44f26812506a87afbdf020ae1a9e4d0daa7874e488eabd28805"
+      },
+      "model_promotion": false,
+      "phases": {
+        "reference-C": "0dd0f79e18122a84f701c0f17a2697d88951ea9f128acad977b9a5a4e2878bdd",
+        "reference-H": "b6fe507649810949d2c8d628bc8274fffc3a85a558238aa47b01620df14e4a1a",
+        "train-C": "b9bc3d593c2fa31014a6538157fb59b53d7f169a4f3d878151cf63be380a2cf8",
+        "train-H": "4fdd89012f2444b96af244aad29f0b8582c56fbcb539de9fc3550c3e1785f1c9"
+      },
+      "release_sha256": "44e2e0389e5eb86b2dfd98373be59294f1552b6060e9abd30b8d797db2e12fa0",
+      "status": "complete",
+      "version": "matched_immutable_reference_dpo_release_v1"
+    },
+    "report_sha256": "dbc1f470f310e44f26812506a87afbdf020ae1a9e4d0daa7874e488eabd28805",
+    "report": {
+      "actual_fit": true,
+      "arms": {
+        "C": {
+          "actual_fit": true,
+          "arm": "C",
+          "completed_epochs": 1,
+          "completed_examples": 19199,
+          "config": {
+            "accumulation_pairs": 16,
+            "adam_betas": [
+              0.9,
+              0.999
+            ],
+            "adam_epsilon": 1e-8,
+            "beta": 0.1,
+            "checkpoint": "fixed_final_epoch",
+            "dropout": 0,
+            "epochs": 1,
+            "learning_rate": 0.000005,
+            "max_grad_norm": 1,
+            "microbatch_pairs": 1,
+            "optimizer": "torch_adamw",
+            "retries": 0,
+            "scheduler": "cosine",
+            "seed": 2027,
+            "shuffle": false,
+            "validation": "descriptive_end_only",
+            "warmup_ratio": 0.03,
+            "weight_decay": 0
+          },
+          "exclusions": 0,
+          "final_adapter": {
+            "sha256": "42e54d7de5fa69398d9088c8f920c420d70c8b71e3b0628e818bfd1c47ccfc37",
+            "tensors": 392,
+            "trainable_parameters": 40370176
+          },
+          "identity_examples": 10,
+          "initial_adapter": {
+            "sha256": "7814b439c8d309cb155439333f7e20c4c2e6767d8b70329f550283798b16f04a",
+            "tensors": 392,
+            "trainable_parameters": 40370176
+          },
+          "method_improvement_established": false,
+          "model_promotion": false,
+          "optimizer_steps": 1200,
+          "order_sha256": "c422974efda9f3af7f8f45fd9269dea4f6a745c6520603df7b7f96c07aeb0591",
+          "reference_complete_sha256": "2bc7ddcdf197d02c85e1f60ddc83a444aad85134448e872d297e168ed3445e55",
+          "reference_immutable": true,
+          "status": "complete",
+          "total_examples": 19199,
+          "train_mean_dpo_loss": 0.03967384445562197,
+          "truncation": false,
+          "validation_examples": 4365,
+          "validation_mean_dpo_loss": 0.0032955625395204875,
+          "validation_role": "descriptive_only_no_checkpoint_selection",
+          "version": "matched_immutable_reference_dpo_v1"
+        },
+        "H": {
+          "actual_fit": true,
+          "arm": "H",
+          "completed_epochs": 1,
+          "completed_examples": 19199,
+          "config": {
+            "accumulation_pairs": 16,
+            "adam_betas": [
+              0.9,
+              0.999
+            ],
+            "adam_epsilon": 1e-8,
+            "beta": 0.1,
+            "checkpoint": "fixed_final_epoch",
+            "dropout": 0,
+            "epochs": 1,
+            "learning_rate": 0.000005,
+            "max_grad_norm": 1,
+            "microbatch_pairs": 1,
+            "optimizer": "torch_adamw",
+            "retries": 0,
+            "scheduler": "cosine",
+            "seed": 2027,
+            "shuffle": false,
+            "validation": "descriptive_end_only",
+            "warmup_ratio": 0.03,
+            "weight_decay": 0
+          },
+          "exclusions": 0,
+          "final_adapter": {
+            "sha256": "1fee2e70680d6abeffcef22bb435fd14e35995249808536be3c0713ef6caccae",
+            "tensors": 392,
+            "trainable_parameters": 40370176
+          },
+          "identity_examples": 10,
+          "initial_adapter": {
+            "sha256": "720608e5bd14408630a51dbff57bebc5fa86379e3126c17ef16f8939d8824fa2",
+            "tensors": 392,
+            "trainable_parameters": 40370176
+          },
+          "method_improvement_established": false,
+          "model_promotion": false,
+          "optimizer_steps": 1200,
+          "order_sha256": "c422974efda9f3af7f8f45fd9269dea4f6a745c6520603df7b7f96c07aeb0591",
+          "reference_complete_sha256": "4b826f603ccf9510fdbc65dfe7a240ef591fd3e373433d176cc510f1b8c6ac81",
+          "reference_immutable": true,
+          "status": "complete",
+          "total_examples": 19199,
+          "train_mean_dpo_loss": 0.039188104293206814,
+          "truncation": false,
+          "validation_examples": 4365,
+          "validation_mean_dpo_loss": 0.0049221065933276464,
+          "validation_role": "descriptive_only_no_checkpoint_selection",
+          "version": "matched_immutable_reference_dpo_v1"
+        }
+      },
+      "completed_examples": 38398,
+      "decision": "ready_for_inference",
+      "development_gate": {
+        "decision": "proceed_to_distinct_confirmation_if_all_else_hold_and_diagnose",
+        "historical_fourteen_arm_gates_evaluated": false,
+        "require": [
+          "H strict pooled stable-AC greater than each C HS U",
+          "H regression and unknown counts nonincreasing versus C including regression upper bound",
+          "H stable-AC nonworse than C in all five folds",
+          "all execution complete"
+        ]
+      },
+      "educational_benefit_established": false,
+      "model_promotion": false,
+      "performance_measured": false,
+      "status": "complete",
+      "total_examples": 38398
+    },
+    "completion_time": "2026-10-21T05:04:11.055758+09:00",
+    "failures": []
+  },
+  "latest_families": [
+    "zpd-counterexample-revision-20261020",
+    "zpd-deadline-20261021",
+    "zpd-deanchored-diagnosis-20261020",
+    "zpd-deanchored-revision-20261020",
+    "zpd-likelihood-selection-20261020",
+    "zpd-preference-identity-pilot-20261020",
+    "zpd-preference-pilot-20261020",
+    "zpd-preference-training-20261020",
+    "zpd-revision-diagnosis-20261019"
+  ]
+}

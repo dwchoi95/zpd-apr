@@ -1,0 +1,48 @@
+{
+  "kind": "deadline_analysis_checks_not_experiment_completion",
+  "recorded_at": "2026-10-21T14:55:40.309383+09:00",
+  "inventory_sha256": "8d2ba716c6f87c73740ae5e13ebda730b630dfd021faff5a6aa2564732f74a43",
+  "summary_unit_tests": {
+    "passed": 6,
+    "failed": 0
+  },
+  "saved_inventory_reproduced": true,
+  "recent_result_fold_totals_and_gate_boolean_checks": 12,
+  "local_preference_terminal_verifier": "passed",
+  "last_remote_process_recheck": {
+    "all_user_processes_with_project_cwd": [],
+    "running_zpd_units": [],
+    "gpu_compute_processes": [],
+    "frozen_training_snapshot_git_status": "clean",
+    "canonical_tracked_dirty_files_preserved": 7
+  },
+  "canonical_paper_remote_comparison": {
+    "current_only_deployment_ladder": "same_sha256",
+    "paired_java_control": "same_sha256",
+    "result_bridge": "different_local_amendment_vs_remote_canonical",
+    "corrected_current_only_factorial": "absent_at_remote_canonical_analysis_path",
+    "public_execution_report": "same_sha256"
+  },
+  "automatic_followup_gap": {
+    "training_family_delivery_entry": null,
+    "deadline_delivery": {
+      "claimed_at": "2026-10-21T05:31:51.680542+00:00",
+      "config_sha256": "f39759d7d17b917935e89863bd45b4c10352209370c44402955b41f4784055c9",
+      "event": {
+        "event_id": "167af6ca85369a22085e76759bd47eaffbb96745ac353d17e8085fb40f0c8ae0",
+        "family": "zpd-deadline-summary-20261021",
+        "policy_sha256": "c8810aaa274bd5e8e7448a31a35eea7ce38298dbb01974972050d27cf3ce6c2f",
+        "state": "deadline"
+      },
+      "queue_message_id": "01a15cf2-2b05-7ff0-a4c3-f690aabd8ad1",
+      "queued_at": "2026-10-21T05:32:17.350232+00:00",
+      "status": "queued",
+      "thread_id": "019fa3df-f13d-7cf2-8e2d-5a2a9a84d3d5"
+    },
+    "cause_not_established": true
+  },
+  "new_experiments": 0,
+  "new_continuation_registrations": 0,
+  "deletions": 0,
+  "paper_main_or_model_pointer_changes": 0
+}
