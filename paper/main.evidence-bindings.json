@@ -184,6 +184,12 @@
       ]
     },
     {
+      "template": "most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of \\PairedJavaLexicalRetentionGainMedian points, and a few get less.",
+      "commands": [
+        "PairedJavaLexicalRetentionGainMedian"
+      ]
+    },
+    {
       "template": "Per-budget Seen rates are \\CurrentOnlyAnswerThreeTEDFiveSeenRR/22.5/4.8\\% at TED 5, \\CurrentOnlyAnswerThreeTEDTenSeenRR/32.4/8.0 at 10, \\CurrentOnlyAnswerThreeTEDTwentySeenRR/44.0/13.9 at 20, \\CurrentOnlyAnswerThreeTEDFortySeenRR/50.9/30.4 at 40, \\CurrentOnlyAnswerThreeTEDEightySeenRR/56.0/50.8 at 80, and \\CurrentOnlyAnswerThreeTEDOneSixtySeenRR/57.9/67.6 at 160",
       "commands": [
         "CurrentOnlyAnswerThreeTEDEightySeenRR",

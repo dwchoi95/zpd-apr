@@ -839,6 +839,8 @@ def macros(result: dict[str, Any]) -> str:
             differences = sorted(entry[metric_name] for entry in rows)
             quartiles = statistics.quantiles(differences, n=4)
             values[f"PairedJava{name}RetentionMedian"] = pct(statistics.median(differences))
+            gains = [value for value in differences if value > 0]
+            values[f"PairedJava{name}RetentionGainMedian"] = pct(statistics.median(gains))
             values[f"PairedJava{name}RetentionUpperQuartile"] = pct(quartiles[2])
             values[f"PairedJava{name}RetentionMaximum"] = pct(max(differences))
             values[f"PairedJava{name}RetentionMinimum"] = pct(min(differences))

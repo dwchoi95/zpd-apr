@@ -1,0 +1,29 @@
+Correction to the retained eight-study breadth audit
+==================================================
+The original CSV/Markdown are preserved as historical coding, not silently
+overwritten. The original LSGen row described an arXiv version and stated that
+no one-iteration equal-generation-budget control was located. Rechecking the
+published AAAI 2026 paper shows LSGENbase vs LSGENiter3 (Table 2), one-iteration
+ablations (Table 3), and an iteration-count curve from 0 to 3 (Figure 3b).
+It is therefore incorrect to suggest LSGen has no single-stage/iteration
+comparison. Adaptive retrieval iterations and a fixed independent-draw union
+are different interventions; this distinction does not invalidate LSGen's
+own ablation. The manuscript no longer uses the three-of-five missing-control
+count. The five multi-opportunity entries and eight-study scope are unchanged.
+
+Source: https://ojs.aaai.org/index.php/AAAI/article/view/40300/44261
+Publication: AAAI 40(36), 30467-30475 (2026), DOI 10.1609/aaai.v40i36.40300.
+LSGen also builds retrieval pairs from each user's chronological incorrect and
+later-correct submissions (Solution Retrieval Database Construction, p.30469).
+Consequently the manuscript does not claim first use of submission trajectories.
+
+Bibliographic corrections in the same writing pass:
+CodeNet: NeurIPS Datasets and Benchmarks 1 (2021), not arXiv volume 1035.
+TIKTOC: LAK 2025, 238-248, DOI 10.1145/3706468.3706500.
+PyFiXV: EDM 2023, 370-377, DOI 10.5281/zenodo.8115653.
+Feedback-Ladders: EDM 2024, 947-951, DOI 10.5281/zenodo.12730007.
+Official metadata:
+https://datasets-benchmarks-proceedings.neurips.cc/paper_files/paper/2021/hash/a5bfc9e07964f8dddeb95fc584cd965d-Abstract-round2.html
+https://vtechworks.lib.vt.edu/server/api/core/bitstreams/878f8873-469e-4e9b-9a14-7ab7874f2923/content
+https://educationaldatamining.org/EDM2023/proceedings/2023.EDM-short-papers.37/2023.EDM-short-papers.37.bib
+https://educationaldatamining.org/edm2024/proceedings/2024.EDM-posters.114/2024.EDM-posters.114.bib

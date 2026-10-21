@@ -1,0 +1,28 @@
+{
+  "byte_identical": true,
+  "checked_in": "paper/fse2027-result-bridge.tex",
+  "commands": 556,
+  "expected": "outputs/split-90-10/canonical-v5/analysis/fse2027-result-bridge.tex",
+  "paper": "paper/main.tex",
+  "referenced_commands": 141,
+  "required_prefixes": [
+    "Scale",
+    "CodeWorkoutProblem",
+    "Prompt",
+    "CrossFit",
+    "VerdictOrder",
+    "CurrentOnly",
+    "ExerciseSensitivity",
+    "Stochastic",
+    "SeenHidden",
+    "SeenOverlap",
+    "Sweep",
+    "CheckpointStochastic",
+    "BaseStochastic",
+    "DifficultyMatched",
+    "CrossUserTarget",
+    "AllPrefix"
+  ],
+  "schema_version": 1,
+  "sha256": "763ecd40999992494d4a99696217aeedbbf7b9637184fd76302b4707ee70fd13"
+}

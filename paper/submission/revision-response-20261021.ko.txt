@@ -1,0 +1,106 @@
+ICSE-SEET 최종 리뷰 지적 반영 기록 — 2026-10-21
+
+범위
+이번 작업은 원고 수정과 보존 결과의 검산이다. 새 실험, 학습, 추론,
+testcase 실행, 서버 작업, 모델 승격, 공개 업로드 또는 main push는 하지 않았다.
+이전 독립 리뷰 원문과 부정적 결과는 그대로 보존했다. 이 기록은 새로운
+독립 심사나 Overall Merit 판정이 아니다.
+
+주요 수정
+1. 통계: 기본 구간을 95% percentile problem-cluster bootstrap,
+   10,000회로 명시했다. instance/equal-problem 가중, Java의 student/exercise
+   cluster, 네 개 Strict/Progress × Seen/Unseen Holm family를 구별했다.
+   McNemar의 독립 pair 가정을 명시하고 군집 구간의 대용으로 쓰지 않았다.
+2. 분모: peer-match는 train 5,231/21,416, valid 306/2,685이다.
+   Unseen Mixed/Zero-shot의 전체 공동 성공 142와 defined-TED 122를 구분했다.
+   matched-target의 299/154와 defined-TED 278/134는 다른 비교다.
+3. 측정값: TED의 성공·파싱 가능 조건, SequenceMatcher retention,
+   percentage-point 단위, stable/unknown 정의, (regression+unknown)/n
+   상한을 명시했다. 통계적 신뢰상한으로 잘못 읽히지 않게 했다.
+4. 조건: matched Python/Java의 current-only 입력, 3개 seed 순서,
+   greedy decoding, 동일 controller, batch/accumulation 및 checkpoint 선택을
+   명시했다. frozen-history-selected triple과 current-only reselection을 분리했다.
+   Java matched train/valid 600/118을 추가했다.
+5. 실행 환경: 코드를 대조하니 Python subprocess와 Java container의 제한이
+   달랐다. Python 2.5초/test·2048MB, Java 15초 compile + 15초 whole harness·
+   shared 16GB로 고쳤다. Python minor version이 보존 manifest에 고정되지
+   않았다는 한계도 표시했다. 현재 서버 버전을 과거 실험 버전으로 대신 쓰지 않았다.
+6. 문헌: LSGen도 시간순 제출 pair와 0–3 iteration 비교를 사용한다는 점을
+   원 출판본으로 확인했다. 부정확하게 읽힐 수 있는 3/5 missing-control
+   주장을 제거하고, 원래 eight-study coding와 정정 기록을 함께 보존했다.
+   연구의 차이는 progress-target 및 matched-source/fixed-candidate 통제로 명시했다.
+7. 서지: CodeNet vol.1035, TIKTOC 235–250을 수정했다. LSGen, PyFiXV,
+   Feedback-Ladders는 정식 출판 정보로 갱신했고 주요 방법명 대소문자를 보호했다.
+   상세 출처 URL은 literature-breadth-correction-20261021.txt에 기록했다.
+8. 사례: '341 compact joint repairs'의 median 예시를 연결할 보존 record가
+   로컬에 없었다. 다른 largest-gap record로 대체해 출처를 꾸미지 않고 해당
+   설명을 원고에서 제외했다. 실험값·원본 사례 파일은 삭제하지 않았다.
+9. 형식: algorithm2e 독립 caption을 IEEE figure + algorithmicx로 교체했다.
+   사용자 정의 newcommand, 글꼴/여백 축소 없이 본문 10쪽+참고문헌 2쪽이다.
+   12쪽 전부 렌더링해 읽었고, 표·그림이 첫 언급 전에 보이도록 배치했다.
+10. 재현성: code-free paired outcomes, metric code, aggregate evidence,
+    condition manifest와 hashes를 익명 로컬 ZIP으로 준비했다. standalone
+    verifier는 GPU·네트워크·학생 코드 실행 없이 결과를 검산한다.
+
+검증 결과
+PASS — IEEEtran[10pt,conference], 제목 24pt, 본문 10pt, 10+2 page boundary.
+PASS — 20 embedded fonts; Type 3 없음; 저자 metadata 없음.
+PASS — overfull/undefined reference/multiply-defined 경고 없음.
+PASS — 표 7개, 그림 3개의 caption/first-reference 순서.
+PASS — 인용 62개와 렌더링 참고문헌 62개 일치, 누락/중복 key 없음.
+PASS — 27개 문맥별 binding, 108개 값이 고정 evidence bridge와 일치.
+PASS — 관련 회귀 테스트 33개.
+PASS — matched RR, PR, IR의 군집 구간, 공동 TED 구간/분모, retention 평균 재현.
+       Python Seen: Answer 530 / Progress 339 / 공동 299, 전체 997.
+       Python Unseen: Answer 192 / Progress 164 / 공동 154, 전체 250.
+       Java: Answer 155 / Progress 92 / 공동 90, 전체 181.
+PASS — 네 개 history-removal 검정의 Holm 최소값 0.31341552734375 재현.
+
+제출 전 남은 사항 — PASS로 취급하지 않음
+- 익명 저장소 업로드/지속 URL/실제 제출은 하지 않았다. ZIP은 로컬 산출물이다.
+- 원래 Python minor-version 기록과 checkpoint weights의 파일별 검증은 미완료다.
+  이 ZIP은 저장 결과 재분석용이며 전체 학습·실행 재현 패키지가 아니다.
+- 참고문헌 62편 모두의 전문과 모든 서지 필드를 이번에 재검증한 것은 아니다.
+  이전 독립 인용 감사의 접근 제한/검증 수준은 그 원문에 남아 있다.
+- 수정본에 대한 새로운 독립 Overall Merit 점수는 없다. Accept 수준이라고
+  판정하지 않았다. 재심은 별도의 새 독립 reviewer에게 맡겨야 한다.
+- 원래 평가에서의 LSGen 우위, Progress correctness 저하, C/H/HS/U gate 실패,
+  마지막 preference run의 repair 평가 미완료는 모두 그대로 남겼다.
+
+산출물
+paper/main.pdf
+paper/submission/icse-seet-analysis-20261021.zip
+paper/submission/icse-seet-analysis-verification-20261021.json
+paper/submission/icse-seet-format-verification-20261021.json
+paper/submission/icse-seet-evidence-verification-20261021.json
+
+SEET 적합성 보강 — 2026-10-21 후속
+ICSE-SEET 2027 CFP(연구 논문 10+2쪽, IEEEtran 10pt, double-blind, Conclusion
+뒤 Data Availability)와 ICSE 2026 SEET 채택 논문 36편을 대조해, 트랙 기준의
+Relevance/Significance를 겨냥한 재프레이밍만 수행했다. 새 실험은 없다.
+사용한 수치는 전부 보존된 fse2027-paired-java-control.json의 재집계다.
+1. 제목과 초록을 피드백 산출물 관점으로 바꾸고, CS1 Java를 1차 교육 맥락으로
+   올리고 CodeNet을 규모 코퍼스로 재배치했다. CodeWorkout의 과목 맥락을
+   Experimental Settings에 추가했다.
+2. RQ2에 코호트 평균이 아닌 분포를 추가했다: exercise 17개 중 terminal이 15개
+   우위·2개 동률·0개 열위, 누락 수리 63건이 최대 12건까지 한 exercise에 집중,
+   joint repair 90건의 lexical retention 차이는 63.3% 동일·31.1% 양·5.6% 음,
+   중위 0.0, 상사분위 4.4, 최소 -21.1, 최대 49.7.
+3. 학생이 받는 산출물을 보여주는 사례 그림(Figure 4)을 추가했다. 공개된
+   CodeNet 프로그램만 썼다: 수강생 제출물은 데이터 사용조건상 게재하지 않는다.
+4. Data Availability를 CFP 요구에 맞춰 미공개 사유(데이터 재배포 조건, 가중치
+   용량)와 공유 범위로 다시 썼다.
+5. 쪽수를 맞추기 위해 TED 예산표와 factorial표를 본문 수치 문장으로 흡수하고,
+   corpus/development 표를 단일 컬럼으로 바꿨다. 수치는 모두 유지했다.
+6. 교육적 이득 주장은 추가하지 않았다. 분포는 누가 다른 수리를 받는지를
+   기술하며, 누가 학습상 이득을 얻는지는 측정하지 않았다.
+검산: 형식 10+2쪽·플로트 9개 순서, bridge byte-identical(참조 명령 140개),
+frontier 전 예산 수치, 보충자료 재집계가 원고 수치와 일치.
+
+대체된 PDF SHA-256 (SEET 적합성 보강 이전)
+999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
+보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
+추적 대상이 아니었으므로 보관되지 않았다.
+
+최종 PDF SHA-256
+ef354af23bed6aae5da40f3e7b56a97dbe45258c6c405d00867281e614257d01
