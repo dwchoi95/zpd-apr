@@ -113,8 +113,8 @@ Introduction 퇴고 — 2026-10-22
 삭제했다. 수치와 통제 서술은 하나도 바꾸지 않았다. 플로트 배치가 밀려 Table I, Figure 2, Figure 3의
 소스 위치를 재조정했다.
 검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(참조 명령 141개), frontier 수치, 보충자료
-22개 파일 재검증. 영어 빌드 소스 SHA-256 2c7ebbd6f536a06ad1fd15dec2767cfa876818048d03d01444bde148a6eac0ec
-한글 작업본 SHA-256 5d9f53ad59e78136c8fb09bbc9c0adc32b130fb2df213003ada438b0b8d98940
+22개 파일 재검증. 영어 빌드 소스 SHA-256 a6a0822be41cd9d2a80068d592ae765c0417dbaf032121f42201b6af39a30ca8
+한글 작업본 SHA-256 85e218db900d11ece70f24f43134ad2914d65b8b6089a7c63da6ef42aadc302c
 
 Introduction 첫 문단 재검토 — 2026-10-22
 1. gate 선취·과장 제거: "An execution gate can hold correctness fixed"를 "Validation decides whether the
@@ -190,10 +190,25 @@ Domain -> SOTA -> Gap -> Proposal+Algorithm -> Results -> Contributions 순서�
 frontier 검증은 main.tex를 읽는다. 둘의 영어 본문은 왕복 테스트가 바이트 단위로 보장한다.
 검산: 영어 빌드 10+2쪽, 플로트 8개 순서, overfull 0, 미정의 참조 0, bridge byte-identical(141).
 
+Abstract 재작성 — 2026-10-22
+하우스 가이드라인(abstract.md)의 move 구조에 맞춰 다시 썼다. 268 -> 240 words, 10문장.
+1. 규칙 1: 'We present X, a ... that ...'를 한 문장으로 S1에 올렸다. 참조 논문의 동사(enhances,
+   guides)는 개선을 주장하므로 쓰지 않고, 'aims repair feedback at a student's own code'로 적었다.
+   우리 기법은 coverage를 개선하지 않기 때문이다.
+2. 규칙 3: 신조어 trajectory-conditioned를 Gap 문장에서 정의했다. 이전 Abstract에는 없었다.
+3. M4(Goal)가 빠져 있어 추가했다. 가이드라인 4/4 논문에 모두 있는 move다.
+4. 규칙 1: 마지막 문장을 결과(유지 결정)로 되돌리고 비주장은 S9 끝절로 옮겼다. 규칙 5는 한계를
+   금하지만, 학습 효과를 주장하지 않는다는 선언은 유지했다.
+5. P1에서 제거한 'reads it beside their own code' 가정과 'different events'를 Abstract에서도
+   없앴고, 'failing exercise submission'은 버기 프로그램 통일에 맞춰 삭제했다. CS1은 약어 규칙대로
+   Introductory Programming (CS1)으로 전개했다. 콜론은 0개다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 순서, overfull 0, 미정의 0, bridge byte-identical(141),
+frontier, 익명성, 보충자료 22개 파일, 테스트 35개.
+
 대체된 PDF SHA-256 (SEET 적합성 보강 이전)
 999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
 보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
 추적 대상이 아니었으므로 보관되지 않았다.
 
 최종 PDF SHA-256
-2c340942a2b56d979fd34892f8f02dca83c8afffa11ae3de725f3618ef5ccdfa
+16189cdff6848404f2b38a6971c7437cc83eb03c4a5edbfdb3e53188d6087614

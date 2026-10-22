@@ -17,20 +17,20 @@
       "caption_page_column_y": [
         2,
         1,
-        446.0
+        433.0
       ],
       "first_reference_page_column_y": [
         2,
         1,
-        698.0
+        686.0
       ],
       "caption_xy": [
         422.0,
-        446.0
+        433.0
       ],
       "first_reference_xy": [
         322.0,
-        698.0
+        686.0
       ]
     },
     "Table II": {
@@ -117,20 +117,20 @@
       "caption_page_column_y": [
         2,
         0,
-        543.0
+        519.0
       ],
       "first_reference_page_column_y": [
         2,
         1,
-        231.0
+        212.0
       ],
       "caption_xy": [
         106.0,
-        543.0
+        519.0
       ],
       "first_reference_xy": [
         322.0,
-        231.0
+        212.0
       ]
     },
     "Figure 2": {
@@ -184,6 +184,6 @@
   "font_count": 20,
   "embedded_fonts": true,
   "type3_fonts": false,
-  "sha256": "2c340942a2b56d979fd34892f8f02dca83c8afffa11ae3de725f3618ef5ccdfa",
-  "source_sha256": "2c7ebbd6f536a06ad1fd15dec2767cfa876818048d03d01444bde148a6eac0ec"
+  "sha256": "16189cdff6848404f2b38a6971c7437cc83eb03c4a5edbfdb3e53188d6087614",
+  "source_sha256": "a6a0822be41cd9d2a80068d592ae765c0417dbaf032121f42201b6af39a30ca8"
 }
