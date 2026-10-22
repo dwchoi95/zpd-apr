@@ -6,9 +6,9 @@
   "heading_pages": {
     "Introduction": 1,
     "Preliminaries": 2,
-    "Our Approach": 3,
+    "Our Approach": 4,
     "Experiments": 5,
-    "Related Work": 9,
+    "Related Work": 10,
     "Conclusion": 10,
     "Data Availability": 10
   },
@@ -17,20 +17,20 @@
       "caption_page_column_y": [
         3,
         1,
-        110.0
+        280.0
       ],
       "first_reference_page_column_y": [
         3,
         1,
-        361.0
+        530.0
       ],
       "caption_xy": [
         422.0,
-        110.0
+        280.0
       ],
       "first_reference_xy": [
         322.0,
-        361.0
+        530.0
       ]
     },
     "Table II": {
@@ -42,7 +42,7 @@
       "first_reference_page_column_y": [
         5,
         1,
-        434.0
+        566.0
       ],
       "caption_xy": [
         158.0,
@@ -50,74 +50,74 @@
       ],
       "first_reference_xy": [
         312.0,
-        434.0
+        566.0
       ]
     },
     "Table III": {
       "caption_page_column_y": [
         5,
         1,
-        243.0
+        376.0
       ],
       "first_reference_page_column_y": [
         6,
         1,
-        518.0
+        650.0
       ],
       "caption_xy": [
         420.0,
-        243.0
+        376.0
       ],
       "first_reference_xy": [
         312.0,
-        518.0
+        650.0
       ]
     },
     "Table IV": {
       "caption_page_column_y": [
         6,
         1,
-        384.0
+        515.0
       ],
       "first_reference_page_column_y": [
         7,
         0,
-        267.0
+        399.0
       ],
       "caption_xy": [
         419.0,
-        384.0
+        515.0
       ],
       "first_reference_xy": [
         49.0,
-        267.0
+        399.0
       ]
     },
     "Table V": {
       "caption_page_column_y": [
         7,
         1,
-        54.0
+        138.0
       ],
       "first_reference_page_column_y": [
         7,
         1,
-        518.0
+        662.0
       ],
       "caption_xy": [
         421.0,
-        54.0
+        138.0
       ],
       "first_reference_xy": [
         312.0,
-        518.0
+        662.0
       ]
     },
     "Figure 1": {
       "caption_page_column_y": [
         2,
         1,
-        423.0
+        569.0
       ],
       "first_reference_page_column_y": [
         3,
@@ -126,7 +126,7 @@
       ],
       "caption_xy": [
         369.0,
-        423.0
+        569.0
       ],
       "first_reference_xy": [
         49.0,
@@ -142,7 +142,7 @@
       "first_reference_page_column_y": [
         4,
         0,
-        283.0
+        447.0
       ],
       "caption_xy": [
         49.0,
@@ -150,27 +150,27 @@
       ],
       "first_reference_xy": [
         49.0,
-        283.0
+        447.0
       ]
     },
     "Figure 3": {
       "caption_page_column_y": [
         7,
         1,
-        337.0
+        432.0
       ],
       "first_reference_page_column_y": [
-        7,
-        1,
-        638.0
+        8,
+        0,
+        112.0
       ],
       "caption_xy": [
         312.0,
-        337.0
+        432.0
       ],
       "first_reference_xy": [
-        312.0,
-        638.0
+        49.0,
+        112.0
       ]
     }
   },
@@ -184,6 +184,6 @@
   "font_count": 20,
   "embedded_fonts": true,
   "type3_fonts": false,
-  "sha256": "43afbe646c8b2e478bef26dd9c6deaaa6f32edcf9dc202055057a339b4511c0b",
-  "source_sha256": "18bbf436ea8868fd185b097d1fec27e89d0866c24ca4a9676f77568bbcc71efb"
+  "sha256": "03476d746ee6efe3bbec0fe839d457c5d8cff108d1e8301a8589bb7be989e302",
+  "source_sha256": "e73515926d26aa2f566fa78acfaeff5492acecda45cf09701bde27fb4578f46a"
 }

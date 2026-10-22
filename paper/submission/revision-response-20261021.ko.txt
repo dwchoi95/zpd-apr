@@ -781,7 +781,43 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (P1 순서열 추가 이전)
 375af9ad006d1a38a60a5d3ca881a41d46218a78ebe1452783909e67b4e987d3
 
-최종 PDF SHA-256
+P6(Contributions)을 사용자 제공 예시안 bullet 틀로 재작성 — 2026-10-23
+예시안의 bullet 세 개는 각각 뚜렷한 틀을 가진다. Observation은 관찰 진술과 자기 측정 수치와 배수를
+놓고 "This motivates ..."로 닫는다. New technique은 "We present X, a <유형> technique for
+<도메인>"으로 열고 "Our core technical contribution is twofold"로 두 항을 세운 뒤 실용 속성으로
+닫는다. Evaluation은 발견이 아니라 평가 설계를 적는다. 대상 수와 비교 대상과 통제군, "in terms of"
+지표 목록, 산출물 공개 문장이다. 우리 P6은 세 bullet 모두 틀을 벗어나 있었다.
+1. Observation에 수치와 배수를 넣었다. 이전 bullet은 수치가 하나도 없고 "This motivates" 자리도
+   없었으며, 신조어 정의를 여기 넣어 두 번째 bullet과 역할이 겹쳤다. 이제 반환물이 학생의 프로그램에
+   가까이 머물러야 할 때 무엇이 일어나는지를 보이고, 88.27 AST 편집과 budget 20에서의 13.9\% 대
+   44.0\%, 곧 3.2배를 제시한 뒤 target을 학생 자신의 trajectory에서 얻는 수리의 필요성으로 닫는다.
+   배수 3.2는 44.0/13.9에서 나오며 둘 다 Table III와 frontier 검증기가 고정하는 수치다. 예시안의
+   학생 기준선 대비 배수는 우리에게 대응 측정치가 없으므로, 공표된 수치만으로 가능한 배수를 썼다.
+2. New technique을 가이드라인이 지목한 틀로 바꿨다. 이전에는 "We specify Mine, Train, and Select,
+   including ..."으로 명세를 나열해 무엇이 기술적으로 새로운지가 드러나지 않았다. 이제 기법을
+   유형과 도메인으로 소개하고 "Our core technical contribution is twofold"로 두 항을 세운다. 첫째는
+   target을 accepted solution이 아니라 실행 증거 규칙에 따라 그 학생의 이후 제출에서 얻는 것이고,
+   둘째는 그 규칙 교환이 예제 수와 후보 예산을 함께 움직이므로 둘을 고정하고 맞춘 동료 target을
+   통제군으로 두는 것이다. 예시안이 "requires no LLM"으로 닫듯 우리는 학습자 모형이 필요 없고
+   통과율을 낮추지 않는 gate 뒤에서 입력마다 세 번 호출한다는 실용 속성으로 닫는다.
+3. Evaluation을 평가 설계로 바꿨다. 이전에는 발견을 서술했다. 이제 대상(382개 문제의 Python 제출
+   1,247개, CS1 exercise 17개의 Java 제출 181개), 비교 대상(가장 최신의 선행 기법)과 통제군(target의
+   출처, prompt, decoder, 후보 예산), 그리고 "in terms of" 지표 세 개(선언된 edit budget 아래의
+   수리율, source 보존율, 제출물로부터의 AST 거리)를 적는다. 예시안은 산출물을 익명 저장소 URL로
+   공개하지만 우리는 공개 링크를 두지 않으므로 짝지은 결과와 조건 manifest, 지표 코드, 주장-증거
+   대응표를 익명 보충자료로 제공한다고 적었다.
+4. 도입 줄을 가이드라인 문구에 맞춰 "We summarize our contributions below"로 바꿨다. 예시안과
+   가이드라인은 이 자리에 콜론을 쓰지만, 사용자의 콜론 자제 지침에 따라 마침표를 유지했다.
+   Introduction의 콜론은 여전히 0개다.
+분량: P6이 145에서 250 words로, Introduction 본문은 1,390 words다. 상한 1,000까지 약 390 words를
+줄여야 하며, 여지가 큰 곳은 P4(319), P3(307), P6(250)이다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개.
+
+대체된 PDF SHA-256 (P6 재작성 이전)
 43afbe646c8b2e478bef26dd9c6deaaa6f32edcf9dc202055057a339b4511c0b
+
+최종 PDF SHA-256
+03476d746ee6efe3bbec0fe839d457c5d8cff108d1e8301a8589bb7be989e302
 최종 영어 소스 SHA-256
-18bbf436ea8868fd185b097d1fec27e89d0866c24ca4a9676f77568bbcc71efb
+e73515926d26aa2f566fa78acfaeff5492acecda45cf09701bde27fb4578f46a
