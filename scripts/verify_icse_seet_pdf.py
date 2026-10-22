@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import re
+from collections import Counter
 import subprocess
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -146,9 +147,11 @@ def verify(pdf: Path, source: Path) -> dict:
     rendered = re.sub(r"\s+", " ", " ".join("".join(node.itertext()) for node in title_nodes)).strip()
     if rendered != source_title(source_text):
         raise ValueError(f"24pt title text differs from the source title: {rendered!r}")
-    body_nodes = [node for node in xml.iter("text") if "Automated program repair (APR)" in "".join(node.itertext())]
-    if not body_nodes or any(fonts[node.get("font")] != 10 for node in body_nodes):
-        raise ValueError("body sample not rendered in 10pt")
+    # The body size is the size most of the running text is set in, so rewording cannot hide a shrink.
+    sizes = Counter(fonts[node.get("font")] for node in xml.iter("text")
+                    if len("".join(node.itertext())) >= 40)
+    if not sizes or sizes.most_common(1)[0][0] != 10:
+        raise ValueError(f"body text is not predominantly 10pt: {sizes.most_common(3)}")
     font_lines = run("pdffonts", str(pdf)).splitlines()[2:]
     if not font_lines or any("Type 3" in line or line.split()[-5] != "yes" for line in font_lines):
         raise ValueError("unembedded or Type-3 font detected")
