@@ -1,0 +1,449 @@
+\documentclass[10pt,conference]{IEEEtran}
+\usepackage{booktabs,multirow,array,amsmath,amssymb,graphicx}
+\usepackage{textcomp,upquote}
+\usepackage{cite}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+\usepackage{kotex}
+\usepackage[noend]{algpseudocode}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+\hypersetup{pdftitle={ZPDPatch: Trading Repair Coverage for Student Code in Programming-Exercise Feedback},pdfauthor={}}
+\title{ZPDPatch: Trading Repair Coverage for Student Code in Programming-Exercise Feedback}
+\author{}
+\begin{document}
+\maketitle
+\begin{abstract}
+An automated repair of a failing exercise submission is not only a patch but a feedback artifact: the student reads it beside their own code, so a one-token fix and a full rewrite are different events even when both pass the tests. What the student receives depends on the target the repair model was trained toward, and submission histories offer an alternative to the accepted solution. However, a history-aware system can improve simply by generating more candidates, and changing its target rule also changes its training population, so a trajectory-specific benefit needs separate controls for target construction, input history, and candidate breadth. We present \textsc{ZPDPatch}, which mines three execution-evidence relations, trains independent policies, and selects a validation-frozen portfolio behind a gate that returns the submission unchanged rather than a regression. On 181 student-held-out CS1 Java trajectories under source- and count-matched training, terminal targets repair 155 and progress targets 92; the deficit is concentrated rather than uniform, with terminal targets ahead on 15 of 17 exercises and up to 12 additional repairs on one exercise. On the 90 trajectories both rules repair, the progress rule's retention advantage is zero for 63.3\% of students, positive for 31.1\%, and negative for 5.6\%. A larger online-judge corpus of 997 Seen and 250 problem-held-out Python inputs reproduces the tradeoff: 19.2 and 11.2 percentage points less coverage, 5.6 and 6.5 points more retained source tokens. Three fixed candidate draws alone add 15.1 Seen points, and no completed history-specific variant satisfies its fixed adoption criteria, so we retain the current-only terminal portfolio. We report properties of the feedback, not its effect on learning.
+\end{abstract}
+\begin{IEEEkeywords}
+programming-exercise feedback, automated program repair, submission trajectories, target construction, CS1
+\end{IEEEkeywords}
+
+\section{Introduction}
+\label{sec:introduction}
+Automated program repair (APR) generates changes to a failing program and validates them against an executable specification~\cite{gazzola2019automatic,monperrus2018automatic,weimer2009automatically,legoues2012genprog}. For programming exercises, a repair can provide code-specific feedback beyond an online judge's verdict~\cite{keuning2018systematic,joshi2023repair,zhang2024pydex}. A student reads that repair beside the submission it replaces, and whether feedback is used depends on how it is read~\cite{narciss2008feedback,shute2008focus}. An execution gate can hold correctness fixed, so what still varies is how much of the submission survives: a one-token fix and a rewrite that discards the chosen approach are different feedback events even when both pass every test. Earlier submissions additionally record attempted strategies, repeated errors, and tests already passed, and can supply training targets in place of the eventual accepted solution. Should a repair depend on this path to the current code, rather than on that code alone? And what does that choice change in what a student receives?
+
+Existing methods cluster, align, or normalize correct peer programs~\cite{gulwani2018automated,wang2018search,hu2020re}, generate and diagnose repairs with language models~\cite{joshi2023repair,zhang2024pydex,liu2024fastfixer,yang2024cref,orvalho2025counterexample}, or retrieve a learner-specific solution to guide generation~\cite{dai2026learner}. A parallel line in computing education propagates feedback over solution spaces and derives next-step hints from past learner data~\cite{piech2015embeddings,rivers2017datadriven,price2017isnap,roest2024next}. These are strong alternatives: retrieval-based LSGen repairs 80.2\% of our Seen inputs (Section~\ref{sec:experiment}). Their success nevertheless does not establish that earlier submissions add information beyond current code, adaptation, and additional generation opportunities.
+
+We define \emph{trajectory-conditioned repair} as repair whose supervision or generated change depends on the sequence leading to the current submission. Two users may reach similar code after different failed revisions, suggesting different next changes. The Zone of Proximal Development (ZPD) motivates support informed by prior activity~\cite{cole1978mind,murray2002toward,chounta2017grey,schulze2024beyond}. Our testable hypotheses are narrower and separate. First, a target mined from a learner's own later submissions should preserve more of the submission than the accepted solution does. Second, authentic history should improve executed repair over current-code, shuffled-history, and other-user controls without increasing regressions or unresolved outcomes. Section~\ref{sec:limitation} shows why one comparison cannot test both. An observed sequence does not measure mastery, and a smaller patch does not establish learning.
+
+A second use of a trajectory changes the training target: later improvements can replace the eventual accepted solution. Our terminal rule emits 40,454 examples and the progress rule 21,416, so the example count and the distribution of failing sources move with the target. Candidate breadth also matters: three fixed stochastic draws add 15.1 Seen repair-rate points over the expected single draw. A gain over one terminal adapter therefore cannot isolate trajectory-derived targets or authentic history. We use source-matched retraining, same-target independent seeds, and matched candidate budgets to distinguish these explanations.
+
+We present \textsc{ZPDPatch}: \emph{Mine} constructs terminal, strict-verdict, and test-progress relations; \emph{Train} fits independent policies; and \emph{Select} freezes a validation-selected checkpoint triple. An execution gate returns a repair or retains the current code, optionally within an edit budget, so a course can bound how much of a submission a returned repair may replace and never receive one that lowers the observed pass rate. Separate controls replace targets with matched peer programs, remove or perturb histories, and hold draws fixed.
+
+On 997 Seen and 250 problem-held-out Python inputs, matched terminal targets repair 19.2 and 11.2 points more inputs, while progress targets increase source-token retention by 5.6 and 6.5 percentage points on joint repairs. Student-disjoint CS1 Java retraining reproduces both directions, and resolving it per exercise and per student shows an uneven tradeoff: terminal targets lead on 15 of 17 exercises, and the retention advantage reaches only 31.1\% of the students who receive a repair from both rules. However, our mixed-relation portfolio reaches 61.5\%/74.8\%, below the 72.0\%/81.2\% of a terminal-target triple that sees only the current submission. A further development program, judged by criteria fixed before each run (Section~\ref{sec:development}), improves generic execution-based selection but produces no configuration whose gain authentic history explains. We retain the existing version: the evidence supports a target-induced coverage--locality tradeoff, not the proposed history-specific advantage.
+
+\noindent\textbf{Contributions.} We summarize our contributions as follows:
+\begin{itemize}
+\item \textbf{Problem and hypothesis:} We distinguish trajectory-derived targets from authentic-history conditioning and candidate breadth, and formulate controls that can reject a history-specific explanation even when aggregate repair coverage increases.
+\item \textbf{Technique:} We specify Mine, Train, and Select, including the three retained-submission rules, exact validation portfolio selection, and an execution gate with explicit fallback and edit-budget semantics.
+\item \textbf{Evaluation:} We separate target, provenance, decoder, checkpoint, and history effects on Python and CS1 Java, and resolve the target tradeoff across exercises and students instead of reporting cohort means. We also report the completed development failures under their original criteria and map every claim to a retained artifact.
+\end{itemize}
+
+\section{Preliminaries}
+\label{sec:preliminaries}
+\subsection{Submissions and Execution Evidence}
+
+\begin{figure}[h]
+\small
+\begin{algorithmic}[1]
+\Require Current code $c$, context $x$, ordered generators $S$, tests $\mathcal E$, edit budget $B$
+\Ensure Returned program $c^*$
+\State $c^*\gets c$; $q^*\gets\textsc{Execute}(c,\mathcal E)$
+\For{$v\in S$}
+ \State $z\gets\textsc{Generate}(v,x)$
+ \If{$B<\infty$ and $\mathrm{ted}^{\dagger}(c,z)>B$}
+  \State \textbf{continue}
+ \EndIf
+ \State $q\gets\textsc{Execute}(z,\mathcal E)$
+ \If{$q=1$} \State \Return $z$ \EndIf
+ \If{$(q,-\mathrm{ted}^{\dagger}(c,z))>(q^*,-\mathrm{ted}^{\dagger}(c,c^*))$}
+  \State $c^*\gets z$; $q^*\gets q$
+ \EndIf
+\EndFor
+\State \Return $c^*$
+\end{algorithmic}
+\caption{Execution-gated repair procedure.}
+\label{alg:generic}
+\end{figure}
+\label{sec:formulation}
+For a problem \(p\), a submission state is a tuple \(s=(c,v,o)\), where \(c\) represents complete source code, \(v\) denotes the recorded online-judge verdict, and \(o\) maps each available testcase identifier to its re-executed outcome. The problem context \(d_p\) contains the statement and resource limits, and \(\mathcal E_p\) is the available test suite. A trajectory \(\tau=[s_1,\ldots,s_n]\) orders submissions by one user on one problem. The canonical dataset ends each trajectory at its first recorded acceptance; this endpoint is the final accepted submission within the retained trajectory, not a later post-acceptance revision. Recorded verdicts and replayed outcomes remain distinct fields, because runtime versions and execution variability can change a program's observed behavior.
+
+A training example pairs input \(x=(d_p,h_i)\) with later code \(y\), where \(h_i\) is the permitted submission prefix ending at the current state. A target constructor determines both the retained prefix and its target. At inference, the current program is always available; a history-conditioned prompt also includes earlier observed submissions, whereas a current-only prompt does not. The future accepted program is a training target or an offline assessment reference, never part of the inference prompt. A \emph{terminal target} is the accepted (AC) endpoint. A \emph{progress target} is the next retained state under an execution-evidence rule and can itself be accepted. We reserve \emph{intermediate target} for a retained nonterminal state; the Progress dataset is not restricted to such states.
+
+\subsection{Generate-and-Validate Selection}
+
+Figure~\ref{alg:generic} specifies the common controller: the current code is the fallback, each generator emits one complete candidate that a finite edit budget can exclude, and execution either accepts a candidate immediately or keeps the best partial repair. Here \(q\) is the fraction of tests passed, and \(\mathrm{ted}^{\dagger}\) is abstract syntax tree (AST) edit distance when both changed programs parse, zero for unchanged code, and infinity otherwise. An unrestricted budget bypasses the distance check, allowing syntax repair; a finite budget rejects changes whose source distance is undefined.
+
+The controller separates generator construction, input context, and opportunity count. Reference-based, learned, and iterative repair instantiate these choices differently~\cite{gulwani2018automated,tufano2019empirical,yang2024cref}. Our controls compare specific implementations, not an assumption that all prior methods train on accepted endpoints.
+
+\subsection{Limitation and Goal}
+\label{sec:limitation}
+
+\begin{table}[h]
+\caption{Canonical training rules before matched controls. Counts are examples, not unique sources or test successes.}
+\label{tab:rules}
+\centering\small
+\begin{tabular}{l||>{\raggedright\arraybackslash}p{4.1cm}|r}
+\toprule
+Rule & Target and context & Examples \\
+\midrule
+Answer & Each non-AC source alone to the accepted endpoint & 40,454 \\
+Strict & Retained prefix to the next better-verdict state & 16,973 \\
+Progress & Retained prefix to the next verdict/test-progress state & 21,416 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[font=\footnotesize,
+ box/.style={draw,rounded corners=2pt,align=center,text width=1.8cm,minimum height=0.85cm,inner sep=3pt},
+ arr/.style={-{Latex[length=5pt]},semithick},
+ lab/.style={font=\footnotesize,fill=white,inner sep=1.5pt}]
+\node[box] (mine) {\textbf{1. Mine}\\three target rules};
+\node[box,right=0.8cm of mine] (train) {\textbf{2. Train}\\independent policies};
+\node[box,right=0.8cm of train] (select) {\textbf{3. Select}\\validation portfolio};
+\node[draw,very thick,rounded corners=4pt,fit=(mine)(train)(select),inner sep=8pt] (boundary) {};
+\node[lab] at (boundary.north) {\textsc{ZPDPatch}: offline construction};
+\draw[arr] (mine) -- node[lab,above]{pairs} (train);
+\draw[arr] (train) -- node[lab,above]{policies} (select);
+\node[above=0.7cm of mine,align=center,font=\footnotesize] (traj) {Chronological code\\+ execution evidence};
+\node[above=0.7cm of select,align=center,font=\footnotesize] (valid) {Validation executions};
+\draw[arr] (traj) -- (mine); \draw[arr] (valid) -- (select);
+\node[box,below=1.4cm of mine] (input) {Current code\\+ optional history};
+\node[box,below=1.4cm of train] (gen) {Frozen policies\\max. three calls};
+\node[box,below=1.4cm of select] (gate) {Execution gate\\repair / fallback};
+\draw[arr] (input) -- node[lab,below=14pt]{context} (gen);
+\draw[arr] (gen) -- node[lab,below=14pt]{programs} (gate);
+\draw[arr] (select.south) -- ++(0,-0.5) -| node[lab,pos=0.25]{triple} (gen.north);
+\node[below=0.65cm of gate,font=\footnotesize] (tests) {Observed tests + edit budget};
+\draw[arr] (tests) -- (gate);
+\end{tikzpicture}
+\caption{Overview of \textsc{ZPDPatch}. Training and selection are offline; deployment uses frozen generators. Matched-target and history controls instantiate separate training/input variants, not extra inference stages.}
+\label{fig:overview}
+\end{figure}
+Consider three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), followed by an accepted state. The second preserves every previously passed test and gains another; the third gains a test but loses the first. Verdict-only filtering cannot distinguish them, while test-wise progress retains the second but not the third relative to it. Terminal supervision instead pairs each failed source independently with the acceptance. This example illustrates different training signals, not evidence that the intermediate change is smaller or easier for a learner.
+
+
+Table~\ref{tab:rules} shows why exchanging a target rule is not a one-variable intervention: example counts and source frequencies change together. The relation-level comparison characterizes complete policies, whereas matched-source retraining estimates target replacement on a common population. A scoped eight-study audit identifies five studies reporting multiple generation opportunities~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}. Their accounting differs: pass@1/5/10, conversation aggregation, and LSGen's 0--3 retrieval iterations do not estimate the same intervention. Our fixed-draw contrast holds generated candidates constant to isolate opportunity count. The artifact supplies the eight-study coding and sources; this purposive map is not a systematic review.
+
+Our goal is to test trajectory-based supervision against current-code and budget-matched alternatives. Correctness, source preservation, and history specificity are separate outcomes. Later development additionally requires non-increasing regressions and unknowns under fixed controls.
+
+
+\section{Our Approach}
+\label{sec:approach}
+\subsection{Overview}
+
+\begin{figure}[h]
+\small
+\begin{algorithmic}[1]
+\Require Trajectories $H$, evidence $O$, validation inputs $U$, seeds $\Sigma$, portfolio size $k$, edit budget $B$
+\Ensure Frozen ordered checkpoint portfolio $S$
+\State $(D_A,D_S,D_P)\gets(\emptyset,\emptyset,\emptyset)$ \Comment{Mine}
+\For{$\tau=[s_1,\ldots,s_n]\in H$}
+ \State $D_A\gets D_A\cup\mathsf{TerminalPairs}(\tau)$
+ \For{$\rho\in\{S,P\}$}
+  \State $R\gets[s_1]$
+  \For{$s_t\in[s_2,\ldots,s_n]$}
+   \If{$\mathsf{Improves}_{\rho}(R[-1],s_t;O)$}
+    \State $D_\rho\gets D_\rho\cup\{(R,c_t)\}$; $R\gets R\mathbin{\|}[s_t]$
+   \EndIf
+  \EndFor
+ \EndFor
+\EndFor
+\State $V\gets\emptyset$ \Comment{Train}
+\For{$(\rho,\sigma)\in\{A,S,P\}\times\Sigma$}
+ \State $V\gets V\cup\{\mathsf{Train}(D_\rho,\sigma)\}$
+\EndFor
+\For{$v\in V$} \Comment{Select}
+ \State $R_v^B\gets\mathsf{Validate}(v,U,B)$
+\EndFor
+\State $S\gets\mathsf{Select}(\{R_v^B\}_{v\in V},k)$
+\State \Return $\mathsf{FreezeAndOrder}(S)$
+\end{algorithmic}
+\caption{\textsc{ZPDPatch}: Mine, Train, Select. The returned portfolio supplies the generators in Figure~\ref{alg:generic}.}
+\label{alg:tool}
+\end{figure}
+
+
+Figure~\ref{fig:overview} separates offline construction from online repair. Mine constructs datasets, Train fits adapters, and Select freezes a validation portfolio. Checkpoints generate independently from the same permitted input, without exchanging candidates. The mixed pool contains three seeds per relation; Answer-only and current-only variants are controls. The recommended current-only Answer-3Seed remains a comparator, not a renamed history model. The three stages run once per corpus, after which deployment serves repairs from the frozen checkpoints.
+
+\subsection{Main Algorithm}
+
+Figure~\ref{alg:tool} constructs a frozen checkpoint portfolio; Figure~\ref{alg:generic} deploys it to repair an input. The primary configuration uses three seeds per relation and \(k=3\); breadth and pool controls vary these opportunities.
+
+\begin{table}[t]
+\caption{Corpus after whole-trajectory filtering. Part.: partition; Subm.: submissions; prefixes precede relation filtering. Seen problems/tests are shared across its partitions; user counts are not additive.}
+\label{tab:data}
+\centering\scriptsize\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{ll||rrrrrr}
+\toprule
+Group & Part. & Probl. & Tests & Traj. & Subm. & Prefixes & Users \\
+\midrule
+\multirow{3}{*}{Seen} & Train & 492 & 9,446 & 14,027 & 54,481 & 40,454 & 4,012 \\
+ & Valid & 492 & 9,446 & 1,754 & 6,719 & 4,965 & 1,248 \\
+ & Test & 492 & 9,446 & 1,754 & 6,598 & 4,844 & 1,250 \\
+Unseen & Test & 54 & 642 & 259 & 954 & 695 & 236 \\
+\midrule
+Total & & 546 & 10,088 & 17,794 & 68,752 & 50,958 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Mine}
+The goal of Mine is to make every supervision pair traceable to an observed source and a later submission. Submissions are grouped by problem and user, chronologically ordered, and cut at the first acceptance. Canonical normalization removes consecutive duplicates while preserving the source code used for generation and execution. The builder imposes no maximum history or transition count. A whole-trajectory filter instead excludes a trajectory before splitting if any required prompt--target configuration exceeds 4,096 tokens. Exclusion changes the evaluated population; it never cuts off a program or history and presents the fragment as complete.
+
+The coarse severity function assigns 0 to accepted (AC), 1 to wrong answer (WA), 2 to time or memory limit exceeded (TLE/MLE), 3 to runtime error (RE), and 4 to compile error (CE); unrecognized and internal outcomes occupy the most severe category. This is an operational ordering, not semantic distance to correctness. Strict compares recorded verdicts. Progress additionally compares replayed outcomes when the recorded verdict strings agree. Its cache must be complete, and compared vectors must have equal, nonempty testcase keys. Provenance includes problem, code, tests, and execution configuration. Infrastructure uncertainty in later development is reported as unknown, not converted into a favorable repair label.
+
+For equal testcase universes, \(o_t\prec_\times o_r\) holds when every test in \(o_t\) has severity no greater than its counterpart in \(o_r\), with a strict decrease on at least one. The improvement predicates are:
+\begin{equation}
+\begin{aligned}
+\mathsf{Improves}_S(r,t)&\iff \mathrm{sev}(v_t)<\mathrm{sev}(v_r),\\
+\mathsf{Improves}_P(r,t)&\iff \mathsf{Improves}_S(r,t)\\
+ &\quad\lor\ (v_t=v_r\land o_t\prec_\times o_r).
+\end{aligned}
+\label{eq:progress}
+\end{equation}
+Intuitively, Equation~\eqref{eq:progress} retains coarse improvements and progress hidden by an unchanged verdict. A severity improvement such as RE to WA need not increase the pass fraction, and a verdict-improving edge does not require test-wise dominance. The mined relation supplies supervision, not a deployment-safety guarantee.
+
+Answer emits an independent pair for each non-AC source and the accepted endpoint. Thus \([s_1,\ldots,s_9]\) yields \(([s_1],c_9),\ldots,([s_8],c_9)\); it does not expose accumulated prefixes to Answer training. Strict and Progress start with \(R=[s_1]\), compare each later state with the \emph{last retained} state, and append it only when the predicate holds. Before appending \(s_t\), the builder emits \((R,c_t)\). For WA, improved WA, AC, Strict emits \(([s_1],c_3)\), whereas Progress emits \(([s_1],c_2)\) and \(([s_1,s_2],c_3)\). The accepted endpoint remains eligible in both rules. Although Strict's pairwise predicate is contained in Progress's, their independently scanned edge sets need not be nested.
+
+Chronological indices strictly increase, so construction terminates without cycles. With fixed-key evidence, retained edges also decrease the appropriate verdict/test severity rank. These are builder invariants, not evidence of a learned ZPD effect. Binary accepted/non-accepted mining retains 14,027 of 16,973 Strict pairs and 18,009 of 21,416 Progress pairs. Models retrained on them agree with the canonical ones on 84.6\% and 87.5\% of Seen repair decisions (Section~\ref{sec:generality}), so we read the ranking as operational rather than universal.
+
+\subsection{Train}
+The goal of Train is to learn each relation independently while keeping model and optimization comparable. The implementation fine-tunes Qwen2.5-Coder-7B-Instruct with 4-bit quantized low-rank adaptation (QLoRA)~\cite{hui2024qwen2,dettmers2023qlora}. Adapters have rank 16, scaling 32, and dropout 0.05, targeting attention and feed-forward projections. Canonical training uses one epoch, learning rate \(2\times10^{-4}\), and seeds 2027--2029. Assistant target tokens supply cross-entropy loss. The role-neutral prompt contains the statement, limits, permitted submissions, execution/edit summaries, and a request for a complete solution. It names neither the rule nor a preferred patch size, so specialization must come from the data rather than explicit policy instructions.
+
+Targets are future submissions available offline; inference inputs contain only observed states. Current-only controls reset positions and remove earlier entries, preventing length leakage through position labels. Answer training is already single-source, so supplying history at inference creates a distribution change. The history-removal retraining control instead holds targets fixed and changes earlier-submission serialization. Source-matched target training holds current input and count fixed. These designs answer different questions and are not pooled into one claim about history.
+
+The paired-target control inner-joins records by problem, user, submission identifier, and exact current code, retaining sources with distinct Answer and Progress targets. Its 7,389 training and 931 validation examples per condition use identical current-only inputs. The separate peer control requires another user on the same problem and in the same split, with exactly equal target execution evidence. Writing \(y_u\) for the same-user target and \(y_v\) for its peer replacement, for semantic-token diff distance \(d\) the discrepancy \(\delta=|d(c,y_v)-d(c,y_u)|\) must satisfy \(\delta\le2\) or \(\delta/\max(1,d(c,y_u))\le0.1\). Scarce evidence groups are visited first; ties prioritize distance discrepancy, reuse, and identifier, with donor reuse capped at three. This greedy rule yields 5,231 training and 306 validation examples per condition. Equal outcomes and nearby distances do not equate structure or style, so its measured effect belongs to the entire replacement rule, not isolated provenance.
+
+\subsection{Select}
+The goal of Select is to deploy a bounded portfolio chosen without final-test outcomes. For validation inputs \(U\), let \(R_v^B\) be inputs repaired by checkpoint \(v\) within edit budget \(B\). Selection maximizes:
+\begin{equation}
+ f_B(S)=\frac{1}{|U|}\left|\bigcup_{v\in S} R_v^B\right|,\qquad |S|=3.
+\label{eq:portfolio}
+\end{equation}
+Intuitively, Equation~\eqref{eq:portfolio} rewards complementary successes, not low training loss or the presence of every relation. Validation uses one fixed-hash trajectory from each of 461 eligible problems. The mixed pool has nine checkpoints and 84 triples; requiring one checkpoint per relation instead permits 27. The primary unconstrained mixed choice is Answer2027, Answer2028, and Progress2027. The relation-constrained choice is a different condition. Answer-9Choose3 receives nine terminal checkpoints and the same 84-triple search. Ties use recorded pass-rate, improvement, and deterministic identifier priorities. Budget-indexed selection repeats the declared objective at \(B\in\{5,10,20,40,80,160\}\), without choosing a budget from test results.
+
+Selected checkpoints and order are frozen. Each emits at most one independent candidate, and the first observed acceptance stops generation. If none passes all tests, Figure~\ref{alg:generic} prioritizes pass fraction and then smaller distance. Because unchanged code is feasible, for the same fixed execution measurements the returned pass fraction cannot decrease, and a finite edit budget cannot be exceeded. This is not per-test non-regression: equal fractions can conceal gains and losses on different tests. It also does not guarantee non-regression under fresh execution, an unseen suite, or resource variability. Development explicitly measures these stronger failure modes.
+
+For fixed independent candidates, order changes calls and patch identity but not the existence of an eligible acceptance. Stored candidates permit exact selection replay, not a guarantee of generation quality. Terminal pairing is linear in trajectory length; replaying \(n\) submissions on \(m\) tests requires \(O(nm)\) executions and evidence storage. The 84-triple search is bounded at our pool size, not a scalable optimizer for arbitrary pools.
+
+\section{Experiments}
+\label{sec:experiment}
+We evaluate the retained implementation and completed development evidence through five research questions:
+\begin{itemize}
+\item \textbf{RQ1: Repair effectiveness.} Which configuration provides the strongest unrestricted repair performance?
+\item \textbf{RQ2: Target construction and locality.} How do matched targets affect correctness and source preservation, and how do both distribute across exercises and students?
+\item \textbf{RQ3: Component efficacy.} What do candidate breadth, checkpoint identity, and serialized history contribute?
+\item \textbf{RQ4: Generality.} Which findings replicate across problems, prefixes, scales, and Java populations?
+\item \textbf{RQ5: Development diagnosis.} Do completed history-specific modifications satisfy their fixed adoption criteria?
+\end{itemize}
+
+\subsection{Experimental Settings}
+
+\noindent\textbf{Benchmarks.} Table~\ref{tab:data} describes the Project CodeNet Python800 corpus~\cite{puri2021project}. We retain trajectories with at least three submissions, a non-AC state before the first acceptance, and an accepted endpoint in the benchmark reference set. Users must appear in at least three problems, and retained problems contain at least two trajectories. The refined corpus has 546 problems, 21,454 trajectories, 99,432 submissions, and 10,088 tests. Whole-trajectory 4,096-token filtering removes 3,660 trajectories before splitting. Problems ranked by eligible trajectory count supply the top 90\% to Seen (492) and the remaining 54 low-resource problems to Unseen. Seen trajectories are split 80:10:10 within every problem, retaining at least one in each partition.
+
+The primary endpoint is the last recorded non-AC submission of an eventually successful trajectory. Runtime eligibility requires the current program to remain non-AC and the recorded accepted endpoint to pass the available tests on replay. This leaves 997 of 1,754 Seen test trajectories, from 328 problems, and 250 of 259 Unseen trajectories, from all 54 problems. Excluded trajectories do not enter the denominator. CodeNet users are online-judge participants, not a verified classroom population. We also use TIKTOC's release of authentic introductory-programming (CS1) Java CodeWorkout submissions and tests~\cite{duan2024tiktoc}: 1,125 trajectories from 224 students and 17 exercises, with 181 test trajectories from 33 held-out students. CodeWorkout is a practice platform on which a course assigns short method-level exercises with instructor-authored tests; students submit repeatedly and see which tests fail, the setting a returned repair would enter. This corpus supplies the classroom population and CodeNet the scale. A separate exercise split has 10/3/4 train/validation/test exercises and 605/216/304 trajectories. These populations remain separate from the Python estimates.
+
+\noindent\textbf{Baselines.} Zero-shot uses the same base model without fine-tuning and appends verdict/pass-count feedback after failure. LSGen retains repair-pair filtering, edit-vector retrieval, diff-guided generation, and re-retrieval~\cite{dai2026learner}; its same-problem Seen-Train references are unavailable under our Unseen information constraint, so that condition is not evaluated. Answer-1 uses one terminal checkpoint. Answer-3Seed uses seeds 2027--2029 on the same 40,454 terminal pairs, controlling independent training without heterogeneous targets. Answer-9Choose3 adds seeds 2030--2035 and selects three from nine. History and current-only prompts are explicitly labeled. Mixed-9Choose3 denotes the primary unconstrained \textsc{ZPDPatch} pool. Current-only reselection from the mixed pool chooses the same three Answer checkpoints as Answer-3Seed, not a relation-mixing improvement.
+
+\noindent\textbf{Other settings.} Training and generation use one NVIDIA RTX 5090. Canonical Python evaluation runs one subprocess per test with a 2.5-second timeout and a 2GB address-space limit, whereas Java 21 runs in a network-disabled, read-only container (16GB shared) with 15-second compilation and whole-harness limits; these are different harnesses, not a common per-test budget, and the manifest does not pin the Python minor version. The primary comparison permits three generations of at most 4,096 output tokens each. Historical Transformers and the later vLLM factorial remain separate stacks. Matched-target Python/Java training uses batch size 2, accumulation 8, one epoch, and minimum validation-loss checkpoint selection. Each target rule uses all three seeds in order 2027--2029, greedy decoding, current-only prompts, and the same controller; it does not search nine-checkpoint portfolios. The supplement maps these conditions and source hashes. Portfolio outcomes are not means over three independent test runs.
+
+Repair Rate (RR) is the fraction of eligible inputs whose returned program passes every test. Pass Rate (PR) averages passed-test fractions; Improvement Rate (IR) records an increased fraction. AST tree edit distance (TED) measures current-to-returned change~\cite{zhang1989simple,pawlik2016tree} and is undefined when either program does not parse. Undefined cases remain in unrestricted RR but not TED summaries; finite gates reject undefined-distance changes. Unpaired TED averages successful, parseable returns; paired locality uses joint successes. Retention divides tokens or nonempty stripped lines matched by \texttt{SequenceMatcher} (autojunk disabled) by the source count. Python tokenization omits layout tokens but keeps comments; Java separates words and punctuation. Retention differences are percentage points (pp), not token counts or learning measures.
+
+Unless stated otherwise, brackets give 95\% percentile bootstrap intervals from 10,000 problem-cluster resamples with replacement, preserving all paired inputs in each sampled cluster~\cite{efron1979bootstrap}. Java separately resamples students and exercises. Instance-weighted estimates divide pooled differences by sampled inputs; equal-problem estimates average problem means. Exact two-sided McNemar tests assume independent input pairs and are supplementary to cluster-aware intervals, not substitutes for them~\cite{mcnemar1947note}. Holm adjustment covers the four history-removal retraining tests (Strict/Progress $\times$ Seen/Unseen), not every exploratory contrast~\cite{holm1979simple}; individual-rate Wilson intervals are reported separately~\cite{wilson1927probable}. Protocols identify when controls were frozen, but the extended study was not externally preregistered. Adaptively inspected development remains exploratory. We retain whitespace-sensitive corrections and original counts separately.
+
+\noindent\textbf{Research process.} OpenAI Codex assisted with design, code, orchestration, diagnostics, and manuscript preparation under author instructions, and automated agents executed authorized jobs; we do not claim authors manually ran every job. Outcomes come from retained execution records, not generated prose. The experiment program stopped at the declared cutoff of 21 October 2026, 13:00 KST. This synthesis adds no training, generation, testcase rerun, or model promotion.
+
+\subsection{RQ1: Repair Effectiveness}
+\begin{table}[h]
+\caption{Primary Python evaluation. RR divides successful returns by 997 Seen or 250 Unseen inputs; TED averages defined distances among successful returns only. Portfolios permit at most three calls; Answer-1 permits one. H: history input; C: current-only. No cross-split ranking is implied.}
+\label{tab:main}
+\centering\small
+\begin{tabular}{@{}ll||rr|rr@{}}
+\toprule
+Method & Input & \multicolumn{2}{c|}{Seen} & \multicolumn{2}{c}{Unseen} \\
+ & & RR (\%) & TED & RR (\%) & TED \\
+\midrule
+Zero-shot & H & 30.7 & 27.25 & 62.0 & 17.46 \\
+LSGen & H & 80.2 & 88.27 & -- & -- \\
+Answer-1 & C & 58.1 & 30.27 & 69.6 & 15.30 \\
+Answer-3Seed & H & 61.7 & 24.52 & 73.2 & 13.38 \\
+Answer-9Choose3 & H & 59.8 & 25.46 & 74.8 & 15.19 \\
+Mixed-9Choose3 & H & 61.5 & 21.05 & 74.8 & 11.40 \\
+\midrule
+Answer-3Seed & C & 72.0 & 37.94 & 81.2 & 16.01 \\
+Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Results.} Table~\ref{tab:main} identifies current-only Answer-3Seed as the retained deployment configuration within our implementation, at 72.0\% Seen and 81.2\% Unseen. It repairs 718/997 and 203/250 inputs. Relative to current-only Answer-1, its paired gain is 13.9 points [11.71, 16.29] and 11.6 points [7.32, 16.23]. This contrast changes both checkpoint identity and opportunity count; RQ3 separates them. It is not universally best: current-only Answer-9Choose3 repairs two more Unseen inputs (205/250), but 25 fewer Seen inputs (693/997). We retain the simpler fixed triple rather than selecting a different final method for each observed test split. Current-only mixed-pool reselection chooses exactly that terminal triple, providing no evidence that relation diversity improves this deployment setting.
+
+The history-input mixed portfolio repairs 613/997 Seen and 187/250 Unseen inputs. Its Seen gain over Zero-shot is 30.8 points [26.43, 35.09], or 26.1 [21.24, 30.93] with equal problem weights. Mixed-only and Zero-shot-only successes number 342 and 35 (McNemar \(p<10^{-63}\)). This is not a history-specific effect: Mixed nearly ties Answer-3Seed, while its matched nine-checkpoint contrast is +1.7 points [-0.79, 4.29] on Seen and 0.0 [-3.70, 3.75] on Unseen.
+
+LSGen repairs 800/997 Seen inputs versus Mixed's 613/997, a difference of -18.8 points [-23.04, -14.46]; 80 versus 267 exclusive successes give \(p<10^{-23}\). On joint repairs, Mixed's TED is lower by 43.34 [38.47, 48.44] relative to LSGen and 8.46 [5.05, 12.55] relative to Zero-shot. Conditioning excludes unilateral successes, so smaller patches do not cancel the primary correctness deficit.
+
+\begin{table}[h]
+\caption{Source- and count-matched target replacement. RR uses all eligible inputs; retention differences are Progress minus Answer on joint repairs. Java uses held-out students. Positive retention differences favor source preservation, not demonstrated learning.}
+\label{tab:targets}
+\centering\small
+\begin{tabular}{l||rr|rr}
+\toprule
+Population & \multicolumn{2}{c|}{RR (\%)} & \multicolumn{2}{c}{Retention (pp)} \\
+ & Answer & Progress & Tokens & Lines \\
+\midrule
+Seen (997) & 53.2 & 34.0 & +5.6 & +8.9 \\
+Unseen (250) & 76.8 & 65.6 & +6.5 & +10.4 \\
+Java (181) & 85.6 & 50.8 & +4.8 & +5.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Answer to RQ1.} We retain current-only Answer-3Seed, which is neither an overall winner nor a ZPD success: LSGen leads on Seen, Answer-9Choose3 is marginally higher on Unseen, and mixed targets have no established unrestricted advantage.
+
+\subsection{RQ2: Target Construction and Locality}
+
+\noindent\textbf{Matched targets.} Table~\ref{tab:targets} changes the target while holding current inputs and training counts fixed. Progress-minus-Answer RR is -19.2 points [-22.96, -15.54] on Seen and -11.2 [-17.37, -4.88] on Unseen, with exact McNemar \(p=7.85\times10^{-34}\) and \(p=6.17\times10^{-5}\). Thus the canonical terminal dataset's advantage cannot be attributed only to having more training records. The paired population is restricted to sources with distinct targets, however, and does not estimate an effect for all CodeNet submissions. Moreover, a Progress target can itself be accepted. The intervention is the retained-evidence target rule, not a clean contrast between exclusively incorrect and exclusively correct targets.
+
+Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures consistently describe more source-preserving successful outputs, but they neither establish easier comprehension nor explain which method would best help a particular learner.
+
+Java retraining uses 600 training and 118 validation pairs per target and reproduces this direction without Python AST distance. Terminal targets repair 155 trajectories and Progress targets 92, a difference of 34.8 points; Progress-minus-Answer intervals are [-44.91, -25.47] under student clustering and [-47.31, -23.79] under exercise clustering. Among 90 joint repairs, Progress targets increase lexical-token retention by 4.8 points and line retention by 5.1 points, with intervals [2.79, 7.19] and [2.92, 7.25]. This is evidence for a coverage--locality tradeoff across these two languages and populations. It is not evidence that the same magnitude generalizes to other classrooms, nor a replication of the Python peer-target intervention.
+
+\begin{figure}[h]
+\centering\scriptsize
+\begin{minipage}[b]{0.52\columnwidth}
+\begin{verbatim}
+N=int(input())
+S=input()
+ans=0
+i=0
+j=N-1
+while i<=j:
+  while i<N:
+    ...
+  while j>0:
+    ...
+print(ans)
+\end{verbatim}
+\centering (a) submission
+\end{minipage}\hfill
+\begin{minipage}[b]{0.44\columnwidth}
+\begin{verbatim}
+N=int(input())
+S=input()
+cnt=S.count('R')
+ans=S[:cnt].count('W')
+print(ans)
+\end{verbatim}
+\centering (b) terminal-target repair
+\end{minipage}
+\caption{A jointly repaired Python case, selected post hoc for the largest Answer-minus-Progress TED gap and excluded from every estimate. Submission (a) passes 93.3\% of tests after the student's own preceding edit changed \texttt{i<j} to \texttt{i<=j}. The progress-target repair differs from (a) only in \texttt{j>0} becoming \texttt{j>=0} (TED 1), with the elided lines identical; the terminal-target repair (b) replaces the approach (TED 83). Both pass every test under the same gate and budget.}
+\label{fig:case}
+\end{figure}
+
+\noindent\textbf{What a student receives.} Cohort means do not describe an individual learner, so we resolve the Java contrast by exercise and by student. Terminal targets repair more trajectories on 15 of the 17 exercises, tie on 2, and lose on none; the 63 additional repairs are concentrated rather than uniform, reaching 12 on one exercise where progress targets repair 3 of 15 trajectories against 15. Among the 90 trajectories that both rules repair, the lexical-retention difference is exactly zero for 63.3\% of students, positive for 31.1\%, and negative for 5.6\%, with median 0.0 points, upper quartile 4.4, minimum -21.1, and maximum 49.7; line retention behaves the same, zero for 64.4\% with maximum 47.6. The mean advantage is therefore a minority effect with a long tail: most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of 9.6 points, and a few get less. Figure~\ref{fig:case} illustrates that tail on Python, where the progress-target repair continues the student's own boundary edit while the terminal-target repair replaces the algorithm. Which rule a course deploys therefore depends on the exercise and on whether coverage or preservation binds.
+
+\noindent\textbf{Peer targets.} The separate outcome- and distance-matched replacement raises RR from 50.4\% to 54.7\% on Seen and from 78.4\% to 84.4\% on Unseen. Same-minus-peer intervals are [-7.71, -0.84] and [-11.79, -0.41], with exact McNemar \(p=0.005\) and \(p=0.032\). Matches cover 5,231/21,416 canonical Progress training records (24.4\%) and 306/2,685 validation records (11.4\%). The result concerns this caliper, donor cap, source population, and replacement rule. Equal outcomes and nearby edit distance still permit differences in target structure, style, and length, so the contrast does not isolate user identity. Matched peer targets improve coverage here; one's own trajectory is not uniquely necessary under this control.
+
+\noindent\textbf{Operational locality.} A declared structural budget gives patch size an explicit engineering meaning: the deployment admits only changes within it. Per-budget Seen rates are 16.9/22.5/4.8\% at TED 5, 28.5/32.4/8.0 at 10, 40.3/44.0/13.9 at 20, 51.4/50.9/30.4 at 40, 61.0/56.0/50.8 at 80, and 66.8/57.9/67.6 at 160 for current-only Answer-3Seed/Mixed/LSGen, each over 997 inputs. At TED 20, Mixed repairs 44.0\% of Seen inputs versus LSGen's 13.9\%, a 30.1-point difference [26.45, 33.82]. Across the six prespecified budgets its mean advantage over LSGen is 14.7 points [12.03, 17.43]. This is a budget-indexed outcome, not an unrestricted superiority claim: LSGen wins at 160, and current-only Answer-3Seed overtakes Mixed from 40 onward. On Unseen, Mixed versus current-only Answer-3Seed is 38.8\% versus 32.0\% at 5, 48.0\% versus 40.8\% at 10, and 57.6\% versus 54.8\% at 20; the order reverses at 40. No observed budget is retroactively designated the unique primary endpoint.
+
+\noindent\textbf{Answer to RQ2.} Target construction changes coverage and locality in opposite directions under matched inputs, with the same direction on student-held-out Java, and neither effect is uniform across exercises or students. Matched peer targets improve coverage, so the effect is not uniquely personal supervision; pedagogical benefit remains unmeasured.
+
+\subsection{RQ3: Component Efficacy}
+\noindent\textbf{Fixed candidate breadth.} For three stored draws with success indicators \(a_{ij}\), the expected uniformly selected one-draw success for input \(i\) is \(\frac{1}{3}\sum_j a_{ij}\), whereas the three-draw union succeeds when \(\max_j a_{ij}=1\). Their paired difference isolates additional opportunities within the identical candidate set. Replacing greedy decoding by one stochastic draw costs 7.6 points [-9.81, -5.41], whereas execution-selecting three of those identical fixed draws contributes 15.1 points [13.48, 16.76] on Seen. This is a descriptive decomposition of stored executions, not a claim that three future draws have guaranteed success or independent errors. It directly demonstrates why comparing a portfolio only with one adapter overstates evidence for its specialized training signal.
+
+The temperature sweep retains all declared conditions instead of selecting the best one for the headline. Through \(T=1.0\) the one-draw rate stays within 41.1--43.1\% on Seen, the three-draw union reaches 60.0/75.2\%, and at \(T=1.5\) the decoder collapses to 15.8/35.2\%. A separate 20-draw stream at \(T=0.8\) reaches 74.8\% Seen and 84.0\% Unseen, using on average 7.44 and 5.08 calls under early stopping. Those higher rates spend a different generation budget and do not replace the three-call primary results. Fine-tuning also matters: the matched base-model three-draw union reaches only 30.4/65.6\%, so adaptation adds 27.2 points [22.99, 31.41] on Seen and 6.4 points [1.19, 11.34] on Unseen. Breadth alone therefore does not explain all improvement over the base model.
+
+At matched temperature, replacing three draws of one checkpoint by one draw from each of three checkpoints changes RR by -0.1 points [-2.00, 1.80] on Seen and 2.4 points [-0.41, 5.31] on Unseen. These intervals do not establish a consistent advantage from checkpoint diversity. They also do not show equivalence: the uncertainty still admits benefits and harms of practical interest. A deterministic multi-seed gain can coexist with this result because sampling from one checkpoint already supplies diversity.
+
+A current-only factorial on one inference stack tests this explanation. Three greedy checkpoints gain 9.8 [7.85, 11.92] and 10.8 [7.23, 14.64] points over one, but under the matched stochastic decoder distinct checkpoints add only 2.1 points [0.00, 4.16] and 1.2 points [-2.93, 5.93]. The equal-problem Seen interval includes zero, so the rounded instance-weighted lower bound does not establish a robust checkpoint benefit. Absolute Seen/Unseen rates on that stack are 53.1/67.2\% for one greedy checkpoint, 62.9/78.0\% for three greedy checkpoints, 66.8/79.6\% for a same-checkpoint stochastic triple, and 68.9/80.8\% for a distinct-checkpoint triple, against 72.0/81.2\% on the historical one. Backend sensitivity is material, and the deployment recommendation is restricted to the evaluated stack rather than asserted as backend-independent superiority.
+
+\noindent\textbf{History and portfolio selection.} Retraining with the same targets but without earlier-submission context yields no significant RR difference in the four principal tests after Holm correction; the smallest adjusted \(p\) is 0.313. This negative result does not localize gains to trajectory-derived relations. For history-selected triples held fixed, removing history raises Mixed RR from 61.5/74.8\% to 70.3/82.4\% and Answer-9Choose3 from 59.8/74.8\% to 70.9/80.8\% (Seen/Unseen). The gains are 8.8/11.1 Seen points and 7.6/6.0 Unseen points for Mixed/Answer, with all intervals excluding zero. These are frozen triples, not the current-only reselected rows in Table~\ref{tab:main}. The result is compatible with a prompt-distribution cost, especially because terminal training uses single-source inputs. It is inconsistent with describing history as necessary to the measured portfolio advantage. The matched retraining and frozen-input interventions should not be treated as interchangeable estimates.
+
+Selection-space controls also fail to establish a general heterogeneous-target benefit. Answer-9Choose3 receives the same nine-checkpoint pool size and 84-subset opportunity as Mixed. The primary five-fold cross-fitted mixed-minus-terminal contrast is +2.2 points [-0.19, 4.63], compared with the non-cross-fitted +1.7 [-0.79, 4.29]. These estimates are positive but uncertain. Exact replay of the six orders of a fixed triple checks the independent-candidate controller, not the value of learned diversity.
+
+\noindent\textbf{Answer to RQ3.} Candidate breadth and adaptation each contribute measured gains. Distinct checkpoints add no consistent advantage once the stochastic decoder is matched, and serialized history is not supported as a necessary input. Target heterogeneity has a small, uncertain unrestricted contrast against the equally searched terminal pool.
+
+\begin{table}[t]
+\caption{Chronological two-slot development blocks (320 inputs each). Cells: stable accepted / regressing / unknown counts. C: current-only; H: authentic history; HS: shuffled history; U: matched other-user history. Folds count H acceptance non-worse than C. Every row fails adoption. Different models, candidates, and execution blocks prohibit pooled ranking.}
+\label{tab:development}
+\centering\scriptsize\setlength{\tabcolsep}{2pt}
+\begin{tabular}{l||rrrr|r}
+\toprule
+Modification & C & H & HS & U & Folds \\
+\midrule
+Current code last & 208/10/16 & 144/16/16 & 145/17/16 & 148/19/17 & 0/5 \\
+Full historical source & 202/9/17 & 169/13/16 & 165/12/17 & 190/15/16 & 0/5 \\
+Matched C/H tuning & 209/10/10 & 192/15/11 & 198/13/11 & 206/13/14 & 0/5 \\
+Shared current candidate & 200/15/22 & 194/19/19 & 198/17/19 & 199/18/20 & 2/5 \\
+Public tie-breaking & 192/14/21 & 195/13/20 & 198/12/20 & 202/12/19 & 3/5 \\
+Edit-balanced tuning & 195/15/15 & 200/17/16 & 197/17/16 & 193/25/17 & 3/5 \\
+Line-span splice output & 108/14/16 & 101/16/17 & 98/16/17 & 103/13/16 & 2/5 \\
+Content-anchor output & 136/18/19 & 138/26/19 & 138/24/20 & 136/16/18 & 3/5 \\
+Public-feedback revision & 194/12/14 & 193/10/14 & 192/13/14 & 202/14/14 & 2/5 \\
+Counterexample revision & 197/12/12 & 188/12/12 & 191/12/11 & 202/15/11 & 1/5 \\
+De-anchored revision & 204/13/13 & 190/12/14 & 194/13/13 & 201/14/15 & 1/5 \\
+Likelihood selection & 173/3/13 & 161/5/12 & 161/5/12 & 166/9/12 & 1/5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{RQ4: Generality}
+\label{sec:generality}
+\noindent\textbf{Problems and execution suites.} Within Unseen, Mixed exceeds Zero-shot by 12.8 points [6.83, 18.75], with 45 versus 13 exclusive successes and exact McNemar \(p=3.01\times10^{-5}\). Among 142 joint repairs, 122 have defined TED for both methods; on those 122 it reduces TED by 6.41 [3.43, 9.89]. The higher absolute Unseen than Seen RR is not evidence of stronger generalization: the partitions differ in trajectory availability and problem composition. Matching all 54 Unseen problems to distinct Seen problems on six pre-repair difficulty covariates changes the raw gap into -4.6 equal-problem points [-14.18, 5.30]. We therefore rely on within-split paired contrasts, not the direction of the raw cross-split difference. Matching reduces measured imbalance but cannot balance unobserved difficulty.
+
+A complementary observed/hidden-slice check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests, not independently authored specifications, and the large conditional percentage must not replace the full-denominator repair rate.
+
+\noindent\textbf{Earlier prefixes.} Across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, current-only Answer-3Seed reaches 69.6\% and 80.1\% RR. The early, middle, and last thirds reach 70.0\%, 67.6\%, and 71.4\% on Seen and 82.9\%, 77.3\%, and 81.8\% on Unseen. This extends evaluation beyond the last failed submission and finds no simple monotonic position effect. It does not cover trajectories that never reach acceptance, and multiple prefixes from one trajectory are dependent. The 2,770-prefix rate is neither added to the 997-input result nor reported as an independent replication on new users.
+
+\noindent\textbf{Model scale and classroom data.} At 1.5B parameters three checkpoints still gain 13.4 points over one [11.16, 15.92], but mixed-minus-terminal is -0.8 [-2.62, 1.07]. Mixed reaches 50.25\% and the nine-checkpoint terminal control 51.05\% on Seen. This smaller model reproduces the utility of multiple opportunities, not an unrestricted mixed-target advantage. It is one scale change within a model family, not broad model-family coverage. No proprietary frontier model comparison was completed.
+
+The Java portfolio results differ from RQ2's direct matched-target retraining. Mixed-minus-Answer-9Choose3 is positive on four held-out exercises (3.9 points [2.99, 5.11]) and inconclusive on held-out students (0.6 [-1.20, 2.59]). Absolute RR is 56.25\% versus 52.30\% over 304 exercise-held-out trajectories and 83.98\% versus 83.43\% over 181 student-held-out trajectories. The exercise estimate rests on four clusters only: refitting with one exercise left out keeps the contrast between 3.6 and 4.4 points, and single exercises range from 2.5 to 5.5 points. This sensitivity check preserves the sign on those exercises, but four clusters cannot support a broad classroom-population claim. The matched-target tradeoff has clearer cross-population support than a universal portfolio benefit.
+
+\noindent\textbf{Representation and overlap.} Binary accepted/non-accepted mining removes the fine severity ordering but also changes the target set. Retraining changes Progress RR by +2.3 Seen and -2.8 Unseen points in the canonical-minus-alternative direction. The nonuniform changes show that the ordering is not an innocuous implementation detail. For Mixed and Answer-9Choose3, exact matches between a returned repair and a training-time accepted program occur in 0.6\% and 1.3\% of selections, near-duplicates above a 0.90 token-similarity threshold in 3.8\% and 5.3\%, and median maximum similarity to a same-problem training target is 66.7\% and 68.6\%. Low exact-copy rates do not exclude structural reuse, pretraining contamination, or user-level overlap~\cite{allamanis2019adverse}.
+
+\noindent\textbf{Answer to RQ4.} The matched-target tradeoff replicates on authentic student-held-out Java, and candidate breadth remains useful at smaller model scale. Mixed-target unrestricted superiority does not replicate consistently. Prefix, difficulty, overlap, verdict-order, and hidden-slice checks narrow specific threats, but they do not make CodeNet a classroom study or acceptance a proof of correctness.
+
+\subsection{RQ5: Development Diagnosis}
+\label{sec:development}
+\noindent\textbf{Decision rule.} Subsequent development compared current-only (C), authentic-history (H), shuffled-history (HS), and matched other-user (U) conditions. Adoption required strictly greater pooled stable acceptance for H than every control; no increase versus C in regressions, regression upper bounds, or unknowns; all required problem folds non-worse; and completed evaluation. Stable acceptance requires complete, identical per-test outcomes across four replay blocks (worker order 1, 8, 8, 1) for both source and candidate, with every candidate test accepted. Regression means losing a previously passed testcase in a stable comparison. Missing, inconsistent, or infrastructure-uncertain execution is unknown. For regression count $r$, unknown count $u$, and $n$ inputs, the conservative upper bound is $(r+u)/n$; it is not a confidence bound. These requirements exceed the fixed-measurement pass-fraction invariant of Figure~\ref{alg:generic}. Historical verdicts also differ from replay: only 7,979 of 14,027 unique training targets were cached as accepted. We retain runtime uncertainty rather than interpreting it as learner ability. Predictive loss is not RR.
+
+\noindent\textbf{History and generation.} Table~\ref{tab:development} preserves all twelve main two-slot modifications. Prompt reordering, full-source histories, and matched fine-tuning fail to distinguish authentic history. A crossed diagnosis gives the H adapter 201 acceptances on current code, 192 on H, 198 on HS, and 206 on U: longer-input adaptation is not an authentic-content benefit. Edit-balanced training produces the highest observed two-slot H rate, 200/320 (62.5\%), but increases regressions (17 versus 15), unknowns (16 versus 15), and regression upper bounds (33 versus 30), with only 3/5 required non-worse folds. H selection misses just seven known accepted candidates; 97 inputs lack a confirmed accepted candidate and 16 remain unresolved. Selection alone cannot eliminate this generation deficit.
+
+Splice output causes 48 format failures, seven resource failures, and 151 valid-to-invalid syntax changes across 640 H attempts. Content anchors reduce representation failures but still yield only 138 acceptances and 26 regressions. Public-feedback and counterexample revision do not pass controls. Hiding failed generated code reduces copying and improves some public-test outcomes, yet final H acceptance remains 190 versus C 204. Likelihood selection then reduces H to 161, with 10 gains and 39 losses; 34 losses select unchanged code. These diagnostics distinguish invalid edits, insufficient candidates, public-test overfitting, and excessive preservation rather than treating every failure as a ranking problem.
+
+\noindent\textbf{Separate eight-draw bank.} An earlier 320-input, 23-problem bank includes 19 initially accepted programs, 288 non-accepted programs, and 13 unknowns; accepted/320 is not failed-input RR. Structural and history-feature refinements reach 203--211 acceptances but fail their original regression and 4/5-fold requirements or match perturbation controls. Conservative preservation reduces regressions but returns unchanged code 155 times, leaving 122 acceptances. Generic public-execution selection is a genuine improvement: C reaches 252/320 (78.75\%), with nine regressions and 13 unknowns, versus the prior selector's 211/320, 51, and 13. It passes its separate 22-check execution-component gate and all five folds. However, H reaches 251/320 with identical regression/unknown counts and does not separate from shuffled controls.
+
+\noindent\textbf{Answer to RQ5.} No completed candidate passes all original history-specific criteria. Earlier pilots and fresh 128-input checks also failed; detailed negative results remain in the final artifact report. The last matched preference run completed 19,199 training and 4,365 validation examples per C/H arm but reached the cutoff without repair inference, so it has no RR and cannot be promoted. We retain the evaluated current-only terminal triple. These adaptively inspected runs diagnose failure modes, not independent confirmatory or educational benefits.
+
+\subsection{Threats to Validity}
+\noindent\textbf{Internal validity.} Runtime variability, undefined source ASTs, and Python whitespace affect labels and distances. We retain unknowns, denominators, and whitespace-sensitive corrections; hashes establish provenance, not correctness. Source and peer matching do not equate all target semantics or styles.
+
+\noindent\textbf{Construct validity.} Acceptance is not proof of semantic correctness~\cite{smith2015cure}; same-suite slices are not independent specifications. TED and retention do not measure cognitive load or subsequent learning. CodeNet does not identify novices or measure mastery. Java supplies classroom submissions, not an intervention observing feedback use. The per-exercise and per-student resolution describes which learners would receive a different repair, not which learners benefit, and Figure~\ref{fig:case} is one post-hoc case that carries no estimate. We display a CodeNet program because the course data terms do not permit redistributing student submissions. These distinctions limit educational and target-quality interpretations.
+
+\noindent\textbf{External and conclusion validity.} Filtering favors short, eventually successful Python trajectories and permits Seen user overlap. Java adds one course context and only four held-out exercises. Cluster bootstrap and equal-problem estimates do not eliminate small-cluster uncertainty, multiplicity, or adaptive-development bias. Gates were frozen before individual runs, not the entire program; reused development results remain exploratory.
+
+\section{Related Work}
+\label{sec:related}
+\noindent\textbf{Repair and generation budgets.} Generate-and-validate repair spans search, learned transformations, and language models~\cite{gazzola2019automatic,monperrus2018automatic,weimer2009automatically,legoues2012genprog}. Search analyses~\cite{qi2014strength} and execution-based evaluation~\cite{haque2023fixeval,chen2021evaluating} separate candidate quality from exposure. Neural patches, ensembles, synthetic corruption, and execution-informed self-supervision provide different training signals~\cite{tufano2019empirical,lutellier2020coconut,yasunaga2021break,ye2022selfapr}; zero-shot studies examine repair without task adaptation~\cite{xia2022less,jiang2023impact}. Independent ensembles and weight averaging supply other notions of diversity~\cite{lakshminarayanan2017simple,wortsman2022model}. We do not introduce portfolio repair; we isolate trajectory targets with same-target seeds, equal search spaces, fixed draws, and current-only controls.
+
+\noindent\textbf{Programming-exercise feedback.} Educational repair exploits correct programs through clustering, alignment, and refactoring~\cite{gulwani2018automated,wang2018search,hu2020re}; related representations and tutoring systems propagate feedback and generate hints~\cite{piech2015embeddings,glassman2015overcode,rivers2017datadriven,price2017isnap}. Language models support repair, syntax feedback, conversations, peers, and counterexamples~\cite{joshi2023repair,zhang2024pydex,phung2023generating,liu2024fastfixer,yang2024cref,zhao2024peer,orvalho2025counterexample}. Assignment-aware and diversified feedback use further reference strategies~\cite{heo2023referent,choi2021automated,choi2025automated}. LSGen also mines chronological wrong-to-later-correct submission pairs for retrieval~\cite{dai2026learner}, so trajectories are not our novelty, and it retains its strong Seen advantage here. Benchmarking and surveys emphasize population and protocol differences~\cite{yi2017feasibility,koutcheme2024benchmarking,keuning2018systematic}. These methods are not uniformly terminal-target learners: our narrower intervention replaces the target for matched sources and exposes a coverage--locality tradeoff, not dominance over feedback strategies.
+
+\noindent\textbf{History and learner evidence.} ZPD and scaffolding concern supported performance, not program edit distance~\cite{cole1978mind,murray2002toward,chounta2017grey,schulze2024beyond}. Knowledge tracing models proficiency from interactions~\cite{corbett1994knowledge,piech2015deep,ghosh2020context}; TIKTOC incorporates testcase evidence~\cite{duan2024tiktoc}. Next-step hints, feedback ladders, and novice-response studies examine guidance more directly~\cite{roest2024next,heickal2024generating,xiao2024exploring}, while feedback theory emphasizes its interpretation and use~\cite{narciss2008feedback,hattie2007power,shute2008focus,aleven2000limitations}. We test the narrower repair prerequisite: whether authentic history improves generated changes beyond current code and perturbed histories. The results do not establish that prerequisite. Educational claims additionally require comprehension, transfer, and independent-correction measurements, not only executable outputs.
+
+\section{Conclusion}
+\label{sec:conclusion}
+We presented \textsc{ZPDPatch}, a Mine--Train--Select technique for trajectory-derived repair targets and execution-guided portfolios. Matched Python and student-held-out Java experiments show the same coverage--locality tradeoff: progress targets preserve more source on joint successes but repair fewer inputs. Candidate breadth and adaptation contribute substantial gains, while authentic history and target heterogeneity show no consistent unrestricted advantage. Development improves generic execution selection but passes no history-specific adoption gate, so we retain the current-only terminal triple. Resolved per exercise and per student, that tradeoff is uneven: the coverage cost concentrates on particular exercises, and the preservation gain reaches about a third of the students who receive a repair from either rule, which is where a course would have to choose. Educational benefit and broader model-family generality remain unmeasured.
+
+\section*{Data Availability}
+An anonymous supplement contains code-free paired outcomes, condition manifests, metric code, negative results, and claim--evidence links. Its offline verifier checks hashes and recomputes matched Python/Java contrasts. Student source and model weights are excluded: the CodeWorkout/TIKTOC terms govern redistribution of student submissions~\cite{duan2024tiktoc}, CodeNet retains its own terms~\cite{puri2021project}, and the adapters exceed the supplement budget. We therefore share the derived outcome and condition data that recompute every reported contrast, as anonymous supplementary material rather than a public link, which keeps review double-blind. No learner intervention was conducted.
+
+\clearpage
+\IEEEtriggeratref{52}
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+\end{document}

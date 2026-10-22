@@ -31,6 +31,11 @@ class KoreanReviewRoundTripTest(unittest.TestCase):
         for index in translated:
             self.assertTrue(lines[index + 1].startswith("% "), lines[index][:60])
 
+    def test_checked_in_english_source_matches_the_recovery(self) -> None:
+        english_source = ROOT / "paper" / "main.en.tex"
+        self.assertTrue(english_source.is_file(), "the recovered English source is not checked in")
+        self.assertEqual(english_source.read_text(encoding="utf-8"), self.recovered())
+
     def test_recovery_is_idempotent(self) -> None:
         once = self.recovered()
         self.assertEqual(english(once), once)
