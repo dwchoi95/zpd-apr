@@ -5,8 +5,10 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{xurl}
 \usepackage{kotex} %!ko-only the reading copy compiles Hangul; the English source never loads it
-\usepackage{algorithm}
+\usepackage[ruled]{algorithm}
 \usepackage[noend]{algpseudocode}
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
 \usepackage{tikz}
 % Float placement only: let a column carry the two approach floats above the text that cites them.
 \renewcommand{\topfraction}{0.9}
@@ -49,30 +51,30 @@ Automated Program Repair (APR)는 테스트를 통과하지 못하는 프로그�
 \begin{itemize}
 \item \textbf{Observation.} 반환된 수리가 학생의 프로그램에 가까이 머물러야 할 때 무엇이 일어나는지를 보인다. Section~\ref{sec:limitation}은 가장 강한 선행 기법이 제한 없이 우리 Python 입력의 80.2\%를 수리하지만 AST 연산 20개 안에서는 13.9\%만 수리함을 보이며, trajectory target은 44.0\%, 곧 3.2배를 수리한다. 이는 target을 학생 자신의 trajectory에서 얻는 수리의 필요성을 제시한다.
 % \item \textbf{Observation.} We show what happens when a returned repair has to stay close to the student's program. Section~\ref{sec:limitation} shows the strongest prior technique repairing 80.2\% of our Python inputs unrestricted but only 13.9\% within 20 AST operations, where a trajectory target reaches 44.0\%, 3.2 times as many. This motivates repair that takes its target from the student's own trajectory.
-\item \textbf{New technique.} 프로그래밍 연습문제를 위한 trajectory 기반 수리 기법 \textsc{ZPDPatch}를 제안한다. 핵심 기술적 기여는 두 가지다. 첫째, Mine은 target을 그 학생의 이후 제출에서 실행 증거 규칙에 따라 얻는다. 둘째, 그 둘이 함께 움직이므로 고정하고 맞춘 동료 target을 통제군으로 둔다. \textsc{ZPDPatch}는 학습자 모형을 쓰지 않으며 입력마다 세 번의 호출로 동작한다.
-% \item \textbf{New technique.} We present \textsc{ZPDPatch}, a trajectory-supervised repair technique for programming exercises. Our core technical contribution is twofold. First, Mine derives the target from the student's own later submission under execution-evidence rules. Second, it holds the example counts and the candidate budget fixed and admits a matched-peer target as a control. \textsc{ZPDPatch} needs no learner model and serves three calls per input.
+\item \textbf{New technique.} 프로그래밍 과제를 위한 trajectory 기반 수리 기법 \textsc{ZPDPatch}를 제안한다. 핵심 기술적 기여는 두 가지다. 첫째, Mine은 target을 그 학생의 이후 제출에서 실행 증거 규칙에 따라 얻는다. 둘째, 그 둘이 함께 움직이므로 고정하고 맞춘 동료 target을 통제군으로 둔다. \textsc{ZPDPatch}는 학습자 모형을 쓰지 않으며 입력마다 세 번의 호출로 동작한다.
+% \item \textbf{New technique.} We present \textsc{ZPDPatch}, a trajectory-supervised repair technique for programming assignments. Our core technical contribution is twofold. First, Mine derives the target from the student's own later submission under execution-evidence rules. Second, it holds the example counts and the candidate budget fixed and admits a matched-peer target as a control. \textsc{ZPDPatch} needs no learner model and serves three calls per input.
 \item \textbf{Evaluation.} target의 출처와 prompt, decoder, 후보 예산을 바꾸는 통제군들에 대해, 선언된 edit budget 아래의 수리율과 source 보존율, 제출물로부터의 AST 거리로 평가한다. 짝지은 결과, 조건 manifest, 지표 코드, 그리고 주장과 증거를 잇는 대응표를 익명 보충자료로 제공한다.
 % \item \textbf{Evaluation.} We evaluate against controls that change the target's source, the prompt, the decoder, and the candidate budget, in terms of repair rate under declared edit budgets, source retention, and AST distance from the submission. We supply the paired outcomes, condition manifests, metric code, and a claim-to-evidence map as anonymous supplementary material.
 \end{itemize}
 
 \section{Preliminaries}
 \label{sec:preliminaries}
-\subsection{Automated Program Repair for Programming Exercises}
+\subsection{Automated Program Repair for Programming Assignments}
 \label{sec:formulation}
 
 프로그래밍 과제를 위한 수리의 목표는 버기 제출을 그 문제의 테스트를 모두 통과하는 프로그램으로 바꾸는 것이다. 우리는 online judge의 문제와 과목의 연습문제를 모두 문제 \(p\)로 다룬다. 한 학생이 \(p\)에 낸 제출들을 시간순으로 놓은 것을 \emph{trajectory} \(\tau=[s_1,\ldots,s_n,s_{\mathit{ac}}]\)로 정의한다. \(s_1,\ldots,s_n\)은 버기 제출이고 \(s_{\mathit{ac}}\)은 그 학생의 첫 accepted 제출로서 평가 기준으로만 쓰이며 기법에는 주어지지 않는다. 수리 대상인 마지막 버기 제출 \(b=s_n\)을 \emph{버기 프로그램}이라 부르고, 그 이전 제출들 \(H=[s_1,\ldots,s_{n-1}]\)을 그 학생의 \emph{이력 프로그램}이라 부른다.
 % The aim of repair for programming assignments is to turn a buggy submission into a program that passes every test of its problem. We treat both a problem on an online judge and an exercise in a course as a problem \(p\). We define the \emph{trajectory} of a student on \(p\) as the chronological sequence \(\tau=[s_1,\ldots,s_n,s_{\mathit{ac}}]\) of their submissions, where \(s_1,\ldots,s_n\) are buggy and \(s_{\mathit{ac}}\) is the student's first accepted submission, which serves only as ground truth for evaluation and is never given to a technique. We call the latest buggy submission, the one to be repaired, the \emph{buggy program} \(b=s_n\), and the earlier ones \(H=[s_1,\ldots,s_{n-1}]\) the student's \emph{history programs}.
 
 \begin{algorithm}[h]
-\caption{Execution-gated repair for programming exercises}
+\caption{Automated Program Repair for Programming Assignments}
 \label{alg:generic}
-\small
+\footnotesize
 \begin{algorithmic}[1]
 \Require Current code $c$, context $x$, ordered generators $S$, tests $\mathcal E$, edit budget $B$
 \Ensure Returned program $c^*$
 \State $c^*\gets c$; $q^*\gets\textsc{Execute}(c,\mathcal E)$
 \For{$v\in S$}
- \State $z\gets\textsc{Generate}(v,x)$
+ \State $z\gets\mathsf{Generate}(v,x)$
  \If{$B<\infty$ and $\mathrm{ted}^{\dagger}(c,z)>B$}
   \State \textbf{continue}
  \EndIf
@@ -98,65 +100,6 @@ Algorithm~\ref{alg:generic}은 기존 기법들의 방식에 따라 프로그래
 \subsection{Limitation of Solution-Supervised Repair}
 \label{sec:limitation}
 
-\begin{figure}[t]
-\centering
-\begin{tikzpicture}[font=\footnotesize,
- box/.style={draw,rounded corners=2pt,align=center,text width=1.8cm,minimum height=0.85cm,inner sep=3pt},
- arr/.style={-{Latex[length=5pt]},semithick},
- lab/.style={font=\footnotesize,fill=white,inner sep=1.5pt}]
-\node[box] (mine) {\textbf{1. Mine}\\three target rules};
-\node[box,right=0.8cm of mine] (train) {\textbf{2. Train}\\independent adapters};
-\node[box,right=0.8cm of train] (select) {\textbf{3. Select}\\validation portfolio};
-\node[draw,very thick,rounded corners=4pt,fit=(mine)(train)(select),inner sep=8pt] (boundary) {};
-\node[lab] at (boundary.north) {\textsc{ZPDPatch}: offline construction};
-\draw[arr] (mine) -- node[lab,above]{pairs} (train);
-\draw[arr] (train) -- node[lab,above]{adapters} (select);
-\node[above=0.7cm of mine,align=center,font=\footnotesize] (traj) {Chronological code\\+ execution evidence};
-\node[above=0.7cm of select,align=center,font=\footnotesize] (valid) {Validation executions};
-\draw[arr] (traj) -- (mine); \draw[arr] (valid) -- (select);
-\node[box,below=1.4cm of mine] (input) {Current code\\+ optional history};
-\node[box,below=1.4cm of train] (gen) {Frozen checkpoints\\max. three calls};
-\node[box,below=1.4cm of select] (gate) {Execution gate\\repair / fallback};
-\draw[arr] (input) -- node[lab,below=14pt]{context} (gen);
-\draw[arr] (gen) -- node[lab,below=14pt]{programs} (gate);
-\draw[arr] (select.south) -- ++(0,-0.5) -| node[lab,pos=0.25]{triple} (gen.north);
-\node[below=0.65cm of gate,font=\footnotesize] (tests) {Observed tests + edit budget};
-\draw[arr] (tests) -- (gate);
-\end{tikzpicture}
-\centering (a) stages and deployment
-
-\medskip
-
-\small
-\begin{algorithmic}[1]
-\Require Trajectories $H$, evidence $O$, validation inputs $U$, seeds $\Sigma$, portfolio size $k$, edit budget $B$
-\Ensure Frozen ordered checkpoint portfolio $S$
-\State $(D_A,D_S,D_P)\gets(\emptyset,\emptyset,\emptyset)$ \Comment{Mine}
-\For{$\tau=[s_1,\ldots,s_n]\in H$}
- \State $D_A\gets D_A\cup\mathsf{TerminalPairs}(\tau)$
- \For{$\rho\in\{S,P\}$}
-  \State $R\gets[s_1]$
-  \For{$s_t\in[s_2,\ldots,s_n]$}
-   \If{$\mathsf{Improves}_{\rho}(R[-1],s_t;O)$}
-    \State $D_\rho\gets D_\rho\cup\{(R,c_t)\}$; $R\gets R\mathbin{\|}[s_t]$
-   \EndIf
-  \EndFor
- \EndFor
-\EndFor
-\State $V\gets\emptyset$ \Comment{Train}
-\For{$(\rho,\sigma)\in\{A,S,P\}\times\Sigma$}
- \State $V\gets V\cup\{\mathsf{Train}(D_\rho,\sigma)\}$
-\EndFor
-\For{$v\in V$} \Comment{Select}
- \State $R_v^B\gets\mathsf{Validate}(v,U,B)$
-\EndFor
-\State $S\gets\mathsf{Select}(\{R_v^B\}_{v\in V},k)$
-\State \Return $\mathsf{FreezeAndOrder}(S)$
-\end{algorithmic}
-\centering (b) construction procedure
-\caption{\textsc{ZPDPatch}. Panel (a) separates offline construction from online repair, and panel (b) returns the frozen portfolio whose checkpoints supply the generators of Algorithm~\ref{alg:generic}.}
-\label{fig:overview}
-\end{figure}
 
 \begin{table}[h]
 \caption{Canonical training rules before matched controls. Counts are examples, not unique sources or test successes.}
@@ -193,6 +136,35 @@ Seen 분할의 Python 제출 997개에서(Section~\ref{sec:experiment}) LSGen의
 
 \subsection{Overview}
 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[font=\footnotesize,
+ box/.style={draw,rounded corners=2pt,align=center,text width=1.8cm,minimum height=0.85cm,inner sep=3pt},
+ arr/.style={-{Latex[length=5pt]},semithick},
+ lab/.style={font=\footnotesize,fill=white,inner sep=1.5pt}]
+\node[box] (mine) {\textbf{1. Mine}\\three target rules};
+\node[box,right=0.8cm of mine] (train) {\textbf{2. Train}\\independent adapters};
+\node[box,right=0.8cm of train] (select) {\textbf{3. Select}\\validation portfolio};
+\node[draw,very thick,rounded corners=4pt,fit=(mine)(train)(select),inner sep=8pt] (boundary) {};
+\node[lab] at (boundary.north) {\textsc{ZPDPatch}: offline construction};
+\draw[arr] (mine) -- node[lab,above]{pairs} (train);
+\draw[arr] (train) -- node[lab,above]{adapters} (select);
+\node[above=0.7cm of mine,align=center,font=\footnotesize] (traj) {Chronological code\\+ execution evidence};
+\node[above=0.7cm of select,align=center,font=\footnotesize] (valid) {Validation executions};
+\draw[arr] (traj) -- (mine); \draw[arr] (valid) -- (select);
+\node[box,below=1.4cm of mine] (input) {Current code\\+ optional history};
+\node[box,below=1.4cm of train] (gen) {Frozen checkpoints\\max. three calls};
+\node[box,below=1.4cm of select] (gate) {Execution gate\\repair / fallback};
+\draw[arr] (input) -- node[lab,below=14pt]{context} (gen);
+\draw[arr] (gen) -- node[lab,below=14pt]{programs} (gate);
+\draw[arr] (select.south) -- ++(0,-0.5) -| node[lab,pos=0.25]{triple} (gen.north);
+\node[below=0.65cm of gate,font=\footnotesize] (tests) {Observed tests + edit budget};
+\draw[arr] (tests) -- (gate);
+\end{tikzpicture}
+\caption{\textsc{ZPDPatch} separates offline construction from online repair. Mine, Train, and Select run once per corpus; deployment then serves repairs from the frozen checkpoints behind the execution gate of Algorithm~\ref{alg:generic}.}
+\label{fig:overview}
+\end{figure}
+
 
 
 
@@ -201,8 +173,44 @@ Seen 분할의 Python 제출 997개에서(Section~\ref{sec:experiment}) LSGen의
 
 \subsection{Main Algorithm}
 
-기본 구성은 관계마다 seed 3개와 \(k=3\)을 쓰며, 폭과 pool 통제가 이 기회들을 변화시킨다. Figure~\ref{fig:overview}(a)는 그 두 국면을 보이고, Figure~\ref{fig:overview}(b)는 고정된 checkpoint portfolio를 구성하며, Algorithm~\ref{alg:generic}은 그것을 배포해 입력을 수리한다.
-% The primary configuration uses three seeds per relation and \(k=3\), and breadth and pool controls vary these opportunities. Figure~\ref{fig:overview}(a) shows those two phases, Figure~\ref{fig:overview}(b) constructs the frozen checkpoint portfolio, and Algorithm~\ref{alg:generic} deploys it to repair an input.
+\begin{algorithm}[h]
+\caption{\textsc{ZPDPatch}}
+\label{alg:construct}
+\footnotesize
+\begin{algorithmic}[1]
+\Require Trajectories $H$, evidence $O$, validation inputs $U$, seeds $\Sigma$, portfolio size $k$, edit budget $B$
+\Ensure Frozen ordered checkpoint portfolio $S$
+\State /* Step 1. Mine the three target datasets */
+\State $(D_A,D_S,D_P)\gets(\emptyset,\emptyset,\emptyset)$
+\For{$\tau=[s_1,\ldots,s_n]\in H$}
+ \State $D_A\gets D_A\cup\mathsf{TerminalPairs}(\tau)$ \Comment{Answer}
+ \For{$\rho\in\{S,P\}$}
+  \State $R\gets[s_1]$ \Comment{retained prefix}
+  \For{$s_t\in[s_2,\ldots,s_n]$}
+   \If{$\mathsf{Improves}_{\rho}(R[-1],s_t;O)$}
+    \State $D_\rho\gets D_\rho\cup\{(R,c_t)\}$; $R\gets R\mathbin{\|}[s_t]$
+   \EndIf
+  \EndFor
+ \EndFor
+\EndFor
+\State
+\State /* Step 2. Train one adapter per rule and seed */
+\State $V\gets\emptyset$
+\For{$(\rho,\sigma)\in\{A,S,P\}\times\Sigma$}
+ \State $V\gets V\cup\{\mathsf{Train}(D_\rho,\sigma)\}$
+\EndFor
+\State
+\State /* Step 3. Select a portfolio by executed validation repairs */
+\For{$v\in V$}
+ \State $R_v^B\gets\mathsf{Validate}(v,U,B)$ \Comment{$R_v^B\subseteq U$}
+\EndFor
+\State $S\gets\mathsf{Select}(\{R_v^B\}_{v\in V},k)$ \Comment{$|S|=k$}
+\State \Return $\mathsf{FreezeAndOrder}(S)$
+\end{algorithmic}
+\end{algorithm}
+
+기본 구성은 관계마다 seed 3개와 \(k=3\)을 쓰며, 폭과 pool 통제가 이 기회들을 변화시킨다. Figure~\ref{fig:overview}는 그 두 국면을 보이고, Algorithm~\ref{alg:construct}는 고정된 checkpoint portfolio를 구성하며, Algorithm~\ref{alg:generic}은 그것을 배포해 입력을 수리한다.
+% The primary configuration uses three seeds per relation and \(k=3\), and breadth and pool controls vary these opportunities. Figure~\ref{fig:overview} shows those two phases, Algorithm~\ref{alg:construct} constructs the frozen checkpoint portfolio, and Algorithm~\ref{alg:generic} deploys it to repair an input.
 
 \begin{table}[t]
 \caption{Corpus after whole-trajectory filtering. Part.: partition; Subm.: submissions; prefixes precede relation filtering. Seen problems/tests are shared across its partitions; user counts are not additive.}
