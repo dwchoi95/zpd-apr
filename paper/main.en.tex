@@ -36,11 +36,11 @@ We present \textsc{ZPDPatch}, a Mine--Train--Select technique that builds repair
 
 On 997 Python inputs from problems seen in training and 250 from held-out problems, matched Answer targets repair 19.2 and 11.2 points more inputs. On the inputs both rules repair, Progress targets increase source-token retention by 5.6 and 6.5 percentage points. The Progress rule also returns a program that has moved forward on inputs it does not repair, a further 9.4 points of Seen inputs that pass more tests without passing all. Student-disjoint CS1 Java retraining reproduces both directions. Resolved per exercise and per student the tradeoff is uneven, with Answer targets leading on 15 of 17 exercises and the retention advantage reaching 31.1\% of the students who receive a repair from both rules. Our portfolio over the three rules reaches 61.5\%/74.8\%, below the 72.0\%/81.2\% of an Answer triple that sees only the current submission. We retain the current-only Answer triple, and report the Progress rule as the option a course takes when locality binds.
 
-\noindent\textbf{Contributions.} We summarize our contributions as follows:
+\noindent\textbf{Contributions.} Our contributions are the following three.
 \begin{itemize}
-\item \textbf{Problem and hypothesis:} We distinguish trajectory-derived targets from authentic-history conditioning and candidate breadth, and formulate controls that can reject a history-specific explanation even when aggregate repair coverage increases.
-\item \textbf{Technique:} We specify Mine, Train, and Select, including the three retained-submission rules, exact validation portfolio selection, and an execution gate with explicit fallback and edit-budget semantics.
-\item \textbf{Evaluation:} We separate target, provenance, decoder, checkpoint, and history effects on Python and CS1 Java, and resolve the target tradeoff across exercises and students instead of reporting cohort means. We also map every claim to a retained artifact.
+\item \textbf{Observation.} Neither repair supervised to an accepted solution nor hints drawn from a solution space is fitted to the submission's own execution state. We define repair that targets that submission's next improvement as trajectory-conditioned repair, and show that attributing a gain to that target requires holding sources, example counts, and candidate budgets fixed.
+\item \textbf{Technique.} We specify Mine, Train, and Select, including the three pairing rules, portfolio selection on executed validation repairs rather than training loss, and an execution gate with explicit fallback and edit-budget semantics.
+\item \textbf{Evaluation.} We measure on Python and student-disjoint CS1 Java that target construction moves coverage and locality in opposite directions, and we separate the effects of the target, its source, the decoder, and the checkpoint. We resolve that tradeoff across exercises and students instead of reporting cohort means, and map every claim to a retained artifact.
 \end{itemize}
 
 \section{Preliminaries}

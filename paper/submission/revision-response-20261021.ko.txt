@@ -357,7 +357,35 @@ Answer / Strict / Progress이며, Section II가 정의하는 target 종류 이�
 대체된 PDF SHA-256 (P5 퇴고 이전)
 7c9d525ca1f41c91a5bac84f957b7e215faac157ad340caa37d9c68ffa42c517
 
-최종 PDF SHA-256
+Introduction P6(Contributions) 퇴고 — 2026-10-22
+세 항목과 도입 줄을 모두 고쳤다. 101 -> 149 words. 새 수치는 없다.
+1. 첫 항목이 제거된 범위를 기여로 광고하고 있었다. "전체 수리 coverage가 올라가더라도 history
+   특유의 설명을 기각할 수 있는 통제 설계"가 그것이다. 라벨의 hypothesis도 논문 전체에서 이 자리에만
+   남아 있었고 P3는 가설이 아니라 측정 가능한 한 주장으로 좁혔다. 사용자 지시에 따라 라벨을
+   Observation으로 바꾸고, 항목이 관찰로 열리도록 내용을 맞췄다. accepted solution을 향해
+   supervise된 수리도 해답 공간에서 끌어온 힌트도 제출물 자신의 실행 상태에 맞춰지지 않는다는
+   관찰을 세우고, trajectory-conditioned repair 정의와 귀속 조건을 잇는다. P3 첫 문장을 그대로
+   되풀이하지 않도록 표현을 달리 했다.
+2. 콜론 4개를 없앴다. 도입 줄의 콜론과 라벨 3개의 콜론이다. 논문의 다른 모든 볼드 라벨은
+   마침표를 쓰므로 자기 논문 안의 불일치였다.
+3. "three retained-submission rules"는 같은 규칙의 네 번째 이름이었다. 짝짓기 규칙으로 바꿨다.
+4. "exact validation portfolio selection"의 exact가 무엇을 한정하는지 불분명했다. 실제 내용인
+   "학습 손실이 아니라 실행된 validation 수리로 고른다"로 적었다.
+5. provenance가 정의 없이 처음 등장했고, 본문에서 target의 출처(RQ2 peer 교체)와 해시 provenance
+   두 뜻으로 쓰였다. 기여 항목에서는 "target의 출처"로 풀었다. 같은 항목의 history 효과는 제거된
+   범위이므로 뺐다.
+6. 논문의 대표 결과가 기여 목록에 없었다. 이전에는 "the target tradeoff"로만 가리켰다. 이제
+   Evaluation 항목이 target 구성이 coverage와 locality를 서로 반대 방향으로 바꾼다는 것을 이름으로
+   말한다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Introduction 본문
+910 words(가이드라인 700-1,000), 본문 6문단, Introduction 내 콜론 0개. 본문은 10쪽 둘째 단
+아래쪽에서 끝난다.
+
+대체된 PDF SHA-256 (P6 퇴고 이전)
 023bc381a801b5e783aa63c935c9f46e8338c2da7d90f3f4123b64a3e8e99539
+
+최종 PDF SHA-256
+fe22368581d21622de7ab3ea3acc04da3ab6da18b88231d6164f051df7b66539
 최종 영어 소스 SHA-256
-e33ad55cc86b252aaca0c030d1d2ed1d0d8a9b3ebee061ea0edbc5c3d0d2d4fb
+f706d2326e31439d99dd957104bf12aa374bf1f66d7a397765697c4cab45dc26
