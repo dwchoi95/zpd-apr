@@ -610,7 +610,39 @@ Introduction 본문 1,095 words로 아직 상한을 넘으며, Introduction 전�
 대체된 PDF SHA-256 (P4 첫 문장 수정 이전)
 c8fb1cfa4e28bcfdb6d8f94c805453623b002bc62923785f354150a0a0bc3d17
 
-최종 PDF SHA-256
+Introduction P5(Results)를 I7 슬롯에 맞춰 재작성 — 2026-10-23
+가이드라인 156-170행의 I7은 순서를 (a) 헤드라인, (b) baseline 실명과 범주와 인용, (c) 설정의 대상
+개수와 규모 범위, (d) 주 지표, (e) 부 지표, (f) 추가 평가로 규정하고, (f)는 Section IV의 RQ와
+1:1로 대응해야 한다고 적는다. 기존 P5는 (a)가 없이 budget 세부로 열었고, (b)는 LSGen만 범주도
+인용도 없이 나왔고, (c)의 수치는 문장 중간에 흩어져 규모 범위가 없었으며, (f)가 아예 없었다.
+이번에는 규격을 먼저 펼친 뒤 슬롯 단위로 썼다. 수치는 모두 보존된 결과이며 새 분석은 없다.
+1. (a) 헤드라인을 세웠다. "Experimental results demonstrate that ZPDPatch markedly increases how
+   much of a student's program a returned repair keeps, and that under a bounded edit it repairs
+   far more inputs than the strongest prior method." 제한 없는 조건에서는 우리가 지므로 헤드라인을
+   우리가 이기는 두 단위로 한정했다.
+2. (b) baseline을 범주와 실명과 인용으로 적었다. 학습자별 해답을 retrieval하는 LSGen, 적응을
+   거치지 않은 언어 모델 Zero-shot, 그리고 target 규칙만 다른 우리 자신의 맞춘 구성들이다.
+   가이드라인은 Abstract과 달리 Introduction에서는 baseline을 실명으로 쓰라고 규정한다.
+3. (c) 설정에 개수와 규모 범위를 넣었다. Project CodeNet의 학습에서 본 328개 문제 997개 입력과
+   보류된 54개 문제 전체 250개 입력, CodeWorkout의 보류된 33명 학생 17개 CS1 exercise 181개 Java
+   trajectory다. 모두 Section IV.A에 이미 있는 수치를 끌어온 것이다.
+4. (d)와 (e)를 규정된 표현으로 표시했다. "In terms of repair rate under a declared edit budget"과
+   "Regarding locality"다. 주 지표는 budget 아래 수리율(44.0 대 13.9, 평균 +14.7), 부 지표는
+   retention(5.6과 6.5 포인트, 대신 19.2와 11.2 포인트 덜 수리)이다.
+5. (f) 추가 평가 문장을 신설해 RQ와 1:1로 걸었다. 트레이드오프의 견고함은 exercise별·학생별 분해
+   (RQ2), 구성 요소의 기여는 후보 폭과 모델 적응의 분리(RQ3), 일반성은 student-disjoint CS1 Java
+   재학습(RQ4)이다. 이전 P5는 RQ3를 전혀 언급하지 않았다.
+6. 유지 결정과 불리한 수치는 그대로 남겼다. 제한을 없애면 portfolio 61.5/74.8은 current-only
+   Answer 3개 조합 72.0/81.2와 LSGen 80.2에 못 미치고, LSGen은 budget 160에서 앞선다.
+분량: P5가 191에서 303 words로, Introduction 본문은 1,207 words가 되었다. 사용자와 Introduction
+전체 퇴고가 끝난 뒤 한 번에 조정하기로 합의했다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Introduction 콜론 0개.
+
+대체된 PDF SHA-256 (P5 재작성 이전)
 e734ca51024b5b89aa6b8da103d7392ad86129d189a043e60e5bdfc34b131e28
+
+최종 PDF SHA-256
+a53678aaeb34f45a735d41a529e71a520b6f411602e15d0c3399aa3daf9ced83
 최종 영어 소스 SHA-256
-aebcf28a11804dca72352ca02526f031de1cfbf76b90f43d3d17116d0b2d5bfa
+32ff49f3bda97bae5cb44f39878a7330be2a938260cf1f32d193668b0d2a7b10

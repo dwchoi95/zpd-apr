@@ -16,21 +16,21 @@
     "Table I": {
       "caption_page_column_y": [
         3,
-        0,
-        600.0
+        1,
+        54.0
       ],
       "first_reference_page_column_y": [
         3,
         1,
-        172.0
+        327.0
       ],
       "caption_xy": [
-        159.0,
-        600.0
+        422.0,
+        54.0
       ],
       "first_reference_xy": [
         322.0,
-        172.0
+        327.0
       ]
     },
     "Table II": {
@@ -42,7 +42,7 @@
       "first_reference_page_column_y": [
         5,
         1,
-        277.0
+        363.0
       ],
       "caption_xy": [
         158.0,
@@ -50,87 +50,87 @@
       ],
       "first_reference_xy": [
         312.0,
-        277.0
+        363.0
       ]
     },
     "Table III": {
       "caption_page_column_y": [
         5,
         1,
-        54.0
+        172.0
       ],
       "first_reference_page_column_y": [
         6,
         1,
-        229.0
+        322.0
       ],
       "caption_xy": [
         420.0,
-        54.0
+        172.0
       ],
       "first_reference_xy": [
         312.0,
-        229.0
+        322.0
       ]
     },
     "Table IV": {
       "caption_page_column_y": [
-        6,
-        1,
-        594.0
+        7,
+        0,
+        54.0
       ],
       "first_reference_page_column_y": [
         7,
         0,
-        120.0
+        218.0
       ],
       "caption_xy": [
-        419.0,
-        594.0
+        156.0,
+        54.0
       ],
       "first_reference_xy": [
         49.0,
-        120.0
+        218.0
       ]
     },
     "Table V": {
       "caption_page_column_y": [
         7,
-        0,
-        527.0
+        1,
+        54.0
       ],
       "first_reference_page_column_y": [
         7,
         1,
-        384.0
+        470.0
       ],
       "caption_xy": [
-        158.0,
-        527.0
+        421.0,
+        54.0
       ],
       "first_reference_xy": [
         312.0,
-        384.0
+        470.0
       ]
     },
     "Figure 1": {
       "caption_page_column_y": [
         2,
         1,
-        203.0
+        384.0
       ],
       "first_reference_page_column_y": [
-        2,
-        1,
-        602.0
+        3,
+        0,
+        473.0
       ],
       "caption_xy": [
         369.0,
-        203.0
+        384.0
       ],
       "first_reference_xy": [
-        322.0,
-        602.0
+        49.0,
+        473.0
       ]
     },
     "Figure 2": {
@@ -140,37 +140,37 @@
         455.0
       ],
       "first_reference_page_column_y": [
-        3,
-        1,
-        624.0
+        4,
+        0,
+        236.0
       ],
       "caption_xy": [
         49.0,
         455.0
       ],
       "first_reference_xy": [
-        312.0,
-        624.0
+        49.0,
+        236.0
       ]
     },
     "Figure 3": {
       "caption_page_column_y": [
         7,
         1,
-        161.0
+        337.0
       ],
       "first_reference_page_column_y": [
         7,
         1,
-        504.0
+        590.0
       ],
       "caption_xy": [
         312.0,
-        161.0
+        337.0
       ],
       "first_reference_xy": [
         312.0,
-        504.0
+        590.0
       ]
     }
   },
@@ -184,6 +184,6 @@
   "font_count": 20,
   "embedded_fonts": true,
   "type3_fonts": false,
-  "sha256": "e734ca51024b5b89aa6b8da103d7392ad86129d189a043e60e5bdfc34b131e28",
-  "source_sha256": "aebcf28a11804dca72352ca02526f031de1cfbf76b90f43d3d17116d0b2d5bfa"
+  "sha256": "a53678aaeb34f45a735d41a529e71a520b6f411602e15d0c3399aa3daf9ced83",
+  "source_sha256": "32ff49f3bda97bae5cb44f39878a7330be2a938260cf1f32d193668b0d2a7b10"
 }
