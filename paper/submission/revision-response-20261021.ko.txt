@@ -817,7 +817,52 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (P6 재작성 이전)
 43afbe646c8b2e478bef26dd9c6deaaa6f32edcf9dc202055057a339b4511c0b
 
-최종 PDF SHA-256
+Section II-A 재작성 및 알고리즘 템플릿 적용 — 2026-10-23
+사용자가 Preliminaries 하위절 구성이 가이드라인과 다르다고 지적하고, Goal을 뺀 2개 하위절로 간
+예시안을 주었다. 또한 알고리즘을 figure가 아니라 알고리즘 템플릿으로 넣으라고 했다.
+1. 알고리즘을 algorithm 환경으로 바꿨다. 이전에는 figure 안에 algorithmic을 넣어 "Fig. 1"로
+   번호가 붙었고, 알고리즘 본문에 번호가 있어도 플로트로서는 그림이었다. 이제 algorithm 패키지를
+   싣고 \begin{algorithm}로 감싸 "Algorithm 1"로 렌더된다. 본문의 Figure~\ref{alg:generic} 참조
+   7곳도 Algorithm~\ref{alg:generic}으로 바꿨다. 그림 번호가 하나씩 당겨져 overview가 Figure 1,
+   사례가 Figure 2가 되었다.
+2. 형식 검증기를 그에 맞게 고쳤다. verify_icse_seet_pdf.py의 금지 패턴이 algorithm2e와 함께
+   \begin{algorithm}도 막고 있었다. algorithm2e는 algpseudocode와 충돌하고 자체 번호를 쓰므로
+   금지를 유지하되, 표준 algorithm 플로트는 레이아웃 우회가 아니므로 허용으로 바꿨다.
+   동시에 플로트 순서 검사의 목록에 Algorithm 캡션을 추가했다. 그러지 않으면 새 플로트가 검사에서
+   보이지 않아 캡션이 첫 언급보다 앞서는지 확인되지 않는다. 테스트도 algorithm2e는 여전히 거부하고
+   표준 algorithm은 통과함을 함께 확인하도록 고쳤다.
+3. 하위절을 2개로 합쳤다. 이전 II-A(Submissions and Execution Evidence)와 II-B(Generate-and-
+   Validate Selection)를 하나로 묶어 II-A(Automated Program Repair for Programming Exercises)로
+   했다. 가이드라인의 정형 순서 D -> W -> E -> M 가운데 D, W, M이 모두 2.1에 들어가야 하는데
+   우리는 W와 M을 별도 하위절로 떼어 두어 한계 자리를 차지하고 있었다.
+4. D를 다시 썼다. trajectory를 수열 정의로 세우고 accepted 제출이 평가 기준으로만 쓰이며 기법에
+   주어지지 않는다는 선언을 정의 안에 넣었다. 버기 프로그램과 이력 프로그램을 이름으로 정의했다.
+   앞서 지적된 결함도 함께 고쳤다. online-judge 판정을 제출 플랫폼이 기록한 판정으로(CodeWorkout은
+   online judge가 아니다), online judge의 문제와 과목의 연습문제를 모두 p로 다룬다는 문장 추가,
+   정본의 정의 추가, target constructor를 target 규칙으로, 그리고 본문이 쓰지 않는
+   terminal/progress/intermediate target 정의 셋을 제거했다.
+5. W를 신설했다. 이전에는 산문 요약만 있었고 줄 번호 해설이 없었다. 이제 1번째 줄부터 11번째 줄까지
+   따라가며 q와 ted 정의를 해당 줄에서 도입한다.
+6. M을 대폭 확장했다. 이전에는 "reference 기반, 학습 기반, 반복적 수리가 서로 다르게 구체화한다"는
+   한 문장이었다. 이제 CLARA는 3번째 줄, Sarfgen과 Refactory도 3번째 줄, 언어 모델 기반은 3번째와
+   흔히 2번째 줄, LSGen은 거기에 맥락 x로의 retrieval을 더한다고 적는다. next-step hint 생성기는
+   완전한 프로그램이 아니라 편집을 반환하므로 이 절차를 구체화하지 않는다는 점도 밝혔다. 마지막
+   문장이 II-B로 넘기는 경첩이다. 어느 경우든 generator가 향하는 곳은 accepted solution이나 해답
+   공간이고 도움받는 학생의 이후 제출이 아니다.
+7. fig:overview를 Section III로 옮겼다가 첫 언급보다 뒤로 밀려, Section II-B 머리로 다시 올렸다.
+8. 분량. II-A 신설로 본문이 13쪽이 되어 Introduction과 중복을 함께 덜어 12쪽으로 복구했다.
+   II-A의 M 문단이 P1의 파이프라인 서술과 P2·P3의 일부를 흡수했으므로, P1에서 입출력 계약 중복을,
+   P3에서 "세 범주 모두 제출물 밖에서 가져온다"는 중복 문장을, P4에서 gate 재서술을, P5에서 끝점
+   규칙 재서술을, P6에서 II-A가 말한 target 출처 재서술을 걷어냈다. Introduction은 1,390에서
+   1,236 words가 되었다.
+검산: 영어 빌드 10+2쪽, 플로트 8개(Algorithm 1 포함) 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Section II는 867 words
+7문단으로 가이드라인의 약 970에 근접한다. II-B는 다음 단계에서 O/E/T/N/G 구조로 재작성한다.
+
+대체된 PDF SHA-256 (Section II-A 재작성 이전)
 03476d746ee6efe3bbec0fe839d457c5d8cff108d1e8301a8589bb7be989e302
+
+최종 PDF SHA-256
+1e665cc48a0ca63dfa0e3f67a0552a2a6b86b559299ed866cdcde565e85ce19e
 최종 영어 소스 SHA-256
-e73515926d26aa2f566fa78acfaeff5492acecda45cf09701bde27fb4578f46a
+fc075761b7560a3eeb3f7eafa0c5f83cca9e54d818007e00bc5c6f0ed76be746

@@ -37,9 +37,11 @@ class ICSESEETFormatTest(unittest.TestCase):
     def test_rejects_wrong_class_and_font_hacks(self):
         valid = r"\documentclass[10pt,conference]{IEEEtran}\author{}\bibliographystyle{IEEEtran}"
         check_source(valid)
-        for text in (valid.replace("10pt", "9pt"), valid + r"\fontsize{9}{10}", valid + r"\vspace{-1cm}", valid.replace("conference]", "conference,compsoc]"), valid + r"\usepackage{algorithm2e}", valid + r"\begin{algorithm}"):
+        for text in (valid.replace("10pt", "9pt"), valid + r"\fontsize{9}{10}", valid + r"\vspace{-1cm}", valid.replace("conference]", "conference,compsoc]"), valid + r"\usepackage{algorithm2e}"):
             with self.subTest(text=text), self.assertRaises(ValueError):
                 check_source(text)
+        # The standard algorithm float is allowed; only algorithm2e is not.
+        check_source(valid + r"\usepackage{algorithm}\begin{algorithm}\end{algorithm}")
 
     @unittest.skipUnless(all(shutil.which(t) for t in ("pdfinfo", "pdftotext", "pdftohtml", "pdffonts")), "Poppler required")
     def test_current_manuscript(self):

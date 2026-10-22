@@ -70,7 +70,7 @@ def check_source(source: str) -> None:
         raise ValueError("required IEEEtran class/options missing")
     if r"\bibliographystyle{IEEEtran}" not in source:
         raise ValueError("IEEE reference style missing")
-    forbidden = r"\\(?:geometry|fontsize|baselinestretch|newcommand|resizebox|tiny|vspace|enlargethispage)\b|compsoc|algorithm2e|\\begin\{algorithm\}|\\(?:setlength|addtolength)\s*\{?\\(?:textwidth|textheight|columnsep|baselineskip|topmargin|oddsidemargin)"
+    forbidden = r"\\(?:geometry|fontsize|baselinestretch|newcommand|resizebox|tiny|vspace|enlargethispage)\b|compsoc|algorithm2e|\\(?:setlength|addtolength)\s*\{?\\(?:textwidth|textheight|columnsep|baselineskip|topmargin|oddsidemargin)"
     if re.search(forbidden, source):
         raise ValueError("nonstandard layout/font override or user macro found")
     if any(tag in source for tag in (r"\acmConference", r"\ccsdesc", r"\settopmatter")):
@@ -105,6 +105,7 @@ def check_float_order(pdf: Path) -> dict:
     found = {
         "Table": sorted({m[1] for row in lines if (m := re.match(r"^TABLE\s+([IVX]+)$", row[0]))}),
         "Figure": sorted({m[1] for row in lines if (m := re.match(r"^Fig\.\s+(\d+)\.", row[0]))}, key=int),
+        "Algorithm": sorted({m[1] for row in lines if (m := re.match(r"^Algorithm\s+(\d+)\b", row[0]))}, key=int),
     }
     if not found["Table"] or not found["Figure"]:
         raise ValueError(f"no float captions found: {found}")
@@ -112,6 +113,8 @@ def check_float_order(pdf: Path) -> dict:
         for number in numbers:
             if kind == "Table":
                 caption = re.compile(rf"^TABLE\s+{number}$")
+            elif kind == "Algorithm":
+                caption = re.compile(rf"^Algorithm\s+{number}\b")
             else:
                 caption = re.compile(rf"^Fig\.\s+{number}\.")
             mention = re.compile(rf"\b{kind}\s+{number}\b(?!:)")
