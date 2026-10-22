@@ -68,11 +68,11 @@ python scripts/verify_icse_seet_pdf.py
 The format checker checks IEEEtran class/options, anonymous metadata, embedded
 non-Type-3 fonts, a 24pt title and 10pt body sample, the page boundary, and first
 float mentions. Visual inspection of every rendered page is still required.
-`paper/main.evidence-bindings.json` binds 27 literal clauses / 108 quantities to
+`paper/main.evidence-bindings.json` binds 32 literal clauses / 141 quantities to
 the preserved result bridge; it is not compiled into the paper. The
 `verify_fse2027_paper_result_bridge.py` verifier checks those bindings against
 stored evidence. `scripts/build_fse2027_evidence_bindings.py` now regenerates
-the ICSE-SEET map from 27 curated contextual templates; it fails on value or
+the ICSE-SEET map from 32 curated contextual templates; it fails on value or
 wording drift rather than extracting arbitrary matching numbers from the text.
 
 Canonical Python evaluation uses the controller interpreter in subprocesses

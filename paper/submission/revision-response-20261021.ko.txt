@@ -237,5 +237,36 @@ claim map과 ledger도 그에 맞게 고쳤다.
 보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
 추적 대상이 아니었으므로 보관되지 않았다.
 
-최종 PDF SHA-256
+Introduction P2(SOTA)·P3(Gap) 프레이밍 재정립 — 2026-10-22
+축소된 범위에 맞춰 두 문단을 다시 썼다. 수치는 보존 결과에서 그대로 가져왔고 새 분석은 없다.
+1. P2는 두 선행 계열을 각각의 산출물로 구분했다. APR for programming assignments는 incorrect
+   submission을 테스트를 통과하는 프로그램으로 바꾸지만 accepted solution을 향해 supervise되므로
+   학생이 쓴 코드에서 멀어진다(가장 강한 retrieval baseline의 반환물은 제출물에서 평균 88.27 AST
+   edit). hint generation 계열은 같은 과제에 단계별 안내를 주지만 solution space와 과거 학생
+   기록에서 끌어오므로 눈앞 제출물의 실행 상태에 맞춰지지 않는다. 후보 생성 횟수가 계열마다 다르다는
+   사실은 Gap의 통제 논거로 남겼다. 닫는 칭찬 문장에서 80.2%를 유지했다.
+2. 용어 통일 지적을 반영했다. '실패한 제출' 표현을 없애고 incorrect submissions로 통일했으며,
+   Seen/Unseen 전문용어를 전면부에서 제거해 '997 inputs from problems seen in training and
+   250 from held-out problems'로 풀어 썼다. P3의 '적응, 추가 생성 기회'도 무엇을 가리키는지
+   알 수 없다는 지적에 따라 삭제했다.
+3. P3는 첫 문장을 'Neither line returns the next step from where a submission already is.'로
+   바꿔 두 계열의 공통 공백을 명시했다. ZPD는 측정 가능한 한 가지 주장으로 좁혔다. 목표가 학생
+   자신의 다음 개선이라면 반환 프로그램이 제출물을 더 많이 보존해야 한다는 것이다. 그 목표가 이
+   학생의 이력에서 와야 하는지는 열린 질문으로 남겨 두었다.
+4. 가장 가까운 선행 연구로 LSGen을 이름으로 지목했다. LSGen도 시간순 wrong-to-later-correct
+   pair를 캐지만 supervision이 아니라 retrieval에 쓰고, 이력의 기여와 추가 후보의 기여를 분리하지
+   않는다. 통제가 필요한 이유를 40,454/21,416 예제 수와 세 draw만으로 생기는 15.1 point로
+   보였다.
+5. 1쪽에서 Table III를 가리키던 전방 참조를 Section 참조로 바꿨다. 플로트 캡션이 첫 언급보다
+   앞서야 하는 규정을 1쪽에서 깨지 않기 위함이다.
+검산: 영어 빌드 10+2쪽, 플로트 7개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(141), frontier, 익명성, 보충자료 22개 파일, 테스트 35개. Introduction 본문
+787 words(가이드라인 700-1,000), 본문 6문단.
+
+대체된 PDF SHA-256 (Introduction P2·P3 재정립 이전)
 735ce6f5293a5aa5508c2426f4328220bc3a92382816035fb112b3fe2cb10760
+
+최종 PDF SHA-256
+5c28a4d186e1f74ea5f814d095dea06b96e15ac3fc2a3586696a2d9121e6b2f5
+최종 영어 소스 SHA-256
+a9c75a03726009384167aaf7323115213940cd13ac8f896b4324f90384291ce8
