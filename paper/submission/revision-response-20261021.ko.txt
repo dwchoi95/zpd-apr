@@ -449,7 +449,30 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (P2 힌트 서술 이전)
 55cfd109cc20bd8c4ec4954228dd4bc4044a812e13546af9fa7ecd1e83ee27f6
 
-최종 PDF SHA-256
+P2 맺음 문장을 정성적 칭찬으로 — 2026-10-22
+사용자가 두 가지를 물었다. "가장 강한 baseline"보다 "가장 최신의 선행연구 LSGen"이 낫겠다는 것과,
+수리를 적게 하는 것이 공백이 아니라는 점은 이미 아는 사실인데 수치까지 들어 굳이 적어야 하느냐는
+것이다. 하우스 가이드라인을 확인하니 사용자 쪽이 맞았다.
+1. guidelines/section/introduction.md의 I2는 맺음을 SOTA 칭찬으로 규정하고, 모범 논문 4편의
+   칭찬 문장은 모두 정성적이다. "significantly improved its performance", "has seen marked
+   improvement", "It is widely recognized that ...". 수치를 인용한 예는 없다. 80.2\%를 그 자리에
+   넣은 것은 심사자 선점을 노린 우리 판단이었고 규격 요구가 아니었다.
+2. 맺음을 "두 계열 모두 겨냥한 바에서는 효과적이며, 그중 가장 최신인 LSGen은 우리 비교에서 가장
+   강한 baseline이다"로 바꿨다. 사용자 지적대로 LSGen을 가장 최신의 선행 연구로 세우고, 자명한
+   설명절을 뺐다.
+3. 80.2\%는 지우지 않고 P5의 제한 없는 비교 자리로 옮겼다. 그 수치는 이 논문에 대해 가장 불리한
+   사실이므로 Introduction만 읽는 독자도 만나야 하고, 수치들이 모여 있는 자리가 제 위치다. 해당
+   문장은 이제 우리 portfolio 61.5\%/74.8\%가 current-only Answer 3개 조합의 72.0\%/81.2\%보다
+   낮고 전자에서는 LSGen의 80.2\%보다도 낮다고 적는다. 80.2\%는 어떤 검증기나 결합 template에도
+   묶여 있지 않아 이동이 자유로웠고, Table III와 RQ1의 서술은 그대로다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Introduction 본문
+986 words, 6문단, 콜론 0개. P2는 210에서 192 words로 줄었다.
+
+대체된 PDF SHA-256 (P2 맺음 수정 이전)
 077f558f9c2acb2b78bf5da5c84f872f6d122f38dbffe848a74ebb568025a8b8
+
+최종 PDF SHA-256
+efa561088d2efbcd00278975f237a31e3a20e37b8b8f27268a9c4961845ad9b3
 최종 영어 소스 SHA-256
-5c3039f808b96d8c498df8e0ef751ba25229c545241ae49971a69dae088a6aef
+e18677a7ee41b1594254f04009363bcc75fccd9a2add513a58dcd6c84f70663b
