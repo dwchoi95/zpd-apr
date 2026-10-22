@@ -642,7 +642,41 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (P5 재작성 이전)
 e734ca51024b5b89aa6b8da103d7392ad86129d189a043e60e5bdfc34b131e28
 
-최종 PDF SHA-256
+P4를 사용자 제공 예시안 구조로 재작성 — 2026-10-23
+사용자가 P4의 세 가지 결함을 지적하고 다른 논문의 Proposal 문단 예시안을 주었다. 첫 문장이 너무
+길다, 기법이 총 몇 단계로 동작하는지 먼저 말하고 각 단계를 설명해야 한다, Preliminaries의
+limitation 참조는 핵심 아이디어 바로 뒤에 와서 그 아이디어가 왜 난제인지를 보여야 한다는 것이다.
+예시안의 순서를 그대로 따랐다. 짧은 제안 문장, 핵심 아이디어, 그 단서가 거칠다는 전환과 limitation
+참조, 그에 대한 설계 응답, 단계 수 선언, 단계별 설명과 그 안의 선행연구 대조, 그 결과.
+1. 첫 문장을 38에서 24 words로 줄였다. "In this paper, we present ZPDPatch, a trajectory-
+   supervised technique that repairs a buggy submission toward the next step the student could
+   reach with guidance." 예시안의 첫 문장도 24 words다. accepted solution과의 대조는 핵심
+   아이디어와 Mine 단계가 받는다.
+2. 핵심 아이디어를 데이터에 대한 주장으로 세웠다. 학생 자신의 trajectory가 그 걸음을 이미 기록하고
+   있다는 것이며, 실제로 다음에 온 제출이 머지않아 혼자서 도달한 프로그램이고 무엇을 새로
+   통과했는지는 실행 증거가 말해 준다는 두 문장이 뒤를 받는다.
+3. limitation 참조를 문단 맨 끝에서 핵심 아이디어 바로 뒤로 올렸다. 예시안의 "This signal,
+   however, is coarse ... (Section ...)" 자리다. 우리의 난제는 Section II-C가 말하는 바로 그것이다.
+   target을 짓는 규칙을 바꾸면 학습 예제 수와 source 출현 빈도가 함께 바뀌고 생성 후보를 더 주는
+   것만으로도 수리율이 오른다. 그 다음 문장이 설계 응답이다.
+4. 전방 참조를 바로잡았다. 이전 P4는 "세 draw만으로 15.1 포인트"에 Section II-C를 달았으나 15.1은
+   Section IV의 RQ3에서 측정된 값이고 Section II-C에는 없다. 난제 문장은 Section II-C가 실제로
+   말하는 정성적 교란으로 적고, 15.1은 RQ3에 그대로 둔다.
+5. 단계 수를 선언하고 단계별로 설명했다. "To this end, ZPDPatch operates in three stages, Mine,
+   Train, and Select." 이전에는 단계 수를 말하지 않고 Mine부터 바로 들어갔다. 예시안처럼 단계
+   설명 안에 선행연구 대조를 넣었다. 같은 시간순 짝을 캐어 해답을 찾아 쓰는 retrieval 기반 기법과
+   달리 이 짝들은 supervision 신호 자체가 된다.
+6. 마무리를 "그 결과"로 두었다. 학생이 받는 것은 완성된 프로그램이므로 제출물을 얼마나 대체하는지를
+   재고 제한할 수 있고, 통과율을 낮추는 수리를 과목이 받는 일은 없다.
+분량: P4가 270에서 319 words로, Introduction 본문은 1,256 words가 되었다. 예시안 문단도 비슷한
+길이이며, 분량은 Introduction 전체 퇴고가 끝난 뒤 한 번에 조정한다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Introduction 콜론 0개.
+
+대체된 PDF SHA-256 (P4 구조 재작성 이전)
 a53678aaeb34f45a735d41a529e71a520b6f411602e15d0c3399aa3daf9ced83
+
+최종 PDF SHA-256
+9e6f43a6a1a12b1719f39f4e8e6cda2c8298e5624f7c90fbf03528c6c8f642a7
 최종 영어 소스 SHA-256
-32ff49f3bda97bae5cb44f39878a7330be2a938260cf1f32d193668b0d2a7b10
+ab5961b0a00f7691296c6994552ec1ee419400e86974ece0d519cb0b01d5bb78
