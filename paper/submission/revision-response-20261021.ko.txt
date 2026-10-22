@@ -862,7 +862,50 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (Section II-A 재작성 이전)
 03476d746ee6efe3bbec0fe839d457c5d8cff108d1e8301a8589bb7be989e302
 
-최종 PDF SHA-256
+Section II-B를 O/E/T/N/G 구조로 재작성 — 2026-10-23
+제목을 Limitation and Goal에서 Limitation of Solution-Supervised Repair로 바꾸고, 예시안의
+단락 역할 순서대로 다시 썼다. Goal은 예시안처럼 별도 하위절 없이 마지막 단락으로 접었다.
+1. O 신설. 핵심 관찰을 적고 측정 대상을 형식화했다. 반환물이 제출물을 얼마나 남기는지를
+   Algorithm 1의 ted와 token retention으로 재며, 제출물로부터의 거리가 선언된 budget B 이내인
+   반환물을 bounded step으로 정의했다. B는 과목이 한 수리에 내어 줄 학생 프로그램의 양이다.
+   Introduction의 P3와 P5가 쓰는 개념이 이제 정의를 갖는다.
+2. T 신설. 이전 Section II에는 한계 측정치가 없었고 데이터셋 개수만 있었다. 이제 Seen 분할
+   997개에서 LSGen 반환물이 평균 88.27 AST 편집, Zero-shot이 27.25 떨어져 있고, LSGen은 제한이
+   없을 때 80.2\%를 수리하지만 20 연산 안에서는 13.9\%만 수리하므로 수리해 낼 수 있는 것의
+   다섯 중 넷이 한 걸음 안에 들어오지 않는다고 적는다. 사용자가 Observation bullet에서 보이고
+   싶다고 한 "선행 patch가 ZPD 영역에 얼마나 안 들어오는지"가 이 자리에 섰다. 분모 관계는
+   frontier JSON의 lsgen_budget_replay가 "첫 budget-eligible acceptance"로 규정하므로 budget별
+   수리 집합이 제한 없는 수리 집합의 부분집합이며, 비는 의미가 있다.
+3. N 신설. 단순 대안 두 가지가 실패함을 보인다. 첫째는 기존 기법에 budget만 거는 것이고 위의
+   13.9\%가 그 결과다. 둘째는 target만 갈아 끼우는 것이며 Table I이 예제 수와 source 출현 빈도가
+   규칙과 함께 바뀜을 보인다. 규칙이 무엇을 보존하는지도 함께 바뀐다는 점은 기존 pass-vector
+   예제를 이 자리로 옮겨 보였다.
+4. 쓰지 않은 N 하나를 기록해 둔다. 예시안은 "두 기법이 이미 최소 수정을 지향하는데도" 형태의 N을
+   4편 인용으로 받친다. Refactory 초록을 확인하니 "패치의 약 30\%가 Clara보다 작다"만 주장하고
+   최소성은 주장하지 않으며, 우리 논문은 어떤 선행 기법이 패치를 최소화한다고 말한 적이 없다.
+   원문으로 확인되지 않는 주장을 적지 않기 위해 이 N은 쓰지 않고, 측정으로 받칠 수 있는 budget N만
+   썼다.
+5. G를 마지막 단락으로 접었다. These limitations motivate로 열고 목표를 적은 뒤 Algorithm 1의
+   관점에서 무엇을 바꾸는지 밝히고, 난제 두 개로 닫는다. (1) 그 학생의 이후 제출이 다음 걸음을
+   거칠게만 짚으며 그 자체가 accepted일 수도 있다는 점, (2) 이득을 target에 귀속시키려면 source와
+   예제 수, 후보 예산을 함께 고정해야 한다는 점이다. 제거된 개발 범위의 잔재였던 "이후 개발에서는
+   고정된 통제 하에서 회귀와 unknown이 늘지 않을 것도 요구한다"는 문장은 삭제했다.
+6. 여덟 편 문헌 감사 문단은 이 구조에 슬롯이 없으므로 해체했다. 후보 예산을 고정하지 않은 비교가
+   target의 효과를 추정하지 않는다는 핵심 절만 N에 남기고 pass@1/5/10과 대화 단위 합산 서술은
+   제거했다. 인용 다섯 건은 모두 다른 자리에 남아 고립되지 않는다. 감사 자료는 보충자료에 그대로
+   있다.
+7. 분량. II-B 신설로 13쪽이 되어, II-A와 II-B가 흡수한 중복을 Introduction 여섯 문단과 II-A에서
+   열세 곳 걷어내 12쪽으로 복구했다. 88.27은 이제 II-B가 소유하므로 P3와 P6은 II-B를 가리키고,
+   P5는 "LSGen 88.27의 4분의 1에 못 미친다"로 배수 형태를 쓴다. Introduction은 1,236에서
+   1,106 words가 되었다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Section II는 1,066 words
+8문단이며 II-A 605, II-B 461로 가이드라인의 배경 46\% 대 한계 41\% 비중에 근접한다.
+
+대체된 PDF SHA-256 (Section II-B 재작성 이전)
 1e665cc48a0ca63dfa0e3f67a0552a2a6b86b559299ed866cdcde565e85ce19e
+
+최종 PDF SHA-256
+4ebf6f67e1977ae7e8bc8529346526a7e9adac32e9e724fc335fd6043a9ec0fa
 최종 영어 소스 SHA-256
-fc075761b7560a3eeb3f7eafa0c5f83cca9e54d818007e00bc5c6f0ed76be746
+6f4419b9c01d73fe44fede7a25a633fca9536218239d4c4b17276e0666bdf2a7
