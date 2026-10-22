@@ -498,8 +498,8 @@ class ResultBridgeTest(unittest.TestCase):
         }
         paired_split = {
             "unrestricted": {
-                "progress": {"rr": 0.60},
-                "answer": {"rr": 0.57},
+                "progress": {"rr": 0.60, "ir": 0.68},
+                "answer": {"rr": 0.57, "ir": 0.70},
                 "progress_minus_answer": {
                     **paired_contrast,
                     "paired_ted": {

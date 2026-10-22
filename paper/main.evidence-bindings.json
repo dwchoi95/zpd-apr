@@ -157,34 +157,80 @@
       ]
     },
     {
-      "template": "Terminal targets repair more trajectories on \\PairedJavaExercisesTerminalHigher of the \\PairedJavaExerciseCount exercises, tie on \\PairedJavaExercisesTied, and lose on none; the \\PairedJavaExerciseDeficitTotal additional repairs are concentrated rather than uniform, reaching \\PairedJavaExerciseDeficitMaximum on one exercise where progress targets repair \\PairedJavaWorstExerciseProgressRepairs of \\PairedJavaWorstExerciseExamples trajectories against \\PairedJavaWorstExerciseTerminalRepairs.",
+      "template": "Terminal higher & \\PairedJavaExercisesTerminalHigher & Terminal higher & \\PairedJavaLexicalRetentionLossShare\\%",
       "commands": [
-        "PairedJavaExerciseCount",
+        "PairedJavaExercisesTerminalHigher",
+        "PairedJavaLexicalRetentionLossShare"
+      ]
+    },
+    {
+      "template": "Tied & \\PairedJavaExercisesTied & Tied & \\PairedJavaLexicalRetentionTieShare\\%",
+      "commands": [
+        "PairedJavaExercisesTied",
+        "PairedJavaLexicalRetentionTieShare"
+      ]
+    },
+    {
+      "template": "Progress higher & \\PairedJavaExercisesProgressHigher & Progress higher & \\PairedJavaLexicalRetentionGainShare\\%",
+      "commands": [
+        "PairedJavaExercisesProgressHigher",
+        "PairedJavaLexicalRetentionGainShare"
+      ]
+    },
+    {
+      "template": "Extra terminal repairs & \\PairedJavaExerciseDeficitTotal & Median gain & \\PairedJavaLexicalRetentionGainMedian",
+      "commands": [
+        "PairedJavaExerciseDeficitTotal",
+        "PairedJavaLexicalRetentionGainMedian"
+      ]
+    },
+    {
+      "template": "Largest gap & \\PairedJavaExerciseDeficitMaximum & Retention range & \\PairedJavaLexicalRetentionMinimum / \\PairedJavaLexicalRetentionMaximum",
+      "commands": [
+        "PairedJavaExerciseDeficitMaximum",
+        "PairedJavaLexicalRetentionMaximum",
+        "PairedJavaLexicalRetentionMinimum"
+      ]
+    },
+    {
+      "template": "One exercise accounts for \\PairedJavaExerciseDeficitMaximum of the \\PairedJavaExerciseDeficitTotal additional terminal repairs, and there progress targets repair \\PairedJavaWorstExerciseProgressRepairs of \\PairedJavaWorstExerciseExamples trajectories against \\PairedJavaWorstExerciseTerminalRepairs.",
+      "commands": [
         "PairedJavaExerciseDeficitMaximum",
         "PairedJavaExerciseDeficitTotal",
-        "PairedJavaExercisesTerminalHigher",
-        "PairedJavaExercisesTied",
         "PairedJavaWorstExerciseExamples",
         "PairedJavaWorstExerciseProgressRepairs",
         "PairedJavaWorstExerciseTerminalRepairs"
       ]
     },
     {
-      "template": "the lexical-retention difference is exactly zero for \\PairedJavaLexicalRetentionTieShare\\% of students, positive for \\PairedJavaLexicalRetentionGainShare\\%, and negative for \\PairedJavaLexicalRetentionLossShare\\%, with median \\PairedJavaLexicalRetentionMedian points, upper quartile \\PairedJavaLexicalRetentionUpperQuartile, minimum \\PairedJavaLexicalRetentionMinimum, and maximum \\PairedJavaLexicalRetentionMaximum; line retention behaves the same, zero for \\PairedJavaLineRetentionTieShare\\% with maximum \\PairedJavaLineRetentionMaximum.",
+      "template": "Line retention behaves the same, zero for \\PairedJavaLineRetentionTieShare\\% of students with maximum \\PairedJavaLineRetentionMaximum.",
       "commands": [
-        "PairedJavaLexicalRetentionGainShare",
-        "PairedJavaLexicalRetentionLossShare",
-        "PairedJavaLexicalRetentionMaximum",
-        "PairedJavaLexicalRetentionMedian",
-        "PairedJavaLexicalRetentionMinimum",
-        "PairedJavaLexicalRetentionTieShare",
-        "PairedJavaLexicalRetentionUpperQuartile",
         "PairedJavaLineRetentionMaximum",
         "PairedJavaLineRetentionTieShare"
       ]
     },
     {
-      "template": "most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of \\PairedJavaLexicalRetentionGainMedian points, and a few get less.",
+      "template": "the progress rule repairs \\PairedTargetProgressSeenRR\\% of Seen inputs and improves \\PairedTargetProgressSeenIR\\%, so a further \\PairedTargetProgressSeenImproveOnly points receive a program that advances without passing, against \\PairedTargetAnswerSeenRR\\% and \\PairedTargetAnswerSeenIR\\% for the terminal rule.",
+      "commands": [
+        "PairedTargetAnswerSeenIR",
+        "PairedTargetAnswerSeenRR",
+        "PairedTargetProgressSeenIR",
+        "PairedTargetProgressSeenImproveOnly",
+        "PairedTargetProgressSeenRR"
+      ]
+    },
+    {
+      "template": "The same two gaps are \\PairedTargetProgressUnseenImproveOnly and \\PairedTargetAnswerUnseenImproveOnly points on Unseen, and \\PairedJavaProgressImproveOnly against \\PairedJavaAnswerImproveOnly on Java, where terminal targets already repair \\PairedJavaAnswerRR\\% outright.",
+      "commands": [
+        "PairedJavaAnswerImproveOnly",
+        "PairedJavaAnswerRR",
+        "PairedJavaProgressImproveOnly",
+        "PairedTargetAnswerUnseenImproveOnly",
+        "PairedTargetProgressUnseenImproveOnly"
+      ]
+    },
+    {
+      "template": "Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of \\PairedJavaLexicalRetentionGainMedian points, and a few get less.",
       "commands": [
         "PairedJavaLexicalRetentionGainMedian"
       ]

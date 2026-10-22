@@ -562,6 +562,12 @@ def macros(result: dict[str, Any]) -> str:
             values[f"PairedTargetAnswer{prefix}RR"] = pct(
                 row["unrestricted"]["answer"]["rr"]
             )
+            for rule, rule_prefix in (("progress", "Progress"), ("answer", "Answer")):
+                summary = row["unrestricted"][rule]
+                values[f"PairedTarget{rule_prefix}{prefix}IR"] = pct(summary["ir"])
+                values[f"PairedTarget{rule_prefix}{prefix}ImproveOnly"] = pct(
+                    summary["ir"] - summary["rr"]
+                )
             effect = metric(row["unrestricted"]["progress_minus_answer"])
             values[f"PairedTargetProgressMinusAnswer{prefix}"] = pct(
                 effect["left_minus_right_instance_weighted"]
@@ -821,6 +827,10 @@ def macros(result: dict[str, Any]) -> str:
         row = result["paired_java_control"]
         for method in ("progress", "answer"):
             values[f"PairedJava{method.title()}RR"] = pct(row["methods"][method]["rr"])
+            values[f"PairedJava{method.title()}IR"] = pct(row["methods"][method]["ir"])
+            values[f"PairedJava{method.title()}ImproveOnly"] = pct(
+                row["methods"][method]["ir"] - row["methods"][method]["rr"]
+            )
         for cluster in ("student", "exercise"):
             effect = metric(row[f"{cluster}_cluster_comparison"])
             values[f"PairedJava{cluster.title()}RRDelta"] = pct(effect["left_minus_right_instance_weighted"])

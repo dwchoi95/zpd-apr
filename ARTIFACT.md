@@ -44,7 +44,8 @@ analyses are under `outputs/split-90-10/canonical-v5/analysis/`:
 | Table I (`tab:rules`) target rules and Table II (`tab:data`) corpus | `fse2027-supervision-audit.json`, canonical dataset summaries |
 | Table III (`tab:main`) Python effectiveness and serving choice | `fse2027-result-bridge.json`, `fse2027-current-only-deployment-ladder.json` |
 | Table IV (`tab:targets`) source-matched Python and Java | `fse2027-paired-target-control-corrected.json`, `fse2027-paired-java-control.json` |
-| RQ2 per-exercise coverage and per-student retention distribution | `per_exercise` and `joint_preservation_rows` of `fse2027-paired-java-control.json`, summarized into the `PairedJava*` bridge commands |
+| Table V (`tab:uneven`) per-exercise coverage and per-student retention distribution | `per_exercise` and `joint_preservation_rows` of `fse2027-paired-java-control.json`, summarized into the `PairedJava*` bridge commands |
+| RQ2 forward step that is not a repair | `unrestricted` improvement rates of `fse2027-paired-target-control-corrected.json` and `methods` of `fse2027-paired-java-control.json`, as the `*ImproveOnly` bridge commands |
 | Figure 4 qualitative case (no estimate) | `fse2027-patch-locality-case.json`, selected by the recorded largest-TED-gap rule |
 | Peer replacement and coverage | `fse2027-cross-user-target-control.json`, `fse2027-peer-distributions.json` |
 | RQ2 reported per-budget frontier rates | `fse2027-lsgen-budget-controller.json`, current-only deployment ladder, checked by `scripts/verify_paper_budget_table.py` |
@@ -68,11 +69,11 @@ python scripts/verify_icse_seet_pdf.py
 The format checker checks IEEEtran class/options, anonymous metadata, embedded
 non-Type-3 fonts, a 24pt title and 10pt body sample, the page boundary, and first
 float mentions. Visual inspection of every rendered page is still required.
-`paper/main.evidence-bindings.json` binds 32 literal clauses / 141 quantities to
+`paper/main.evidence-bindings.json` binds 39 literal clauses / 149 quantities to
 the preserved result bridge; it is not compiled into the paper. The
 `verify_fse2027_paper_result_bridge.py` verifier checks those bindings against
 stored evidence. `scripts/build_fse2027_evidence_bindings.py` now regenerates
-the ICSE-SEET map from 32 curated contextual templates; it fails on value or
+the ICSE-SEET map from 39 curated contextual templates; it fails on value or
 wording drift rather than extracting arbitrary matching numbers from the text.
 
 Canonical Python evaluation uses the controller interpreter in subprocesses

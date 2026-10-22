@@ -9,28 +9,28 @@
     "Our Approach": 3,
     "Experiments": 5,
     "Related Work": 9,
-    "Conclusion": 9,
-    "Data Availability": 9
+    "Conclusion": 10,
+    "Data Availability": 10
   },
   "float_order": {
     "Table I": {
       "caption_page_column_y": [
         2,
         1,
-        470.0
+        446.0
       ],
       "first_reference_page_column_y": [
-        3,
-        0,
-        506.0
+        2,
+        1,
+        698.0
       ],
       "caption_xy": [
         422.0,
-        470.0
+        446.0
       ],
       "first_reference_xy": [
-        59.0,
-        506.0
+        322.0,
+        698.0
       ]
     },
     "Table II": {
@@ -93,24 +93,44 @@
         351.0
       ]
     },
+    "Table V": {
+      "caption_page_column_y": [
+        7,
+        0,
+        440.0
+      ],
+      "first_reference_page_column_y": [
+        7,
+        0,
+        626.0
+      ],
+      "caption_xy": [
+        158.0,
+        440.0
+      ],
+      "first_reference_xy": [
+        49.0,
+        626.0
+      ]
+    },
     "Figure 1": {
       "caption_page_column_y": [
         2,
         0,
-        567.0
+        546.0
       ],
       "first_reference_page_column_y": [
         2,
         1,
-        255.0
+        231.0
       ],
       "caption_xy": [
         106.0,
-        567.0
+        546.0
       ],
       "first_reference_xy": [
         322.0,
-        255.0
+        231.0
       ]
     },
     "Figure 2": {
@@ -137,20 +157,20 @@
       "caption_page_column_y": [
         7,
         0,
-        241.0
+        351.0
       ],
       "first_reference_page_column_y": [
         7,
-        0,
-        495.0
+        1,
+        64.0
       ],
       "caption_xy": [
         49.0,
-        241.0
+        351.0
       ],
       "first_reference_xy": [
-        49.0,
-        495.0
+        312.0,
+        64.0
       ]
     }
   },
@@ -164,6 +184,6 @@
   "font_count": 20,
   "embedded_fonts": true,
   "type3_fonts": false,
-  "sha256": "5c28a4d186e1f74ea5f814d095dea06b96e15ac3fc2a3586696a2d9121e6b2f5",
-  "source_sha256": "a9c75a03726009384167aaf7323115213940cd13ac8f896b4324f90384291ce8"
+  "sha256": "7742ef72a1e9fe0b48415c6a4b98e67a4dec2868fdc2ed221b8d3ad137b0b9eb",
+  "source_sha256": "10ee016eea40ff8cb2fa0403f24ef69b3952e6e4ee0580df5b5226f154204760"
 }
