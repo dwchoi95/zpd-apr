@@ -676,7 +676,46 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (P4 구조 재작성 이전)
 a53678aaeb34f45a735d41a529e71a520b6f411602e15d0c3399aa3daf9ced83
 
-최종 PDF SHA-256
+P5를 사용자 제공 예시안 패턴으로 재작성 — 2026-10-23
+사용자가 세 가지를 지적하고 다른 논문의 Results 문단 예시안을 주었다. "훨씬" 같은 표현을 자제하고
+수치와 배수나 oo% more/less로 뒷받침할 것, Introduction에서 baseline이나 데이터셋을 지나치게 상세히
+적지 말 것, 결과는 핵심만 짧게 적을 것이다. 예시안을 분석해 패턴을 뽑고 그대로 적용했다.
+예시안 패턴: 헤드라인은 최상급이며 수치도 강조 부사도 없다. 설정은 한 문장으로 개수와 코퍼스와
+인용과 포함 규칙만 적는다. baseline도 한 문장으로 "two state-of-the-art techniques, A와 B"처럼
+이름과 인용만 적고 범주는 서술하지 않는다. 지표는 "X did N%, more than A (n%) and B (n%)" 형태로
+우리 수치를 먼저 쓰고 baseline 수치를 괄호에 넣으며, 크기는 부사가 아니라 수치가 말한다. 불리한
+사실은 although 절로 같은 문장에 접는다. 전체 175 words다.
+1. 강조 부사를 전부 제거했다. P5의 markedly와 far more를 없앴고, P2의 "훨씬 많은 학생"도 "많은
+   학생"으로 고쳤다. Introduction 전체에 markedly, far more, remarkably, significantly,
+   substantially, much more, 훨씬이 하나도 남지 않았다.
+2. baseline 서술을 줄였다. "학습자별 해답을 retrieval하는 LSGen과 적응을 거치지 않은 언어 모델
+   Zero-shot"에서 범주 서술을 떼고 "가장 최신의 선행 기법 LSGen과 미세조정하지 않은 같은 기반
+   모델 Zero-shot"으로 한 문장만 남겼다.
+3. 데이터셋 서술도 한 문장으로 줄였다. 328개 문제와 54개 문제, 33명 학생을 각각 세던 것을
+   "CodeNet 382개 문제의 버기 제출 1,247개와 CodeWorkout CS1 exercise 17개의 181개"로 합치고,
+   포함 규칙 한 절("이후 성공한 trajectory의 마지막 실패 제출")만 덧붙였다.
+4. 비교를 전부 예시안 형태로 바꿨다. 44.0\%를 고쳐 LSGen(13.9\%)보다 많이 고쳤고 여섯 budget
+   평균 14.7 포인트 더 고쳤다. 패치는 평균 21.05개 AST 노드를 바꾸어 LSGen(88.27)과
+   Zero-shot(27.25)보다 적게 바꾸었다. 21.05와 27.25는 Table III에 있으나 Introduction에 없던
+   수치이며, Mixed-9Choose3이 Seen과 Unseen 양쪽에서 TED 최저여서 헤드라인의 "가장 적게 바꾼다"가
+   성립한다.
+5. 헤드라인을 성립하는 범위로 한정했다. locality는 비교 기법 전체에 대한 최상급으로 성립하지만
+   coverage는 budget 160에서 LSGen이 앞서므로 "편집량을 제한하면 가장 최신의 선행 기법보다 더 많은
+   제출을 고친다"로 적었다.
+6. 불리한 사실을 예시안처럼 접어 넣었다. Progress target의 retention 이득 문장은 although 절로
+   19.2와 11.2 포인트를 덜 고쳤다는 사실을 같은 문장에 담고, 마지막 문장은 제한을 없애면 우리의
+   어떤 구성도 LSGen의 80.2\%를 넘지 못했다는 사실로 열어 유지 결정을 받는다.
+7. RQ 대응 문장을 덜어 냈다. 이전 판의 "We further demonstrate ... its components ... its
+   generality ..."는 I7 (f)를 충족하지만 예시안보다 상세하므로, Java 재현 한 문장과 Section IV
+   참조로 줄였다.
+분량: P5가 303에서 207 words로, Introduction 본문은 1,160 words가 되었다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Introduction 콜론 0개.
+
+대체된 PDF SHA-256 (P5 패턴 재작성 이전)
 9e6f43a6a1a12b1719f39f4e8e6cda2c8298e5624f7c90fbf03528c6c8f642a7
+
+최종 PDF SHA-256
+7598ed2c34c40f9e2dfc8cc44d63bf6d8fa3f69bbb93c001a6ffc789e8a7982e
 최종 영어 소스 SHA-256
-ab5961b0a00f7691296c6994552ec1ee419400e86974ece0d519cb0b01d5bb78
+10f24b21f35297aebaad209fadb8236ff8f10f25865e4115565889040ff334bc
