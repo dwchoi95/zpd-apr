@@ -113,8 +113,21 @@ Introduction 퇴고 — 2026-10-22
 삭제했다. 수치와 통제 서술은 하나도 바꾸지 않았다. 플로트 배치가 밀려 Table I, Figure 2, Figure 3의
 소스 위치를 재조정했다.
 검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(참조 명령 141개), frontier 수치, 보충자료
-22개 파일 재검증. 영어 빌드 소스 SHA-256 47b123506c07c4c5df4fc75ccefa3b4f9c05afc604917cc1c75bf2ef9bdae28f
-한글 작업본 SHA-256 6dfe8378a4c48acd58315dbd4b1bc9942cda38f96c4deda1c2f06a964c258e24
+22개 파일 재검증. 영어 빌드 소스 SHA-256 2f544eb0743f9f10261f129400911ebb35c4b4cc339f599f7c3f80541342c678
+한글 작업본 SHA-256 8e53d77cfb9b4e311147e88cd6f6caa59180d9cd9ac735c2400fc855d3786bbe
+
+Introduction 첫 문단 재검토 — 2026-10-22
+1. gate 선취·과장 제거: "An execution gate can hold correctness fixed"를 "Validation decides whether the
+   tests pass; it does not constrain how much of the submission a repair replaces"로 바꿨다. Section III-C의
+   보장은 동일 측정 조건에서의 통과 비율 비감소이며 per-test 비회귀나 새 실행에서의 비회귀가 아니다.
+2. 피드백 주장 정밀화: "whether feedback is used depends on how it is read" → "feedback changes what a
+   learner does only if it can be acted on" (narciss, shute가 지지하는 명제).
+3. 네 번째 문단 선취 제거: "can supply training targets in place of the eventual accepted solution" →
+   "can serve as supervision, not only as context".
+4. 문장 시작 "And" 삭제. 용어는 feedback으로 통일했다.
+Figure 3이 첫 언급 뒤로 밀려 Overview 문단에 배포 호출 예산(선택된 checkpoint마다 최대 1회, 총 3회)과
+선택 신호(학습 손실이 아니라 실행된 validation 수리)를 명시하는 절을 추가했다. 수치는 바꾸지 않았다.
+검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(141), frontier, 익명성, 보충자료 22개 파일.
 
 대체된 PDF SHA-256 (SEET 적합성 보강 이전)
 999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
@@ -122,4 +135,4 @@ Introduction 퇴고 — 2026-10-22
 추적 대상이 아니었으므로 보관되지 않았다.
 
 최종 PDF SHA-256
-963a755aac698de839154f62b6abab55284ab85a7ae53c6a35da6ea8d94ecb4a
+2a7900f2ff3fde55b182ba467aae550af9c374f6c939b6f86b706d6c6e1ac29a
