@@ -97,10 +97,29 @@ Relevance/Significance를 겨냥한 재프레이밍만 수행했다. 새 실험�
 검산: 형식 10+2쪽·플로트 9개 순서, bridge byte-identical(참조 명령 140개),
 frontier 전 예산 수치, 보충자료 재집계가 원고 수치와 일치.
 
+Introduction 퇴고 — 2026-10-22
+하우스 가이드라인(introduction.md) 대조 후 Introduction을 문단 단위로 고쳤다. 새 실험은 없다.
+1. P1: 질문을 두 문장으로 분리하고, gate가 정확성을 고정하므로 변하는 것은 보존량임을 명시했으며,
+   피드백 사용에 관한 인용(narciss, shute)을 달았다.
+2. P2: 컴퓨팅 교육 계열(해답 공간 피드백 전파, next-step 힌트)을 한 문장으로 추가하고, retrieval 기반
+   LSGen을 분리해 80.2%에 결과 절 forward reference를 붙였다.
+3. P3: 가설을 target 보존과 history 조건화 두 개로 분리하고 Section II-C forward reference를 추가했다.
+4. P4: 40,454 대 21,416 예제 수를 복원하고 'relational supervision'을 'trajectory-derived targets'로 통일했다.
+5. P5: gate와 edit budget이 과목에 보장하는 바를 한 문장 추가하고, 방어적인 마지막 문장을 삭제했다.
+6. P6: 정의 전에 등장하던 Mixed/current-only triple을 서술형으로 바꾸고, 개발 프로그램에 RQ5 참조를 달았다.
+7. Contributions 세 번째 bullet의 run-on을 두 문장으로 나눴다.
+쪽수 상쇄: harness 제한 문장 병합, 코퍼스 표 캡션과 중복되던 사용자 중복 문장, eight-draw bank의 순위
+비교 불가 문장, Internal validity의 prompt 분포 문장, 산출물 포인터 두 문장, RQ3의 이론적 보장 문장을
+삭제했다. 수치와 통제 서술은 하나도 바꾸지 않았다. 플로트 배치가 밀려 Table I, Figure 2, Figure 3의
+소스 위치를 재조정했다.
+검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(참조 명령 141개), frontier 수치, 보충자료
+22개 파일 재검증. 영어 빌드 소스 SHA-256 47b123506c07c4c5df4fc75ccefa3b4f9c05afc604917cc1c75bf2ef9bdae28f
+한글 작업본 SHA-256 6dfe8378a4c48acd58315dbd4b1bc9942cda38f96c4deda1c2f06a964c258e24
+
 대체된 PDF SHA-256 (SEET 적합성 보강 이전)
 999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
 보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
 추적 대상이 아니었으므로 보관되지 않았다.
 
 최종 PDF SHA-256
-ef354af23bed6aae5da40f3e7b56a97dbe45258c6c405d00867281e614257d01
+963a755aac698de839154f62b6abab55284ab85a7ae53c6a35da6ea8d94ecb4a

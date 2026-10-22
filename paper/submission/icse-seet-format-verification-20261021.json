@@ -7,7 +7,7 @@
     "Introduction": 1,
     "Preliminaries": 2,
     "Our Approach": 3,
-    "Experiments": 4,
+    "Experiments": 5,
     "Related Work": 10,
     "Conclusion": 10,
     "Data Availability": 10
@@ -17,80 +17,80 @@
       "caption_page_column_y": [
         2,
         1,
-        458.0
+        506.0
       ],
       "first_reference_page_column_y": [
-        2,
-        1,
-        590.0
+        3,
+        0,
+        326.0
       ],
       "caption_xy": [
         422.0,
-        458.0
+        506.0
       ],
       "first_reference_xy": [
-        322.0,
-        590.0
+        59.0,
+        326.0
       ]
     },
     "Table II": {
       "caption_page_column_y": [
         3,
         1,
-        54.0
+        280.0
       ],
       "first_reference_page_column_y": [
         5,
         0,
-        195.0
+        399.0
       ],
       "caption_xy": [
         421.0,
-        54.0
+        280.0
       ],
       "first_reference_xy": [
         49.0,
-        195.0
+        399.0
       ]
     },
     "Table III": {
       "caption_page_column_y": [
         6,
         0,
-        205.0
+        362.0
       ],
       "first_reference_page_column_y": [
         6,
         0,
-        397.0
+        554.0
       ],
       "caption_xy": [
         157.0,
-        205.0
+        362.0
       ],
       "first_reference_xy": [
         49.0,
-        397.0
+        554.0
       ]
     },
     "Table IV": {
       "caption_page_column_y": [
         6,
         1,
-        91.0
+        247.0
       ],
       "first_reference_page_column_y": [
         6,
         1,
-        302.0
+        458.0
       ],
       "caption_xy": [
         419.0,
-        91.0
+        247.0
       ],
       "first_reference_xy": [
         312.0,
-        302.0
+        458.0
       ]
     },
     "Table V": {
@@ -102,7 +102,7 @@
       "first_reference_page_column_y": [
         9,
         1,
-        124.0
+        219.0
       ],
       "caption_xy": [
         421.0,
@@ -110,87 +110,87 @@
       ],
       "first_reference_xy": [
         312.0,
-        124.0
+        219.0
       ]
     },
     "Figure 1": {
       "caption_page_column_y": [
         2,
         0,
-        435.0
+        603.0
       ],
       "first_reference_page_column_y": [
         2,
         1,
-        124.0
+        291.0
       ],
       "caption_xy": [
         106.0,
-        435.0
+        603.0
       ],
       "first_reference_xy": [
         322.0,
-        124.0
+        291.0
       ]
     },
     "Figure 2": {
       "caption_page_column_y": [
         3,
         0,
-        344.0
+        237.0
       ],
       "first_reference_page_column_y": [
         3,
-        1,
-        239.0
+        0,
+        602.0
       ],
       "caption_xy": [
         49.0,
-        344.0
+        237.0
       ],
       "first_reference_xy": [
-        322.0,
-        239.0
+        59.0,
+        602.0
       ]
     },
     "Figure 3": {
       "caption_page_column_y": [
         3,
-        0,
-        609.0
+        1,
+        247.0
       ],
       "first_reference_page_column_y": [
         3,
-        0,
-        650.0
+        1,
+        436.0
       ],
       "caption_xy": [
-        49.0,
-        609.0
+        312.0,
+        247.0
       ],
       "first_reference_xy": [
-        59.0,
-        650.0
+        322.0,
+        436.0
       ]
     },
     "Figure 4": {
       "caption_page_column_y": [
         7,
         0,
-        194.0
+        349.0
       ],
       "first_reference_page_column_y": [
         7,
         0,
-        447.0
+        602.0
       ],
       "caption_xy": [
         49.0,
-        194.0
+        349.0
       ],
       "first_reference_xy": [
         49.0,
-        447.0
+        602.0
       ]
     }
   },
@@ -204,6 +204,6 @@
   "font_count": 20,
   "embedded_fonts": true,
   "type3_fonts": false,
-  "sha256": "ef354af23bed6aae5da40f3e7b56a97dbe45258c6c405d00867281e614257d01",
-  "source_sha256": "b2355ab431781d3d163622034b82affd54bc6bca479c9a7a3352343f94330ecb"
+  "sha256": "963a755aac698de839154f62b6abab55284ab85a7ae53c6a35da6ea8d94ecb4a",
+  "source_sha256": "6dfe8378a4c48acd58315dbd4b1bc9942cda38f96c4deda1c2f06a964c258e24"
 }
