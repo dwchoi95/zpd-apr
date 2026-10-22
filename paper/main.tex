@@ -40,8 +40,8 @@ programming-exercise feedback, automated program repair, submission trajectories
 우리는 한 학생의 제출 순서열에서 수리 target을 만드는 Mine--Train--Select 기법 \textsc{ZPDPatch}를 제시한다. \emph{Mine}은 틀린 제출이나 보존된 prefix를 이후 제출과 세 규칙으로 짝짓는다. Answer는 그 trajectory가 도달한 받아들여진 제출을, Strict는 판정이 나아진 다음 상태를, Progress는 판정이 나아지거나 판정은 같아도 통과 테스트가 늘어난 다음 상태를 취한다. \emph{Train}은 규칙마다 adapter를 독립적으로 적합시키고, \emph{Select}는 validation으로 고른 checkpoint 3개 조합을 고정한다. 실행 gate는 수리를 반환하거나 버기 프로그램을 유지하며 선택적으로 edit budget 안에서 동작하므로, 과목은 반환된 수리가 제출물을 얼마나 대체할 수 있는지를 제한할 수 있고 제출물의 관측된 통과율을 낮추는 수리는 결코 받지 않는다. source를 맞춘 재학습, 동일 target 독립 seed, 맞춘 후보 예산, 그리고 맞춘 동료 target 통제군이 target의 기여를 source와 후보 예산에서 분리한다.
 % We present \textsc{ZPDPatch}, a Mine--Train--Select technique that builds repair targets from a student's own submission sequence. \emph{Mine} pairs an incorrect submission, or a retained prefix, with a later submission by three rules. Answer takes the accepted submission the trajectory reached, Strict the next better-verdict state, and Progress the next state that improves the verdict or passes more tests at an unchanged verdict. \emph{Train} fits an independent adapter per rule, and \emph{Select} freezes a validation-selected checkpoint triple. An execution gate returns a repair or retains the buggy program, optionally within an edit budget, so a course can bound how much of a submission a repair may replace and never receive one that lowers its observed pass rate. Source-matched retraining, same-target independent seeds, matched budgets, and a matched-peer target control separate the target's contribution from the sources and the budget.
 
-학습에서 본 문제의 997개 Python 입력과 보류된 문제의 250개 입력에서, 맞춘 조건의 Answer target은 19.2와 11.2 포인트 더 많은 입력을 수리하고, Progress target은 공동 수리에서 source token retention을 5.6과 6.5 퍼센트포인트 높인다. student-disjoint CS1 Java 재학습은 두 방향 모두를 재현하며, 이를 exercise별·학생별로 분해하면 트레이드오프가 균일하지 않음이 드러난다. Answer target이 17개 exercise 중 15개에서 앞서는 한편, retention 이득은 두 규칙에서 모두 수리를 받은 학생의 31.1\%에만 도달한다. 한편 우리의 관계 혼합 portfolio는 61.5\%/74.8\%로, 현재 제출물만 보는 Answer 3개 조합의 72.0\%/81.2\%보다 낮다. 우리는 current-only Answer 3개 조합을 유지하고, Progress 규칙은 locality가 제약일 때 과목이 택하는 선택지로 보고한다.
-% On 997 Python inputs from problems seen in training and 250 from held-out problems, matched Answer targets repair 19.2 and 11.2 points more inputs, while Progress targets increase source-token retention by 5.6 and 6.5 percentage points on joint repairs. Student-disjoint CS1 Java retraining reproduces both directions, and resolving it per exercise and per student shows an uneven tradeoff, with Answer targets leading on 15 of 17 exercises while the retention advantage reaches only 31.1\% of the students who receive a repair from both rules. However, our mixed-relation portfolio reaches 61.5\%/74.8\%, below the 72.0\%/81.2\% of an Answer triple that sees only the current submission. We retain the current-only Answer triple, and report the Progress rule as the option a course takes when locality binds.
+학습에서 본 문제의 997개 Python 입력과 보류된 문제의 250개 입력에서, 맞춘 조건의 Answer target은 19.2와 11.2 포인트 더 많은 입력을 수리한다. 두 규칙이 모두 수리한 입력에서는 Progress target이 source token retention을 5.6과 6.5 퍼센트포인트 높인다. Progress 규칙은 수리하지 못한 입력에도 전진한 프로그램을 돌려주는데, Seen에서 추가 9.4 포인트가 통과까지 가지 못한 채 더 많은 테스트를 통과한다. student-disjoint CS1 Java 재학습은 두 방향 모두를 재현한다. exercise별·학생별로 분해하면 트레이드오프는 균일하지 않아, Answer target이 17개 exercise 중 15개에서 앞서고 retention 이득은 두 규칙에서 모두 수리를 받은 학생의 31.1\%에 도달한다. 세 규칙을 섞은 우리의 portfolio는 61.5\%/74.8\%로, 현재 제출물만 보는 Answer 3개 조합의 72.0\%/81.2\%보다 낮다. 우리는 current-only Answer 3개 조합을 유지하고, Progress 규칙은 locality가 제약일 때 과목이 택하는 선택지로 보고한다.
+% On 997 Python inputs from problems seen in training and 250 from held-out problems, matched Answer targets repair 19.2 and 11.2 points more inputs. On the inputs both rules repair, Progress targets increase source-token retention by 5.6 and 6.5 percentage points. The Progress rule also returns a program that has moved forward on inputs it does not repair, a further 9.4 points of Seen inputs that pass more tests without passing all. Student-disjoint CS1 Java retraining reproduces both directions. Resolved per exercise and per student the tradeoff is uneven, with Answer targets leading on 15 of 17 exercises and the retention advantage reaching 31.1\% of the students who receive a repair from both rules. Our portfolio over the three rules reaches 61.5\%/74.8\%, below the 72.0\%/81.2\% of an Answer triple that sees only the current submission. We retain the current-only Answer triple, and report the Progress rule as the option a course takes when locality binds.
 
 \noindent\textbf{Contributions.} 우리의 기여를 다음과 같이 정리한다:
 % \noindent\textbf{Contributions.} We summarize our contributions as follows:
@@ -88,38 +88,6 @@ programming-exercise feedback, automated program repair, submission trajectories
 % A training example pairs input \(x=(d_p,h_i)\) with later code \(y\), where \(h_i\) is the permitted submission prefix ending at the current state. A target constructor determines both the retained prefix and its target. At inference, the current program is always available; a history-conditioned prompt also includes earlier observed submissions, whereas a current-only prompt does not. The future accepted program is a training target or an offline assessment reference, never part of the inference prompt. A \emph{terminal target} is the Accepted (AC) endpoint. A \emph{progress target} is the next retained state under an execution-evidence rule and can itself be accepted. We reserve \emph{intermediate target} for a retained nonterminal state; the Progress dataset is not restricted to such states.
 
 \subsection{Generate-and-Validate Selection}
-
-Figure~\ref{alg:generic}은 공통 controller를 규정한다: 버기 프로그램이 fallback이고, 각 generator는 완전한 후보 하나를 내며 유한한 edit budget이 그 후보를 배제할 수 있고, 실행은 후보를 즉시 받아들이거나 가장 좋은 부분 수리를 유지한다. 여기서 \(q\)는 통과한 테스트의 비율이고, \(\mathrm{ted}^{\dagger}\)는 변경된 두 프로그램이 모두 파싱될 때의 추상 구문 트리(AST) edit distance이며, 코드가 바뀌지 않았으면 0, 그 밖에는 무한이다. 제한 없는 budget은 거리 검사를 건너뛰어 구문 오류 수리를 허용하고, 유한한 budget은 source 거리가 정의되지 않는 변경을 거부한다.
-% Figure~\ref{alg:generic} specifies the common controller: the buggy program is the fallback, each generator emits one complete candidate that a finite edit budget can exclude, and execution either accepts a candidate immediately or keeps the best partial repair. Here \(q\) is the fraction of tests passed, and \(\mathrm{ted}^{\dagger}\) is Abstract Syntax Tree (AST) edit distance when both changed programs parse, zero for unchanged code, and infinity otherwise. An unrestricted budget bypasses the distance check, allowing syntax repair; a finite budget rejects changes whose source distance is undefined.
-
-이 controller는 generator 구성, 입력 맥락, 기회 수를 분리한다. reference 기반, 학습 기반, 반복적 수리는 이 선택들을 서로 다르게 구체화한다~\cite{gulwani2018automated,tufano2019empirical,yang2024cref}. 우리의 통제는 특정 구현들을 비교하는 것이며, 선행 방법이 모두 accepted 끝점으로 학습한다는 가정이 아니다.
-% The controller separates generator construction, input context, and opportunity count. Reference-based, learned, and iterative repair instantiate these choices differently~\cite{gulwani2018automated,tufano2019empirical,yang2024cref}. Our controls compare specific implementations, not an assumption that all prior methods train on accepted endpoints.
-
-\subsection{Limitation and Goal}
-\label{sec:limitation}
-
-\begin{table}[h]
-\caption{Canonical training rules before matched controls. Counts are examples, not unique sources or test successes.}
-\label{tab:rules}
-\centering\small
-\begin{tabular}{l||>{\raggedright\arraybackslash}p{4.1cm}|r}
-\toprule
-Rule & Target and context & Examples \\
-\midrule
-Answer & Each non-AC source alone to the accepted endpoint & 40,454 \\
-Strict & Retained prefix to the next better-verdict state & 16,973 \\
-Progress & Retained prefix to the next verdict/test-progress state & 21,416 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-
-통과 벡터가 \((1,0,0)\), \((1,1,0)\), \((0,1,1)\)인 wrong-answer 제출 세 개와 그 뒤의 accepted 상태를 생각해 보자. 두 번째는 이전에 통과한 테스트를 모두 지키면서 하나를 더 얻는다. 세 번째는 테스트 하나를 얻지만 첫 번째를 잃는다. 판정만 보는 필터링은 이 둘을 구별하지 못하지만, 테스트 단위 progress는 두 번째를 보존하고 그에 비해 세 번째는 보존하지 않는다. 반면 terminal supervision은 실패한 각 source를 acceptance와 독립적으로 짝짓는다. 이 예는 서로 다른 학습 신호를 보여 주는 것이며, 중간 변경이 학생에게 더 작거나 더 쉽다는 증거가 아니다.
-% Consider three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), followed by an accepted state. The second preserves every previously passed test and gains another; the third gains a test but loses the first. Verdict-only filtering cannot distinguish them, while test-wise progress retains the second but not the third relative to it. Terminal supervision instead pairs each failed source independently with the acceptance. This example illustrates different training signals, not evidence that the intermediate change is smaller or easier for a student.
-
-
-Table~\ref{tab:rules}는 target 규칙을 교체하는 것이 한 변수만 바꾸는 개입이 아닌 이유를 보여 준다: 예제 수와 source 빈도가 함께 바뀐다. 관계 수준 비교는 방법 전체를 특징짓고, source를 맞춘 재학습은 공통 모집단에서 target 교체의 효과를 추정한다. 범위를 한정한 8편 감사에서 다섯 편이 복수의 생성 기회를 보고한다~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}. 그 집계 방식은 서로 다르다: pass@1/5/10, 대화 단위 합산, LSGen의 0--3회 retrieval 반복은 같은 개입을 추정하지 않는다. 우리의 고정 draw 대비는 생성된 후보를 일정하게 두어 기회 수만 분리한다. 산출물은 8편 코딩과 출처를 제공하며, 이 목적 표본 지도는 체계적 문헌고찰이 아니다.
-% Table~\ref{tab:rules} shows why exchanging a target rule is not a one-variable intervention: example counts and source frequencies change together. The relation-level comparison characterizes complete methods, whereas matched-source retraining estimates target replacement on a common population. A scoped eight-study audit identifies five studies reporting multiple generation opportunities~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}. Their accounting differs: pass@1/5/10, conversation aggregation, and LSGen's 0--3 retrieval iterations do not estimate the same intervention. Our fixed-draw contrast holds generated candidates constant to isolate opportunity count. The artifact supplies the eight-study coding and sources; this purposive map is not a systematic review.
 
 \begin{figure}[t]
 \centering
@@ -181,6 +149,38 @@ Table~\ref{tab:rules}는 target 규칙을 교체하는 것이 한 변수만 바�
 \label{fig:overview}
 \end{figure}
 
+Figure~\ref{alg:generic}은 공통 controller를 규정한다: 버기 프로그램이 fallback이고, 각 generator는 완전한 후보 하나를 내며 유한한 edit budget이 그 후보를 배제할 수 있고, 실행은 후보를 즉시 받아들이거나 가장 좋은 부분 수리를 유지한다. 여기서 \(q\)는 통과한 테스트의 비율이고, \(\mathrm{ted}^{\dagger}\)는 변경된 두 프로그램이 모두 파싱될 때의 추상 구문 트리(AST) edit distance이며, 코드가 바뀌지 않았으면 0, 그 밖에는 무한이다. 제한 없는 budget은 거리 검사를 건너뛰어 구문 오류 수리를 허용하고, 유한한 budget은 source 거리가 정의되지 않는 변경을 거부한다.
+% Figure~\ref{alg:generic} specifies the common controller: the buggy program is the fallback, each generator emits one complete candidate that a finite edit budget can exclude, and execution either accepts a candidate immediately or keeps the best partial repair. Here \(q\) is the fraction of tests passed, and \(\mathrm{ted}^{\dagger}\) is Abstract Syntax Tree (AST) edit distance when both changed programs parse, zero for unchanged code, and infinity otherwise. An unrestricted budget bypasses the distance check, allowing syntax repair; a finite budget rejects changes whose source distance is undefined.
+
+이 controller는 generator 구성, 입력 맥락, 기회 수를 분리한다. reference 기반, 학습 기반, 반복적 수리는 이 선택들을 서로 다르게 구체화한다~\cite{gulwani2018automated,tufano2019empirical,yang2024cref}. 우리의 통제는 특정 구현들을 비교하는 것이며, 선행 방법이 모두 accepted 끝점으로 학습한다는 가정이 아니다.
+% The controller separates generator construction, input context, and opportunity count. Reference-based, learned, and iterative repair instantiate these choices differently~\cite{gulwani2018automated,tufano2019empirical,yang2024cref}. Our controls compare specific implementations, not an assumption that all prior methods train on accepted endpoints.
+
+\subsection{Limitation and Goal}
+\label{sec:limitation}
+
+\begin{table}[h]
+\caption{Canonical training rules before matched controls. Counts are examples, not unique sources or test successes.}
+\label{tab:rules}
+\centering\small
+\begin{tabular}{l||>{\raggedright\arraybackslash}p{4.1cm}|r}
+\toprule
+Rule & Target and context & Examples \\
+\midrule
+Answer & Each non-AC source alone to the accepted endpoint & 40,454 \\
+Strict & Retained prefix to the next better-verdict state & 16,973 \\
+Progress & Retained prefix to the next verdict/test-progress state & 21,416 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+통과 벡터가 \((1,0,0)\), \((1,1,0)\), \((0,1,1)\)인 wrong-answer 제출 세 개와 그 뒤의 accepted 상태를 생각해 보자. 두 번째는 이전에 통과한 테스트를 모두 지키면서 하나를 더 얻는다. 세 번째는 테스트 하나를 얻지만 첫 번째를 잃는다. 판정만 보는 필터링은 이 둘을 구별하지 못하지만, 테스트 단위 progress는 두 번째를 보존하고 그에 비해 세 번째는 보존하지 않는다. 반면 terminal supervision은 실패한 각 source를 acceptance와 독립적으로 짝짓는다. 이 예는 서로 다른 학습 신호를 보여 주는 것이며, 중간 변경이 학생에게 더 작거나 더 쉽다는 증거가 아니다.
+% Consider three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), followed by an accepted state. The second preserves every previously passed test and gains another; the third gains a test but loses the first. Verdict-only filtering cannot distinguish them, while test-wise progress retains the second but not the third relative to it. Terminal supervision instead pairs each failed source independently with the acceptance. This example illustrates different training signals, not evidence that the intermediate change is smaller or easier for a student.
+
+
+Table~\ref{tab:rules}는 target 규칙을 교체하는 것이 한 변수만 바꾸는 개입이 아닌 이유를 보여 준다: 예제 수와 source 빈도가 함께 바뀐다. 관계 수준 비교는 방법 전체를 특징짓고, source를 맞춘 재학습은 공통 모집단에서 target 교체의 효과를 추정한다. 범위를 한정한 8편 감사에서 다섯 편이 복수의 생성 기회를 보고한다~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}. 그 집계 방식은 서로 다르다: pass@1/5/10, 대화 단위 합산, LSGen의 0--3회 retrieval 반복은 같은 개입을 추정하지 않는다. 우리의 고정 draw 대비는 생성된 후보를 일정하게 두어 기회 수만 분리한다. 산출물은 8편 코딩과 출처를 제공하며, 이 목적 표본 지도는 체계적 문헌고찰이 아니다.
+% Table~\ref{tab:rules} shows why exchanging a target rule is not a one-variable intervention: example counts and source frequencies change together. The relation-level comparison characterizes complete methods, whereas matched-source retraining estimates target replacement on a common population. A scoped eight-study audit identifies five studies reporting multiple generation opportunities~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}. Their accounting differs: pass@1/5/10, conversation aggregation, and LSGen's 0--3 retrieval iterations do not estimate the same intervention. Our fixed-draw contrast holds generated candidates constant to isolate opportunity count. The artifact supplies the eight-study coding and sources; this purposive map is not a systematic review.
+
 우리의 목표는 trajectory 기반 supervision을 current-code 대안과 budget을 맞춘 대안에 대해 검정하는 것이다. 정확성, locality, history 특이성은 서로 별개의 결과다. 이후 개발에서는 고정된 통제 하에서 회귀와 unknown이 늘지 않을 것도 함께 요구한다.
 % Our goal is to test trajectory-based supervision against current-code and budget-matched alternatives. Correctness, locality, and history specificity are separate outcomes. Later development additionally requires non-increasing regressions and unknowns under fixed controls.
 
@@ -192,13 +192,13 @@ Table~\ref{tab:rules}는 target 규칙을 교체하는 것이 한 변수만 바�
 
 
 
-Figure~\ref{fig:overview}(a)는 오프라인 구성과 온라인 수리를 분리한다. Mine은 데이터셋을 만들고, Train은 adapter를 적합시키며, Select는 학습 손실이 아니라 실행된 validation 수리를 기준으로 portfolio를 고정한다. checkpoint들은 동일한 허용 입력에서 후보를 주고받지 않고 독립적으로 생성한다. mixed pool은 관계마다 seed 3개를 담으며, Answer-only와 current-only 변형은 통제군이다. 권장되는 current-only Answer-3Seed는 비교 대상으로 남으며, 이름만 바꾼 history 모델이 아니다. 세 단계는 코퍼스마다 한 번 실행되고, 이후 배포는 고정된 checkpoint로 수리를 제공하며 선택된 checkpoint마다 호출을 최대 한 번씩만 내므로 배포 예산은 세 번의 호출이다.
-% Figure~\ref{fig:overview}(a) separates offline construction from online repair. Mine constructs datasets, Train fits adapters, and Select freezes a portfolio using executed validation repairs rather than training loss. Checkpoints generate independently from the same permitted input, without exchanging candidates. The mixed pool contains three seeds per relation; Answer-only and current-only variants are controls. The recommended current-only Answer-3Seed remains a comparator, not a renamed history model. The three stages run once per corpus, after which deployment serves repairs from the frozen checkpoints and issues at most one call per selected checkpoint, so the deployed budget is three calls.
+우리의 접근은 오프라인 구성과 온라인 수리를 분리한다. Mine은 데이터셋을 만들고, Train은 adapter를 적합시키며, Select는 학습 손실이 아니라 실행된 validation 수리를 기준으로 portfolio를 고정한다. checkpoint들은 동일한 허용 입력에서 후보를 주고받지 않고 독립적으로 생성한다. mixed pool은 관계마다 seed 3개를 담으며, Answer-only와 current-only 변형은 통제군이다. 권장되는 current-only Answer-3Seed는 비교 대상으로 남으며, 이름만 바꾼 history 모델이 아니다. 세 단계는 코퍼스마다 한 번 실행되고, 이후 배포는 고정된 checkpoint로 수리를 제공하며 선택된 checkpoint마다 호출을 최대 한 번씩만 내므로 배포 예산은 세 번의 호출이다.
+% Our approach separates offline construction from online repair. Mine constructs datasets, Train fits adapters, and Select freezes a portfolio using executed validation repairs rather than training loss. Checkpoints generate independently from the same permitted input, without exchanging candidates. The mixed pool contains three seeds per relation; Answer-only and current-only variants are controls. The recommended current-only Answer-3Seed remains a comparator, not a renamed history model. The three stages run once per corpus, after which deployment serves repairs from the frozen checkpoints and issues at most one call per selected checkpoint, so the deployed budget is three calls.
 
 \subsection{Main Algorithm}
 
-기본 구성은 관계마다 seed 3개와 \(k=3\)을 쓰며, 폭과 pool 통제가 이 기회들을 변화시킨다. Figure~\ref{fig:overview}(b)는 고정된 checkpoint portfolio를 구성하고, Figure~\ref{alg:generic}은 그것을 배포해 입력을 수리한다.
-% The primary configuration uses three seeds per relation and \(k=3\), and breadth and pool controls vary these opportunities. Figure~\ref{fig:overview}(b) constructs the frozen checkpoint portfolio, and Figure~\ref{alg:generic} deploys it to repair an input.
+기본 구성은 관계마다 seed 3개와 \(k=3\)을 쓰며, 폭과 pool 통제가 이 기회들을 변화시킨다. Figure~\ref{fig:overview}(a)는 그 두 국면을 보이고, Figure~\ref{fig:overview}(b)는 고정된 checkpoint portfolio를 구성하며, Figure~\ref{alg:generic}은 그것을 배포해 입력을 수리한다.
+% The primary configuration uses three seeds per relation and \(k=3\), and breadth and pool controls vary these opportunities. Figure~\ref{fig:overview}(a) shows those two phases, Figure~\ref{fig:overview}(b) constructs the frozen checkpoint portfolio, and Figure~\ref{alg:generic} deploys it to repair an input.
 
 \begin{table}[t]
 \caption{Corpus after whole-trajectory filtering. Part.: partition; Subm.: submissions; prefixes precede relation filtering. Seen problems/tests are shared across its partitions; user counts are not additive.}
@@ -367,8 +367,22 @@ Java (181) & 85.6 & 50.8 & +4.8 & +5.1 \\
 Progress의 locality 이점은 공동 성공에서 드러난다. 공동 수리된 Seen 299개와 Unseen 154개 중 278개와 134개가 두 방법 모두에서 source에서 수리까지의 TED가 정의된다. Answer에서 Progress를 뺀 평균 TED는 10.08 [7.53, 12.99]와 6.83 [4.58, 9.39]이다. token retention은 5.6 [4.29, 6.94]와 6.5 [4.26, 8.95] 포인트, line retention은 8.9 [6.64, 11.16]와 10.4 [6.95, 14.25] 포인트 개선된다. TED가 정의되지 않는 21개와 20개는 RR에 남아 있으며 수리 불가로 선언되지 않는다. 이 측정치들은 성공한 출력이 source를 더 많이 보존한다는 점을 일관되게 기술하지만, 이해가 더 쉬움을 입증하거나 특정 학생에게 어느 방법이 가장 도움이 될지 설명하지는 않는다.
 % Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures consistently describe successful outputs that retain more of the submission, but they neither establish easier comprehension nor explain which method would best help a particular student.
 
-Java 재학습은 target마다 학습 600개와 validation 118개 짝을 쓰며, Python AST 거리 없이도 같은 방향을 재현한다. terminal target은 155개 trajectory를, Progress target은 92개를 수리해 34.8 포인트 차이를 보이고, Progress에서 Answer를 뺀 구간은 학생 cluster에서 [-44.91, -25.47], exercise cluster에서 [-47.31, -23.79]이다. 공동 수리 90개에서 Progress target은 lexical-token retention을 4.8 포인트, line retention을 5.1 포인트 높이며 구간은 [2.79, 7.19]와 [2.92, 7.25]이다. 이는 두 언어와 두 모집단에 걸친 coverage--locality 트레이드오프의 증거다. 같은 크기가 다른 교실로 일반화된다는 증거도, Python peer-target 개입의 재현도 아니다.
-% Java retraining uses 600 training and 118 validation pairs per target and reproduces this direction without Python AST distance. Answer targets repair 155 trajectories and Progress targets 92, a difference of 34.8 points; Progress-minus-Answer intervals are [-44.91, -25.47] under student clustering and [-47.31, -23.79] under exercise clustering. Among 90 joint repairs, Progress targets increase lexical-token retention by 4.8 points and line retention by 5.1 points, with intervals [2.79, 7.19] and [2.92, 7.25]. This is evidence for a coverage--locality tradeoff across these two languages and populations. It is not evidence that the same magnitude generalizes to other classrooms, nor a replication of the Python peer-target intervention.
+\begin{table}[h]
+\caption{Java matched-target outcomes resolved by exercise and by student. The left columns count the 17 exercises by which rule repairs more trajectories in that exercise, with the extra Answer repairs and the largest single-exercise gap. The right columns describe lexical-token retention among the 90 trajectories both rules repair, as the share of those students each rule favors, the median gain where progress is higher, and the minimum and maximum difference in percentage points.}
+\label{tab:uneven}
+\centering\small
+\begin{tabular}{@{}lr||lr@{}}
+\toprule
+\multicolumn{2}{c||}{Repairs (17 exercises)} & \multicolumn{2}{c}{Retention (90 students)} \\
+\midrule
+Answer higher & 15 & Answer higher & 5.6\% \\
+Tied & 2 & Tied & 63.3\% \\
+Progress higher & 0 & Progress higher & 31.1\% \\
+Extra Answer repairs & 63 & Median gain & 9.6 \\
+Largest gap & 12 & Retention range & -21.1 / 49.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[h]
 \centering\scriptsize
@@ -402,23 +416,8 @@ print(ans)
 \label{fig:case}
 \end{figure}
 
-\begin{table}[h]
-\caption{Java matched-target outcomes resolved by exercise and by student. The left columns count the 17 exercises by which rule repairs more trajectories in that exercise, with the extra Answer repairs and the largest single-exercise gap. The right columns describe lexical-token retention among the 90 trajectories both rules repair, as the share of those students each rule favors, the median gain where progress is higher, and the minimum and maximum difference in percentage points.}
-\label{tab:uneven}
-\centering\small
-\begin{tabular}{@{}lr||lr@{}}
-\toprule
-\multicolumn{2}{c||}{Repairs (17 exercises)} & \multicolumn{2}{c}{Retention (90 students)} \\
-\midrule
-Answer higher & 15 & Answer higher & 5.6\% \\
-Tied & 2 & Tied & 63.3\% \\
-Progress higher & 0 & Progress higher & 31.1\% \\
-Extra Answer repairs & 63 & Median gain & 9.6 \\
-Largest gap & 12 & Retention range & -21.1 / 49.7 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
+Java 재학습은 target마다 학습 600개와 validation 118개 짝을 쓰며, Python AST 거리 없이도 같은 방향을 재현한다. Answer target은 155개 trajectory를, Progress target은 92개를 수리해 34.8 포인트 차이를 보이고, Progress에서 Answer를 뺀 구간은 학생 cluster에서 [-44.91, -25.47], exercise cluster에서 [-47.31, -23.79]이다. 공동 수리 90개에서 Progress target은 lexical-token retention을 4.8 포인트, line retention을 5.1 포인트 높이며 구간은 [2.79, 7.19]와 [2.92, 7.25]이다. 이는 두 언어와 두 모집단에 걸친 coverage--locality 트레이드오프의 증거다. 같은 크기가 다른 교실로 일반화된다는 증거도, Python peer-target 개입의 재현도 아니다.
+% Java retraining uses 600 training and 118 validation pairs per target and reproduces this direction without Python AST distance. Answer targets repair 155 trajectories and Progress targets 92, a difference of 34.8 points; Progress-minus-Answer intervals are [-44.91, -25.47] under student clustering and [-47.31, -23.79] under exercise clustering. Among 90 joint repairs, Progress targets increase lexical-token retention by 4.8 points and line retention by 5.1 points, with intervals [2.79, 7.19] and [2.92, 7.25]. This is evidence for a coverage--locality tradeoff across these two languages and populations. It is not evidence that the same magnitude generalizes to other classrooms, nor a replication of the Python peer-target intervention.
 \noindent\textbf{What a student receives.} 코호트 평균은 개별 학생을 기술하지 않으므로, Table~\ref{tab:uneven}은 Java 대비를 exercise별과 학생별로 분해한다. coverage 비용은 균일하지 않고 집중되어 있다. 한 exercise가 추가 Answer 수리 63개 중 12개를 차지하며, 그곳에서 Progress target은 15개 중 3개를, Answer는 15개를 수리한다. retention 이득은 긴 꼬리를 가진 소수의 효과다. 어느 규칙에서든 동작하는 수리를 받은 학생 대부분은 자기 코드를 같은 양만큼 돌려받고, 약 3분의 1은 중위수 9.6 포인트만큼 더 받으며, 소수는 덜 받는다. line retention도 같은 양상으로 학생의 64.4\%에서 0이고 최대 47.6이다. Figure~\ref{fig:case}는 Python에서 그 꼬리를 보여 주는데, Progress-target 수리는 학생 자신의 경계 조건 수정을 이어 가는 반면 Answer-target 수리는 알고리즘을 교체한다. 따라서 과목이 어느 규칙을 배포할지는 exercise와, coverage인지 locality인지 어느 쪽이 제약인지에 달려 있다.
 % \noindent\textbf{What a student receives.} Cohort means do not describe an individual student, so Table~\ref{tab:uneven} resolves the Java contrast by exercise and by student. The coverage cost is concentrated rather than uniform. One exercise accounts for 12 of the 63 additional Answer repairs, and there Progress targets repair 3 of 15 trajectories against 15. The retention gain is a minority effect with a long tail. Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of 9.6 points, and a few get less. Line retention behaves the same, zero for 64.4\% of students with maximum 47.6. Figure~\ref{fig:case} illustrates that tail on Python, where the Progress-target repair continues the student's own boundary edit while the Answer-target repair replaces the algorithm. Which rule a course deploys therefore depends on the exercise and on whether coverage or locality binds.
 

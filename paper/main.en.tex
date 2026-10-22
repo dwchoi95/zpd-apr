@@ -34,7 +34,7 @@ Neither line returns the next step from where a submission already is. The Zone 
 
 We present \textsc{ZPDPatch}, a Mine--Train--Select technique that builds repair targets from a student's own submission sequence. \emph{Mine} pairs an incorrect submission, or a retained prefix, with a later submission by three rules. Answer takes the accepted submission the trajectory reached, Strict the next better-verdict state, and Progress the next state that improves the verdict or passes more tests at an unchanged verdict. \emph{Train} fits an independent adapter per rule, and \emph{Select} freezes a validation-selected checkpoint triple. An execution gate returns a repair or retains the buggy program, optionally within an edit budget, so a course can bound how much of a submission a repair may replace and never receive one that lowers its observed pass rate. Source-matched retraining, same-target independent seeds, matched budgets, and a matched-peer target control separate the target's contribution from the sources and the budget.
 
-On 997 Python inputs from problems seen in training and 250 from held-out problems, matched Answer targets repair 19.2 and 11.2 points more inputs, while Progress targets increase source-token retention by 5.6 and 6.5 percentage points on joint repairs. Student-disjoint CS1 Java retraining reproduces both directions, and resolving it per exercise and per student shows an uneven tradeoff, with Answer targets leading on 15 of 17 exercises while the retention advantage reaches only 31.1\% of the students who receive a repair from both rules. However, our mixed-relation portfolio reaches 61.5\%/74.8\%, below the 72.0\%/81.2\% of an Answer triple that sees only the current submission. We retain the current-only Answer triple, and report the Progress rule as the option a course takes when locality binds.
+On 997 Python inputs from problems seen in training and 250 from held-out problems, matched Answer targets repair 19.2 and 11.2 points more inputs. On the inputs both rules repair, Progress targets increase source-token retention by 5.6 and 6.5 percentage points. The Progress rule also returns a program that has moved forward on inputs it does not repair, a further 9.4 points of Seen inputs that pass more tests without passing all. Student-disjoint CS1 Java retraining reproduces both directions. Resolved per exercise and per student the tradeoff is uneven, with Answer targets leading on 15 of 17 exercises and the retention advantage reaching 31.1\% of the students who receive a repair from both rules. Our portfolio over the three rules reaches 61.5\%/74.8\%, below the 72.0\%/81.2\% of an Answer triple that sees only the current submission. We retain the current-only Answer triple, and report the Progress rule as the option a course takes when locality binds.
 
 \noindent\textbf{Contributions.} We summarize our contributions as follows:
 \begin{itemize}
@@ -75,34 +75,6 @@ For a problem \(p\), a submission state is a tuple \(s=(c,v,o)\), where \(c\) re
 A training example pairs input \(x=(d_p,h_i)\) with later code \(y\), where \(h_i\) is the permitted submission prefix ending at the current state. A target constructor determines both the retained prefix and its target. At inference, the current program is always available; a history-conditioned prompt also includes earlier observed submissions, whereas a current-only prompt does not. The future accepted program is a training target or an offline assessment reference, never part of the inference prompt. A \emph{terminal target} is the Accepted (AC) endpoint. A \emph{progress target} is the next retained state under an execution-evidence rule and can itself be accepted. We reserve \emph{intermediate target} for a retained nonterminal state; the Progress dataset is not restricted to such states.
 
 \subsection{Generate-and-Validate Selection}
-
-Figure~\ref{alg:generic} specifies the common controller: the buggy program is the fallback, each generator emits one complete candidate that a finite edit budget can exclude, and execution either accepts a candidate immediately or keeps the best partial repair. Here \(q\) is the fraction of tests passed, and \(\mathrm{ted}^{\dagger}\) is Abstract Syntax Tree (AST) edit distance when both changed programs parse, zero for unchanged code, and infinity otherwise. An unrestricted budget bypasses the distance check, allowing syntax repair; a finite budget rejects changes whose source distance is undefined.
-
-The controller separates generator construction, input context, and opportunity count. Reference-based, learned, and iterative repair instantiate these choices differently~\cite{gulwani2018automated,tufano2019empirical,yang2024cref}. Our controls compare specific implementations, not an assumption that all prior methods train on accepted endpoints.
-
-\subsection{Limitation and Goal}
-\label{sec:limitation}
-
-\begin{table}[h]
-\caption{Canonical training rules before matched controls. Counts are examples, not unique sources or test successes.}
-\label{tab:rules}
-\centering\small
-\begin{tabular}{l||>{\raggedright\arraybackslash}p{4.1cm}|r}
-\toprule
-Rule & Target and context & Examples \\
-\midrule
-Answer & Each non-AC source alone to the accepted endpoint & 40,454 \\
-Strict & Retained prefix to the next better-verdict state & 16,973 \\
-Progress & Retained prefix to the next verdict/test-progress state & 21,416 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-
-Consider three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), followed by an accepted state. The second preserves every previously passed test and gains another; the third gains a test but loses the first. Verdict-only filtering cannot distinguish them, while test-wise progress retains the second but not the third relative to it. Terminal supervision instead pairs each failed source independently with the acceptance. This example illustrates different training signals, not evidence that the intermediate change is smaller or easier for a student.
-
-
-Table~\ref{tab:rules} shows why exchanging a target rule is not a one-variable intervention: example counts and source frequencies change together. The relation-level comparison characterizes complete methods, whereas matched-source retraining estimates target replacement on a common population. A scoped eight-study audit identifies five studies reporting multiple generation opportunities~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}. Their accounting differs: pass@1/5/10, conversation aggregation, and LSGen's 0--3 retrieval iterations do not estimate the same intervention. Our fixed-draw contrast holds generated candidates constant to isolate opportunity count. The artifact supplies the eight-study coding and sources; this purposive map is not a systematic review.
 
 \begin{figure}[t]
 \centering
@@ -164,6 +136,34 @@ Table~\ref{tab:rules} shows why exchanging a target rule is not a one-variable i
 \label{fig:overview}
 \end{figure}
 
+Figure~\ref{alg:generic} specifies the common controller: the buggy program is the fallback, each generator emits one complete candidate that a finite edit budget can exclude, and execution either accepts a candidate immediately or keeps the best partial repair. Here \(q\) is the fraction of tests passed, and \(\mathrm{ted}^{\dagger}\) is Abstract Syntax Tree (AST) edit distance when both changed programs parse, zero for unchanged code, and infinity otherwise. An unrestricted budget bypasses the distance check, allowing syntax repair; a finite budget rejects changes whose source distance is undefined.
+
+The controller separates generator construction, input context, and opportunity count. Reference-based, learned, and iterative repair instantiate these choices differently~\cite{gulwani2018automated,tufano2019empirical,yang2024cref}. Our controls compare specific implementations, not an assumption that all prior methods train on accepted endpoints.
+
+\subsection{Limitation and Goal}
+\label{sec:limitation}
+
+\begin{table}[h]
+\caption{Canonical training rules before matched controls. Counts are examples, not unique sources or test successes.}
+\label{tab:rules}
+\centering\small
+\begin{tabular}{l||>{\raggedright\arraybackslash}p{4.1cm}|r}
+\toprule
+Rule & Target and context & Examples \\
+\midrule
+Answer & Each non-AC source alone to the accepted endpoint & 40,454 \\
+Strict & Retained prefix to the next better-verdict state & 16,973 \\
+Progress & Retained prefix to the next verdict/test-progress state & 21,416 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+Consider three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), followed by an accepted state. The second preserves every previously passed test and gains another; the third gains a test but loses the first. Verdict-only filtering cannot distinguish them, while test-wise progress retains the second but not the third relative to it. Terminal supervision instead pairs each failed source independently with the acceptance. This example illustrates different training signals, not evidence that the intermediate change is smaller or easier for a student.
+
+
+Table~\ref{tab:rules} shows why exchanging a target rule is not a one-variable intervention: example counts and source frequencies change together. The relation-level comparison characterizes complete methods, whereas matched-source retraining estimates target replacement on a common population. A scoped eight-study audit identifies five studies reporting multiple generation opportunities~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}. Their accounting differs: pass@1/5/10, conversation aggregation, and LSGen's 0--3 retrieval iterations do not estimate the same intervention. Our fixed-draw contrast holds generated candidates constant to isolate opportunity count. The artifact supplies the eight-study coding and sources; this purposive map is not a systematic review.
+
 Our goal is to test trajectory-based supervision against current-code and budget-matched alternatives. Correctness, locality, and history specificity are separate outcomes. Later development additionally requires non-increasing regressions and unknowns under fixed controls.
 
 
@@ -174,11 +174,11 @@ Our goal is to test trajectory-based supervision against current-code and budget
 
 
 
-Figure~\ref{fig:overview}(a) separates offline construction from online repair. Mine constructs datasets, Train fits adapters, and Select freezes a portfolio using executed validation repairs rather than training loss. Checkpoints generate independently from the same permitted input, without exchanging candidates. The mixed pool contains three seeds per relation; Answer-only and current-only variants are controls. The recommended current-only Answer-3Seed remains a comparator, not a renamed history model. The three stages run once per corpus, after which deployment serves repairs from the frozen checkpoints and issues at most one call per selected checkpoint, so the deployed budget is three calls.
+Our approach separates offline construction from online repair. Mine constructs datasets, Train fits adapters, and Select freezes a portfolio using executed validation repairs rather than training loss. Checkpoints generate independently from the same permitted input, without exchanging candidates. The mixed pool contains three seeds per relation; Answer-only and current-only variants are controls. The recommended current-only Answer-3Seed remains a comparator, not a renamed history model. The three stages run once per corpus, after which deployment serves repairs from the frozen checkpoints and issues at most one call per selected checkpoint, so the deployed budget is three calls.
 
 \subsection{Main Algorithm}
 
-The primary configuration uses three seeds per relation and \(k=3\), and breadth and pool controls vary these opportunities. Figure~\ref{fig:overview}(b) constructs the frozen checkpoint portfolio, and Figure~\ref{alg:generic} deploys it to repair an input.
+The primary configuration uses three seeds per relation and \(k=3\), and breadth and pool controls vary these opportunities. Figure~\ref{fig:overview}(a) shows those two phases, Figure~\ref{fig:overview}(b) constructs the frozen checkpoint portfolio, and Figure~\ref{alg:generic} deploys it to repair an input.
 
 \begin{table}[t]
 \caption{Corpus after whole-trajectory filtering. Part.: partition; Subm.: submissions; prefixes precede relation filtering. Seen problems/tests are shared across its partitions; user counts are not additive.}
@@ -316,7 +316,22 @@ Java (181) & 85.6 & 50.8 & +4.8 & +5.1 \\
 
 Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures consistently describe successful outputs that retain more of the submission, but they neither establish easier comprehension nor explain which method would best help a particular student.
 
-Java retraining uses 600 training and 118 validation pairs per target and reproduces this direction without Python AST distance. Answer targets repair 155 trajectories and Progress targets 92, a difference of 34.8 points; Progress-minus-Answer intervals are [-44.91, -25.47] under student clustering and [-47.31, -23.79] under exercise clustering. Among 90 joint repairs, Progress targets increase lexical-token retention by 4.8 points and line retention by 5.1 points, with intervals [2.79, 7.19] and [2.92, 7.25]. This is evidence for a coverage--locality tradeoff across these two languages and populations. It is not evidence that the same magnitude generalizes to other classrooms, nor a replication of the Python peer-target intervention.
+\begin{table}[h]
+\caption{Java matched-target outcomes resolved by exercise and by student. The left columns count the 17 exercises by which rule repairs more trajectories in that exercise, with the extra Answer repairs and the largest single-exercise gap. The right columns describe lexical-token retention among the 90 trajectories both rules repair, as the share of those students each rule favors, the median gain where progress is higher, and the minimum and maximum difference in percentage points.}
+\label{tab:uneven}
+\centering\small
+\begin{tabular}{@{}lr||lr@{}}
+\toprule
+\multicolumn{2}{c||}{Repairs (17 exercises)} & \multicolumn{2}{c}{Retention (90 students)} \\
+\midrule
+Answer higher & 15 & Answer higher & 5.6\% \\
+Tied & 2 & Tied & 63.3\% \\
+Progress higher & 0 & Progress higher & 31.1\% \\
+Extra Answer repairs & 63 & Median gain & 9.6 \\
+Largest gap & 12 & Retention range & -21.1 / 49.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[h]
 \centering\scriptsize
@@ -350,23 +365,7 @@ print(ans)
 \label{fig:case}
 \end{figure}
 
-\begin{table}[h]
-\caption{Java matched-target outcomes resolved by exercise and by student. The left columns count the 17 exercises by which rule repairs more trajectories in that exercise, with the extra Answer repairs and the largest single-exercise gap. The right columns describe lexical-token retention among the 90 trajectories both rules repair, as the share of those students each rule favors, the median gain where progress is higher, and the minimum and maximum difference in percentage points.}
-\label{tab:uneven}
-\centering\small
-\begin{tabular}{@{}lr||lr@{}}
-\toprule
-\multicolumn{2}{c||}{Repairs (17 exercises)} & \multicolumn{2}{c}{Retention (90 students)} \\
-\midrule
-Answer higher & 15 & Answer higher & 5.6\% \\
-Tied & 2 & Tied & 63.3\% \\
-Progress higher & 0 & Progress higher & 31.1\% \\
-Extra Answer repairs & 63 & Median gain & 9.6 \\
-Largest gap & 12 & Retention range & -21.1 / 49.7 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
+Java retraining uses 600 training and 118 validation pairs per target and reproduces this direction without Python AST distance. Answer targets repair 155 trajectories and Progress targets 92, a difference of 34.8 points; Progress-minus-Answer intervals are [-44.91, -25.47] under student clustering and [-47.31, -23.79] under exercise clustering. Among 90 joint repairs, Progress targets increase lexical-token retention by 4.8 points and line retention by 5.1 points, with intervals [2.79, 7.19] and [2.92, 7.25]. This is evidence for a coverage--locality tradeoff across these two languages and populations. It is not evidence that the same magnitude generalizes to other classrooms, nor a replication of the Python peer-target intervention.
 \noindent\textbf{What a student receives.} Cohort means do not describe an individual student, so Table~\ref{tab:uneven} resolves the Java contrast by exercise and by student. The coverage cost is concentrated rather than uniform. One exercise accounts for 12 of the 63 additional Answer repairs, and there Progress targets repair 3 of 15 trajectories against 15. The retention gain is a minority effect with a long tail. Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of 9.6 points, and a few get less. Line retention behaves the same, zero for 64.4\% of students with maximum 47.6. Figure~\ref{fig:case} illustrates that tail on Python, where the Progress-target repair continues the student's own boundary edit while the Answer-target repair replaces the algorithm. Which rule a course deploys therefore depends on the exercise and on whether coverage or locality binds.
 
 \noindent\textbf{Peer targets.} The separate outcome- and distance-matched replacement raises RR from 50.4\% to 54.7\% on Seen and from 78.4\% to 84.4\% on Unseen. Same-minus-peer intervals are [-7.71, -0.84] and [-11.79, -0.41], with exact McNemar \(p=0.005\) and \(p=0.032\). Matches cover 5,231/21,416 canonical Progress training records (24.4\%) and 306/2,685 validation records (11.4\%). The result concerns this caliper, donor cap, source population, and replacement rule. Equal outcomes and nearby edit distance still permit differences in target structure, style, and length, so the contrast does not isolate user identity. Matched peer targets improve coverage here; one's own trajectory is not uniquely necessary under this control.

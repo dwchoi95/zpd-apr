@@ -329,7 +329,35 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (P4 퇴고 및 규칙 이름 통일 이전)
 7742ef72a1e9fe0b48415c6a4b98e67a4dec2868fdc2ed221b8d3ad137b0b9eb
 
-최종 PDF SHA-256
+Introduction P5(Results) 퇴고 — 2026-10-22
+수치는 바꾸지 않았고 보존 결과에서 그대로 가져왔다. 125 -> 157 words, 4 -> 7문장.
+1. 모집단이 다른 두 수치쌍을 한 문장에서 떼어 냈다. 19.2/11.2는 997/250 입력 전체이고 5.6/6.5는
+   두 규칙이 모두 수리한 건에 대한 값이다. 이전 문장은 'on joint repairs'를 뒤에 붙여 전환을
+   표시하지 않았다.
+2. 3단계에서 RQ2에 넣은 '수리가 아닌 전진'을 Results에도 올렸다. Progress 규칙은 수리하지 못한
+   입력에도 전진한 프로그램을 돌려주며, Seen에서 추가 9.4 포인트가 통과까지 가지 못한 채 더 많은
+   테스트를 통과한다.
+3. 39단어 한 문장에 Java 재현과 exercise 분해와 학생 분해가 겹쳐 있던 것을 두 문장으로 나눴다.
+4. 'reaches only 31.1%'의 only를 뺐다. 평가어이며 수치가 스스로 말한다.
+5. Introduction에서 정의되지 않은 'mixed-relation portfolio'를 'our portfolio over the three
+   rules'로 바꿨다. P4가 세 규칙을 Answer/Strict/Progress로 소개했으므로 이제 가리킬 대상이 있다.
+6. Section III의 Overview 첫 문장이 Figure 2를 가리키며 시작하던 것을 '우리의 접근은 ...'으로
+   바꾸고, 그림 참조는 Main Algorithm 문단으로 모았다. 절의 첫 문장이 그림을 가리키며 열리지 않게
+   하는 편이 낫고, 동시에 첫 언급이 캡션보다 앞서는 문제도 사라진다.
+7. 플로트 배치: Figure 2 선언을 Generate-and-Validate Selection 절 머리로, Table V와 Figure 3
+   선언을 Java 재학습 문단 앞으로 올렸다. Introduction이 길어질 때마다 단일 단 플로트가 다음 단으로
+   밀려 첫 언급 뒤에 놓였기 때문이다. 같은 문단이 두 플로트를 인용하므로 둘을 함께 앞세워 같은 단
+   머리에서 받도록 했다. 본문 내용과 순서는 바뀌지 않았다.
+8. Java 문단의 한국어 줄에 남아 있던 'terminal target'을 Answer target으로 고쳤다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Introduction 본문
+862 words(가이드라인 700-1,000), 본문 6문단. 규칙 이름은 Abstract을 제외하면 전부
+Answer / Strict / Progress이며, Section II가 정의하는 target 종류 이름만 남아 있다.
+
+대체된 PDF SHA-256 (P5 퇴고 이전)
 7c9d525ca1f41c91a5bac84f957b7e215faac157ad340caa37d9c68ffa42c517
+
+최종 PDF SHA-256
+023bc381a801b5e783aa63c935c9f46e8338c2da7d90f3f4123b64a3e8e99539
 최종 영어 소스 SHA-256
-6ec4fc881d7c10a6c93ee75a31f13d3057fbcf023b34d1be612e9503def6bf7f
+e33ad55cc86b252aaca0c030d1d2ed1d0d8a9b3ebee061ea0edbc5c3d0d2d4fb
