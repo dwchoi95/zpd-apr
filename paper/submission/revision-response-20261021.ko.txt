@@ -113,8 +113,8 @@ Introduction 퇴고 — 2026-10-22
 삭제했다. 수치와 통제 서술은 하나도 바꾸지 않았다. 플로트 배치가 밀려 Table I, Figure 2, Figure 3의
 소스 위치를 재조정했다.
 검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(참조 명령 141개), frontier 수치, 보충자료
-22개 파일 재검증. 영어 빌드 소스 SHA-256 a6a0822be41cd9d2a80068d592ae765c0417dbaf032121f42201b6af39a30ca8
-한글 작업본 SHA-256 85e218db900d11ece70f24f43134ad2914d65b8b6089a7c63da6ef42aadc302c
+22개 파일 재검증. 영어 빌드 소스 SHA-256 e794468a4d0ed87978a9c08d9678e3a830d16f9c236ce65a04cfa5e20c86a6c3
+한글 작업본 SHA-256 14578623f268658ff25bfe2bd365ac8d8cb00535ef6cc2595de91018a093eafd
 
 Introduction 첫 문단 재검토 — 2026-10-22
 1. gate 선취·과장 제거: "An execution gate can hold correctness fixed"를 "Validation decides whether the
@@ -205,10 +205,23 @@ Abstract 재작성 — 2026-10-22
 검산: 영어 빌드 10+2쪽, 플로트 8개 순서, overfull 0, 미정의 0, bridge byte-identical(141),
 frontier, 익명성, 보충자료 22개 파일, 테스트 35개.
 
+Introduction P2(SOTA) 퇴고 — 2026-10-22
+가이드라인 I2 규격에 맞춰 다시 썼다. 74 -> 102 words, 4 -> 5문장. 수치는 바꾸지 않았다.
+1. 핵심 설계 결정 문장을 문단 앞에 세웠다. 수리를 무엇을 향해 supervise하는가와 후보를 몇 개까지
+   생성하게 하는가다. 이 둘이 Gap의 두 주장이고 제목의 트레이드오프이므로, 뒤의 인용 나열이 의미를
+   갖게 된다. I2는 난제 2개 또는 핵심 설계 결정으로 열도록 규정한다.
+2. 범주명을 명시했다. reference 기반, 언어 모델 기반, retrieval 기반으로 나누어 Related Work의
+   용어와 맞췄다. 이전에는 동사로만 구분했다.
+3. 칭찬 문장으로 문단을 닫아 Gap 첫 문장의 전환(Their success nevertheless ...)을 받도록 했다.
+   80.2%는 Results로 옮기지 않고 칭찬 문장 안에 남겼다. Introduction에서 baseline이 우리를 앞선다는
+   사실을 미루지 않기 위함이다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 순서, overfull 0, bridge byte-identical(141), frontier, 익명성,
+보충자료 22개 파일, 테스트 35개. Introduction 본문 734 words.
+
 대체된 PDF SHA-256 (SEET 적합성 보강 이전)
 999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
 보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
 추적 대상이 아니었으므로 보관되지 않았다.
 
 최종 PDF SHA-256
-16189cdff6848404f2b38a6971c7437cc83eb03c4a5edbfdb3e53188d6087614
+36a0e6f0f0c99447e638cebe14d97ca3b3109142a3db27cb59e567f5ffefef5c
