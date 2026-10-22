@@ -547,7 +547,47 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (ZPD 세 영역 재작성 이전)
 9d27565dc8f626f9fd4986d93d77b8fce51a93dd0edacc97400565c3a4b1de1b
 
-최종 PDF SHA-256
+Introduction P3 However 및 P4(Proposal + Algorithm) 재작성 — 2026-10-23
+사용자가 두 가지를 지적했다. P3 영어가 However로 시작해야 하는데 "Neither line, however,"로 쉼표가
+연달아 와서 이상하다는 것과, P4가 가이드라인 I4의 "In this paper, we present X, a ..." 형식을
+따르지 않았다는 것이다. 후자는 가이드라인을 확인하지 않은 우리 잘못이다.
+1. P3 첫 문장을 "However, neither line considers ..."로 바꿨다. 한국어는 이미 "그러나 어느 계열도"
+   여서 그대로다.
+2. P4를 I4 틀에 맞춰 다시 썼다. 가이드라인 123-134행이 규정하는 첫 문장 틀은
+   "In this paper, we present <Tool>, a <novel|new> <유형> approach <that ...>, <from scratch|
+   without prior knowledge>, thereby maximizing <...>."이며 인용이 없어야 한다. 새 첫 문장은
+   "In this paper, we present ZPDPatch, a new target-construction approach that supervises repair
+   toward the student's own next improvement rather than an accepted solution, without a learner
+   model of any kind, thereby retaining more of the student's own program in what it returns."이다.
+   without 슬롯은 P3의 논증과 맞물린다. 학습자의 영역을 짚으려면 별도의 측정이 필요하지만 우리는
+   그것을 쓰지 않는다. 인용은 0개다.
+3. 둘째 문장을 핵심 아이디어로 두었다. 가이드라인은 둘째 문장이 핵심 아이디어나 기대 효과라고
+   규정하며 FSE26은 "The core idea is to"를 쓴다. 우리도 같은 틀을 썼다.
+4. I6은 단계 명명형(B)을 따랐다. "ZPDPatch begins with Mine, which ..."로 열고 단계마다 직관을
+   한 구절씩 붙였다. 우리 단계는 반복되지 않으므로 ICSE26의 "begins by ... Once ... is complete"
+   계열을 따랐고 반복 마무리 문장은 쓰지 않았다.
+5. 세 규칙 소개 순서를 Progress, Strict, Answer로 바꾸고 Answer의 역할을 밝혔다. 이전 P4는 P3가
+   "accepted solution은 가운데 영역에 놓일 수 없다"고 논증한 직후에 Answer가 accepted 제출을
+   취한다고만 말해 독자에게 모순으로 읽혔다. 이제 Answer는 "맞춘 source와 예산 아래 둔 관례적
+   target으로 비교 기준이 된다"고 적는다.
+6. 반환물이 완성된 프로그램이라는 문장을 Introduction에 넣었다. 이전에는 Related Work에만 있었다.
+   P2의 "서술된 편집은 프로그램이 아니므로 얼마를 바꿀지 반환물 안에 없다"와 P5의 bounded-edit
+   결과를 잇는 고리다.
+7. 마지막 문장의 대응을 1:1로 고쳤다. 이전에는 기법 네 개를 교란 요인 세 개에 뭉뚱그려 연결했고
+   맞춘 동료 target 통제군이 source나 예산을 분리하는 것처럼 읽혔다. 이제 입력은 source를 맞춘
+   재학습, 후보 폭은 동일 target 독립 seed와 맞춘 예산, target의 출처는 맞춘 동료 통제군이다.
+8. 플로트. P4가 길어지자 Table III가 6쪽 둘째 단 머리로 밀려 첫 언급보다 뒤에 놓였다. 선언을
+   Experimental Settings 절 머리로 올려 해결했다. 본문 순서는 바뀌지 않았다.
+분량: Introduction 본문이 1,088 words로 가이드라인 상한 1,000을 넘는다. 사용자가 이번 단계에서는
+분량을 크게 신경쓰지 말라고 했으므로 내용을 먼저 세웠다. P4를 288에서 263 words로 줄이며 중복은
+걷어냈고, 상한에 맞추려면 P3(223)와 P4(263)에서 더 줄여야 한다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. Introduction 콜론 0개.
+
+대체된 PDF SHA-256 (P4 재작성 이전)
 96e6a5f45529ef6ae70e16423fe1e42751e1a2bd9220aaef57e57746db43d906
+
+최종 PDF SHA-256
+c8fb1cfa4e28bcfdb6d8f94c805453623b002bc62923785f354150a0a0bc3d17
 최종 영어 소스 SHA-256
-ea820573ecf5ef81b4d2da7af4584c238312c6e3523d20990681da071c68589e
+98b56e8fb08f43eef7598e19acf122467ab5d1616c9fc1f1f34648936b26144c
