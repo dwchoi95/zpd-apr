@@ -113,8 +113,8 @@ Introduction 퇴고 — 2026-10-22
 삭제했다. 수치와 통제 서술은 하나도 바꾸지 않았다. 플로트 배치가 밀려 Table I, Figure 2, Figure 3의
 소스 위치를 재조정했다.
 검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(참조 명령 141개), frontier 수치, 보충자료
-22개 파일 재검증. 영어 빌드 소스 SHA-256 583e0aa13c0ae6516b655213a7650ddb243dbfa889ca6477284ca267bb05caea
-한글 작업본 SHA-256 a91139d2a00a273605f7faad11fc5820c6ee25876351fcb0d4ae173ecf1e8923
+22개 파일 재검증. 영어 빌드 소스 SHA-256 2c7ebbd6f536a06ad1fd15dec2767cfa876818048d03d01444bde148a6eac0ec
+한글 작업본 SHA-256 5d9f53ad59e78136c8fb09bbc9c0adc32b130fb2df213003ada438b0b8d98940
 
 Introduction 첫 문단 재검토 — 2026-10-22
 1. gate 선취·과장 제거: "An execution gate can hold correctness fixed"를 "Validation decides whether the
@@ -182,10 +182,18 @@ Domain -> SOTA -> Gap -> Proposal+Algorithm -> Results -> Contributions 순서�
 파라미터(topfraction/textfraction/floatpagefraction)만 조정했고 여백·폰트는 건드리지 않았다.
 검산: 10+2쪽, 플로트 8개 순서, overfull 0, bridge byte-identical(141), frontier, 익명성, 보충자료 22개.
 
+제출 산출물 분리 — 2026-10-22
+한글 작업본이 kotex로 정상 컴파일되므로(12쪽, 오류 0) 편집기가 paper/main.pdf를 한글 빌드로
+덮어쓴다. 제출 PDF를 paper/main.en.pdf로 분리했다. kotex 줄에는 %!ko-only 태그를 달아 영어
+소스 복구에서 제외하므로 제출 소스는 kotex를 싣지 않는다. paper/main.pdf는 git 추적에서 뺐다.
+형식·익명성 검증과 보충자료 manifest는 main.en.pdf/main.en.tex를 가리키고, 증거 바인딩과
+frontier 검증은 main.tex를 읽는다. 둘의 영어 본문은 왕복 테스트가 바이트 단위로 보장한다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 순서, overfull 0, 미정의 참조 0, bridge byte-identical(141).
+
 대체된 PDF SHA-256 (SEET 적합성 보강 이전)
 999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
 보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
 추적 대상이 아니었으므로 보관되지 않았다.
 
 최종 PDF SHA-256
-41897bf7f226220faa0d042ed42b36f79cc57190c9453695907e1d24f2afe212
+2c340942a2b56d979fd34892f8f02dca83c8afffa11ae3de725f3618ef5ccdfa

@@ -12,14 +12,15 @@ import re
 from pathlib import Path
 
 HANGUL = re.compile(r'[가-힣]')
-MARKER = '%!ko-review'          # header lines the reading copy adds, dropped on recovery
+MARKERS = ('%!ko-review',)      # header lines the reading copy adds, dropped on recovery
+KO_ONLY = '%!ko-only'           # tags a LaTeX line that belongs to the reading copy alone
 
 
 def english(text: str) -> str:
     """Drop Korean lines and uncomment the English paragraph that follows each one."""
     out, pending = [], False
     for line in text.split('\n'):
-        if line.startswith(MARKER):
+        if line.startswith(MARKERS) or KO_ONLY in line:
             continue
         if HANGUL.search(line) and not line.startswith('%'):
             pending = True                      # a translation line; its English follows

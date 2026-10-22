@@ -177,13 +177,13 @@
   "schema_version": 1,
   "venue": "ICSE-SEET 2027 Research Paper",
   "cfp": "https://conf.researchr.org/track/icse-2027/icse-2027-software-engineering-education-and-training--seet-",
-  "pdf": "paper/main.pdf",
-  "source": "paper/main.tex",
+  "pdf": "paper/main.en.pdf",
+  "source": "paper/main.en.tex",
   "title_pt": 24,
   "body_pt": 10,
   "font_count": 20,
   "embedded_fonts": true,
   "type3_fonts": false,
-  "sha256": "41897bf7f226220faa0d042ed42b36f79cc57190c9453695907e1d24f2afe212",
-  "source_sha256": "a91139d2a00a273605f7faad11fc5820c6ee25876351fcb0d4ae173ecf1e8923"
+  "sha256": "2c340942a2b56d979fd34892f8f02dca83c8afffa11ae3de725f3618ef5ccdfa",
+  "source_sha256": "2c7ebbd6f536a06ad1fd15dec2767cfa876818048d03d01444bde148a6eac0ec"
 }

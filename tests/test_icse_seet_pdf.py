@@ -44,7 +44,7 @@ class ICSESEETFormatTest(unittest.TestCase):
     @unittest.skipUnless(all(shutil.which(t) for t in ("pdfinfo", "pdftotext", "pdftohtml", "pdffonts")), "Poppler required")
     def test_current_manuscript(self):
         root = Path(__file__).resolve().parents[1]
-        result = verify(root / "paper/main.pdf", root / "paper/main.tex")
+        result = verify(root / "paper/main.en.pdf", root / "paper/main.en.tex")
         self.assertEqual(result["title_pt"], 24)
         self.assertEqual(result["body_pt"], 10)
 

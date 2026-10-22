@@ -158,7 +158,7 @@ def build(output):
     copy(Path("paper/claim-evidence-ledger.md"), "evidence/claim-evidence-ledger.md")
     files = {str(p.relative_to(output)): digest(p) for p in sorted(output.rglob("*")) if p.is_file()}
     emit("manifest.json", dict(schema=1, files=files, original_inputs=sources,
-         paper_sha256=digest(ROOT / "paper/main.pdf"), source_sha256=digest(ROOT / "paper/main.tex")))
+         paper_sha256=digest(ROOT / "paper/main.en.pdf"), source_sha256=digest(ROOT / "paper/main.en.tex")))
     # Assert no workstation/account handles were exported, including copied docs.
     for path in output.rglob("*"):
         if path.is_file():

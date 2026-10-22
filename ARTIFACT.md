@@ -1,9 +1,15 @@
 # ICSE-SEET 2027 Analysis Supplement
 
-The current manuscript is an IEEE Research Paper (`paper/main.tex` and
-`paper/main.pdf`), with at most 10 body pages and 2 reference pages. The source
-uses literal numbers, no user-defined commands, and inline TikZ/algorithmicx
-figures. Historical filenames containing `fse2027` are preserved for provenance;
+The submitted manuscript is an IEEE Research Paper (`paper/main.en.tex` and
+`paper/main.en.pdf`), with at most 10 body pages and 2 reference pages. The
+source uses literal numbers, no user-defined commands, and inline
+TikZ/algorithmicx figures. `paper/main.tex` is a Korean reading copy that keeps
+every English paragraph verbatim as a comment; `scripts/strip_korean_review.py`
+recovers the submitted source from it, and the recovery is byte-identical by
+test. Its own build output, `paper/main.pdf`, is not part of the submission. The
+format and anonymity checks read `main.en.pdf` and `main.en.tex`, while the
+evidence-binding and frontier checks read `main.tex`, whose English text the
+round-trip test holds byte-identical to the submitted source. Historical filenames containing `fse2027` are preserved for provenance;
 they do not designate the current venue.
 
 ## Local submission package

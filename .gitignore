@@ -40,3 +40,5 @@ tmp_*.sh
 
 # third-party papers kept locally as style references
 paper/guidelines/*.pdf
+# Korean reading copy build output; the submission PDF is paper/main.en.pdf
+paper/main.pdf
