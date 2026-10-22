@@ -3,7 +3,7 @@
   "files": {
     "README.txt": "31104753a68af89d346b7d89fa82e9aac808399c7efdf284ef742143a467128d",
     "conditions.json": "d5621f0c4d05d48993203286f452d7e62ed8891ee24c236af124895c8fe5e319",
-    "evidence/claim-evidence-ledger.md": "259c910645b52de02e29ae0f6990405724d46557e09dfd7c1e83cc40a87e083d",
+    "evidence/claim-evidence-ledger.md": "2be1469e71fb504ed179c7223ce8a6439ccb9767bee33eb9dac01c54988bf882",
     "evidence/deadline-results.json": "5555c5015ae13c0c664e12b372f178964ba925c3771445dd5a20234acc713fb4",
     "evidence/fse2027-peer-distributions.json": "0474d7b43e3819131084b74db2eeaf70ffda915d9a5c4594083bc434eb2f727e",
     "evidence/fse2027-prompt-distribution-control.json": "d9cce844405d2e6c62aed375d33f464273a9e18a7650c40ce384a05155cdd1cc",
@@ -74,8 +74,8 @@
     "paper/literature-breadth-audit.csv": "fcd84a5afc245167e5f1aa3694eaf8ce9809731ac87cfd23f227c81c94ade2c6",
     "paper/literature-breadth-audit.md": "438a8aedf8c523c14f5b85b386312018530f3e863dbbd76af594b714fec7744c",
     "paper/literature-breadth-correction-20261021.txt": "01b24c042377d05343aad02a1d57f7d8180f42d97897ac0284696ff64ea70fdd",
-    "paper/claim-evidence-ledger.md": "259c910645b52de02e29ae0f6990405724d46557e09dfd7c1e83cc40a87e083d"
+    "paper/claim-evidence-ledger.md": "2be1469e71fb504ed179c7223ce8a6439ccb9767bee33eb9dac01c54988bf882"
   },
-  "paper_sha256": "36a0e6f0f0c99447e638cebe14d97ca3b3109142a3db27cb59e567f5ffefef5c",
-  "source_sha256": "e794468a4d0ed87978a9c08d9678e3a830d16f9c236ce65a04cfa5e20c86a6c3"
+  "paper_sha256": "735ce6f5293a5aa5508c2426f4328220bc3a92382816035fb112b3fe2cb10760",
+  "source_sha256": "5ce039d5dbe1f65640d88d1ed2a645bcda48840bbaa518f17adc63817e5db24c"
 }

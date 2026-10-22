@@ -8,29 +8,29 @@
     "Preliminaries": 2,
     "Our Approach": 3,
     "Experiments": 5,
-    "Related Work": 10,
-    "Conclusion": 10,
-    "Data Availability": 10
+    "Related Work": 9,
+    "Conclusion": 9,
+    "Data Availability": 9
   },
   "float_order": {
     "Table I": {
       "caption_page_column_y": [
         2,
         1,
-        446.0
+        375.0
       ],
       "first_reference_page_column_y": [
         2,
         1,
-        698.0
+        626.0
       ],
       "caption_xy": [
         422.0,
-        446.0
+        375.0
       ],
       "first_reference_xy": [
         322.0,
-        698.0
+        626.0
       ]
     },
     "Table II": {
@@ -42,7 +42,7 @@
       "first_reference_page_column_y": [
         5,
         0,
-        327.0
+        278.0
       ],
       "caption_xy": [
         421.0,
@@ -50,87 +50,67 @@
       ],
       "first_reference_xy": [
         49.0,
-        327.0
+        278.0
       ]
     },
     "Table III": {
       "caption_page_column_y": [
         6,
         0,
-        289.0
+        232.0
       ],
       "first_reference_page_column_y": [
         6,
         0,
-        482.0
+        423.0
       ],
       "caption_xy": [
         157.0,
-        289.0
+        232.0
       ],
       "first_reference_xy": [
         49.0,
-        482.0
+        423.0
       ]
     },
     "Table IV": {
       "caption_page_column_y": [
         6,
         1,
-        172.0
+        113.0
       ],
       "first_reference_page_column_y": [
         6,
         1,
-        375.0
+        315.0
       ],
       "caption_xy": [
         419.0,
-        172.0
+        113.0
       ],
       "first_reference_xy": [
         312.0,
-        375.0
-      ]
-    },
-    "Table V": {
-      "caption_page_column_y": [
-        8,
-        1,
-        54.0
-      ],
-      "first_reference_page_column_y": [
-        9,
-        1,
-        160.0
-      ],
-      "caption_xy": [
-        421.0,
-        54.0
-      ],
-      "first_reference_xy": [
-        312.0,
-        160.0
+        315.0
       ]
     },
     "Figure 1": {
       "caption_page_column_y": [
         2,
         0,
-        546.0
+        471.0
       ],
       "first_reference_page_column_y": [
         2,
         1,
-        231.0
+        159.0
       ],
       "caption_xy": [
         106.0,
-        546.0
+        471.0
       ],
       "first_reference_xy": [
         322.0,
-        231.0
+        159.0
       ]
     },
     "Figure 2": {
@@ -141,36 +121,36 @@
       ],
       "first_reference_page_column_y": [
         3,
-        1,
-        224.0
+        0,
+        662.0
       ],
       "caption_xy": [
         49.0,
         455.0
       ],
       "first_reference_xy": [
-        322.0,
-        224.0
+        59.0,
+        662.0
       ]
     },
     "Figure 3": {
       "caption_page_column_y": [
         7,
         0,
-        265.0
+        206.0
       ],
       "first_reference_page_column_y": [
         7,
         0,
-        519.0
+        459.0
       ],
       "caption_xy": [
         49.0,
-        265.0
+        206.0
       ],
       "first_reference_xy": [
         49.0,
-        519.0
+        459.0
       ]
     }
   },
@@ -184,6 +164,6 @@
   "font_count": 20,
   "embedded_fonts": true,
   "type3_fonts": false,
-  "sha256": "36a0e6f0f0c99447e638cebe14d97ca3b3109142a3db27cb59e567f5ffefef5c",
-  "source_sha256": "e794468a4d0ed87978a9c08d9678e3a830d16f9c236ce65a04cfa5e20c86a6c3"
+  "sha256": "735ce6f5293a5aa5508c2426f4328220bc3a92382816035fb112b3fe2cb10760",
+  "source_sha256": "5ce039d5dbe1f65640d88d1ed2a645bcda48840bbaa518f17adc63817e5db24c"
 }

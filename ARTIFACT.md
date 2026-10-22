@@ -51,7 +51,7 @@ analyses are under `outputs/split-90-10/canonical-v5/analysis/`:
 | RQ3 same-stack decoder/checkpoint factorial | `fse2027-current-only-factorial-corrected.json` |
 | RQ3 frozen input vs reselected portfolio | `fse2027-prompt-distribution-control.json` |
 | RQ4 generality and boundaries | result bridge and its prefix, scale, difficulty, overlap, hidden-slice, Java analyses |
-| Table V (`tab:development`) / RQ5 all development outcomes | `analysis_protocols/zpd-deadline-results-20261021.json` and `zpd-final-methodology-report-20261021.ko.md` |
+| Development runs the paper no longer reports | `analysis_protocols/zpd-deadline-results-20261021.json` and `zpd-final-methodology-report-20261021.ko.md`, exported to the supplement as `evidence/deadline-results.json` |
 
 The whitespace-sensitive corrections alter derived change flags/selections, not
 stored generated candidates. Original and corrected files remain separate.

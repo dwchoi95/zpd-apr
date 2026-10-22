@@ -113,8 +113,8 @@ Introduction 퇴고 — 2026-10-22
 삭제했다. 수치와 통제 서술은 하나도 바꾸지 않았다. 플로트 배치가 밀려 Table I, Figure 2, Figure 3의
 소스 위치를 재조정했다.
 검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(참조 명령 141개), frontier 수치, 보충자료
-22개 파일 재검증. 영어 빌드 소스 SHA-256 e794468a4d0ed87978a9c08d9678e3a830d16f9c236ce65a04cfa5e20c86a6c3
-한글 작업본 SHA-256 14578623f268658ff25bfe2bd365ac8d8cb00535ef6cc2595de91018a093eafd
+22개 파일 재검증. 영어 빌드 소스 SHA-256 5ce039d5dbe1f65640d88d1ed2a645bcda48840bbaa518f17adc63817e5db24c
+한글 작업본 SHA-256 707fbad4f684bb633cbec7cd90eef6afef4d5a96e2293272769689b4b84997ac
 
 Introduction 첫 문단 재검토 — 2026-10-22
 1. gate 선취·과장 제거: "An execution gate can hold correctness fixed"를 "Validation decides whether the
@@ -218,10 +218,24 @@ Introduction P2(SOTA) 퇴고 — 2026-10-22
 검산: 영어 빌드 10+2쪽, 플로트 8개 순서, overfull 0, bridge byte-identical(141), frontier, 익명성,
 보충자료 22개 파일, 테스트 35개. Introduction 본문 734 words.
 
+범위 축소 — 2026-10-22
+이력 조건화를 논문의 주장에서 제외하고, 그 주장을 검정하던 자료도 본문에서 함께 제외했다. 실험은
+하지 않았고 기록은 보충자료와 최종 보고서에 그대로 남는다.
+제거: RQ5 절 전체(Decision rule, History and generation, Separate eight-draw bank, Answer to RQ5,
+556 words), 두 칸 개발 블록 표(12행), RQ3의 History and portfolio selection 문단(198 words),
+Gap의 가설 2, Abstract와 Results와 Contributions의 개발 실패 절, RQ 목록의 RQ5 항목, Threats의
+고정 게이트 관련 문장. RQ는 다섯에서 네 개가 되었다.
+유지: 후보 폭 통제(15.1), peer target(+4.3/+6.0), 직렬화된 이력에 관한 세 문장(prompt 제거 이득
+8.8/11.1과 7.6/6.0, Holm 최소 p=0.313)으로 배포 구성이 current-only prompt인 이유를 남겼다.
+Data Availability에 보고하지 않는 개발 실행 전량이 보충자료에 있다는 문장을 추가했고, ARTIFACT
+claim map과 ledger도 그에 맞게 고쳤다.
+검산: 영어 빌드 10+2쪽(본문 10쪽 중 마지막 쪽은 한 줄만 차지), 플로트 8개에서 7개로, overfull 0,
+오류 0, bridge byte-identical(141), frontier, 익명성, 보충자료 22개 파일, 테스트 35개.
+
 대체된 PDF SHA-256 (SEET 적합성 보강 이전)
 999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
 보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
 추적 대상이 아니었으므로 보관되지 않았다.
 
 최종 PDF SHA-256
-36a0e6f0f0c99447e638cebe14d97ca3b3109142a3db27cb59e567f5ffefef5c
+735ce6f5293a5aa5508c2426f4328220bc3a92382816035fb112b3fe2cb10760
