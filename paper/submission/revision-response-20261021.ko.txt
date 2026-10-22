@@ -113,8 +113,8 @@ Introduction 퇴고 — 2026-10-22
 삭제했다. 수치와 통제 서술은 하나도 바꾸지 않았다. 플로트 배치가 밀려 Table I, Figure 2, Figure 3의
 소스 위치를 재조정했다.
 검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(참조 명령 141개), frontier 수치, 보충자료
-22개 파일 재검증. 영어 빌드 소스 SHA-256 b81b79a058d905b6efd147a5895111222810414b2a95d636c28c1003f753338b
-한글 작업본 SHA-256 d1596afed13c6b8b278a245d9bb431198de040ebcc2a20281f7cdaeb7c85a272
+22개 파일 재검증. 영어 빌드 소스 SHA-256 d8471f433e22f46b9e81fb13f546427ea860c53686d6e71526e349cd8d3e241c
+한글 작업본 SHA-256 d35ca4670cf471c58f29c307ecece9c51abe6f18d67143e25e27ac201fefb891
 
 Introduction 첫 문단 재검토 — 2026-10-22
 1. gate 선취·과장 제거: "An execution gate can hold correctness fixed"를 "Validation decides whether the
@@ -150,10 +150,26 @@ P1을 문장 단위로 다시 쓰고 Abstract와 Introduction의 설명용 콜�
 유지했다. Figure 3 배치용으로 넣었던 Overview의 배포 예산 절은 되돌렸다. 본문 나머지 21개 콜론은 해당
 문단을 검토할 때 정리한다.
 
+용어 통일 — 2026-10-22
+55곳을 고쳤다. 수치와 통제 서술은 바꾸지 않았다.
+1. 수리 입력은 buggy program(버기 프로그램)으로 통일했다(failing program, non-accepted program,
+   fallback/eligibility/join key의 current code/program 6곳). 최신 상태 대 이력의 시간적 대비인
+   current submission, current-only prompt, Current-Only (C) 조건은 그대로 두었다.
+2. policy를 제거했다. 학습 산출물은 adapter, 선택·배포 단위는 checkpoint로 고정했고 Figure 1의
+   라벨 세 개도 함께 고쳤다. 방법 전체를 뜻하던 'complete policies'는 'complete methods'로 바꿨다.
+3. 개념은 locality, 지표는 retention으로 고정하고 source preservation 8곳을 제거했다(Table III
+   캡션, RQ2 질문, Conclusion 포함).
+4. 피드백을 받는 사람은 student로 통일했다(9곳). user(CodeNet 참가자)와 student(CS1)의 구분은
+   의도적이므로 유지했고, learner는 인용 문헌의 표현 세 곳(learner-specific solution, past learner
+   data, History and learner evidence)에만 남겼다. 'terminal-target learners'는 사람/모델 의미가
+   충돌해 'do not uniformly train on terminal targets'로 고쳤다.
+건드리지 않은 의도적 구분: problem(Python)/exercise(Java), verdict/outcome, portfolio/pool/triple,
+draw/generation, Seen/Unseen.
+
 대체된 PDF SHA-256 (SEET 적합성 보강 이전)
 999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
 보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
 추적 대상이 아니었으므로 보관되지 않았다.
 
 최종 PDF SHA-256
-718d814787c5004c52b139d3886c2e0f8a70a367fe4111a257d95ba57f25c5dd
+27f7875028378f34d44999e8cd612d7fea05fab8053f4d20d0b1466d52ab412c
