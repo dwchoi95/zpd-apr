@@ -587,7 +587,30 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 대체된 PDF SHA-256 (P4 재작성 이전)
 96e6a5f45529ef6ae70e16423fe1e42751e1a2bd9220aaef57e57746db43d906
 
-최종 PDF SHA-256
+P4 첫 문장을 쉬운 말로 — 2026-10-23
+사용자가 첫 문장이 어렵게 적혔다고 지적하고, "안내를 받으면 해낼 수 있는 영역에 맞춰 피드백을
+생성하는"처럼 쉽게 쓰라고 했다.
+1. I4 첫 문장을 P3가 세운 ZPD 어휘로 바꿨다. "aims repair feedback at the region a student can
+   reach with guidance, without a learner model, thereby returning a program that keeps more of
+   the student's own." 기계적 서술이던 "supervises repair toward the student's own next
+   improvement rather than an accepted solution"을 뺐다. I4 틀의 슬롯은 모두 유지되며 인용은
+   0개, 한 문장, 38 words다.
+2. 빠진 기계 설명은 둘째 문장으로 내렸다. 가이드라인이 둘째 문장을 핵심 아이디어로 규정하므로
+   제자리다. "The core idea is to read the next step off the student's own trajectory, which the
+   execution evidence already records, and to supervise toward that step rather than toward an
+   accepted solution."
+3. 주장 강도. "안내를 받으면 해낼 수 있는 영역에 맞춰 겨냥한다"는 설계 의도의 서술이며 측정된
+   효과가 아니다. 가이드라인 모범 문장들도 같은 어법이다. P3 마지막 문장이 어떤 학생의 영역도
+   재지 않았고 더 작은 패치가 그 영역에 떨어졌음을 입증하지 않는다고 이미 못박아 둔다.
+검산: 영어 빌드 10+2쪽, 플로트 8개 모두 첫 언급 앞, overfull 0, 미정의 0, bridge
+byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 47개. P4는 270 words,
+Introduction 본문 1,095 words로 아직 상한을 넘으며, Introduction 전체 퇴고가 끝난 뒤 한 번에
+조정하기로 했다.
+
+대체된 PDF SHA-256 (P4 첫 문장 수정 이전)
 c8fb1cfa4e28bcfdb6d8f94c805453623b002bc62923785f354150a0a0bc3d17
+
+최종 PDF SHA-256
+e734ca51024b5b89aa6b8da103d7392ad86129d189a043e60e5bdfc34b131e28
 최종 영어 소스 SHA-256
-98b56e8fb08f43eef7598e19acf122467ab5d1616c9fc1f1f34648936b26144c
+aebcf28a11804dca72352ca02526f031de1cfbf76b90f43d3d17116d0b2d5bfa
