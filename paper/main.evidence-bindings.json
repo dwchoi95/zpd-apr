@@ -157,7 +157,7 @@
       ]
     },
     {
-      "template": "Terminal higher & \\PairedJavaExercisesTerminalHigher & Terminal higher & \\PairedJavaLexicalRetentionLossShare\\%",
+      "template": "Answer higher & \\PairedJavaExercisesTerminalHigher & Answer higher & \\PairedJavaLexicalRetentionLossShare\\%",
       "commands": [
         "PairedJavaExercisesTerminalHigher",
         "PairedJavaLexicalRetentionLossShare"
@@ -178,7 +178,7 @@
       ]
     },
     {
-      "template": "Extra terminal repairs & \\PairedJavaExerciseDeficitTotal & Median gain & \\PairedJavaLexicalRetentionGainMedian",
+      "template": "Extra Answer repairs & \\PairedJavaExerciseDeficitTotal & Median gain & \\PairedJavaLexicalRetentionGainMedian",
       "commands": [
         "PairedJavaExerciseDeficitTotal",
         "PairedJavaLexicalRetentionGainMedian"
@@ -193,7 +193,7 @@
       ]
     },
     {
-      "template": "One exercise accounts for \\PairedJavaExerciseDeficitMaximum of the \\PairedJavaExerciseDeficitTotal additional terminal repairs, and there progress targets repair \\PairedJavaWorstExerciseProgressRepairs of \\PairedJavaWorstExerciseExamples trajectories against \\PairedJavaWorstExerciseTerminalRepairs.",
+      "template": "One exercise accounts for \\PairedJavaExerciseDeficitMaximum of the \\PairedJavaExerciseDeficitTotal additional Answer repairs, and there Progress targets repair \\PairedJavaWorstExerciseProgressRepairs of \\PairedJavaWorstExerciseExamples trajectories against \\PairedJavaWorstExerciseTerminalRepairs.",
       "commands": [
         "PairedJavaExerciseDeficitMaximum",
         "PairedJavaExerciseDeficitTotal",
@@ -210,7 +210,7 @@
       ]
     },
     {
-      "template": "the progress rule repairs \\PairedTargetProgressSeenRR\\% of Seen inputs and improves \\PairedTargetProgressSeenIR\\%, so a further \\PairedTargetProgressSeenImproveOnly points receive a program that advances without passing, against \\PairedTargetAnswerSeenRR\\% and \\PairedTargetAnswerSeenIR\\% for the terminal rule.",
+      "template": "the Progress rule repairs \\PairedTargetProgressSeenRR\\% of Seen inputs and improves \\PairedTargetProgressSeenIR\\%, so a further \\PairedTargetProgressSeenImproveOnly points receive a program that advances without passing, against \\PairedTargetAnswerSeenRR\\% and \\PairedTargetAnswerSeenIR\\% for the Answer rule.",
       "commands": [
         "PairedTargetAnswerSeenIR",
         "PairedTargetAnswerSeenRR",
@@ -220,7 +220,7 @@
       ]
     },
     {
-      "template": "The same two gaps are \\PairedTargetProgressUnseenImproveOnly and \\PairedTargetAnswerUnseenImproveOnly points on Unseen, and \\PairedJavaProgressImproveOnly against \\PairedJavaAnswerImproveOnly on Java, where terminal targets already repair \\PairedJavaAnswerRR\\% outright.",
+      "template": "The same two gaps are \\PairedTargetProgressUnseenImproveOnly and \\PairedTargetAnswerUnseenImproveOnly points on Unseen, and \\PairedJavaProgressImproveOnly against \\PairedJavaAnswerImproveOnly on Java, where Answer targets already repair \\PairedJavaAnswerRR\\% outright.",
       "commands": [
         "PairedJavaAnswerImproveOnly",
         "PairedJavaAnswerRR",
@@ -264,7 +264,7 @@
       ]
     },
     {
-      "template": "The primary five-fold cross-fitted mixed-minus-terminal contrast is +\\CrossFitMixedMinusAnswerNineSeen points \\CrossFitMixedMinusAnswerNineSeenCI, compared with the non-cross-fitted +\\MixedMinusAnswerNineSeen \\MixedMinusAnswerNineSeenCI.",
+      "template": "The primary five-fold cross-fitted mixed-minus-Answer contrast is +\\CrossFitMixedMinusAnswerNineSeen points \\CrossFitMixedMinusAnswerNineSeenCI, compared with the non-cross-fitted +\\MixedMinusAnswerNineSeen \\MixedMinusAnswerNineSeenCI.",
       "commands": [
         "CrossFitMixedMinusAnswerNineSeen",
         "CrossFitMixedMinusAnswerNineSeenCI",
@@ -300,7 +300,7 @@
       ]
     },
     {
-      "template": "At 1.5B parameters three checkpoints still gain \\ScaleAnswerThreeMinusOneSeen points over one \\ScaleAnswerThreeMinusOneSeenCI, but mixed-minus-terminal is \\ScaleMixedMinusAnswerNineSeen \\ScaleMixedMinusAnswerNineSeenCI.",
+      "template": "At 1.5B parameters three checkpoints still gain \\ScaleAnswerThreeMinusOneSeen points over one \\ScaleAnswerThreeMinusOneSeenCI, but mixed-minus-Answer is \\ScaleMixedMinusAnswerNineSeen \\ScaleMixedMinusAnswerNineSeenCI.",
       "commands": [
         "ScaleAnswerThreeMinusOneSeen",
         "ScaleAnswerThreeMinusOneSeenCI",
