@@ -113,8 +113,8 @@ Introduction 퇴고 — 2026-10-22
 삭제했다. 수치와 통제 서술은 하나도 바꾸지 않았다. 플로트 배치가 밀려 Table I, Figure 2, Figure 3의
 소스 위치를 재조정했다.
 검산: 10+2쪽, 플로트 9개 순서, overfull 0, bridge byte-identical(참조 명령 141개), frontier 수치, 보충자료
-22개 파일 재검증. 영어 빌드 소스 SHA-256 d8471f433e22f46b9e81fb13f546427ea860c53686d6e71526e349cd8d3e241c
-한글 작업본 SHA-256 d35ca4670cf471c58f29c307ecece9c51abe6f18d67143e25e27ac201fefb891
+22개 파일 재검증. 영어 빌드 소스 SHA-256 583e0aa13c0ae6516b655213a7650ddb243dbfa889ca6477284ca267bb05caea
+한글 작업본 SHA-256 a91139d2a00a273605f7faad11fc5820c6ee25876351fcb0d4ae173ecf1e8923
 
 Introduction 첫 문단 재검토 — 2026-10-22
 1. gate 선취·과장 제거: "An execution gate can hold correctness fixed"를 "Validation decides whether the
@@ -166,10 +166,26 @@ P1을 문장 단위로 다시 쓰고 Abstract와 Introduction의 설명용 콜�
 건드리지 않은 의도적 구분: problem(Python)/exercise(Java), verdict/outcome, portfolio/pool/triple,
 draw/generation, Seen/Unseen.
 
+Introduction 재배치 — 2026-10-22
+Domain -> SOTA -> Gap -> Proposal+Algorithm -> Results -> Contributions 순서로 문단을 재배치했다.
+수치는 바꾸지 않았다. 본문 5문단 706 words(하우스 목표 700-1,000).
+1. 첫 문단에 섞여 있던 한계·연구질문(5문장)을 Gap으로 옮겼고, SOTA 문단 끝의 한계 진술도 Gap 첫
+   문장으로 옮겼다. 이제 P1은 Domain만 담는다(78 words).
+2. Gap은 한 문단으로 합쳤다(206 words). 중복이던 trajectory 설정 문장, ZPD 예시의 둘째 절,
+   confound 결론 문장을 제거했다. 연구질문 두 개는 가설 두 개와 중복이라 삭제했다.
+3. Proposal+Algorithm 문단이 통제 설계 문장(source-matched retraining 등)을 함께 담는다.
+4. SOTA 문단에 각 방법이 쓰는 시도 횟수가 다르다는 문장을 추가해(74 words) Gap의 breadth 논증을
+   예고한다.
+플로트: Introduction 길이가 바뀔 때마다 §3의 두 플로트(overview 도식, 구성 절차)가 첫 언급 뒤로
+밀리는 문제가 반복됐다. 전체 폭 플로트로 합치면 13쪽이 되므로, 단일 컬럼 플로트 하나에 (a)(b)로
+세로로 합쳤다. 면적은 그대로이고 두 언급이 모두 뒤에 오므로 구조적으로 해결됐다. 플로트 배치
+파라미터(topfraction/textfraction/floatpagefraction)만 조정했고 여백·폰트는 건드리지 않았다.
+검산: 10+2쪽, 플로트 8개 순서, overfull 0, bridge byte-identical(141), frontier, 익명성, 보충자료 22개.
+
 대체된 PDF SHA-256 (SEET 적합성 보강 이전)
 999f95aad858ddc4406d75b94a308ee90e1ccc45487b4ed8bd9832f5a8d4cdb4
 보충자료 ZIP도 같은 시점에 재생성해 현재 PDF를 고정한다. 이전 ZIP은 git
 추적 대상이 아니었으므로 보관되지 않았다.
 
 최종 PDF SHA-256
-27f7875028378f34d44999e8cd612d7fea05fab8053f4d20d0b1466d52ab412c
+41897bf7f226220faa0d042ed42b36f79cc57190c9453695907e1d24f2afe212
