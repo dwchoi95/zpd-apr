@@ -190,39 +190,34 @@ These limitations motivate our approach, which repairs under the guidance of the
 \textbf{(a) Buggy submission $b$}\par
 \begin{tabular}{@{}r@{~}l@{}}
 {\color{black!55}1} & \makebox[4.3cm][l]{\texttt{N~=~int(input())}} \\
-{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
-{\color{black!55}3} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>~N:}}} \\
-{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
-{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
+{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>~N:}}} \\
+{\color{black!55}4} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
+{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
 \end{tabular}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.315\textwidth}
 \textbf{(b) Progress target: the next submission}\par
 \begin{tabular}{@{}r@{~}l@{}}
 {\color{black!55}1} & \makebox[4.3cm][l]{\texttt{N~=~int(input())}} \\
-{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
-{\color{black!55}3} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>=~N:}}} \\
-{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
-{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
+{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>=~N:}}} \\
+{\color{black!55}4} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
+{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
 \end{tabular}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.315\textwidth}
 \textbf{(c) Answer target: the accepted submission}\par
 \begin{tabular}{@{}r@{~}l@{}}
 {\color{black!55}1} & \makebox[4.3cm][l]{\texttt{n~=~int(input())}} \\
-{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
-{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{ans~=~0}}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{}}} \\
-{\color{black!55}5} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{for~a~in~range(10**5~+~1):}}} \\
-{\color{black!55}6} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~a**2~<=~n:}}} \\
-{\color{black!55}7} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}} \\
-{\color{black!55}8} & \makebox[4.3cm][l]{\texttt{}} \\
-{\color{black!55}9} & \makebox[4.3cm][l]{\texttt{print(ans)}} \\
+{\color{black!55}2} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{ans~=~0}}} \\
+{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{for~a~in~range(10**5~+~1):}}} \\
+{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~a**2~<=~n:}}} \\
+{\color{black!55}5} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}} \\
+{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{print(ans)}} \\
 \end{tabular}
 \end{minipage}
-\caption{Running example (p03556)}
+\caption{Running example (p03556), blank lines omitted}
 \label{fig:example}
 \end{figure*}
 
@@ -416,7 +411,7 @@ LSGen repairs 800/997 Seen inputs versus Mixed's 613/997, a difference of -18.8 
 
 \noindent\textbf{Matched targets.} Table~\ref{tab:targets} changes the target while holding current inputs and training counts fixed. Progress-minus-Answer RR is -19.2 points [-22.96, -15.54] on Seen and -11.2 [-17.37, -4.88] on Unseen, with exact McNemar \(p=7.85\times10^{-34}\) and \(p=6.17\times10^{-5}\). Thus the canonical Answer dataset's advantage cannot be attributed only to having more training records. The paired population is restricted to sources with distinct targets, and a Progress target can itself be accepted, so the intervention is the retained-evidence target rule rather than a clean contrast between incorrect and correct targets. Under the matched inputs the Progress rule repairs 34.0\% of Seen inputs and improves 43.4\%, so a further 9.4 points receive a program that advances without passing, against 53.2\% and 65.0\% for the Answer rule. The same two gaps are 6.4 and 7.6 points on Unseen, and 9.4 against 2.2 on Java, where Answer targets already repair 85.6\% outright. Part of the coverage the Progress rule gives up therefore returns as partial progress, counted by test execution and not by comprehension.
 
-Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR. These measures describe successful outputs that retain more of the submission, but they establish neither easier comprehension nor which method best helps a particular student.
+Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures describe successful outputs that retain more of the submission, but they establish neither easier comprehension nor which method best helps a particular student.
 
 \begin{table}[h]
 \caption{Java matched-target outcomes over 17 exercises and 90 jointly repaired students}
@@ -491,7 +486,7 @@ Answer-9Choose3 receives the same nine-checkpoint pool size and 84-subset opport
 \label{sec:generality}
 \noindent\textbf{Problems and execution suites.} Within Unseen, Mixed exceeds Zero-shot by 12.8 points [6.83, 18.75], with 45 versus 13 exclusive successes and exact McNemar \(p=3.01\times10^{-5}\). Among 142 joint repairs, 122 have defined TED for both methods; on those 122 it reduces TED by 6.41 [3.43, 9.89]. The higher absolute Unseen than Seen RR is not evidence of stronger generalization: the partitions differ in trajectory availability and problem composition. Matching all 54 Unseen problems to distinct Seen problems on six pre-repair difficulty covariates changes the raw gap into -4.6 equal-problem points [-14.18, 5.30]. We therefore rely on within-split paired contrasts rather than the raw cross-split difference.
 
-A complementary check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests.
+A complementary check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests, so the conditional percentage must not replace the full-denominator repair rate.
 
 \noindent\textbf{Earlier prefixes.} Across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, current-only Answer-3Seed reaches 69.6\% and 80.1\% RR. The early, middle, and last thirds reach 70.0\%, 67.6\%, and 71.4\% on Seen and 82.9\%, 77.3\%, and 81.8\% on Unseen. It extends evaluation beyond the last failed submission and finds no monotonic position effect. It does not cover trajectories that never reach acceptance and multiple prefixes from one trajectory are dependent, so the 2,770-prefix rate is not added to the 997-input result.
 

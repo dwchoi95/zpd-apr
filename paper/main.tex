@@ -208,39 +208,34 @@ Figure~\ref{fig:reach}는 학생들 자신이 한 걸음을 얼마나 크게 밟
 \textbf{(a) Buggy submission $b$}\par
 \begin{tabular}{@{}r@{~}l@{}}
 {\color{black!55}1} & \makebox[4.3cm][l]{\texttt{N~=~int(input())}} \\
-{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
-{\color{black!55}3} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>~N:}}} \\
-{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
-{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
+{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>~N:}}} \\
+{\color{black!55}4} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
+{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
 \end{tabular}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.315\textwidth}
 \textbf{(b) Progress target: the next submission}\par
 \begin{tabular}{@{}r@{~}l@{}}
 {\color{black!55}1} & \makebox[4.3cm][l]{\texttt{N~=~int(input())}} \\
-{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
-{\color{black!55}3} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>=~N:}}} \\
-{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
-{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
+{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>=~N:}}} \\
+{\color{black!55}4} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
+{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
 \end{tabular}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.315\textwidth}
 \textbf{(c) Answer target: the accepted submission}\par
 \begin{tabular}{@{}r@{~}l@{}}
 {\color{black!55}1} & \makebox[4.3cm][l]{\texttt{n~=~int(input())}} \\
-{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
-{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{ans~=~0}}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{}}} \\
-{\color{black!55}5} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{for~a~in~range(10**5~+~1):}}} \\
-{\color{black!55}6} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~a**2~<=~n:}}} \\
-{\color{black!55}7} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}} \\
-{\color{black!55}8} & \makebox[4.3cm][l]{\texttt{}} \\
-{\color{black!55}9} & \makebox[4.3cm][l]{\texttt{print(ans)}} \\
+{\color{black!55}2} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{ans~=~0}}} \\
+{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{for~a~in~range(10**5~+~1):}}} \\
+{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~a**2~<=~n:}}} \\
+{\color{black!55}5} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}} \\
+{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{print(ans)}} \\
 \end{tabular}
 \end{minipage}
-\caption{Running example (p03556)}
+\caption{Running example (p03556), blank lines omitted}
 \label{fig:example}
 \end{figure*}
 
@@ -469,8 +464,8 @@ LSGen은 Seen 997개 중 800개를 수리해 Mixed의 613개와 -18.8 포인트 
 \noindent\textbf{Matched targets.} Table~\ref{tab:targets}는 현재 입력과 학습 예제 수를 고정한 채 target만 바꾼다. Progress에서 Answer를 뺀 RR은 Seen에서 -19.2 포인트 [-22.96, -15.54], Unseen에서 -11.2 [-17.37, -4.88]이며, 정확 McNemar \(p=7.85\times10^{-34}\)와 \(p=6.17\times10^{-5}\)이다. 따라서 정본 terminal 데이터셋의 이점을 학습 레코드가 더 많다는 사실만으로 돌릴 수는 없다. 다만 짝지은 모집단은 target이 서로 다른 source로 제한되고 Progress target 자체가 accepted일 수도 있으므로, 개입은 보존 증거 기반 target 규칙이며 틀린 target과 맞는 target 사이의 깔끔한 대비가 아니다. 맞춘 입력에서 Progress 규칙은 Seen 입력의 34.0\%를 수리하고 43.4\%를 개선하므로, 추가 9.4 포인트는 통과까지 가지 못한 채 전진한 프로그램을 받는데, Answer 규칙의 같은 두 값은 53.2\%와 65.0\%다. 같은 두 간격은 Unseen에서 6.4와 7.6 포인트, Java에서 9.4 대 2.2 포인트이며, Java에서는 Answer target이 이미 85.6\%를 바로 수리한다. 따라서 Progress 규칙이 내준 coverage의 일부는 부분적 전진으로 돌아오지만, 이는 테스트 실행으로 센 것이고 이해도로 센 것이 아니다.
 % \noindent\textbf{Matched targets.} Table~\ref{tab:targets} changes the target while holding current inputs and training counts fixed. Progress-minus-Answer RR is -19.2 points [-22.96, -15.54] on Seen and -11.2 [-17.37, -4.88] on Unseen, with exact McNemar \(p=7.85\times10^{-34}\) and \(p=6.17\times10^{-5}\). Thus the canonical Answer dataset's advantage cannot be attributed only to having more training records. The paired population is restricted to sources with distinct targets, and a Progress target can itself be accepted, so the intervention is the retained-evidence target rule rather than a clean contrast between incorrect and correct targets. Under the matched inputs the Progress rule repairs 34.0\% of Seen inputs and improves 43.4\%, so a further 9.4 points receive a program that advances without passing, against 53.2\% and 65.0\% for the Answer rule. The same two gaps are 6.4 and 7.6 points on Unseen, and 9.4 against 2.2 on Java, where Answer targets already repair 85.6\% outright. Part of the coverage the Progress rule gives up therefore returns as partial progress, counted by test execution and not by comprehension.
 
-Progress의 locality 이점은 공동 성공에서 드러난다. 공동 수리된 Seen 299개와 Unseen 154개 중 278개와 134개가 두 방법 모두에서 source에서 수리까지의 TED가 정의된다. Answer에서 Progress를 뺀 평균 TED는 10.08 [7.53, 12.99]와 6.83 [4.58, 9.39]이다. token retention은 5.6 [4.29, 6.94]와 6.5 [4.26, 8.95] 포인트, line retention은 8.9 [6.64, 11.16]와 10.4 [6.95, 14.25] 포인트 개선된다. TED가 정의되지 않는 21개와 20개는 RR에 남는다. 이 측정치들은 성공한 출력이 source를 더 많이 보존한다는 점을 기술하지만, 이해가 더 쉬움도 특정 학생에게 어느 방법이 더 도움이 될지도 입증하지 않는다.
-% Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR. These measures describe successful outputs that retain more of the submission, but they establish neither easier comprehension nor which method best helps a particular student.
+Progress의 locality 이점은 공동 성공에서 드러난다. 공동 수리된 Seen 299개와 Unseen 154개 중 278개와 134개가 두 방법 모두에서 source에서 수리까지의 TED가 정의된다. Answer에서 Progress를 뺀 평균 TED는 10.08 [7.53, 12.99]와 6.83 [4.58, 9.39]이다. token retention은 5.6 [4.29, 6.94]와 6.5 [4.26, 8.95] 포인트, line retention은 8.9 [6.64, 11.16]와 10.4 [6.95, 14.25] 포인트 개선된다. TED가 정의되지 않는 21개와 20개는 RR에 남으며 수리 불가로 선언되지 않는다. 이 측정치들은 성공한 출력이 source를 더 많이 보존한다는 점을 기술하지만, 이해가 더 쉬움도 특정 학생에게 어느 방법이 더 도움이 될지도 입증하지 않는다.
+% Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures describe successful outputs that retain more of the submission, but they establish neither easier comprehension nor which method best helps a particular student.
 
 \begin{table}[h]
 \caption{Java matched-target outcomes over 17 exercises and 90 jointly repaired students}
@@ -556,8 +551,8 @@ Answer-9Choose3은 Mixed와 동일한 9개 checkpoint pool 크기와 84개 부�
 \noindent\textbf{Problems and execution suites.} Unseen 안에서 Mixed는 Zero-shot을 12.8 포인트 [6.83, 18.75] 앞서며, 배타적 성공은 45개 대 13개, 정확 McNemar \(p=3.01\times10^{-5}\)이다. 공동 수리 142개 중 122개가 두 방법 모두에서 TED가 정의되며, 그 122개에서 TED를 6.41 [3.43, 9.89] 줄인다. Unseen의 절대 RR이 Seen보다 높은 것은 더 강한 일반화의 증거가 아니다: 두 분할은 trajectory 가용성과 문제 구성이 다르다. Unseen 54개 문제 전부를 수리 전 난이도 공변량 여섯 개로 서로 다른 Seen 문제에 매칭하면 원래 격차가 -4.6 equal-problem 포인트 [-14.18, 5.30]로 바뀐다. 그래서 우리는 분할 간 원시 차이가 아니라 분할 내 짝지은 대비에 의존한다.
 % \noindent\textbf{Problems and execution suites.} Within Unseen, Mixed exceeds Zero-shot by 12.8 points [6.83, 18.75], with 45 versus 13 exclusive successes and exact McNemar \(p=3.01\times10^{-5}\). Among 142 joint repairs, 122 have defined TED for both methods; on those 122 it reduces TED by 6.41 [3.43, 9.89]. The higher absolute Unseen than Seen RR is not evidence of stronger generalization: the partitions differ in trajectory availability and problem composition. Matching all 54 Unseen problems to distinct Seen problems on six pre-repair difficulty covariates changes the raw gap into -4.6 equal-problem points [-14.18, 5.30]. We therefore rely on within-split paired contrasts rather than the raw cross-split difference.
 
-보완적인 검사는 기존의 작성된 테스트 묶음을 분할한다. Unseen에서 Mixed와 Answer-9Choose3은 observed slice와 보류 slice를 각각 250개 중 189개와 184개 입력에서 함께 통과한다. observed 묶음 성공 중 조건부 확인율은 192개 중 189개(98.4\%)와 186개 중 184개(98.9\%)이며, 배타적 공동 성공 13개 대 8개로 \(p=0.383\)이다. 다른 seed로 Seen 328개 문제 전체에 같은 절차를 반복하면 확인율은 97.8\%와 97.9\%이지만 공동 성공은 997개 중 452개 대 469개다. 따라서 높은 확인율이 Mixed가 이긴다는 것을 보여 주지는 않는다. 이들은 같은 작성 테스트의 보류 slice다.
-% A complementary check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests.
+보완적인 검사는 기존의 작성된 테스트 묶음을 분할한다. Unseen에서 Mixed와 Answer-9Choose3은 observed slice와 보류 slice를 각각 250개 중 189개와 184개 입력에서 함께 통과한다. observed 묶음 성공 중 조건부 확인율은 192개 중 189개(98.4\%)와 186개 중 184개(98.9\%)이며, 배타적 공동 성공 13개 대 8개로 \(p=0.383\)이다. 다른 seed로 Seen 328개 문제 전체에 같은 절차를 반복하면 확인율은 97.8\%와 97.9\%이지만 공동 성공은 997개 중 452개 대 469개다. 따라서 높은 확인율이 Mixed가 이긴다는 것을 보여 주지는 않는다. 이들은 같은 작성 테스트의 보류 slice이므로, 조건부 백분율이 전체 분모 기준 수리율을 대체해서는 안 된다.
+% A complementary check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests, so the conditional percentage must not replace the full-denominator repair rate.
 
 \noindent\textbf{Earlier prefixes.} 결국 성공한 trajectory의 실행 가능한 prefix 가운데 Seen 2,770개와 Unseen 674개에서 current-only Answer-3Seed는 RR 69.6\%와 80.1\%에 이른다. 앞·중간·마지막 3분의 1은 Seen에서 70.0\%, 67.6\%, 71.4\%, Unseen에서 82.9\%, 77.3\%, 81.8\%다. 이는 평가를 마지막 실패 제출 너머로 확장하며 단조 위치 효과를 찾지 못한다. 끝내 acceptance에 이르지 못한 trajectory는 포함하지 않고 한 trajectory에서 나온 여러 prefix는 서로 종속적이므로, 2,770개 prefix 비율은 997개 입력 결과에 더하지 않는다.
 % \noindent\textbf{Earlier prefixes.} Across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, current-only Answer-3Seed reaches 69.6\% and 80.1\% RR. The early, middle, and last thirds reach 70.0\%, 67.6\%, and 71.4\% on Seen and 82.9\%, 77.3\%, and 81.8\% on Unseen. It extends evaluation beyond the last failed submission and finds no monotonic position effect. It does not cover trajectories that never reach acceptance and multiple prefixes from one trajectory are dependent, so the 2,770-prefix rate is not added to the 997-input result.
