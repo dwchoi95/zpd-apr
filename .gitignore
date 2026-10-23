@@ -9,4 +9,3 @@
 *.synctex.gz
 .DS_Store
 !output/*.pdf
-!Figures/*.pdf
