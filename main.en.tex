@@ -13,8 +13,11 @@
  reference/.style={fill=white, draw=black},
  baseline1/.style={fill=gray!35, draw=black},
  baseline2/.style={fill=gray!60, draw=black},
- baseline3/.style={fill=gray!85, draw=black}}
-\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
+ baseline3/.style={fill=gray!85, draw=black},
+ proposed/.style={fill=blue!12, postaction={pattern=north east lines, pattern color=blue!50}, draw=black},
+ variant/.style={fill=gray!25, draw=black},
+ variant hatched/.style={fill=white, postaction={pattern=north east lines, pattern color=gray!70}, draw=black}}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds,patterns}
 \hypersetup{pdftitle={ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence},pdfauthor={}}
 \title{ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence}
 \author{}
@@ -499,13 +502,6 @@ The same tradeoff appears on student-held-out Java. With the two rules trained o
 \label{fig:case}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\includegraphics{output/icse-seet-ablation.pdf}
-\caption{What each change does to the repair rate}
-\label{fig:ablation}
-\end{figure}
-
 Because a mean does not tell what one student receives, Table~\ref{tab:uneven} breaks the Java contrast down by exercise and by student. One exercise accounts for 12 of the 63 additional Answer repairs, so the repair gap concentrates in a few exercises. Among the students both rules repair, 31.1\% get more of their own tokens back from Progress, 63.3\% get the same amount, and 5.6\% get less. Figure~\ref{fig:case} shows what this difference looks like on Python. The student's preceding submission changed \texttt{i<j} to \texttt{i<=j} and passed 93.3\% of the tests. The return trained on Progress targets (a) changes one more line, \texttt{j>0} to \texttt{j>=0}, and keeps 20 of the 21 lines, whereas the return trained on Answer targets (b) is a five-line program that keeps 3 of the 21 lines. Both pass every test under the same gate and budget.
 
 To check whether the effect comes from the student's own submissions, we retrained Progress with each target replaced by another student's submission to the same problem whose execution outcomes are identical and whose distance is close. These peer targets repair 8.5\% more inputs on Seen and 7.7\% more on Unseen, so what produces the effect is the rule that selects the target by execution evidence, not whose submission the target is. These results indicate that the target rule trades coverage for locality, and that targets selected from trajectories by execution evidence yield returns that keep more of the student's program.
@@ -514,20 +510,51 @@ To check whether the effect comes from the student's own submissions, we retrain
 
 RQ3 asks how much each design choice of \textsc{ZPDPatch} contributes to repair. To this end, we built four variants of the reported configuration that each change one choice. \textsc{ZPDPatch}-Train removes lines~10--12 of Algorithm~\ref{alg:construct} and generates with the base model. \textsc{ZPDPatch}-Portfolio reduces the portfolio to one checkpoint, so line~3 of Algorithm~\ref{alg:generic} iterates over that checkpoint alone. \textsc{ZPDPatch}-Distinct draws the three candidates from one checkpoint instead of from three distinct checkpoints. \textsc{ZPDPatch}+History adds the student's earlier submissions to the context \(x_p\). Each variant is measured under the same inference conditions as its comparison.
 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xbar, scale only axis, width=0.58\columnwidth, height=3.2cm, bar width=5pt, y dir=reverse,
+ symbolic y coords={Train,Portfolio,Distinct,History}, ytick=data, enlarge y limits=0.2,
+ yticklabels={\textsc{ZPDPatch}-Train, \textsc{ZPDPatch}-Portfolio, \textsc{ZPDPatch}-Distinct, \textsc{ZPDPatch}+History},
+ xmin=0, xmax=58, xlabel={Fewer inputs repaired than \textsc{ZPDPatch} (\%)}, xmajorgrids, grid style={gray!25},
+ nodes near coords, every node near coord/.append style={font=\tiny},
+ legend columns=2, area legend, reverse legend, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
+% rows:ablation
+\addplot[variant hatched] coordinates {(8.9,Train) (14.3,Portfolio) (1.5,Distinct) (9.9,History)};
+\addplot[variant] coordinates {(47.2,Train) (19.3,Portfolio) (3.1,Distinct) (14.3,History)};
+% end rows
+\legend{Unseen, Seen}
+\end{axis}
+\end{tikzpicture}
+\caption{Repair lost by each variant of \textsc{ZPDPatch}}
+\label{fig:ablation}
+\end{figure}
+
 Figure~\ref{fig:ablation} shows how the repair rate changes for each variant. Removing training repairs 47.2\% fewer inputs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.3\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the context repairs 14.3\% and 9.9\% fewer.
 
 Training and the portfolio contribute the most. Training transfers the steps that a target rule selects to the model, so it repairs inputs that the base model cannot, and the portfolio gives an input on which one checkpoint fails another candidate, which raises the chance that the execution gate finds one that passes. Distinct checkpoints contribute little here because stochastic decoding already diversifies the candidates of one checkpoint; \textsc{ZPDPatch} decodes deterministically, and there distinct checkpoints supply that diversity. Earlier submissions lower the repair rate because an Answer training input holds only the current submission, so a history makes an input unlike those seen in training; \textsc{ZPDPatch} is therefore deployed with the current submission alone. These results indicate that training and a portfolio selected by execution produce the repairs of \textsc{ZPDPatch}, and that deployment needs only the current submission.
 
 \subsection{RQ4: Generality}
 
-\begin{figure}[t]
-\centering
-\includegraphics{output/icse-seet-replication.pdf}
-\caption{Where the findings replicate}
-\label{fig:replication}
-\end{figure}
 \label{sec:generality}
 RQ4 asks whether the gain of the portfolio holds for another model scale, another language and student population, and other positions in a trajectory. To this end, we repeated the comparison with a 1.5B model, on Java with exercises or students held out of training, and on every earlier prefix of the successful trajectories.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xbar, scale only axis, width=0.58\columnwidth, height=2.6cm, bar width=6pt, y dir=reverse,
+ symbolic y coords={s,u,x,t}, ytick=data, enlarge y limits=0.2,
+ yticklabels={1.5B model (Seen), 1.5B model (Unseen), {Java, exercises held out}, {Java, students held out}},
+ xmin=0, xmax=46, xlabel={More inputs repaired than one checkpoint (\%)}, xmajorgrids, grid style={gray!25},
+ nodes near coords, every node near coord/.append style={font=\tiny}]
+% rows:replication
+\addplot[proposed] coordinates {(35.7,s) (37.2,u) (15.2,x) (12.5,t)};
+% end rows
+\end{axis}
+\end{tikzpicture}
+\caption{Repair gain of the portfolio over one checkpoint by setting}
+\label{fig:replication}
+\end{figure}
 
 Figure~\ref{fig:replication} shows how many more inputs the portfolio repairs than one checkpoint in each setting. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out. Over all earlier prefixes of the successful trajectories, \textsc{ZPDPatch} repairs 69.6\% of Seen and 80.1\% of Unseen inputs, and its Seen repair rate stays within 67.6--71.4\% across the first, middle, and last thirds of a trajectory.
 

@@ -13,8 +13,11 @@
  reference/.style={fill=white, draw=black},
  baseline1/.style={fill=gray!35, draw=black},
  baseline2/.style={fill=gray!60, draw=black},
- baseline3/.style={fill=gray!85, draw=black}}
-\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
+ baseline3/.style={fill=gray!85, draw=black},
+ proposed/.style={fill=blue!12, postaction={pattern=north east lines, pattern color=blue!50}, draw=black},
+ variant/.style={fill=gray!25, draw=black},
+ variant hatched/.style={fill=white, postaction={pattern=north east lines, pattern color=gray!70}, draw=black}}
+\usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds,patterns}
 \hypersetup{pdftitle={ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence},pdfauthor={}}
 \title{ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence}
 \author{}
@@ -550,13 +553,6 @@ The same tradeoff appears on student-held-out Java. With the two rules trained o
 \label{fig:case}
 \end{figure}
 
-\begin{figure}[t]
-\centering
-\includegraphics{output/icse-seet-ablation.pdf}
-\caption{What each change does to the repair rate}
-\label{fig:ablation}
-\end{figure}
-
 % 평균은 학생 한 명이 받는 것을 말해 주지 않으므로, Table~\ref{tab:uneven}은 Java의 대비를 exercise별, 학생별로 나눈다. Answer가 더 수리한 63개 가운데 12개가 한 exercise에서 나와, 수리 차이는 일부 exercise에 몰려 있다. 두 rule이 모두 수리한 학생 가운데 31.1\%는 Progress에서 자신의 token을 더 돌려받고, 63.3\%는 같은 양을, 5.6\%는 덜 돌려받는다. Figure~\ref{fig:case}는 Python에서 이 차이가 어떻게 보이는지 보여 준다. 학생은 바로 앞 제출에서 \texttt{i<j}를 \texttt{i<=j}로 고쳐 테스트의 93.3\%를 통과했다. Progress target으로 학습한 반환물 (a)는 한 줄을 더 고쳐(\texttt{j>0}을 \texttt{j>=0}으로) 21줄 중 20줄을 남기고, Answer target으로 학습한 반환물 (b)는 21줄 중 3줄만 남는 다섯 줄짜리 프로그램이다. 두 반환물 모두 같은 gate와 budget 아래에서 모든 테스트를 통과한다.
 Because a mean does not tell what one student receives, Table~\ref{tab:uneven} breaks the Java contrast down by exercise and by student. One exercise accounts for 12 of the 63 additional Answer repairs, so the repair gap concentrates in a few exercises. Among the students both rules repair, 31.1\% get more of their own tokens back from Progress, 63.3\% get the same amount, and 5.6\% get less. Figure~\ref{fig:case} shows what this difference looks like on Python. The student's preceding submission changed \texttt{i<j} to \texttt{i<=j} and passed 93.3\% of the tests. The return trained on Progress targets (a) changes one more line, \texttt{j>0} to \texttt{j>=0}, and keeps 20 of the 21 lines, whereas the return trained on Answer targets (b) is a five-line program that keeps 3 of the 21 lines. Both pass every test under the same gate and budget.
 
@@ -568,6 +564,26 @@ To check whether the effect comes from the student's own submissions, we retrain
 % RQ3는 \textsc{ZPDPatch}의 각 설계 선택이 수리에 얼마나 기여하는지 묻는다. 이를 위해 보고 구성에서 한 번에 하나씩 바꾼 네 변형을 만들었다. \textsc{ZPDPatch}-Train은 Algorithm~\ref{alg:construct}의 10--12번째 줄을 빼고 base model로 생성한다. \textsc{ZPDPatch}-Portfolio는 portfolio를 checkpoint 하나로 줄여, Algorithm~\ref{alg:generic}의 3번째 줄이 그 하나만 돈다. \textsc{ZPDPatch}-Distinct는 서로 다른 세 checkpoint 대신 한 checkpoint에서 후보 셋을 뽑는다. \textsc{ZPDPatch}+History는 맥락 \(x_p\)에 학생의 이전 제출을 덧붙인다. 각 변형은 비교 대상과 같은 추론 조건에서 측정했다.
 RQ3 asks how much each design choice of \textsc{ZPDPatch} contributes to repair. To this end, we built four variants of the reported configuration that each change one choice. \textsc{ZPDPatch}-Train removes lines~10--12 of Algorithm~\ref{alg:construct} and generates with the base model. \textsc{ZPDPatch}-Portfolio reduces the portfolio to one checkpoint, so line~3 of Algorithm~\ref{alg:generic} iterates over that checkpoint alone. \textsc{ZPDPatch}-Distinct draws the three candidates from one checkpoint instead of from three distinct checkpoints. \textsc{ZPDPatch}+History adds the student's earlier submissions to the context \(x_p\). Each variant is measured under the same inference conditions as its comparison.
 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xbar, scale only axis, width=0.58\columnwidth, height=3.2cm, bar width=5pt, y dir=reverse,
+ symbolic y coords={Train,Portfolio,Distinct,History}, ytick=data, enlarge y limits=0.2,
+ yticklabels={\textsc{ZPDPatch}-Train, \textsc{ZPDPatch}-Portfolio, \textsc{ZPDPatch}-Distinct, \textsc{ZPDPatch}+History},
+ xmin=0, xmax=58, xlabel={Fewer inputs repaired than \textsc{ZPDPatch} (\%)}, xmajorgrids, grid style={gray!25},
+ nodes near coords, every node near coord/.append style={font=\tiny},
+ legend columns=2, area legend, reverse legend, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
+% rows:ablation
+\addplot[variant hatched] coordinates {(8.9,Train) (14.3,Portfolio) (1.5,Distinct) (9.9,History)};
+\addplot[variant] coordinates {(47.2,Train) (19.3,Portfolio) (3.1,Distinct) (14.3,History)};
+% end rows
+\legend{Unseen, Seen}
+\end{axis}
+\end{tikzpicture}
+\caption{Repair lost by each variant of \textsc{ZPDPatch}}
+\label{fig:ablation}
+\end{figure}
+
 % Figure~\ref{fig:ablation}는 변형마다 수리율이 어떻게 바뀌는지 보인다. 학습을 빼면 수리하는 입력이 Seen에서 47.2\%, Unseen에서 8.9\% 줄어든다. portfolio를 checkpoint 하나로 줄이면 Seen에서 19.3\%, Unseen에서 14.3\% 줄어든다. 서로 다른 checkpoint 대신 한 checkpoint에서 후보 셋을 뽑으면 Seen에서 3.1\%, Unseen에서 1.5\% 줄어든다. 이전 제출을 맥락에 덧붙이면 Seen에서 14.3\%, Unseen에서 9.9\% 줄어든다.
 Figure~\ref{fig:ablation} shows how the repair rate changes for each variant. Removing training repairs 47.2\% fewer inputs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.3\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the context repairs 14.3\% and 9.9\% fewer.
 
@@ -576,15 +592,26 @@ Training and the portfolio contribute the most. Training transfers the steps tha
 
 \subsection{RQ4: Generality}
 
-\begin{figure}[t]
-\centering
-\includegraphics{output/icse-seet-replication.pdf}
-\caption{Where the findings replicate}
-\label{fig:replication}
-\end{figure}
 \label{sec:generality}
 % RQ4는 portfolio의 이득이 다른 모델 규모, 다른 언어와 학생 집단, 그리고 trajectory의 다른 위치에서도 유지되는지 묻는다. 이를 위해 1.5B 모델, exercise나 학생을 학습에서 뺀 Java, 그리고 성공한 trajectory의 모든 이전 prefix에서 같은 비교를 반복했다.
 RQ4 asks whether the gain of the portfolio holds for another model scale, another language and student population, and other positions in a trajectory. To this end, we repeated the comparison with a 1.5B model, on Java with exercises or students held out of training, and on every earlier prefix of the successful trajectories.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xbar, scale only axis, width=0.58\columnwidth, height=2.6cm, bar width=6pt, y dir=reverse,
+ symbolic y coords={s,u,x,t}, ytick=data, enlarge y limits=0.2,
+ yticklabels={1.5B model (Seen), 1.5B model (Unseen), {Java, exercises held out}, {Java, students held out}},
+ xmin=0, xmax=46, xlabel={More inputs repaired than one checkpoint (\%)}, xmajorgrids, grid style={gray!25},
+ nodes near coords, every node near coord/.append style={font=\tiny}]
+% rows:replication
+\addplot[proposed] coordinates {(35.7,s) (37.2,u) (15.2,x) (12.5,t)};
+% end rows
+\end{axis}
+\end{tikzpicture}
+\caption{Repair gain of the portfolio over one checkpoint by setting}
+\label{fig:replication}
+\end{figure}
 
 % Figure~\ref{fig:replication}는 설정마다 portfolio가 checkpoint 하나보다 얼마나 더 수리하는지 보인다. 1.5B 모델에서 portfolio는 checkpoint 하나보다 Seen에서 35.7\%, Unseen에서 37.2\% 더 많은 입력을 수리한다. Java에서는 exercise를 학습에서 뺐을 때 15.2\%, 학생을 뺐을 때 12.5\% 더 수리한다. 성공한 trajectory의 이전 prefix 전체에서 \textsc{ZPDPatch}는 Seen의 69.6\%, Unseen의 80.1\%를 수리하고, trajectory의 앞·가운데·뒤 3분의 1에서 Seen 수리율은 67.6--71.4\%에 머문다.
 Figure~\ref{fig:replication} shows how many more inputs the portfolio repairs than one checkpoint in each setting. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out. Over all earlier prefixes of the successful trajectories, \textsc{ZPDPatch} repairs 69.6\% of Seen and 80.1\% of Unseen inputs, and its Seen repair rate stays within 67.6--71.4\% across the first, middle, and last thirds of a trajectory.
