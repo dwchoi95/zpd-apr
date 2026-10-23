@@ -383,17 +383,21 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 \end{figure}
 
 \begin{table}[h]
-\caption{Source- and count-matched target replacement}
+\caption{Repair rate and kept tokens and lines by target rule; kept shares on jointly repaired inputs}
 \label{tab:targets}
 \centering\small
-\begin{tabular}{l||rr|rr}
+\begin{tabular}{ll||rrr}
 \toprule
-Population & \multicolumn{2}{c|}{RR (\%)} & \multicolumn{2}{c}{Retention (pp)} \\
- & Answer & Progress & Tokens & Lines \\
+Metric & Rule & Seen & Unseen & Java \\
 \midrule
-Seen (997) & 53.2 & 34.0 & +5.6 & +8.9 \\
-Unseen (250) & 76.8 & 65.6 & +6.5 & +10.4 \\
-Java (181) & 85.6 & 50.8 & +4.8 & +5.1 \\
+\multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
+ & Progress & 34.0 & 65.6 & 50.8 \\
+\midrule
+\multirow{2}{*}{Tokens (\%)} & Answer & 87.9 & 81.5 & 91.0 \\
+ & Progress & 93.5 & 88.0 & 95.8 \\
+\midrule
+\multirow{2}{*}{Lines (\%)} & Answer & 71.8 & 57.8 & 86.2 \\
+ & Progress & 80.7 & 68.2 & 91.2 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -408,11 +412,11 @@ The history-input mixed portfolio repairs 613/997 Seen and 187/250 Unseen inputs
 \subsection{RQ2: Target Construction and Locality}
 \label{sec:rq-locality}
 
-RQ2 asks how the target rule changes what a repair keeps of the student's program. To this end, we replaced the target while holding the sources and the example counts fixed, and repeated the comparison on student-held-out Java.
+RQ2 asks how the target rule changes how much of the student's program a returned program keeps. To this end, we trained the Answer and Progress rules on the same inputs with the same number of training examples, changing only the target, and repeated the comparison on student-held-out Java.
 
-\noindent\textbf{Matched targets.} Table~\ref{tab:targets} changes the target while holding current inputs and training counts fixed. Progress-minus-Answer RR is -19.2 points [-22.96, -15.54] on Seen and -11.2 [-17.37, -4.88] on Unseen, with exact McNemar \(p=7.85\times10^{-34}\) and \(p=6.17\times10^{-5}\). The Answer dataset's advantage is therefore not only more training records. The intervention is the target rule, not a clean incorrect-versus-correct contrast. Under the matched inputs the Progress rule repairs 34.0\% of Seen inputs and improves 43.4\%, so a further 9.4 points receive a program that advances without passing, against 53.2\% and 65.0\% for the Answer rule. The same two gaps are 6.4 and 7.6 points on Unseen, and 9.4 against 2.2 on Java, where Answer targets already repair 85.6\% outright. Part of the coverage the Progress rule gives up therefore returns as partial progress, counted by test execution and not by comprehension. The cause lies in the target itself: a Progress target is not required to pass, so the generator trained on it returns programs that advance without passing.
+Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the inputs both rules repair, the returned programs of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same inputs, the TED of a Progress return is 47.3\% smaller than that of an Answer return on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (1 against 33 AST edit operations in Figure~\ref{fig:example}).
 
-Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures describe successful outputs that retain more of the submission, not easier comprehension.
+In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass.
 
 
 

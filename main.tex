@@ -427,17 +427,21 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 \end{figure}
 
 \begin{table}[h]
-\caption{Source- and count-matched target replacement}
+\caption{Repair rate and kept tokens and lines by target rule; kept shares on jointly repaired inputs}
 \label{tab:targets}
 \centering\small
-\begin{tabular}{l||rr|rr}
+\begin{tabular}{ll||rrr}
 \toprule
-Population & \multicolumn{2}{c|}{RR (\%)} & \multicolumn{2}{c}{Retention (pp)} \\
- & Answer & Progress & Tokens & Lines \\
+Metric & Rule & Seen & Unseen & Java \\
 \midrule
-Seen (997) & 53.2 & 34.0 & +5.6 & +8.9 \\
-Unseen (250) & 76.8 & 65.6 & +6.5 & +10.4 \\
-Java (181) & 85.6 & 50.8 & +4.8 & +5.1 \\
+\multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
+ & Progress & 34.0 & 65.6 & 50.8 \\
+\midrule
+\multirow{2}{*}{Tokens (\%)} & Answer & 87.9 & 81.5 & 91.0 \\
+ & Progress & 93.5 & 88.0 & 95.8 \\
+\midrule
+\multirow{2}{*}{Lines (\%)} & Answer & 71.8 & 57.8 & 86.2 \\
+ & Progress & 80.7 & 68.2 & 91.2 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -456,14 +460,14 @@ The history-input mixed portfolio repairs 613/997 Seen and 187/250 Unseen inputs
 \subsection{RQ2: Target Construction and Locality}
 \label{sec:rq-locality}
 
-% RQ2는 target 규칙이 수리가 학생의 프로그램에서 남기는 것을 어떻게 바꾸는지 묻는다. 이를 위해 우리는 source와 예제 수를 맞춘 채 target만 바꾸고, 같은 비교를 student-held-out Java에서 되풀이했다.
-RQ2 asks how the target rule changes what a repair keeps of the student's program. To this end, we replaced the target while holding the sources and the example counts fixed, and repeated the comparison on student-held-out Java.
+% RQ2는 target rule이 반환물에 학생의 프로그램을 얼마나 남기는지를 어떻게 바꾸는지 묻는다. 이를 위해 같은 입력과 같은 학습 예제 수에서 target만 Answer와 Progress로 바꾸어 학습하고, student-held-out Java에서 같은 비교를 반복했다.
+RQ2 asks how the target rule changes how much of the student's program a returned program keeps. To this end, we trained the Answer and Progress rules on the same inputs with the same number of training examples, changing only the target, and repeated the comparison on student-held-out Java.
 
-% \noindent\textbf{Matched targets.} Table~\ref{tab:targets}는 현재 입력과 학습 예제 수를 고정한 채 target만 바꾼다. Progress에서 Answer를 뺀 RR은 Seen에서 -19.2 포인트 [-22.96, -15.54], Unseen에서 -11.2 [-17.37, -4.88]이며, 정확 McNemar \(p=7.85\times10^{-34}\)와 \(p=6.17\times10^{-5}\)이다. 따라서 정본 terminal 데이터셋의 이점은 학습 레코드 수만의 결과가 아니다. 다만 개입은 target 규칙이며, 틀림과 맞음의 깔끔한 대비가 아니다. Progress 규칙은 맞춘 입력에서 Seen 입력의 34.0\%를 수리하고 43.4\%를 개선하므로, 추가 9.4 포인트는 통과까지 가지 못한 채 전진한 프로그램을 받는데, Answer 규칙의 같은 두 값은 53.2\%와 65.0\%다. 같은 두 간격은 Unseen에서 6.4와 7.6 포인트, Java에서 9.4 대 2.2 포인트이며, Java에서는 Answer target이 이미 85.6\%를 바로 수리한다. 따라서 Progress 규칙이 내준 coverage의 일부는 부분적 전진으로 돌아오지만, 이는 테스트 실행으로 센 것이고 이해도로 센 것이 아니다. 원인은 target 자체에 있다. Progress의 target은 통과를 요구하지 않으므로, 학습된 generator도 전진하되 통과하지 않는 프로그램을 낸다.
-\noindent\textbf{Matched targets.} Table~\ref{tab:targets} changes the target while holding current inputs and training counts fixed. Progress-minus-Answer RR is -19.2 points [-22.96, -15.54] on Seen and -11.2 [-17.37, -4.88] on Unseen, with exact McNemar \(p=7.85\times10^{-34}\) and \(p=6.17\times10^{-5}\). The Answer dataset's advantage is therefore not only more training records. The intervention is the target rule, not a clean incorrect-versus-correct contrast. Under the matched inputs the Progress rule repairs 34.0\% of Seen inputs and improves 43.4\%, so a further 9.4 points receive a program that advances without passing, against 53.2\% and 65.0\% for the Answer rule. The same two gaps are 6.4 and 7.6 points on Unseen, and 9.4 against 2.2 on Java, where Answer targets already repair 85.6\% outright. Part of the coverage the Progress rule gives up therefore returns as partial progress, counted by test execution and not by comprehension. The cause lies in the target itself: a Progress target is not required to pass, so the generator trained on it returns programs that advance without passing.
+% Table~\ref{tab:targets}는 target만 바꾼 두 rule의 repair rate와 보존율을 보인다. 두 rule이 모두 수리한 입력에서 Progress의 반환물은 Answer의 반환물보다 학생의 token을 Seen에서 6.3\%, Unseen에서 7.9\% 더 남기고, 줄을 각각 12.3\%와 17.9\% 더 남긴다. 같은 입력에서 Progress 반환물의 TED는 Answer보다 Seen에서 47.3\%, Unseen에서 45.5\% 작다. 이 차이는 target에서 온다. Progress target은 실행 증거가 개선으로 확인한 학생의 다음 제출이라 한 걸음이 작고, Answer target은 학생이 끝내 통과시킨 프로그램이라 다른 접근을 택할 수 있다(Figure~\ref{fig:example}에서 1 대 33 AST edit operations).
+Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the inputs both rules repair, the returned programs of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same inputs, the TED of a Progress return is 47.3\% smaller than that of an Answer return on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (1 against 33 AST edit operations in Figure~\ref{fig:example}).
 
-% Progress의 locality 이점은 공동 성공에서 드러난다. 공동 수리된 Seen 299개와 Unseen 154개 중 278개와 134개가 두 방법 모두에서 source에서 수리까지의 TED가 정의된다. Answer에서 Progress를 뺀 평균 TED는 10.08 [7.53, 12.99]와 6.83 [4.58, 9.39]이다. token retention은 5.6 [4.29, 6.94]와 6.5 [4.26, 8.95] 포인트, line retention은 8.9 [6.64, 11.16]와 10.4 [6.95, 14.25] 포인트 개선된다. TED가 정의되지 않는 21개와 20개는 RR에 남으며 수리 불가로 선언되지 않는다. 이 측정치들은 성공한 출력이 source를 더 많이 보존한다는 점을 기술할 뿐, 이해가 더 쉬움을 입증하지 않는다.
-Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures describe successful outputs that retain more of the submission, not easier comprehension.
+% 그 대가로 Progress는 Answer보다 Seen에서 36.0\%, Unseen에서 14.6\% 적은 입력을 수리한다. Answer target은 모두 accepted 제출인 반면, Progress target에는 아직 통과하지 못한 개선 제출도 포함되기 때문이다.
+In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass.
 
 
 
