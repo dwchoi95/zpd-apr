@@ -90,6 +90,22 @@
       ]
     },
     {
+      "template": "Mixed reaches \\ScaleMixedSeenRR\\% and the nine-checkpoint Answer control \\ScaleAnswerNineSeenRR\\% on Seen.",
+      "commands": [
+        "ScaleAnswerNineSeenRR",
+        "ScaleMixedSeenRR"
+      ]
+    },
+    {
+      "template": "Absolute RR is \\CodeWorkoutProblemMixedRR\\% versus \\CodeWorkoutProblemAnswerNineRR\\% over 304 exercise-held-out trajectories and \\CodeWorkoutStudentMixedRR\\% versus \\CodeWorkoutStudentAnswerNineRR\\% over 181 student-held-out trajectories.",
+      "commands": [
+        "CodeWorkoutProblemAnswerNineRR",
+        "CodeWorkoutProblemMixedRR",
+        "CodeWorkoutStudentAnswerNineRR",
+        "CodeWorkoutStudentMixedRR"
+      ]
+    },
+    {
       "template": "Replacing greedy decoding by one stochastic draw costs 7.6 points \\StochasticOneMinusGreedyOneSeenCI, whereas execution-selecting three of those identical fixed draws contributes \\SameDrawThreeMinusOneSeen points \\SameDrawThreeMinusOneSeenCI on Seen.",
       "commands": [
         "SameDrawThreeMinusOneSeen",
