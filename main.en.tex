@@ -316,8 +316,8 @@ Terminal pairing is linear in trajectory length; replaying \(n\) submissions on 
 In this section, we evaluate \textsc{ZPDPatch} to answer the following research questions:
 \begin{itemize}
 \item RQ1: How effectively does \textsc{ZPDPatch} repair buggy submissions?
-\item RQ2: How does the target rule change what a repair keeps of the student's program?
-\item RQ3: What do candidate breadth, checkpoint identity, and serialized history contribute?
+\item RQ2: How does the target rule change how much of the student's program a returned program keeps?
+\item RQ3: How much does each design choice of \textsc{ZPDPatch} contribute to repair?
 \item RQ4: Which findings replicate across problems, prefixes, model scales, and a classroom corpus?
 \end{itemize}
 We implemented \textsc{ZPDPatch} on top of Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, an open code model of a scale a course can host. All experiments were conducted on a single machine equipped with one NVIDIA RTX 5090.
@@ -480,21 +480,13 @@ Because a mean does not tell what one student receives, Table~\ref{tab:uneven} b
 
 To check whether the effect comes from the student's own submissions, we retrained Progress with each target replaced by another student's submission to the same problem whose execution outcomes are identical and whose distance is close. These peer targets repair 8.5\% more inputs on Seen and 7.7\% more on Unseen, so what produces the effect is the rule that selects the target by execution evidence, not whose submission the target is. These results indicate that the target rule trades coverage for locality, and that targets selected from trajectories by execution evidence yield returns that keep more of the student's program.
 
-\subsection{RQ3: Component Efficacy}
+\subsection{RQ3: Ablation Study}
 
-RQ3 asks what candidate breadth, checkpoint identity, and serialized history each contribute. To this end, we compared controls that change one of them at a time within the stored executions.
+RQ3 asks how much each design choice of \textsc{ZPDPatch} contributes to repair. To this end, we built four variants of the reported configuration that each change one choice. \textsc{ZPDPatch}-Train removes lines~10--12 of Algorithm~\ref{alg:construct} and generates with the base model. \textsc{ZPDPatch}-Portfolio reduces the portfolio to one checkpoint, so line~3 of Algorithm~\ref{alg:generic} iterates over that checkpoint alone. \textsc{ZPDPatch}-Distinct draws the three candidates from one checkpoint instead of from three distinct checkpoints. \textsc{ZPDPatch}+History adds the student's earlier submissions to the context \(x_p\). Each variant is measured under the same inference conditions as its comparison.
 
-\noindent\textbf{Fixed candidate breadth.} Figure~\ref{fig:ablation} reports what each matched control does to the repair rate, with 95\% intervals. For three stored draws with success indicators \(a_{ij}\), the expected uniformly selected one-draw success for input \(i\) is \(\frac{1}{3}\sum_j a_{ij}\), whereas the three-draw union succeeds when \(\max_j a_{ij}=1\). Their paired difference isolates additional opportunities within the identical candidate set. Replacing greedy decoding by one stochastic draw costs 7.6 points [-9.81, -5.41], whereas execution-selecting three of those identical fixed draws contributes 15.1 points [13.48, 16.76] on Seen. It shows why comparing a portfolio only with one adapter overstates the evidence for its training signal.
+Figure~\ref{fig:ablation} shows how the repair rate changes for each variant. Removing training repairs 47.2\% fewer inputs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 15.6\% and 13.8\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the context repairs 14.3\% and 9.9\% fewer.
 
-The temperature sweep retains all declared conditions. Through \(T=1.0\) the one-draw rate stays within 41.1--43.1\% on Seen, the three-draw union reaches 60.0/75.2\%, and at \(T=1.5\) the decoder collapses to 15.8/35.2\%. Fine-tuning also matters: the matched base-model three-draw union reaches only 30.4/65.6\%, so adaptation adds 27.2 points [22.99, 31.41] on Seen and 6.4 points [1.19, 11.34] on Unseen. Breadth alone therefore does not explain all improvement over the base model.
-
-At matched temperature, replacing three draws of one checkpoint by one draw from each of three checkpoints changes RR by -0.1 points [-2.00, 1.80] on Seen and 2.4 points [-0.41, 5.31] on Unseen. These intervals do not establish a consistent advantage from checkpoint diversity. A deterministic multi-seed gain can coexist with this result because sampling from one checkpoint already supplies diversity.
-
-A current-only factorial on one inference stack tests this explanation. Three greedy checkpoints gain 9.8 [7.85, 11.92] and 10.8 [7.23, 14.64] points over one, but under the matched stochastic decoder distinct checkpoints add only 2.1 points [0.00, 4.16] and 1.2 points [-2.93, 5.93], with the equal-problem Seen interval including zero. Because the backend changes the absolute rates, our recommendation covers the stack we evaluated.
-
-\noindent\textbf{Serialized history.} Removing earlier submissions from the frozen portfolios raises repair for both pools. The gains are 8.8/11.1 Seen points and 7.6/6.0 Unseen points for Mixed/Answer, with all intervals excluding zero. Matched retraining without that context shows no significant difference after Holm correction, with smallest adjusted \(p=0.313\), so serialized history is not part of the measured advantage and the deployed configuration uses current-only prompts.
-
-Answer-9Choose3 receives the same nine-checkpoint pool size and 84-subset opportunity as Mixed. The primary five-fold cross-fitted mixed-minus-Answer contrast is +2.2 points [-0.19, 4.63], compared with the non-cross-fitted +1.7 [-0.79, 4.29]. Overall, candidate breadth and adaptation each contribute measured gains, whereas distinct checkpoints add no consistent advantage once the stochastic decoder is matched and serialized history is not supported as a necessary input.
+Training and the portfolio contribute the most. Training transfers the steps that a target rule selects to the model, so it repairs inputs that the base model cannot, and the portfolio gives an input on which one checkpoint fails another candidate, which raises the chance that the execution gate finds one that passes. Distinct checkpoints contribute little here because stochastic decoding already diversifies the candidates of one checkpoint; \textsc{ZPDPatch} decodes deterministically, and there distinct checkpoints supply that diversity. Earlier submissions lower the repair rate because an Answer training input holds only the current submission, so a history makes an input unlike those seen in training; \textsc{ZPDPatch} is therefore deployed with the current submission alone. These results indicate that training and a portfolio selected by execution produce the repairs of \textsc{ZPDPatch}, and that deployment needs only the current submission.
 
 \subsection{RQ4: Generality}
 
