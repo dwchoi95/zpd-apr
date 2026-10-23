@@ -61,8 +61,15 @@ edits here; code goes to `dev` in the parent folder. Branch, repository, and art
   the Abstract, Introduction, Overview, and Conclusion. Algorithms' Input/Output lines use `\item[\textbf{Input:}]`.
 - RQ1 runs on the 14-problem benchmark (CodeNet Python800 submissions, FixEval tests) shared with a concurrent
   submission from the same group: describe its construction directly and do not cite that work while it is under review.
-  Its baselines are Refactory, Brafar, and LSGen (GPT-4o), one per group, from their upstream code; RQ2-RQ4 keep the
-  canonical CodeNet Seen/Unseen and CodeWorkout Java data.
+  Keep this paper visibly distinct from that one: classify prior work by what it steers the repair toward
+  (reference-driven, model-driven, solution-space hints; ours is trajectory-supervised), not by how it locates the fault;
+  write every sentence fresh; and lead with what differs (steps learned from trajectories; deployment reads only the
+  current submission). RQ1 baselines are MENTORED (reference-driven) and LSGen with GPT-4o (model-driven), from their
+  stored upstream runs re-judged by our runner; their resource budget stays out of the paper (artifact README only).
+  RQ2-RQ4 keep the canonical CodeNet Seen/Unseen and CodeWorkout Java data.
+- The goal is framed by the Zone of Proximal Development (ZPD): a patch within the region a student reaches with help,
+  approximated from execution evidence in student trajectories; the judge's verdict is the help before the next
+  submission. Never claim a measured learning effect.
 - Reviews: every review is done by a newly spawned agent with no conversation history, given only the latest PDF and
   `guidelines/review_prompt.md`; never reuse a reviewer or let the editing agent review its own work. Ask for the review
   in Korean, keep it verbatim in `notes/reviews/`, and never steer it toward a score. Calibrate with recent accepted
