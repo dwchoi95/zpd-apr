@@ -108,72 +108,72 @@ These limitations motivate our approach, which repairs under the guidance of the
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[font=\scriptsize, >={Latex[length=1.4mm,width=1mm]}, line width=0.45pt,
-  stage/.style={draw, rounded corners=3pt, minimum width=11mm, minimum height=5mm, align=center,
-                font=\footnotesize\bfseries, fill=white, inner sep=1pt},
-  sub/.style={draw, minimum width=20mm, minimum height=5mm, inner sep=1pt, align=center, fill=white},
-  lbl/.style={font=\scriptsize, inner sep=1pt},
-  item/.style={align=center, inner sep=0.5pt, anchor=north, font=\scriptsize},
-  icsheet/.pic={\draw[fill=white, line width=0.4pt]
-                (-1.4mm,-1.9mm) -- (-1.4mm,1.9mm) -- (0.6mm,1.9mm) -- (1.4mm,1.1mm) -- (1.4mm,-1.9mm) -- cycle;
-              \draw[line width=0.4pt] (0.6mm,1.9mm) -- (0.6mm,1.1mm) -- (1.4mm,1.1mm);},
-  iccode/.pic={\pic{icsheet};
-             \foreach \y/\a/\b in {0.7/-1.0/0.2, 0.0/-1.0/0.8, -0.7/-1.0/0.4, -1.4/-1.0/0.9}
-               \draw[line width=0.45pt, black!55] (\a mm,\y mm) -- (\b mm,\y mm);},
-  icstack/.pic={\pic at (0.9mm,0.9mm) {icsheet}; \pic at (0.45mm,0.45mm) {icsheet}; \pic{iccode};},
-  icbadge/.pic={\draw[fill=white, line width=0.4pt] (0,0) circle (1.0mm);},
-  icclock/.pic={\pic{icbadge}; \draw[line width=0.35pt] (0,0) -- (0,0.5mm); \draw[line width=0.35pt] (0,0) -- (0.42mm,-0.12mm);},
-  iccross/.pic={\pic{icbadge}; \draw[line width=0.45pt] (-0.38mm,-0.38mm) -- (0.38mm,0.38mm) (-0.38mm,0.38mm) -- (0.38mm,-0.38mm);},
-  ictick/.pic={\pic{icbadge}; \draw[line width=0.5pt] (-0.42mm,0.02mm) -- (-0.1mm,-0.34mm) -- (0.46mm,0.42mm);},
-  ictests/.pic={\pic{icsheet};
-              \foreach \y in {0.8,-0.2,-1.2} {
-                \draw[line width=0.33pt] (-1.0mm,\y mm-0.3mm) rectangle (-0.45mm,\y mm+0.3mm);
-                \draw[line width=0.42pt] (-0.95mm,\y mm) -- (-0.75mm,\y mm-0.25mm) -- (-0.4mm,\y mm+0.35mm);
-                \draw[line width=0.45pt, black!55] (-0.05mm,\y mm) -- (0.95mm,\y mm);}},
-  ictraj/.pic={\pic{icstack}; \pic at (1.5mm,-2.0mm) {icclock};},
-  icbuggy/.pic={\pic{iccode}; \pic at (1.5mm,-2.0mm) {iccross};},
-  icfixed/.pic={\pic{iccode}; \pic at (1.5mm,-2.0mm) {ictick};}]
+ stage/.style={draw, rounded corners=3pt, minimum width=11mm, minimum height=5mm, align=center,
+               font=\footnotesize\bfseries, fill=white, inner sep=1pt},
+ sub/.style={draw, minimum width=20mm, minimum height=5mm, inner sep=1pt, align=center, fill=white},
+ lbl/.style={font=\scriptsize, inner sep=0.6pt},
+ item/.style={align=center, inner sep=0.5pt, font=\scriptsize},
+ icsheet/.pic={\draw[fill=white, line width=0.4pt]
+               (-1.4mm,-1.9mm) -- (-1.4mm,1.9mm) -- (0.6mm,1.9mm) -- (1.4mm,1.1mm) -- (1.4mm,-1.9mm) -- cycle;
+             \draw[line width=0.4pt] (0.6mm,1.9mm) -- (0.6mm,1.1mm) -- (1.4mm,1.1mm);},
+ iccode/.pic={\pic{icsheet};
+            \foreach \y/\a/\b in {0.7/-1.0/0.2, 0.0/-1.0/0.8, -0.7/-1.0/0.4, -1.4/-1.0/0.9}
+              \draw[line width=0.45pt, black!55] (\a mm,\y mm) -- (\b mm,\y mm);},
+ icstack/.pic={\pic at (0.45mm,0.45mm) {icsheet}; \pic at (0mm,0mm) {icsheet}; \pic at (-0.45mm,-0.45mm) {iccode};},
+ icbadge/.pic={\draw[fill=white, line width=0.4pt] (0,0) circle (1.0mm);},
+ icclock/.pic={\pic{icbadge}; \draw[line width=0.35pt] (0,0) -- (0,0.5mm); \draw[line width=0.35pt] (0,0) -- (0.42mm,-0.12mm);},
+ iccross/.pic={\pic{icbadge}; \draw[line width=0.45pt] (-0.38mm,-0.38mm) -- (0.38mm,0.38mm) (-0.38mm,0.38mm) -- (0.38mm,-0.38mm);},
+ ictick/.pic={\pic{icbadge}; \draw[line width=0.5pt] (-0.42mm,0.02mm) -- (-0.1mm,-0.34mm) -- (0.46mm,0.42mm);},
+ ictests/.pic={\pic{icsheet};
+             \foreach \y in {0.8,-0.2,-1.2} {
+               \draw[line width=0.33pt] (-1.0mm,\y mm-0.3mm) rectangle (-0.45mm,\y mm+0.3mm);
+               \draw[line width=0.42pt] (-0.95mm,\y mm) -- (-0.75mm,\y mm-0.25mm) -- (-0.4mm,\y mm+0.35mm);
+               \draw[line width=0.45pt, black!55] (-0.05mm,\y mm) -- (0.95mm,\y mm);}},
+ ictraj/.pic={\pic{icstack}; \pic at (1.1mm,-2.2mm) {icclock};},
+ icbuggy/.pic={\pic{iccode}; \pic at (1.5mm,-2.0mm) {iccross};},
+ icfixed/.pic={\pic{iccode}; \pic at (1.5mm,-2.0mm) {ictick};}]
 
-  % ---------- offline band
-  \node[stage] (mine)  at (2.70,  7mm) {Mine};
-  \node[stage] (train) at (4.30,  7mm) {Train};
-  \node[stage] (sel)   at (5.90,  7mm) {Select};
+ % offline band
+ \node[stage] (mine)  at (2.70,  7mm) {Mine};
+ \node[stage] (train) at (4.25,  7mm) {Train};
+ \node[stage] (sel)   at (5.80,  7mm) {Select};
 
-  % ---------- deployment band
-  \node[sub] (gen)  at (3.05, -10mm) {Frozen triple $S$};
-  \node[sub] (gate) at (5.80, -10mm) {Execution gate\\$\mathrm{ted}^{\dagger}\!\le\!B$, else $b$};
-  \node[font=\footnotesize\bfseries, inner sep=0.5pt, anchor=west] (dtitle) at (1.95, -3.8mm) {Deployment};
-  \begin{scope}[on background layer]
-    \node[draw, rounded corners=3pt, fit=(dtitle)(gen)(gate), inner xsep=1.4mm, inner ysep=1mm, fill=black!4] (dep) {};
-  \end{scope}
-  \begin{scope}[on background layer]
-    \node[draw, line width=0.9pt, rounded corners=4pt, fit=(mine)(sel)(dep), inner xsep=1.6mm, inner ysep=2.2mm] (tool) {};
-  \end{scope}
-  \node[fill=white, inner xsep=2pt, inner ysep=0.5pt, font=\footnotesize\bfseries] at (tool.north) {\textsc{ZPDPatch}};
+ % deployment band
+ \node[sub] (gen)  at (2.95, -11mm) {Frozen triple $S$};
+ \node[sub, minimum width=22mm] (gate) at (5.65, -11mm) {Execution gate\\$\mathrm{ted}^{\dagger}\!\le\!B$, else $b$};
+ \node[font=\footnotesize\bfseries, inner sep=0.5pt] (dtitle) at (4.30, -4.2mm) {Deployment};
+ \begin{scope}[on background layer]
+   \node[draw, rounded corners=3pt, fit=(dtitle)(gen)(gate), inner xsep=1.6mm, inner ysep=1.2mm, fill=black!4] (dep) {};
+ \end{scope}
+ \begin{scope}[on background layer]
+   \node[draw, line width=0.9pt, rounded corners=4pt, fit=(mine)(sel)(dep), inner xsep=2mm, inner ysep=2.6mm] (tool) {};
+ \end{scope}
+ \node[fill=white, inner xsep=2pt, inner ysep=0.5pt, font=\footnotesize\bfseries] at (tool.north) {\textsc{ZPDPatch}};
 
-  % ---------- inputs and output
-  \pic at (0.55, 7mm) {ictraj};
-  \node[item] at (0.55, 4.4mm) {Trajectories $\mathcal T$,\\evidence $\mathcal O$};
-  \pic at (0.55, -10mm) {icbuggy};
-  \node[item] at (0.55, -12.6mm) {Buggy program $b$,\\context $x$};
-  \pic at (5.90, 15mm) {icfixed};
-  \node[item, anchor=south] at (5.90, 17mm) {Validation inputs $U$};
-  \pic at (5.80, -20mm) {ictests};
-  \node[item] at (5.80, -22.6mm) {Tests $\mathcal E$, budget $B$};
-  \pic at (7.55, -10mm) {icfixed};
-  \node[item] at (7.55, -12.6mm) {Returned $f$};
+ % inputs and output, each label centred on its icon
+ \pic at (0.6, 7mm) {ictraj};
+ \node[item, anchor=north] at (0.6, 3.6mm) {Trajectories $\mathcal T$,\\evidence $\mathcal O$};
+ \pic at (0.6, -11mm) {icbuggy};
+ \node[item, anchor=north] at (0.6, -14.4mm) {Buggy program $b$,\\context $x$};
+ \pic at (5.80, 14.5mm) {icfixed};
+ \node[item, anchor=south] at (5.80, 17.9mm) {Validation inputs $U$};
+ \pic at (5.65, -19.5mm) {ictests};
+ \node[item, anchor=north] at (5.65, -22.9mm) {Tests $\mathcal E$, budget $B$};
+ \pic at (7.85, -11mm) {icfixed};
+ \node[item, anchor=north] at (7.85, -14.4mm) {Returned\\program $f$};
 
-  % ---------- wires
-  \coordinate (bus) at (1.55, 0);
-  \coordinate (corr) at (0, 0.5mm);
-  \draw[->] (0.95, 7mm) -- (0.95, 7mm -| bus) |- (mine.west);
-  \draw[->] (0.95, -10mm) -- (0.95, -10mm -| bus) |- (gen.west);
-  \draw[->] (5.90, 13.1mm) -- (sel.north);
-  \draw[->] (5.80, -18.1mm) -- (gate.south);
-  \draw[->] (mine) -- node[lbl, above, inner sep=0.6pt] {$D_\rho$} (train);
-  \draw[->] (train) -- node[lbl, above, inner sep=0.6pt] {$V$} (sel);
-  \draw[->] (sel.south) -- (sel.south |- corr) -- node[lbl, above] {$S$} (gen.north |- corr) -- (gen.north);
-  \draw[->] (gen) -- node[lbl, above, inner sep=0.6pt] {$z$} (gate);
-  \draw[->] (gate.east) -- (7.15, -10mm);
+ % wires
+ \coordinate (bus) at (1.55, 0);
+ \coordinate (corr) at (0, -0.5mm);
+ \draw[->] (1.05, 7mm) -- (1.05, 7mm -| bus) |- (mine.west);
+ \draw[->] (1.05, -11mm) -- (1.05, -11mm -| bus) |- (gen.west);
+ \draw[->] (5.80, 12.6mm) -- (sel.north);
+ \draw[->] (5.65, -17.6mm) -- (gate.south);
+ \draw[->] (mine) -- node[lbl, above] {$D_\rho$} (train);
+ \draw[->] (train) -- node[lbl, above] {$V$} (sel);
+ \draw[->] (sel.south) -- (sel.south |- corr) -- node[lbl, above] {$S$} (gen.north |- corr) -- (gen.north);
+ \draw[->] (gen) -- node[lbl, above] {$z$} (gate);
+ \draw[->] (gate.east) -- (7.45, -11mm);
 \end{tikzpicture}
 \caption{Overview of \textsc{ZPDPatch}}
 \label{fig:overview}
@@ -417,9 +417,9 @@ print(ans)
 Java retraining uses 600 training and 118 validation pairs per target and reproduces this direction without Python AST distance. Answer targets repair 155 trajectories and Progress targets 92, a difference of 34.8 points; Progress-minus-Answer intervals are [-44.91, -25.47] under student clustering and [-47.31, -23.79] under exercise clustering. Among 90 joint repairs, Progress targets increase lexical-token retention by 4.8 points and line retention by 5.1 points, with intervals [2.79, 7.19] and [2.92, 7.25]. This is evidence for a coverage--locality tradeoff across these two languages and populations. It is not evidence that the same magnitude generalizes to other classrooms, nor a replication of the Python peer-target intervention.
 \noindent\textbf{What a student receives.} Cohort means do not describe an individual student, so Table~\ref{tab:uneven} resolves the Java contrast by exercise and by student. The coverage cost is concentrated rather than uniform. One exercise accounts for 12 of the 63 additional Answer repairs, and there Progress targets repair 3 of 15 trajectories against 15. The retention gain is a minority effect with a long tail. Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of 9.6 points, and a few get less. Line retention behaves the same, zero for 64.4\% of students with maximum 47.6. Figure~\ref{fig:case} illustrates that tail on Python. Submission (a) passes 93.3\% of tests after the student's own preceding edit changed \texttt{i<j} to \texttt{i<=j}, the Progress-target repair differs from it only in \texttt{j>0} becoming \texttt{j>=0} (TED 1), and the Answer-target repair (b) replaces the approach (TED 83). Both pass every test under the same gate and budget. Which rule a course deploys therefore depends on the exercise and on whether coverage or locality binds.
 
-\noindent\textbf{Peer targets.} The separate outcome- and distance-matched replacement raises RR from 50.4\% to 54.7\% on Seen and from 78.4\% to 84.4\% on Unseen. Same-minus-peer intervals are [-7.71, -0.84] and [-11.79, -0.41], with exact McNemar \(p=0.005\) and \(p=0.032\). The result concerns this caliper, donor cap, and replacement rule, and equal outcomes with nearby edit distance still permit differences in target structure and length, so the contrast does not isolate user identity. Matched peer targets improve coverage here; one's own trajectory is not uniquely necessary under this control.
+\noindent\textbf{Peer targets.} The separate outcome- and distance-matched replacement raises RR from 50.4\% to 54.7\% on Seen and from 78.4\% to 84.4\% on Unseen. Same-minus-peer intervals are [-7.71, -0.84] and [-11.79, -0.41], with exact McNemar \(p=0.005\) and \(p=0.032\). The result concerns this caliper, donor cap, and replacement rule, and equal outcomes with nearby edit distance still permit differences in structure and length, so the contrast does not isolate user identity. Matched peer targets improve coverage here; one's own trajectory is not uniquely necessary under this control.
 
-\noindent\textbf{Operational locality.} A declared structural budget gives patch size an explicit engineering meaning: the deployment admits only changes within it. Per-budget Seen rates are 16.9/22.5/4.8\% at TED 5, 28.5/32.4/8.0 at 10, 40.3/44.0/13.9 at 20, 51.4/50.9/30.4 at 40, 61.0/56.0/50.8 at 80, and 66.8/57.9/67.6 at 160 for current-only Answer-3Seed/Mixed/LSGen, each over 997 inputs. At TED 20, Mixed repairs 44.0\% of Seen inputs versus LSGen's 13.9\%, a 30.1-point difference [26.45, 33.82]. Across the six prespecified budgets its mean advantage over LSGen is 14.7 points [12.03, 17.43]. This is a budget-indexed outcome, not an unrestricted superiority claim: LSGen wins at 160, and current-only Answer-3Seed overtakes Mixed from 40 onward. On Unseen, Mixed versus current-only Answer-3Seed is 38.8\% versus 32.0\% at 5, 48.0\% versus 40.8\% at 10, and 57.6\% versus 54.8\% at 20; the order reverses at 40. No observed budget is retroactively designated the unique primary endpoint. Overall, target construction moves coverage and locality in opposite directions under matched inputs, in the same direction on student-held-out Java, and not uniformly across exercises or students, and matched peer targets also improve coverage, so the effect is not uniquely personal supervision.
+\noindent\textbf{Operational locality.} A declared structural budget gives patch size an explicit engineering meaning: the deployment admits only changes within it. Per-budget Seen rates are 16.9/22.5/4.8\% at TED 5, 28.5/32.4/8.0 at 10, 40.3/44.0/13.9 at 20, 51.4/50.9/30.4 at 40, 61.0/56.0/50.8 at 80, and 66.8/57.9/67.6 at 160 for current-only Answer-3Seed/Mixed/LSGen, each over 997 inputs. At TED 20, Mixed repairs 44.0\% of Seen inputs versus LSGen's 13.9\%, a 30.1-point difference [26.45, 33.82]. Across the six prespecified budgets its mean advantage over LSGen is 14.7 points [12.03, 17.43]. This is a budget-indexed outcome, not an unrestricted superiority claim: LSGen wins at 160, and current-only Answer-3Seed overtakes Mixed from 40 onward. On Unseen, Mixed versus current-only Answer-3Seed is 38.8\% versus 32.0\% at 5, 48.0\% versus 40.8\% at 10, and 57.6\% versus 54.8\% at 20; the order reverses at 40. Overall, target construction moves coverage and locality in opposite directions under matched inputs, in the same direction on student-held-out Java, and not uniformly across exercises or students, and matched peer targets also improve coverage, so the effect is not uniquely personal supervision.
 
 \subsection{RQ3: Component Efficacy}
 \noindent\textbf{Fixed candidate breadth.} For three stored draws with success indicators \(a_{ij}\), the expected uniformly selected one-draw success for input \(i\) is \(\frac{1}{3}\sum_j a_{ij}\), whereas the three-draw union succeeds when \(\max_j a_{ij}=1\). Their paired difference isolates additional opportunities within the identical candidate set. Replacing greedy decoding by one stochastic draw costs 7.6 points [-9.81, -5.41], whereas execution-selecting three of those identical fixed draws contributes 15.1 points [13.48, 16.76] on Seen. This is a descriptive decomposition of stored executions, and it shows why comparing a portfolio only with one adapter overstates the evidence for its training signal.
@@ -440,11 +440,11 @@ Selection-space controls also fail to establish a general heterogeneous-target b
 
 A complementary observed/hidden-slice check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests, so the conditional percentage must not replace the full-denominator repair rate.
 
-\noindent\textbf{Earlier prefixes.} Across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, current-only Answer-3Seed reaches 69.6\% and 80.1\% RR. The early, middle, and last thirds reach 70.0\%, 67.6\%, and 71.4\% on Seen and 82.9\%, 77.3\%, and 81.8\% on Unseen. This extends evaluation beyond the last failed submission and finds no simple monotonic position effect. It does not cover trajectories that never reach acceptance and multiple prefixes from one trajectory are dependent, so the 2,770-prefix rate is not added to the 997-input result.
+\noindent\textbf{Earlier prefixes.} Across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, current-only Answer-3Seed reaches 69.6\% and 80.1\% RR. The early, middle, and last thirds reach 70.0\%, 67.6\%, and 71.4\% on Seen and 82.9\%, 77.3\%, and 81.8\% on Unseen. It extends evaluation beyond the last failed submission and finds no monotonic position effect. It does not cover trajectories that never reach acceptance and multiple prefixes from one trajectory are dependent, so the 2,770-prefix rate is not added to the 997-input result.
 
-\noindent\textbf{Model scale and classroom data.} At 1.5B parameters three checkpoints still gain 13.4 points over one [11.16, 15.92], but mixed-minus-Answer is -0.8 [-2.62, 1.07]. Mixed reaches 50.25\% and the nine-checkpoint Answer control 51.05\% on Seen. This smaller model reproduces the utility of multiple opportunities, not an unrestricted mixed-target advantage, and it is one scale change within a model family rather than broad model-family coverage.
+\noindent\textbf{Model scale and classroom data.} At 1.5B parameters three checkpoints still gain 13.4 points over one [11.16, 15.92], but mixed-minus-Answer is -0.8 [-2.62, 1.07]. Mixed reaches 50.25\% and the nine-checkpoint Answer control 51.05\% on Seen. This smaller model reproduces the utility of multiple opportunities, not an unrestricted mixed-target advantage.
 
-The Java portfolio results differ from RQ2's direct matched-target retraining. Mixed-minus-Answer-9Choose3 is positive on four held-out exercises (3.9 points [2.99, 5.11]) and inconclusive on held-out students (0.6 [-1.20, 2.59]). Absolute RR is 56.25\% versus 52.30\% over 304 exercise-held-out trajectories and 83.98\% versus 83.43\% over 181 student-held-out trajectories. The exercise estimate rests on four clusters only: refitting with one exercise left out keeps the contrast between 3.6 and 4.4 points, and single exercises range from 2.5 to 5.5 points. This sensitivity check preserves the sign on those exercises, but four clusters cannot support a broad classroom-population claim. The matched-target tradeoff has clearer cross-population support than a universal portfolio benefit.
+The Java portfolio results differ from RQ2's direct matched-target retraining. Mixed-minus-Answer-9Choose3 is positive on four held-out exercises (3.9 points [2.99, 5.11]) and inconclusive on held-out students (0.6 [-1.20, 2.59]). Absolute RR is 56.25\% versus 52.30\% over 304 exercise-held-out trajectories and 83.98\% versus 83.43\% over 181 student-held-out trajectories. The exercise estimate rests on four clusters only: refitting with one exercise left out keeps the contrast between 3.6 and 4.4 points, and single exercises range from 2.5 to 5.5 points. Four clusters cannot support a broad classroom-population claim. The matched-target tradeoff has clearer cross-population support than a universal portfolio benefit.
 
 \noindent\textbf{Representation and overlap.} Binary accepted/non-accepted mining removes the fine severity ordering but also changes the target set. Retraining changes Progress RR by +2.3 Seen and -2.8 Unseen points in the canonical-minus-alternative direction. The nonuniform changes show that the ordering is not an innocuous implementation detail. For Mixed and Answer-9Choose3, exact matches between a returned repair and a training-time accepted program occur in 0.6\% and 1.3\% of selections, near-duplicates above a 0.90 token-similarity threshold in 3.8\% and 5.3\%, and median maximum similarity to a same-problem training target is 66.7\% and 68.6\%. Low exact-copy rates do not exclude structural reuse, pretraining contamination, or user-level overlap~\cite{allamanis2019adverse}. Overall, the matched-target tradeoff replicates on student-held-out Java and candidate breadth remains useful at a smaller model scale, whereas mixed-target unrestricted superiority does not replicate consistently.
 
@@ -464,7 +464,7 @@ The Java portfolio results differ from RQ2's direct matched-target retraining. M
 Automated Program Repair has substantially raised the repair rate for buggy student submissions. However, existing techniques settle what a return aims at without reference to the student's own attempts, so a return can replace most of the submission. This paper aims to repair a buggy submission toward a step taken from the student's own trajectory, and to make the gain readable as the target's. To this end, \textsc{ZPDPatch} mines supervision pairs from execution evidence, trains one adapter per rule, and freezes a portfolio by executed validation repairs. Matched Python and student-held-out Java experiments show the same coverage--locality tradeoff, uneven across exercises and students, and candidate breadth, model adaptation, and matched peer targets account for the measurable part of the remaining improvement, so the retained-evidence target is not uniquely personal supervision. We therefore retain the current-only Answer triple and report the Progress rule as the option for when locality binds, while educational benefit and broader model-family generality remain unmeasured.
 
 \section*{Data Availability}
-An anonymous supplement contains code-free paired outcomes, condition manifests, metric code, negative results, claim--evidence links, and the complete inventory of the development runs that this paper does not report; its offline verifier checks hashes and recomputes every reported contrast. Because the CodeWorkout/TIKTOC~\cite{duan2024tiktoc} and CodeNet~\cite{puri2021project} terms govern redistribution of student submissions and the adapters exceed the supplement budget, we exclude student source and model weights and submit the data as anonymous supplementary material rather than a public link. No student intervention was conducted.
+An anonymous supplement contains code-free paired outcomes, condition manifests, metric code, negative results, claim--evidence links, and the complete inventory of the development runs that this paper does not report; its offline verifier checks hashes and recomputes every reported contrast. Because the CodeWorkout/TIKTOC~\cite{duan2024tiktoc} and CodeNet~\cite{puri2021project} terms govern redistribution of student submissions and the adapters exceed the supplement budget, we exclude student source and model weights and submit the data as anonymous supplementary material. No student intervention was conducted.
 
 \clearpage
 \IEEEtriggeratref{52}
