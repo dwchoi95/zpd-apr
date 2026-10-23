@@ -48,12 +48,12 @@ analyses are under `outputs/split-90-10/canonical-v5/analysis/`:
 | Table III (`tab:targets`) source-matched Python and Java | `fse2027-paired-target-control-corrected.json`, `fse2027-paired-java-control.json` |
 | Table IV (`tab:uneven`) per-exercise coverage and per-student retention distribution | `per_exercise` and `joint_preservation_rows` of `fse2027-paired-java-control.json`, summarized into the `PairedJava*` bridge commands |
 | RQ2 forward step that is not a repair | `unrestricted` improvement rates of `fse2027-paired-target-control-corrected.json` and `methods` of `fse2027-paired-java-control.json`, as the `*ImproveOnly` bridge commands |
-| Figure 4 (`fig:case`) qualitative case (no estimate) | `fse2027-patch-locality-case.json`, selected by the recorded largest-TED-gap rule |
+| Figure 5 (`fig:case`) qualitative case (no estimate) | `fse2027-patch-locality-case.json`, selected by the recorded largest-TED-gap rule |
 | Peer replacement and coverage | `fse2027-cross-user-target-control.json`, `fse2027-peer-distributions.json` |
-| RQ2 reported per-budget frontier rates | `fse2027-lsgen-budget-controller.json`, current-only deployment ladder, checked by `scripts/verify_paper_budget_table.py` |
-| RQ3 same-stack decoder/checkpoint factorial | `fse2027-current-only-factorial-corrected.json` |
+| Figure 4 (`fig:budget`) and the reported per-budget frontier rates | `fse2027-lsgen-budget-controller.json`, current-only deployment ladder, checked by `scripts/verify_paper_budget_table.py` |
+| Figure 6 (`fig:ablation`) matched per-change contrasts, drawn from `paper/fse2027-result-bridge.tex`, and the RQ3 same-stack decoder/checkpoint factorial | `fse2027-current-only-factorial-corrected.json`, `fse2027-breadth-controls.json`, `fse2027-prompt-distribution-control.json` |
 | RQ3 frozen input vs reselected portfolio | `fse2027-prompt-distribution-control.json` |
-| RQ4 generality and boundaries | result bridge and its prefix, scale, difficulty, overlap, hidden-slice, Java analyses |
+| Figure 7 (`fig:replication`) replication contrasts, drawn from `paper/fse2027-result-bridge.tex` and `fse2027-selected-portfolios.json`, and the rest of RQ4's generality and boundaries | result bridge and its prefix, scale, difficulty, overlap, hidden-slice, Java analyses |
 | Development runs the paper no longer reports | `analysis_protocols/zpd-deadline-results-20261021.json` and `zpd-final-methodology-report-20261021.ko.md`, exported to the supplement as `evidence/deadline-results.json` |
 
 The whitespace-sensitive corrections alter derived change flags/selections, not

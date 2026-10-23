@@ -6,6 +6,7 @@ figures stay readable in print and under colour-vision deficiency.
 """
 import argparse
 import json
+import re
 from pathlib import Path
 
 import matplotlib
@@ -103,11 +104,16 @@ def breadth_series(bridge_path):
     }
 
 
+# Both ZPDPatch portfolios carry the system name; the series keys stay as the verifier reads them.
+LEGEND = {'ZPDPatch': 'ZPDPatch (Mixed)', 'Current $A_3$': 'ZPDPatch (Answer)'}
+
+
 def budget_figure(series, out):
     fig, ax = plt.subplots(figsize=(3.33, 2.0))
     marks = [('o', '-', ACCENT), ('s', '--', SECOND), ('^', ':', BASE)]
     for (name, values), (marker, dash, colour) in zip(series.items(), marks):
-        ax.plot(BUDGETS, values, marker=marker, linestyle=dash, color=colour, label=name,
+        ax.plot(BUDGETS, values, marker=marker, linestyle=dash, color=colour,
+                label=LEGEND.get(name, name),
                 markerfacecolor='white', markeredgewidth=0.8)
     gap = series['ZPDPatch'][2] - series['LSGen'][2]
     ax.annotate(f'$+${gap:.1f} points', xy=(20, series['ZPDPatch'][2]), xytext=(21, 26),
@@ -194,6 +200,110 @@ def breadth_compact_figure(data, out):
     plt.close(fig)
 
 
+
+def bridge_macros(path):
+    """Read the checked-in result bridge so figure values are the paper's values."""
+    text = Path(path).read_text()
+    macros = dict(re.findall(r"\\newcommand\{\\(\w+)\}\{([^}]*)\}", text))
+    def point(name):
+        return float(macros[name])
+    def interval(name):
+        lo, hi = macros[name].strip('[]').split(',')
+        return float(lo), float(hi)
+    return point, interval
+
+
+ABLATION = (
+    ('Fine-tuning vs. base model', 'AnswerStochasticMinusBase'),
+    ('Three fixed draws vs. one', 'SameDrawThreeMinusOne'),
+    ('Three greedy checkpoints vs. one', 'FactorialGreedyThreeMinusOne'),
+    ('Serialized history removed', 'PromptFrozenMixedCurrentMinusFull'),
+    ('Mixed targets vs. Answer only', 'MixedMinusAnswerNine'),
+    ('Distinct checkpoints vs. one', 'CheckpointStochasticMinusSameCheckpoint'),
+)
+
+
+def ablation_series(bridge_tex):
+    point, interval = bridge_macros(bridge_tex)
+    rows = []
+    for label, stem in ABLATION:
+        row = {'label': label}
+        for split in ('Seen', 'Unseen'):
+            try:
+                row[split] = (point(stem + split), interval(stem + split + 'CI'))
+            except KeyError:
+                row[split] = None
+        rows.append(row)
+    return rows
+
+
+def replication_series(bridge_tex, portfolios_path):
+    point, interval = bridge_macros(bridge_tex)
+    zero = json.loads(Path(portfolios_path).read_text())
+    zero = zero['splits']['unseen']['primary_method']['comparisons']['zero_shot']['paired'][0]
+    pct = lambda x: round(100 * x, 1)
+    lo, hi = zero['cluster_bootstrap_95ci']
+    return [
+        ('Held-out problems', pct(zero['left_minus_right_instance_weighted']), (pct(lo), pct(hi))),
+        ('Smaller model (1.5B)', point('ScaleAnswerThreeMinusOneSeen'), interval('ScaleAnswerThreeMinusOneSeenCI')),
+        ('Java, exercises held out', point('CodeWorkoutProblemMixedMinusAnswerNine'),
+         interval('CodeWorkoutProblemMixedMinusAnswerNineExerciseCI')),
+        ('Java, students held out', point('CodeWorkoutStudentMixedMinusAnswerNine'),
+         interval('CodeWorkoutStudentMixedMinusAnswerNineStudentCI')),
+    ]
+
+
+def forest(ax, rows, offsets, colours, markers):
+    """Draw one point-and-interval row per entry, newest convention: zero line, no grid clutter."""
+    for y, row in enumerate(rows):
+        for (split, offset), colour, marker in zip(offsets, colours, markers):
+            cell = row[split] if isinstance(row, dict) else None
+            if cell is None:
+                continue
+            value, (lo, hi) = cell
+            ax.plot([lo, hi], [y + offset] * 2, color=colour, linewidth=0.9, solid_capstyle='butt')
+            ax.plot(value, y + offset, marker=marker, color=colour, markerfacecolor='white',
+                    markeredgewidth=0.9, markersize=3.6, label=split if y == 0 else None)
+    ax.axvline(0, color='#444444', linewidth=0.6)
+    ax.set_yticks(range(len(rows)))
+    ax.invert_yaxis()
+    ax.grid(axis='x')
+    ax.set_axisbelow(True)
+    for side in ('top', 'right', 'left'):
+        ax.spines[side].set_visible(False)
+
+
+def ablation_figure(rows, out):
+    fig, ax = plt.subplots(figsize=(2.78, 1.75))
+    forest(ax, rows, (('Seen', -0.17), ('Unseen', 0.17)), (ACCENT, SECOND), ('o', 's'))
+    ax.set_yticklabels([row['label'] for row in rows])
+    ax.set_xlabel('Change in repair rate (points, 95% CI)')
+    ax.set_xlim(-6, 33)
+    ax.legend(loc='lower right', handlelength=1.4)
+    fig.savefig(out)
+    plt.close(fig)
+
+
+def replication_figure(rows, out):
+    fig, ax = plt.subplots(figsize=(3.05, 1.3))
+    for y, (_, value, (lo, hi)) in enumerate(rows):
+        ax.plot([lo, hi], [y, y], color=ACCENT, linewidth=0.9, solid_capstyle='butt')
+        ax.plot(value, y, marker='o', color=ACCENT, markerfacecolor='white',
+                markeredgewidth=0.9, markersize=3.6)
+    ax.axvline(0, color='#444444', linewidth=0.6)
+    ax.set_yticks(range(len(rows)))
+    ax.set_yticklabels([row[0] for row in rows])
+    ax.invert_yaxis()
+    ax.grid(axis='x')
+    ax.set_axisbelow(True)
+    for side in ('top', 'right', 'left'):
+        ax.spines[side].set_visible(False)
+    ax.set_xlabel('Contrast (points, 95% CI)')
+    ax.set_xlim(-3, 21)
+    fig.savefig(out)
+    plt.close(fig)
+
+
 def check(series, data, reach):
     """Guard against evidence drift: values must match the reported numbers."""
     assert reach["Students' own step within $B$"] == [10.7, 18.5, 30.9, 51.2, 73.4, 90.3], reach
@@ -206,6 +316,15 @@ def check(series, data, reach):
     assert data['k_union']['seen'][0] == 41.0 and data['k_union']['unseen'][-1] == 84.0
 
 
+def check_effects(ablation, replication):
+    """The forest plots must carry the bridge's own point estimates."""
+    seen = [row['Seen'][0] for row in ablation]
+    assert seen == [27.2, 15.1, 9.8, 8.8, 1.7, -0.1], seen
+    unseen = [row['Unseen'][0] if row['Unseen'] else None for row in ablation]
+    assert unseen == [6.4, 10.9, 10.8, 7.6, 0.0, 2.4], unseen
+    assert [round(value, 1) for _, value, _ in replication] == [12.8, 13.4, 3.9, 0.6], replication
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     analysis = Path('outputs/split-90-10/canonical-v5/analysis')
@@ -213,16 +332,23 @@ if __name__ == '__main__':
     parser.add_argument('--lsgen-budget', type=Path, default=analysis / 'fse2027-lsgen-budget-controller.json')
     parser.add_argument('--current-ladder', type=Path, default=analysis / 'fse2027-current-only-deployment-ladder.json')
     parser.add_argument('--student-step', type=Path, default=analysis / 'icse-seet-student-step-size-20261023.json')
+    parser.add_argument('--portfolios', type=Path, default=analysis / 'fse2027-selected-portfolios.json')
+    parser.add_argument('--bridge-tex', type=Path, default=Path('paper/fse2027-result-bridge.tex'))
     parser.add_argument('--outdir', type=Path, default=Path('paper/Figures'))
     args = parser.parse_args()
     style()
     series = budget_series(args.lsgen_budget, args.current_ladder)
     data = breadth_series(args.bridge)
     reach = reach_series(args.student_step, args.lsgen_budget)
+    ablation = ablation_series(args.bridge_tex)
+    replication = replication_series(args.bridge_tex, args.portfolios)
     check(series, data, reach)
+    check_effects(ablation, replication)
     args.outdir.mkdir(parents=True, exist_ok=True)
     budget_figure(series, args.outdir / 'fse2027-budget-frontier.pdf')
     breadth_figure(data, args.outdir / 'fse2027-breadth.pdf')
     breadth_compact_figure(data, args.outdir / 'icse-seet-breadth-cost.pdf')
     reach_figure(reach, args.outdir / 'icse-seet-student-reach.pdf')
+    ablation_figure(ablation, args.outdir / 'icse-seet-ablation.pdf')
+    replication_figure(replication, args.outdir / 'icse-seet-replication.pdf')
     print(json.dumps({'budget_frontier': series, 'breadth_k_union': data['k_union'], 'student_reach': reach}, indent=1))

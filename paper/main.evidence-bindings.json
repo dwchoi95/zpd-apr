@@ -145,7 +145,7 @@
       ]
     },
     {
-      "template": "Three greedy checkpoints gain \\FactorialGreedyThreeMinusOneSeen \\FactorialGreedyThreeMinusOneSeenCI and \\FactorialGreedyThreeMinusOneUnseen \\FactorialGreedyThreeMinusOneUnseenCI points over one, but under the matched stochastic decoder distinct checkpoints add only \\FactorialDistinctMinusSameSeen points \\FactorialDistinctMinusSameSeenCI and \\FactorialDistinctMinusSameUnseen points \\FactorialDistinctMinusSameUnseenCI.",
+      "template": "Three greedy checkpoints gain \\FactorialGreedyThreeMinusOneSeen \\FactorialGreedyThreeMinusOneSeenCI and \\FactorialGreedyThreeMinusOneUnseen \\FactorialGreedyThreeMinusOneUnseenCI points over one, but under the matched stochastic decoder distinct checkpoints add only \\FactorialDistinctMinusSameSeen points \\FactorialDistinctMinusSameSeenCI and \\FactorialDistinctMinusSameUnseen points \\FactorialDistinctMinusSameUnseenCI, with the equal-problem Seen interval including zero.",
       "commands": [
         "FactorialDistinctMinusSameSeen",
         "FactorialDistinctMinusSameSeenCI",
@@ -155,21 +155,6 @@
         "FactorialGreedyThreeMinusOneSeenCI",
         "FactorialGreedyThreeMinusOneUnseen",
         "FactorialGreedyThreeMinusOneUnseenCI"
-      ]
-    },
-    {
-      "template": "Absolute Seen/Unseen rates on that stack are \\FactorialGreedyOneSeenRR/\\FactorialGreedyOneUnseenRR\\% for one greedy checkpoint, \\FactorialGreedyThreeSeenRR/\\FactorialGreedyThreeUnseenRR\\% for three greedy checkpoints, \\FactorialSameThreeSeenRR/\\FactorialSameThreeUnseenRR\\% for a same-checkpoint stochastic triple, and \\FactorialDistinctThreeSeenRR/\\FactorialDistinctThreeUnseenRR\\% for a distinct-checkpoint triple, against \\CurrentOnlyAnswerThreeSeenRR/\\CurrentOnlyAnswerThreeUnseenRR\\% on the historical one.",
-      "commands": [
-        "CurrentOnlyAnswerThreeSeenRR",
-        "CurrentOnlyAnswerThreeUnseenRR",
-        "FactorialDistinctThreeSeenRR",
-        "FactorialDistinctThreeUnseenRR",
-        "FactorialGreedyOneSeenRR",
-        "FactorialGreedyOneUnseenRR",
-        "FactorialGreedyThreeSeenRR",
-        "FactorialGreedyThreeUnseenRR",
-        "FactorialSameThreeSeenRR",
-        "FactorialSameThreeUnseenRR"
       ]
     },
     {
@@ -329,11 +314,9 @@
       ]
     },
     {
-      "template": "positive on four held-out exercises (\\CodeWorkoutProblemMixedMinusAnswerNine points \\CodeWorkoutProblemMixedMinusAnswerNineCI) and inconclusive on held-out students (\\CodeWorkoutStudentMixedMinusAnswerNine \\CodeWorkoutStudentMixedMinusAnswerNineStudentCI).",
+      "template": "Its interval is \\CodeWorkoutProblemMixedMinusAnswerNineExerciseCI on held-out exercises and \\CodeWorkoutStudentMixedMinusAnswerNineStudentCI on held-out students.",
       "commands": [
-        "CodeWorkoutProblemMixedMinusAnswerNine",
-        "CodeWorkoutProblemMixedMinusAnswerNineCI",
-        "CodeWorkoutStudentMixedMinusAnswerNine",
+        "CodeWorkoutProblemMixedMinusAnswerNineExerciseCI",
         "CodeWorkoutStudentMixedMinusAnswerNineStudentCI"
       ]
     },

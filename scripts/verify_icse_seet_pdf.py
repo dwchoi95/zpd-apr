@@ -136,6 +136,11 @@ def source_title(source_text: str) -> str:
     return re.sub(r"\s+", " ", plain).strip()
 
 
+def normalize_quotes(text: str) -> str:
+    """TeX renders ' as a typographic apostrophe, so compare the two forms alike."""
+    return text.replace("\u2019", "'").replace("\u2018", "'")
+
+
 def verify(pdf: Path, source: Path) -> dict:
     source_text = source.read_text()
     check_source(source_text)
@@ -148,7 +153,7 @@ def verify(pdf: Path, source: Path) -> dict:
     fonts = {node.get("id"): float(node.get("size")) for node in xml.iter("fontspec")}
     title_nodes = [node for node in xml.find("page").findall("text") if fonts[node.get("font")] == 24]
     rendered = re.sub(r"\s+", " ", " ".join("".join(node.itertext()) for node in title_nodes)).strip()
-    if rendered != source_title(source_text):
+    if normalize_quotes(rendered) != normalize_quotes(source_title(source_text)):
         raise ValueError(f"24pt title text differs from the source title: {rendered!r}")
     # The body size is the size most of the running text is set in, so rewording cannot hide a shrink.
     sizes = Counter(fonts[node.get("font")] for node in xml.iter("text")
