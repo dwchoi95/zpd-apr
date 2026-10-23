@@ -253,33 +253,32 @@ Figure~\ref{fig:overview}는 \textsc{ZPDPatch}가 학생 자신의 trajectory를
 
 \begin{figure}[h]
 \scriptsize
-\textbf{(a)} The student's latest buggy submission $b$\par
-\begin{tabular}{@{}l@{\hspace{6pt}}l@{}}
-\makebox[4.05cm][l]{\texttt{N~=~int(input())}} &  \\
-\makebox[4.05cm][l]{\texttt{for~i~in~range(N):}} &  \\
-\colorbox{black!10}{\makebox[4.05cm][l]{\texttt{~~~~if~i**2~>~N:}}} & $\leftarrow$ the line the student changed \\
-\makebox[4.05cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} &  \\
-\makebox[4.05cm][l]{\texttt{~~~~~~~~exit()}} &  \\
-\end{tabular}\par
+\begin{minipage}[c]{3.95cm}
+\textbf{(a)} Buggy submission $b$\par
+\makebox[3.6cm][l]{\texttt{N~=~int(input())}}\par
+\makebox[3.6cm][l]{\texttt{for~i~in~range(N):}}\par
+\colorbox{black!10}{\makebox[3.45cm][l]{\texttt{~~~~if~i**2~>~N:}}}\par
+\makebox[3.6cm][l]{\texttt{~~~~~~~~print((i-1)**2)}}\par
+\makebox[3.6cm][l]{\texttt{~~~~~~~~exit()}}\par
 \smallskip
-\textbf{(b)} What the student submitted next, the Progress target\par
-\begin{tabular}{@{}l@{\hspace{6pt}}l@{}}
-\makebox[4.05cm][l]{\texttt{N~=~int(input())}} &  \\
-\makebox[4.05cm][l]{\texttt{for~i~in~range(N):}} &  \\
-\colorbox{black!10}{\makebox[4.05cm][l]{\texttt{~~~~if~i**2~>=~N:}}} & $\leftarrow$ one AST operation from (a) \\
-\makebox[4.05cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} &  \\
-\makebox[4.05cm][l]{\texttt{~~~~~~~~exit()}} &  \\
-\end{tabular}\par
-\smallskip
-\textbf{(c)} The accepted submission it reached, the Answer target\par
-\begin{tabular}{@{}l@{\hspace{6pt}}l@{}}
-\makebox[4.05cm][l]{\texttt{n~=~int(input())}} &  \\
-\colorbox{black!10}{\makebox[4.05cm][l]{\texttt{ans~=~0}}} & $\leftarrow$ 33 AST operations from (a) \\
-\colorbox{black!10}{\makebox[4.05cm][l]{\texttt{for~a~in~range(10**5~+~1):}}} &  \\
-\colorbox{black!10}{\makebox[4.05cm][l]{\texttt{~~~~if~a**2~<=~n:}}} &  \\
-\colorbox{black!10}{\makebox[4.05cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}} &  \\
-\makebox[4.05cm][l]{\texttt{print(ans)}} &  \\
-\end{tabular}
+\textbf{(b)} Progress target: next state\par
+\makebox[3.6cm][l]{\texttt{N~=~int(input())}}\par
+\makebox[3.6cm][l]{\texttt{for~i~in~range(N):}}\par
+\colorbox{black!10}{\makebox[3.45cm][l]{\texttt{~~~~if~i**2~>=~N:}}}\par
+\makebox[3.6cm][l]{\texttt{~~~~~~~~print((i-1)**2)}}\par
+\makebox[3.6cm][l]{\texttt{~~~~~~~~exit()}}
+\end{minipage}\hfill
+\begin{minipage}[c]{4.35cm}
+\textbf{(c)} Answer target: accepted state\par
+\makebox[4.2cm][l]{\texttt{n~=~int(input())}}\par
+\colorbox{black!10}{\begin{minipage}{3.98cm}
+\makebox[3.98cm][l]{\texttt{ans~=~0}}\par
+\makebox[3.98cm][l]{\texttt{for~a~in~range(10**5~+~1):}}\par
+\makebox[3.98cm][l]{\texttt{~~~~if~a**2~<=~n:}}\par
+\makebox[3.98cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}
+\end{minipage}}\par
+\makebox[4.2cm][l]{\texttt{print(ans)}}
+\end{minipage}
 \caption{Running example (p03556), blank lines omitted}
 \label{fig:example}
 \end{figure}
@@ -553,8 +552,8 @@ temperature를 맞춘 조건에서, 한 checkpoint의 draw 세 개를 서로 다
 \noindent\textbf{Earlier prefixes.} 결국 성공한 trajectory의 실행 가능한 prefix 가운데 Seen 2,770개와 Unseen 674개에서 current-only Answer-3Seed는 RR 69.6\%와 80.1\%에 이른다. 앞·중간·마지막 3분의 1은 Seen에서 70.0\%, 67.6\%, 71.4\%, Unseen에서 82.9\%, 77.3\%, 81.8\%다. 이는 평가를 마지막 실패 제출 너머로 확장하며 단조 위치 효과를 찾지 못한다. 끝내 acceptance에 이르지 못한 trajectory는 포함하지 않고 한 trajectory에서 나온 여러 prefix는 서로 종속적이므로, 2,770개 prefix 비율은 997개 입력 결과에 더하지 않는다.
 % \noindent\textbf{Earlier prefixes.} Across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, current-only Answer-3Seed reaches 69.6\% and 80.1\% RR. The early, middle, and last thirds reach 70.0\%, 67.6\%, and 71.4\% on Seen and 82.9\%, 77.3\%, and 81.8\% on Unseen. It extends evaluation beyond the last failed submission and finds no monotonic position effect. It does not cover trajectories that never reach acceptance and multiple prefixes from one trajectory are dependent, so the 2,770-prefix rate is not added to the 997-input result.
 
-\noindent\textbf{Model scale and classroom data.} 1.5B 파라미터에서도 checkpoint 세 개는 하나보다 13.4 포인트 [11.16, 15.92]를 얻지만, mixed에서 terminal을 뺀 값은 -0.8 [-2.62, 1.07]이다. 이 더 작은 모델은 복수 기회의 유용성을 재현하지만 제한 없는 mixed-target 이점을 재현하지는 않는다.
-% \noindent\textbf{Model scale and classroom data.} At 1.5B parameters three checkpoints still gain 13.4 points over one [11.16, 15.92], but mixed-minus-Answer is -0.8 [-2.62, 1.07]. This smaller model reproduces the utility of multiple opportunities, not an unrestricted mixed-target advantage.
+\noindent\textbf{Model scale and classroom data.} 1.5B 파라미터에서도 checkpoint 세 개는 하나보다 13.4 포인트 [11.16, 15.92]를 얻지만, mixed에서 terminal을 뺀 값은 -0.8 [-2.62, 1.07]이다. Seen에서 Mixed는 50.25\%, 9개 checkpoint terminal 통제는 51.05\%에 이른다. 이 더 작은 모델은 복수 기회의 유용성을 재현하지만 제한 없는 mixed-target 이점을 재현하지는 않는다.
+% \noindent\textbf{Model scale and classroom data.} At 1.5B parameters three checkpoints still gain 13.4 points over one [11.16, 15.92], but mixed-minus-Answer is -0.8 [-2.62, 1.07]. Mixed reaches 50.25\% and the nine-checkpoint Answer control 51.05\% on Seen. This smaller model reproduces the utility of multiple opportunities, not an unrestricted mixed-target advantage.
 
 Java portfolio 결과는 RQ2의 직접적인 맞춘 target 재학습과 다르다. Mixed에서 Answer-9Choose3을 뺀 값은 보류된 exercise 네 개에서 양수(3.9 포인트 [2.99, 5.11])이고 보류된 학생에서는 결론을 내릴 수 없다(0.6 [-1.20, 2.59]). 절대 RR은 exercise-held-out trajectory 304개에서 56.25\% 대 52.30\%, student-held-out trajectory 181개에서 83.98\% 대 83.43\%다. exercise 추정치는 cluster 네 개에만 기대고 있다: exercise 하나를 빼고 다시 적합시키면 대비가 3.6과 4.4 포인트 사이에 머물고, 개별 exercise는 2.5에서 5.5 포인트 범위다. cluster 네 개로는 폭넓은 교실 모집단 주장을 뒷받침할 수 없다. 맞춘 target 트레이드오프는 보편적 portfolio 이점보다 모집단 간 뒷받침이 더 분명하다.
 % The Java portfolio results differ from RQ2's direct matched-target retraining. Mixed-minus-Answer-9Choose3 is positive on four held-out exercises (3.9 points [2.99, 5.11]) and inconclusive on held-out students (0.6 [-1.20, 2.59]). Absolute RR is 56.25\% versus 52.30\% over 304 exercise-held-out trajectories and 83.98\% versus 83.43\% over 181 student-held-out trajectories. The exercise estimate rests on four clusters only: refitting with one exercise left out keeps the contrast between 3.6 and 4.4 points, and single exercises range from 2.5 to 5.5 points. Four clusters cannot support a broad classroom-population claim. The matched-target tradeoff has clearer cross-population support than a universal portfolio benefit.
