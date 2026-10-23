@@ -29,7 +29,7 @@ class PrepareHistraBenchmarkTests(unittest.TestCase):
             ]
             write_jsonl(problem / "trajectories.jsonl", [{"problem_id": "p00001", "user_id": "u1", "submissions": subs}])
             approaches = tmp / "approaches"
-            for method in ("refactory", "brafar", "lsgen"):
+            for method in ("refactory", "brafar", "lsgen", "mentored"):
                 write_jsonl(approaches / f"{method}.jsonl", [{"pid": "p00001", "user": "u1", "was": ["a", "b"], "patch": None, "sec": 1.0}])
             train = [{"problem_id": "p00001", "user_id": "u1"}, {"problem_id": "p00001", "user_id": "u2"}, {"problem_id": "p00009", "user_id": "u1"}]
             write_jsonl(tmp / "train.jsonl", train)

@@ -62,7 +62,7 @@ fi
 N=$(wc -l < "${TEST}")
 log "Test inputs: ${N} of 1764"
 
-for method in refactory brafar lsgen; do
+for method in refactory brafar lsgen mentored; do
   log "Judging ${method}"
   # only the inputs that survive the same judge's filter are compared
   "${PYTHON}" -c 'import json,sys

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 Row = dict[str, Any]
-BASELINES = ("refactory", "brafar", "lsgen")
+BASELINES = ("refactory", "brafar", "lsgen", "mentored")
 
 
 def read_jsonl(path: Path) -> list[Row]:
