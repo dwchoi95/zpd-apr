@@ -967,3 +967,66 @@ byte-identical(149), frontier, 익명성, 보충자료 22개 파일, 테스트 4
 c8de24b639f1d86784534bf8c42844e34616bb23c3897dfbc610ae773450c564
 최종 영어 소스 SHA-256
 6cf4c029dcc97eaf1a01719f3da05a6f8a4b065fd498d2d551499ebae6b341d3
+
+────────────────────────────────────────────────────────────────────────
+2026-10-23 수정: 참고 논문(Histra) 가이드라인 반영과 섹션 III--VI 퇴고
+────────────────────────────────────────────────────────────────────────
+사용자가 같은 도메인의 참고 논문 전문을 주면서 "한 섹션>한 문단>한 문장씩 뜯어 분석한 뒤
+가이드라인에 추가하고, 그 가이드라인으로 ZPDPatch 논문 전체를 퇴고"하라고 지시했다.
+
+1. 가이드라인. paper/guidelines/section/reference-histra.md를 407줄로 완성했다. 이전 분석은
+   원고가 5만 자에서 잘려 §3.3까지만 다뤘고, 이제 §3.4 Search/§3.5 Repair의 단계 하위절 관례,
+   §4 Experiments(도입·Settings·RQ 문단 배열·RQ2형·ablation·사람 평가·Discussion·Threats),
+   §5 Related Work, §6 Conclusion, Data Availability까지 덮는다. 점검 항목은 13개에서 25개로
+   늘렸다. 표기·플로트·분량 규격은 기존 문서(floats.md 등)를 계속 우선한다.
+
+2. Section IV 도입. "We evaluate the retained implementation through four research questions"를
+   가이드라인의 "In this section, we evaluate ZPDPatch to answer the following research questions"로
+   바꾸고, Other Settings 안에 묻혀 있던 구현 기반과 장비를 리드 끝 한 문장으로 올렸다
+   (Qwen2.5-Coder-7B-Instruct, RTX 5090 한 장). RQ 이름은 하위절 제목과 같은 Title Case로 맞췄다.
+
+3. Experimental Settings 순서. Baselines → Benchmarks → Evaluation Metrics → Other Settings →
+   Research process로 재배열했다. 라벨이 없던 지표 문단에 Evaluation Metrics run-in과 측정하는
+   결과 세 종류를 선언하는 첫 문장을 붙였다.
+
+4. RQ 마무리. "Answer to RQ1--RQ4" 네 문단을 없애고, 각 RQ의 마지막 결과 문단을 "Overall, ..."
+   한 문장으로 닫게 했다. 참고 논문 다섯 편 모두 결과 문단을 함의 문장으로 닫고 별도의 답 문단을
+   두지 않는다.
+
+5. Threats to Validity. Internal/Construct/External 세 문단을 (1)(2)(3)으로 번호를 매긴 한 문단으로
+   합쳤다. 주장은 하나도 빼지 않았다.
+
+6. 내용 보강 세 곳. (a) Section II-B의 N 문단이 "선행 기법도 이미 최소 변경을 요구한다"는 근거를
+   인용으로 갖췄다(Refactory의 최소 수리 합성, LSGen의 최소 변경 지시). 이전에는 그 근거를 찾지
+   못해 측정으로만 대신했다. (b) Introduction P5(I7)에 빠져 있던 ablation 슬롯을 넣었다
+   (고정 후보 draw 세 개만으로 15.1 포인트). (c) 두 display 수식 앞에 "Formally,"를 두었다.
+
+7. 분량. 위 변경으로 13쪽이 되어 중복 단서 약 스무 곳을 압축해 12쪽으로 복구했다. 같은 내용을
+   Threats와 두 번 말하던 문장(인프라 불확실성, 운용상의 순서, 저장 후보 재생, 모집단 분리),
+   Data Availability 6문장 → 3문장, Related Work의 피드백 문단 중복 2문장이 대상이다. 지표·수치·
+   분모·마감 공시는 건드리지 않았다. Introduction 1,064, Section II 1,423 words다.
+
+8. 플로트. 압축으로 열이 밀리면서 Table II와 Algorithm 2가 첫 언급 뒤로 밀렸다. floats.md §0.1에
+   따라 배치 지정자를 바꾸지 않고 소스를 앞으로 옮겼다. Section II-B의 두 표 순서를 바꿔
+   측정 표가 Table I이 되었고, Algorithm 2는 Section III-A의 마지막 문단 앞으로 옮겼다.
+
+9. Conclusion. conclusion.md의 순서(현황 → 한계 → 목표 → 방법(동사 3개) → 결과 → 기대)를 따라
+   8문장 166 words에서 6문장 158 words로 다시 썼다. 실질 주장은 그대로 두고, 동료 target 결과와
+   미측정 범위를 각각 결과 문장과 마지막 문장에 흡수했다. 제목과 Abstract은 사용자 지시에 따라
+   Conclusion이 확정된 다음에 다시 쓴다.
+
+분량 감사(플로트 제외): Introduction 1,064(목표 700--1,000), Preliminaries 1,185(~970),
+Our Approach 1,153(~2,500), Experiments 3,305(~3,200), Related Work 354(~440),
+Conclusion 158(74--125). Our Approach가 목표의 절반이고 Preliminaries가 넘치므로, 두 절 사이의
+재배분은 사용자 판단으로 남긴다.
+
+검산: 영어 빌드 10+2쪽, 플로트 전부 첫 언급 앞, overfull 0, 미정의 0, bridge byte-identical
+(binding 47, command 158), budget frontier, 익명성, AI 공시 테스트, 한국어 왕복 테스트.
+
+대체된 PDF SHA-256 (Histra 가이드라인 반영 이전)
+c8de24b639f1d86784534bf8c42844e34616bb23c3897dfbc610ae773450c564
+
+최종 PDF SHA-256
+0551df1335d247d52592d3e8f1077fc2e0ab2cb32a5a25947e13d24675e131b8
+최종 영어 소스 SHA-256
+f21f285294659f4e6087ea1a9a1436ed8e2ac88da93e18dbef86d885ab850ce4

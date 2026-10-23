@@ -179,8 +179,37 @@ def build(
     return result
 
 
-def macros(result: dict[str, Any]) -> str:
+def student_step_macros(step: dict[str, Any]) -> dict[str, str]:
+    """Macros for the student self-step analysis, which is not part of the pinned rollup."""
     values: dict[str, str] = {}
+    for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
+        row = step["splits"][split]
+        for key, name in (("all_steps", "Step"), ("final_step", "FinalStep")):
+            block = row[key]
+            # Thousands separators, as the float guideline requires of table counts.
+            values[f"StudentStep{name}{prefix}Count"] = f"{block['steps']:,}"
+            values[f"StudentStep{name}{prefix}Defined"] = f"{block['defined_ted_steps']:,}"
+            values[f"StudentStep{name}{prefix}Median"] = f"{block['ted']['median']:.0f}"
+            values[f"StudentStep{name}{prefix}LowerQuartile"] = f"{block['ted']['lower_quartile']:.0f}"
+            values[f"StudentStep{name}{prefix}UpperQuartile"] = f"{block['ted']['upper_quartile']:.0f}"
+            values[f"StudentStep{name}{prefix}Mean"] = f"{block['ted']['mean']:.2f}"
+            values[f"StudentStep{name}{prefix}TokenRetention"] = pct(block["token_retention"]["median"])
+        reach = row["demonstrated_reach"]
+        values[f"StudentReach{prefix}Trajectories"] = str(reach["trajectories"])
+        values[f"StudentReach{prefix}Median"] = f"{reach['ted']['median']:.0f}"
+        values[f"StudentReach{prefix}LowerQuartile"] = f"{reach['ted']['lower_quartile']:.0f}"
+        values[f"StudentReach{prefix}UpperQuartile"] = f"{reach['ted']['upper_quartile']:.0f}"
+        # Spelled-out budgets: the binding expander reads macro names as letters only.
+        words = {"5": "Five", "10": "Ten", "20": "Twenty", "40": "Forty", "80": "Eighty", "160": "OneSixty"}
+        for budget, share in reach["share_within_budget"].items():
+            values[f"StudentReach{prefix}WithinTED{words[budget]}"] = pct(share)
+    return values
+
+
+def macros(result: dict[str, Any], student_step: dict[str, Any] | None = None) -> str:
+    values: dict[str, str] = {}
+    if student_step is not None:
+        values.update(student_step_macros(student_step))
     for split, prefix in (("seen", "Seen"), ("unseen", "Unseen")):
         row = result["canonical"][split]
         values[f"AnswerNine{prefix}RR"] = pct(row["answer_rr"])
@@ -913,6 +942,7 @@ def main() -> None:
     parser.add_argument("--all-prefix", type=Path)
     parser.add_argument("--current-factorial", type=Path)
     parser.add_argument("--paired-java", type=Path)
+    parser.add_argument("--student-step", type=Path)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-tex", type=Path, required=True)
     args = parser.parse_args()
@@ -952,7 +982,8 @@ def main() -> None:
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_tex.parent.mkdir(parents=True, exist_ok=True)
     args.output_json.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    args.output_tex.write_text(macros(result), encoding="utf-8")
+    student_step = read(args.student_step) if args.student_step else None
+    args.output_tex.write_text(macros(result, student_step), encoding="utf-8")
 
 
 if __name__ == "__main__":
