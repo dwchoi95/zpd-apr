@@ -157,6 +157,14 @@
       ]
     },
     {
+      "template": "Its median is \\StudentReachSeenMedian, with quartiles at \\StudentReachSeenLowerQuartile and \\StudentReachSeenUpperQuartile.",
+      "commands": [
+        "StudentReachSeenLowerQuartile",
+        "StudentReachSeenMedian",
+        "StudentReachSeenUpperQuartile"
+      ]
+    },
+    {
       "template": "the \\StudentStepStepSeenDefined steps with a defined distance have a median of \\StudentStepStepSeenMedian, and one step leaves a median of \\StudentStepStepSeenTokenRetention\\% of the submission's tokens in place.",
       "commands": [
         "StudentStepStepSeenDefined",
