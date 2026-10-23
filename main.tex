@@ -14,7 +14,8 @@
  baseline1/.style={fill=gray!35, draw=black},
  baseline2/.style={fill=gray!60, draw=black},
  baseline3/.style={fill=gray!85, draw=black},
- proposed/.style={fill=blue!12, postaction={pattern=north east lines, pattern color=blue!50}, draw=black}}
+ proposed/.style={fill=blue!12, postaction={pattern=north east lines, pattern color=blue!50}, draw=black},
+ variant/.style={fill=gray!25, draw=black}}
 \usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds,patterns}
 \hypersetup{pdftitle={ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence},pdfauthor={}}
 \title{ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence}
@@ -444,8 +445,8 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 \end{tabular}
 \end{table}
 
-% \noindent\textbf{Evaluation Metrics.} 효과는 세 지표로 잰다. \emph{Repair Rate}(RR)는 반환물이 모든 테스트를 통과하는 입력의 비율이다. Tree Edit Distance(TED)는 버기 프로그램과 반환물의 Abstract Syntax Tree(AST) 사이 편집 연산 수로 반환물의 크기를 잰다~\cite{zhang1989simple,pawlik2016tree}. edit budget \(B\)에서의 RR은 TED가 \(B\) 이하인 반환물만 센다. \emph{Retention}은 버기 프로그램의 token(또는 공백이 아닌 줄) 가운데 반환물에 남은 비율이다. 그림의 오차 막대는 문제 단위 bootstrap 95\% 구간이다~\cite{efron1979bootstrap}.
-\noindent\textbf{Evaluation Metrics.} We measure effectiveness with three metrics. The \emph{Repair Rate} (RR) is the fraction of inputs whose returned program passes every test. The Tree Edit Distance (TED) between the Abstract Syntax Trees (ASTs) of the buggy program and the returned program measures the size of the return in edit operations~\cite{zhang1989simple,pawlik2016tree}, and the RR within an edit budget \(B\) counts only the returns whose TED is at most \(B\). \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the returned program. Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1979bootstrap}.
+% \noindent\textbf{Evaluation Metrics.} 효과는 세 지표로 잰다. \emph{Repair Rate}(RR)는 반환물이 모든 테스트를 통과하는 입력의 비율이다. Tree Edit Distance(TED)는 버기 프로그램과 반환물의 Abstract Syntax Tree(AST) 사이 편집 연산 수로 반환물의 크기를 잰다~\cite{zhang1989simple,pawlik2016tree}. edit budget \(B\)에서의 RR은 TED가 \(B\) 이하인 반환물만 센다. \emph{Retention}은 버기 프로그램의 token(또는 공백이 아닌 줄) 가운데 반환물에 남은 비율이다. \emph{Within-reach repair rate}는 반환물이 모든 테스트를 통과하고 그 TED가 그 학생의 demonstrated reach(Section~\ref{sec:limitation}) 이하인 입력의 비율이며, 학생의 Zone of Proximal Development(ZPD) 안 patch를 근사한다. 그림의 오차 막대는 문제 단위 bootstrap 95\% 구간이다~\cite{efron1979bootstrap}.
+\noindent\textbf{Evaluation Metrics.} We measure effectiveness with three metrics. The \emph{Repair Rate} (RR) is the fraction of inputs whose returned program passes every test. The Tree Edit Distance (TED) between the Abstract Syntax Trees (ASTs) of the buggy program and the returned program measures the size of the return in edit operations~\cite{zhang1989simple,pawlik2016tree}, and the RR within an edit budget \(B\) counts only the returns whose TED is at most \(B\). \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the returned program. The \emph{within-reach repair rate} is the fraction of inputs whose returned program passes every test with a TED no larger than the student's demonstrated reach (Section~\ref{sec:limitation}); it approximates a patch within the student's Zone of Proximal Development (ZPD). Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1979bootstrap}.
 
 
 \subsection{RQ1: Repair Effectiveness}
@@ -468,6 +469,9 @@ Metric & Rule & Seen & Unseen & Java \\
 \midrule
 \multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
  & Progress & 34.0 & 65.6 & 50.8 \\
+\midrule
+\multirow{2}{*}{Within reach (\%)} & Answer & 34.5 & 44.8 & -- \\
+ & Progress & 27.9 & 48.8 & -- \\
 \midrule
 \multirow{2}{*}{Tokens (\%)} & Answer & 87.9 & 81.5 & 91.0 \\
  & Progress & 93.5 & 88.0 & 95.8 \\
@@ -498,8 +502,8 @@ RQ2 asks how the target rule changes how much of the student's program a returne
 % Table~\ref{tab:targets}는 target만 바꾼 두 rule의 repair rate와 보존율을 보인다. 두 rule이 모두 수리한 입력에서 Progress의 반환물은 Answer의 반환물보다 학생의 token을 Seen에서 6.3\%, Unseen에서 7.9\% 더 남기고, 줄을 각각 12.3\%와 17.9\% 더 남긴다. 같은 입력에서 Progress 반환물의 TED는 Answer보다 Seen에서 47.3\%, Unseen에서 45.5\% 작다. 이 차이는 target에서 온다. Progress target은 실행 증거가 개선으로 확인한 학생의 다음 제출이라 한 걸음이 작고, Answer target은 학생이 끝내 통과시킨 프로그램이라 다른 접근을 택할 수 있다(Figure~\ref{fig:example}에서 1 대 33 AST edit operations).
 Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the inputs both rules repair, the returned programs of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same inputs, the TED of a Progress return is 47.3\% smaller than that of an Answer return on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (1 against 33 AST edit operations in Figure~\ref{fig:example}).
 
-% 그 대가로 Progress는 Answer보다 Seen에서 36.0\%, Unseen에서 14.6\% 적은 입력을 수리한다. Answer target은 모두 accepted 제출인 반면, Progress target에는 아직 통과하지 못한 개선 제출도 포함되기 때문이다.
-In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass.
+% 그 대가로 Progress는 Answer보다 Seen에서 36.0\%, Unseen에서 14.6\% 적은 입력을 수리한다. Answer target은 모두 accepted 제출인 반면, Progress target에는 아직 통과하지 못한 개선 제출도 포함되기 때문이다. 학생 자신의 demonstrated reach 안에서 재면 이 차이는 줄어든다. Progress는 Seen에서 19.1\% 적게 수리하는 데 그치고 Unseen에서는 8.9\% 더 많이 수리하는데, Progress 수리의 82.1\%와 74.4\%가 학생의 reach 안에 있는 반면 Answer 수리는 64.8\%와 58.3\%만 그 안에 있기 때문이다.
+In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass. Measured within each student's own demonstrated reach, the gap narrows: Progress repairs only 19.1\% fewer inputs on Seen and 8.9\% more on Unseen, because 82.1\% and 74.4\% of its repairs lie within the student's reach, against 64.8\% and 58.3\% of Answer's.
 
 
 
@@ -612,8 +616,31 @@ Java & 75.1 & 84.5 & 45.4 & 52.3 \\
 \end{tabular}
 \end{table}
 
-% Table~\ref{tab:generality}는 설정마다 checkpoint 하나(\textsc{ZPDPatch}-Portfolio)와 portfolio의 수리율을 보이며, Java에서는 Seen 열에 학생을 학습에서 뺀 경우를, Unseen 열에 exercise를 뺀 경우를 둔다. 1.5B 모델에서 portfolio는 checkpoint 하나보다 Seen에서 35.7\%, Unseen에서 37.2\% 더 많은 입력을 수리한다. Java에서는 exercise를 학습에서 뺐을 때 15.2\%, 학생을 뺐을 때 12.5\% 더 수리한다. 성공한 trajectory의 이전 prefix 전체에서 \textsc{ZPDPatch}는 Seen의 69.6\%, Unseen의 80.1\%를 수리하고, trajectory의 앞·가운데·뒤 3분의 1에서 Seen 수리율은 67.6--71.4\%에 머문다.
-Table~\ref{tab:generality} lists, for each setting, the repair rates of one checkpoint (\textsc{ZPDPatch}-Portfolio) and of the portfolio; for Java, the Seen columns hold the students held out of training and the Unseen columns the exercises held out. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out. Over all earlier prefixes of the successful trajectories, \textsc{ZPDPatch} repairs 69.6\% of Seen and 80.1\% of Unseen inputs, and its Seen repair rate stays within 67.6--71.4\% across the first, middle, and last thirds of a trajectory.
+% Table~\ref{tab:generality}는 설정마다 checkpoint 하나(\textsc{ZPDPatch}-Portfolio)와 portfolio의 수리율을 보이며, Java에서는 Seen 열에 학생을 학습에서 뺀 경우를, Unseen 열에 exercise를 뺀 경우를 둔다. 1.5B 모델에서 portfolio는 checkpoint 하나보다 Seen에서 35.7\%, Unseen에서 37.2\% 더 많은 입력을 수리한다. Java에서는 exercise를 학습에서 뺐을 때 15.2\%, 학생을 뺐을 때 12.5\% 더 수리한다.
+Table~\ref{tab:generality} lists, for each setting, the repair rates of one checkpoint (\textsc{ZPDPatch}-Portfolio) and of the portfolio; for Java, the Seen columns hold the students held out of training and the Unseen columns the exercises held out. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xbar=0.8pt, bar width=4.2pt, scale only axis, width=0.62\columnwidth, height=3.6cm, y dir=reverse,
+ symbolic y coords={SF,SM,SL,UF,UM,UL}, ytick=data, enlarge y limits=0.1,
+ yticklabels={{Seen, first third}, {Seen, middle third}, {Seen, last third}, {Unseen, first third}, {Unseen, middle third}, {Unseen, last third}},
+ xmin=0, xmax=100, xtick={0,25,50,75,100}, xlabel={Repair rate (\%)}, xmajorgrids, grid style={gray!25},
+ nodes near coords, every node near coord/.append style={font=\tiny, /pgf/number format/.cd, fixed, fixed zerofill, precision=1},
+ legend columns=2, area legend, reverse legend, legend cell align=left, legend style={at={(0.5,1.02)}, anchor=south}]
+% rows:position
+\addplot[proposed] coordinates {(70.0,SF) (67.6,SM) (71.4,SL) (82.9,UF) (77.3,UM) (81.8,UL)};
+\addplot[variant] coordinates {(52.5,SF) (51.9,SM) (56.7,SL) (71.4,UF) (69.0,UM) (70.2,UL)};
+% end rows
+\legend{Portfolio, One checkpoint}
+\end{axis}
+\end{tikzpicture}
+\caption{Repair rate of one checkpoint and of the portfolio by position in the trajectory}
+\label{fig:position}
+\end{figure}
+
+% Figure~\ref{fig:position}은 성공한 trajectory의 이전 prefix 전체에서 checkpoint 하나와 portfolio의 수리율을 trajectory 위치별로 보인다. portfolio는 모든 위치에서 checkpoint 하나보다 Seen에서 25.9--33.3\%, Unseen에서 12.0--16.5\% 더 많은 입력을 수리하고, 그 수리율은 위치와 관계없이 Seen에서 67.6--71.4\%, Unseen에서 77.3--82.9\%로 고르다.
+Figure~\ref{fig:position} shows the repair rates of one checkpoint and of the portfolio over every earlier prefix of the successful trajectories, by position in the trajectory. At every position the portfolio repairs 25.9--33.3\% more inputs than one checkpoint on Seen and 12.0--16.5\% more on Unseen, and its repair rate stays within 67.6--71.4\% on Seen and 77.3--82.9\% on Unseen regardless of position.
 
 % 작은 모델에서 상대 이득이 더 큰 것은 checkpoint 하나의 수리율이 낮을수록 다른 checkpoint가 실패를 메울 여지가 크기 때문이다. 이 결과들은 portfolio의 이득이 모델 규모, 언어, 학생 집단, trajectory 위치에 걸쳐 유지된다는 것을 보인다.
 The relative gain is larger for the smaller model because the lower the repair rate of one checkpoint, the more failures another checkpoint can fill. These results indicate that the gain of the portfolio holds across model scale, language, student population, and position in a trajectory.

@@ -14,7 +14,8 @@
  baseline1/.style={fill=gray!35, draw=black},
  baseline2/.style={fill=gray!60, draw=black},
  baseline3/.style={fill=gray!85, draw=black},
- proposed/.style={fill=blue!12, postaction={pattern=north east lines, pattern color=blue!50}, draw=black}}
+ proposed/.style={fill=blue!12, postaction={pattern=north east lines, pattern color=blue!50}, draw=black},
+ variant/.style={fill=gray!25, draw=black}}
 \usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds,patterns}
 \hypersetup{pdftitle={ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence},pdfauthor={}}
 \title{ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence}
@@ -402,7 +403,7 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Evaluation Metrics.} We measure effectiveness with three metrics. The \emph{Repair Rate} (RR) is the fraction of inputs whose returned program passes every test. The Tree Edit Distance (TED) between the Abstract Syntax Trees (ASTs) of the buggy program and the returned program measures the size of the return in edit operations~\cite{zhang1989simple,pawlik2016tree}, and the RR within an edit budget \(B\) counts only the returns whose TED is at most \(B\). \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the returned program. Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1979bootstrap}.
+\noindent\textbf{Evaluation Metrics.} We measure effectiveness with three metrics. The \emph{Repair Rate} (RR) is the fraction of inputs whose returned program passes every test. The Tree Edit Distance (TED) between the Abstract Syntax Trees (ASTs) of the buggy program and the returned program measures the size of the return in edit operations~\cite{zhang1989simple,pawlik2016tree}, and the RR within an edit budget \(B\) counts only the returns whose TED is at most \(B\). \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the returned program. The \emph{within-reach repair rate} is the fraction of inputs whose returned program passes every test with a TED no larger than the student's demonstrated reach (Section~\ref{sec:limitation}); it approximates a patch within the student's Zone of Proximal Development (ZPD). Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1979bootstrap}.
 
 
 \subsection{RQ1: Repair Effectiveness}
@@ -425,6 +426,9 @@ Metric & Rule & Seen & Unseen & Java \\
 \midrule
 \multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
  & Progress & 34.0 & 65.6 & 50.8 \\
+\midrule
+\multirow{2}{*}{Within reach (\%)} & Answer & 34.5 & 44.8 & -- \\
+ & Progress & 27.9 & 48.8 & -- \\
 \midrule
 \multirow{2}{*}{Tokens (\%)} & Answer & 87.9 & 81.5 & 91.0 \\
  & Progress & 93.5 & 88.0 & 95.8 \\
@@ -449,7 +453,7 @@ RQ2 asks how the target rule changes how much of the student's program a returne
 
 Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the inputs both rules repair, the returned programs of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same inputs, the TED of a Progress return is 47.3\% smaller than that of an Answer return on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (1 against 33 AST edit operations in Figure~\ref{fig:example}).
 
-In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass.
+In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass. Measured within each student's own demonstrated reach, the gap narrows: Progress repairs only 19.1\% fewer inputs on Seen and 8.9\% more on Unseen, because 82.1\% and 74.4\% of its repairs lie within the student's reach, against 64.8\% and 58.3\% of Answer's.
 
 
 
@@ -555,7 +559,29 @@ Java & 75.1 & 84.5 & 45.4 & 52.3 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:generality} lists, for each setting, the repair rates of one checkpoint (\textsc{ZPDPatch}-Portfolio) and of the portfolio; for Java, the Seen columns hold the students held out of training and the Unseen columns the exercises held out. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out. Over all earlier prefixes of the successful trajectories, \textsc{ZPDPatch} repairs 69.6\% of Seen and 80.1\% of Unseen inputs, and its Seen repair rate stays within 67.6--71.4\% across the first, middle, and last thirds of a trajectory.
+Table~\ref{tab:generality} lists, for each setting, the repair rates of one checkpoint (\textsc{ZPDPatch}-Portfolio) and of the portfolio; for Java, the Seen columns hold the students held out of training and the Unseen columns the exercises held out. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[xbar=0.8pt, bar width=4.2pt, scale only axis, width=0.62\columnwidth, height=3.6cm, y dir=reverse,
+ symbolic y coords={SF,SM,SL,UF,UM,UL}, ytick=data, enlarge y limits=0.1,
+ yticklabels={{Seen, first third}, {Seen, middle third}, {Seen, last third}, {Unseen, first third}, {Unseen, middle third}, {Unseen, last third}},
+ xmin=0, xmax=100, xtick={0,25,50,75,100}, xlabel={Repair rate (\%)}, xmajorgrids, grid style={gray!25},
+ nodes near coords, every node near coord/.append style={font=\tiny, /pgf/number format/.cd, fixed, fixed zerofill, precision=1},
+ legend columns=2, area legend, reverse legend, legend cell align=left, legend style={at={(0.5,1.02)}, anchor=south}]
+% rows:position
+\addplot[proposed] coordinates {(70.0,SF) (67.6,SM) (71.4,SL) (82.9,UF) (77.3,UM) (81.8,UL)};
+\addplot[variant] coordinates {(52.5,SF) (51.9,SM) (56.7,SL) (71.4,UF) (69.0,UM) (70.2,UL)};
+% end rows
+\legend{Portfolio, One checkpoint}
+\end{axis}
+\end{tikzpicture}
+\caption{Repair rate of one checkpoint and of the portfolio by position in the trajectory}
+\label{fig:position}
+\end{figure}
+
+Figure~\ref{fig:position} shows the repair rates of one checkpoint and of the portfolio over every earlier prefix of the successful trajectories, by position in the trajectory. At every position the portfolio repairs 25.9--33.3\% more inputs than one checkpoint on Seen and 12.0--16.5\% more on Unseen, and its repair rate stays within 67.6--71.4\% on Seen and 77.3--82.9\% on Unseen regardless of position.
 
 The relative gain is larger for the smaller model because the lower the repair rate of one checkpoint, the more failures another checkpoint can fill. These results indicate that the gain of the portfolio holds across model scale, language, student population, and position in a trajectory.
 
