@@ -20,7 +20,6 @@ done
 "${PYTHON}" run.py make-current-code-only "${ARCHIVE}/derived/datasets/test-final.jsonl" "${DATA}/test.jsonl"
 "${PYTHON}" scripts/audit_repair_dataset_tokens.py "${DATA}/train-progress.jsonl" "${DATA}/train-answer.jsonl" "${DATA}/valid-progress.jsonl" "${DATA}/valid-answer.jsonl" "${DATA}/test.jsonl" \
   --base-model "${BASE}" --prompt D --max-total-tokens 4096 --output "${DATA}/token-audit.json"
-"${PYTHON}" scripts/analyze_paired_java_control.py --preflight "${DATA}" --output "${DATA}/preflight.json"
 docker image inspect oj:java-21-e5acbd8e27 >/dev/null
 test -s "${ARCHIVE}/derived/java-eval/RecordedOracle.summary.json"
 # Wait for the declared factorial to release the single GPU.
@@ -51,5 +50,4 @@ for relation in progress answer; do
     fi
   done
 done
-"${PYTHON}" scripts/analyze_paired_java_control.py --root "${OUT}" --dataset "${DATA}/test.jsonl" --output "${RUN}/analysis/fse2027-paired-java-control.json"
 touch "${OUT}/COMPLETE"

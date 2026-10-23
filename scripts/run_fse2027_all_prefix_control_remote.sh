@@ -62,10 +62,5 @@ for split in seen unseen; do
       --method "AllPrefix-Answer3" "${stages[@]}"
 done
 
-"${PYTHON}" scripts/analyze_all_prefix_control.py \
-  --root "${OUTPUT_ROOT}" \
-  --seen-dataset "${CONTROL_ROOT}/seen.jsonl" \
-  --unseen-dataset "${CONTROL_ROOT}/unseen.jsonl" \
-  --output "${RUN_ROOT}/analysis/fse2027-all-prefix-control.json"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] all-prefix control complete"

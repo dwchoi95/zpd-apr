@@ -155,8 +155,5 @@ print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
   done
 done
 
-"${PYTHON}" scripts/analyze_fse2027_scale_replication.py \
-  --eval-root "${OUTPUT_ROOT}" --mixed-selection "${MIXED_SELECTION}" \
-  --answer-selection "${ANSWER_SELECTION}" --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] 1.5B scale replication complete"

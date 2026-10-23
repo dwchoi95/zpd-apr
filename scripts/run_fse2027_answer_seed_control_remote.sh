@@ -155,22 +155,6 @@ done
 run_split seen-test 997
 run_split unseen-test 250
 
-"${PYTHON}" scripts/analyze_fse2027_answer_seed_control.py \
-  --eval-root "${EVAL_ROOT}" \
-  --output "${RUN_ROOT}/analysis/fse2027-answer-seed-control.json" \
-  --checkpoint "2027=${PRIMARY_CHECKPOINT_ROOT}/answer" \
-  --checkpoint "2028=${SEED_CHECKPOINT_ROOT}/seed-2028/answer" \
-  --checkpoint "2029=${SEED_CHECKPOINT_ROOT}/seed-2029/answer" \
-  --bootstrap-samples 10000 \
-  --seed 2027
 
-"${PYTHON}" scripts/analyze_fse2027_user_overlap.py \
-  --train-dataset "${DATASET_ROOT}/train-answer.jsonl" \
-  --train-dataset "${DATASET_ROOT}/train-strict.jsonl" \
-  --train-dataset "${DATASET_ROOT}/train-progress.jsonl" \
-  --eval-root "${EVAL_ROOT}" \
-  --output "${RUN_ROOT}/analysis/fse2027-user-overlap.json" \
-  --bootstrap-samples 10000 \
-  --seed 2027
 
 echo "[$(date --iso-8601=seconds)] Answer 3-seed control and paired analysis complete"

@@ -137,7 +137,5 @@ for split in seen unseen; do
   done
 done
 
-"${PYTHON}" scripts/analyze_fse2027_answer9_control.py \
-  --selection "${SELECTION}" --eval-root "${EVAL_ROOT}" --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] Answer-9Choose3 control complete"

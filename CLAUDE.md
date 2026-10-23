@@ -7,8 +7,8 @@ safety devices).
 ## Experiment deadline (2026-10-21)
 
 The user limited ZPD-APR improvement experiments to **2026-10-21 13:00 KST**
-(`analysis_protocols/zpd-deadline-20261021.json`). Do not launch, retry, or resume experiments after that time unless a
-newer explicit user instruction extends it; `analysis_protocols/zpd-deadline-extension-20261023.json` is the one
+(`results/dev-archive/analysis_protocols/zpd-deadline-20261021.json`, local). Do not launch, retry, or resume experiments after that time unless a
+newer explicit user instruction extends it; `results/dev-archive/analysis_protocols/zpd-deadline-extension-20261023.json` is the one
 extension so far (family `histra-bench-20261023-v1` only). Do not alter the active frozen release, datasets, gate, or
 reporting denominator. Preserve interrupted runs' files, mark them incomplete, and never manufacture a normal-exit or
 COMPLETE certificate. Analysis and verification of saved results remain authorized. No claim of educational or

@@ -111,8 +111,5 @@ for split in seen unseen; do
   evaluate_family "${split}" "${dataset}" "${family}" "${baseline}" "${expected}"
 done
 
-"${PYTHON}" scripts/analyze_fse2027_breadth_controls.py \
-  --root "${OUTPUT_ROOT}" --reference-root "${EVAL_ROOT}" \
-  --output "${RUN_ROOT}/analysis/fse2027-breadth-controls.json"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] breadth controls complete"

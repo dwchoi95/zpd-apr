@@ -82,13 +82,5 @@ for split in unseen seen; do
     --method Answer-1.5B-3Seed "${stages[@]}"
 done
 
-"${PYTHON}" scripts/analyze_fse2027_scale_replication.py \
-  --eval-root "${OUTPUT_ROOT}" --mixed-selection "${MIXED_SELECTION}" \
-  --answer-selection "${ANSWER_SELECTION}" \
-  --answer1-seen "${OUTPUT_ROOT}/members/seen/Answer2027.evaluation.jsonl" \
-  --answer1-unseen "${OUTPUT_ROOT}/members/unseen/Answer2027.evaluation.jsonl" \
-  --answer3-seen "${OUTPUT_ROOT}/answer3-seen-test.evaluation.jsonl" \
-  --answer3-unseen "${OUTPUT_ROOT}/answer3-unseen-test.evaluation.jsonl" \
-  --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/A3_COMPLETE"
 echo "[$(date --iso-8601=seconds)] 1.5B A1/A3 mechanism replication complete"

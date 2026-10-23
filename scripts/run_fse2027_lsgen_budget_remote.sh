@@ -41,12 +41,6 @@ fi
   --workers 8 --case-workers 1 --timeout-sec 2.5
 test "$(wc -l < "${ALWAYS_THREE}")" -eq 997
 
-"${PYTHON}" scripts/analyze_fse2027_lsgen_budget_controller.py \
-  --always-three "${ALWAYS_THREE}" \
-  --legacy "${EVAL_ROOT}/lsgen-seen-test.evaluation.jsonl" \
-  --selected-root "${EVAL_ROOT}/selected-portfolios" \
-  --budget-output-root "${OUTPUT_ROOT}" \
-  --output "${ANALYSIS}"
 
 "${PYTHON}" scripts/audit_generation_token_cap.py \
   --input-root "${EVAL_ROOT}/portfolio-validation" \

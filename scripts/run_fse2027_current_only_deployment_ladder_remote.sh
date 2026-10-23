@@ -28,6 +28,3 @@ for split in seen unseen; do
       "${stages[@]}"
   done
 done
-"${PYTHON}" scripts/analyze_current_only_deployment_ladder.py \
-  --eval-root "${EVAL_ROOT}" --reference-root "${RUN_ROOT}/eval" \
-  --output "${ANALYSIS}"

@@ -133,8 +133,3 @@ unconstrained_args=()
 for name in "${unconstrained_members[@]}"; do
   unconstrained_args+=(--unconstrained-member "${name}")
 done
-"${PYTHON}" scripts/analyze_codeworkout_portfolios.py \
-  "${evaluation_args[@]}" "${relation_args[@]}" "${answer_args[@]}" \
-  "${unconstrained_args[@]}" \
-  --selection "${EXTERNAL_SELECTION}" \
-  --output "${ANALYSIS}"

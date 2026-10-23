@@ -139,12 +139,5 @@ done
 "${PYTHON}" scripts/compose_answer_seed_control.py "${testset}" \
   "${OUTPUT_ROOT}/answer3-test.evaluation.jsonl" --method Answer-ExerciseHoldout-3Seed "${stages[@]}"
 
-"${PYTHON}" scripts/analyze_codeworkout_problem_holdout.py \
-  --mixed "${OUTPUT_ROOT}/mixed-test.evaluation.jsonl" \
-  --answer9 "${OUTPUT_ROOT}/answer9-test.evaluation.jsonl" \
-  --answer3 "${OUTPUT_ROOT}/answer3-test.evaluation.jsonl" \
-  --answer1 "${OUTPUT_ROOT}/test/Answer2027.evaluation.jsonl" \
-  --mixed-selection "${MIXED_SELECTION}" --answer-selection "${ANSWER_SELECTION}" \
-  --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] CodeWorkout exercise-held-out complete"

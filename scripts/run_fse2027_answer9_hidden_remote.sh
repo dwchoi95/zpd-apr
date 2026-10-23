@@ -62,9 +62,5 @@ done
   --method Answer-9Choose3-ObservedOnly "${stage_args[@]}"
 
 hidden_csv=$(IFS=,; echo "${hidden_parts[*]}")
-"${PYTHON}" scripts/analyze_observed_hidden_evaluation.py "${ANALYSIS}" \
-  --method "ZPDPatch=${SOURCE_ROOT}/zpdpatch.observed.selected.jsonl,Progress2027=${SOURCE_ROOT}/Progress2027.hidden.evaluation.jsonl,Answer2027=${SOURCE_ROOT}/Answer2027.hidden.evaluation.jsonl,Answer2028=${SOURCE_ROOT}/Answer2028.hidden.evaluation.jsonl" \
-  --method "Answer-9Choose3=${OUTPUT_ROOT}/answer9.observed.selected.jsonl,${hidden_csv}" \
-  --compare ZPDPatch,Answer-9Choose3 --bootstrap-samples 10000 --seed 2027
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] Answer-9Choose3 independent-hidden complete"

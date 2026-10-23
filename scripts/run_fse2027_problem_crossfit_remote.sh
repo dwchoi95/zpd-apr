@@ -98,11 +98,6 @@ for seed in 2027 2028 2029 2030 2031 2032 2033 2034 2035; do
   answer_test_args+=(--answer-test "${name}=${test_path}")
 done
 
-"${PYTHON}" scripts/analyze_problem_crossfit_portfolios.py \
-  "${mixed_validation_args[@]}" "${mixed_test_args[@]}" \
-  "${answer_validation_args[@]}" "${answer_test_args[@]}" \
-  --folds 5 --fold-seed 2027 --bootstrap-samples 10000 --bootstrap-seed 2027 \
-  --output-root "${OUTPUT_ROOT}/composed" --output "${ANALYSIS}"
 
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] Problem cross-fitting complete"

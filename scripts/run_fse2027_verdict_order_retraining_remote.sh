@@ -116,7 +116,5 @@ for relation in progress strict; do
   done
 done
 
-"${PYTHON}" scripts/analyze_verdict_order_model_sensitivity.py \
-  "${analysis_args[@]}" --samples 10000 --seed 2027 --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] Verdict-order model sensitivity complete"

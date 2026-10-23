@@ -93,9 +93,5 @@ run_candidate Answer2029 "${ANSWER_DATA}" "${SEED_ROOT}/seed-2029/answer" "${ANS
   --stage "Strict2028=${STRICT_EVAL}" \
   --stage "Answer2029=${ANSWER_EVAL}"
 
-"${PYTHON}" scripts/analyze_fse2027_relation_seed_portfolio.py \
-  --eval-root "${EVAL_ROOT}" \
-  --output "${RUN_ROOT}/analysis/fse2027-relation-seed-portfolio.json" \
-  --bootstrap-samples 10000 --seed 2027
 
 echo "[$(date --iso-8601=seconds)] relation-seed Seen portfolio complete"

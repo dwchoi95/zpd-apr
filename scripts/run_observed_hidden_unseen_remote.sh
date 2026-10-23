@@ -71,10 +71,6 @@ done
   --stage "Answer2028=${OUTPUT_ROOT}/Answer2028.observed.evaluation.jsonl" \
   --stage "Answer2029=${OUTPUT_ROOT}/Answer2029.observed.evaluation.jsonl"
 
-"${PYTHON}" scripts/analyze_observed_hidden_evaluation.py "${ANALYSIS}" \
-  --method "ZPDPatch=${OUTPUT_ROOT}/zpdpatch.observed.selected.jsonl,Progress2027=${OUTPUT_ROOT}/Progress2027.hidden.evaluation.jsonl,Answer2027=${OUTPUT_ROOT}/Answer2027.hidden.evaluation.jsonl,Answer2028=${OUTPUT_ROOT}/Answer2028.hidden.evaluation.jsonl" \
-  --method "Answer-3Seed=${OUTPUT_ROOT}/answer3.observed.selected.jsonl,Answer2027=${OUTPUT_ROOT}/Answer2027.hidden.evaluation.jsonl,Answer2028=${OUTPUT_ROOT}/Answer2028.hidden.evaluation.jsonl,Answer2029=${OUTPUT_ROOT}/Answer2029.hidden.evaluation.jsonl" \
-  --compare ZPDPatch,Answer-3Seed --bootstrap-samples 10000 --seed 2027
 
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] COMPLETE"

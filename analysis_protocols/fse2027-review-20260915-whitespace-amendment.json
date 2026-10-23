@@ -1,9 +1,0 @@
-{
-  "amends": "analysis_protocols/fse2027-review-20260915.json",
-  "kind": "post-result evaluator conformance correction",
-  "reason": "The evaluator compared fixed_code.strip() with source_code.strip(), hiding removal of a syntax-significant leading space.",
-  "rule": "Compare exact code strings for change, then require fixed_pass_rate == 1. Execution results, datasets, model outputs, test suites, splits and denominators are unchanged.",
-  "identified_scope": "One current-only Seen Answer2027 output; the same instance in three historical paired-target Seen Progress outputs. A scan of 77 core paired-target, peer-target and historical current-only evaluation files found no other affected instance.",
-  "preservation": "Original evaluation files and analyses remain intact. Corrected derived folders and analysis files have a -corrected suffix. Per-file original hashes and amended flags are recorded separately.",
-  "reporting": "Use corrected aggregates in the revised paper and retain original-versus-corrected accounting in the artifact. No significance threshold, sampling rule, target, or result-selection criterion changes."
-}

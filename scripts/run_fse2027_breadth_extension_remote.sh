@@ -105,12 +105,5 @@ for split in seen unseen; do
   done
 done
 
-"${PYTHON}" scripts/analyze_answer_breadth_cost_curve.py \
-  --root "${OUTPUT_ROOT}/curve" \
-  --output "${RUN_ROOT}/analysis/fse2027-answer-breadth-cost-curve.json"
-"${PYTHON}" scripts/analyze_fse2027_breadth_controls.py \
-  --root "${EVAL_ROOT}/breadth-controls" --reference-root "${EVAL_ROOT}" \
-  --extra-temperature-root "${OUTPUT_ROOT}/temperature" \
-  --output "${RUN_ROOT}/analysis/fse2027-breadth-controls-extended.json"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] breadth extension complete"

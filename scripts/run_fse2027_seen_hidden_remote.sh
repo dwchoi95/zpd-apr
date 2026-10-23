@@ -82,23 +82,5 @@ done
   --stage "Answer2033=${OUTPUT_ROOT}/Answer2033.observed.evaluation.jsonl" \
   --stage "Answer2034=${OUTPUT_ROOT}/Answer2034.observed.evaluation.jsonl"
 
-"${PYTHON}" scripts/analyze_observed_hidden_evaluation.py "${ANALYSIS}" \
-  --method "ZPDPatch=${OUTPUT_ROOT}/zpdpatch.observed.selected.jsonl,Answer2028=${OUTPUT_ROOT}/Answer2028.hidden.evaluation.jsonl,Progress2027=${OUTPUT_ROOT}/Progress2027.hidden.evaluation.jsonl,Strict2028=${OUTPUT_ROOT}/Strict2028.hidden.evaluation.jsonl" \
-  --method "Answer-9Choose3=${OUTPUT_ROOT}/answer9.observed.selected.jsonl,Answer2032=${OUTPUT_ROOT}/Answer2032.hidden.evaluation.jsonl,Answer2033=${OUTPUT_ROOT}/Answer2033.hidden.evaluation.jsonl,Answer2034=${OUTPUT_ROOT}/Answer2034.hidden.evaluation.jsonl" \
-  --compare ZPDPatch,Answer-9Choose3 --bootstrap-samples 10000 --seed 52027
 
-"${PYTHON}" scripts/analyze_seen_training_overlap.py \
-  "${RUN_ROOT}/datasets/train-answer.jsonl" "${DATASET}" \
-  "${OUTPUT_ROOT}/zpdpatch.observed.selected.jsonl" \
-  "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-zpdpatch.json" \
-  --source "Answer2028=${OUTPUT_ROOT}/Answer2028.observed.evaluation.jsonl" \
-  --source "Progress2027=${OUTPUT_ROOT}/Progress2027.observed.evaluation.jsonl" \
-  --source "Strict2028=${OUTPUT_ROOT}/Strict2028.observed.evaluation.jsonl"
-"${PYTHON}" scripts/analyze_seen_training_overlap.py \
-  "${RUN_ROOT}/datasets/train-answer.jsonl" "${DATASET}" \
-  "${OUTPUT_ROOT}/answer9.observed.selected.jsonl" \
-  "${RUN_ROOT}/analysis/fse2027-seen-training-overlap-answer9.json" \
-  --source "Answer2032=${OUTPUT_ROOT}/Answer2032.observed.evaluation.jsonl" \
-  --source "Answer2033=${OUTPUT_ROOT}/Answer2033.observed.evaluation.jsonl" \
-  --source "Answer2034=${OUTPUT_ROOT}/Answer2034.observed.evaluation.jsonl"
 touch "${OUTPUT_ROOT}/COMPLETE"

@@ -58,7 +58,5 @@ for split in seen unseen; do
     --method Same-Draw-Stochastic-3 "${stages[@]}"
 done
 
-"${PYTHON}" scripts/analyze_stochastic_one_decomposition.py \
-  --eval-root "${OUTPUT_ROOT}" --reference-root "${EVAL_ROOT}" --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] stochastic-one decomposition complete"

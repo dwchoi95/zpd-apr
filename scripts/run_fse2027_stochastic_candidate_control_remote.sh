@@ -60,8 +60,5 @@ for split in seen unseen; do
     --method Same-Checkpoint-Stochastic-3 "${stages[@]}"
 done
 
-"${PYTHON}" scripts/analyze_stochastic_candidate_control.py \
-  --eval-root "${OUTPUT_ROOT}" --reference-root "${EVAL_ROOT}" \
-  --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] stochastic candidate control complete"

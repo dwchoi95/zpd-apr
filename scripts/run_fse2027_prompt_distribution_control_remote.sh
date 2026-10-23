@@ -170,9 +170,5 @@ for split in seen unseen; do
     --method CurrentOnly-Answer-FullSelection "${answer_stages[@]}"
 done
 
-"${PYTHON}" scripts/analyze_prompt_distribution_control.py \
-  --eval-root "${OUTPUT_ROOT}" --full-eval-root "${EVAL_ROOT}" \
-  --mixed-selection "${MIXED_SELECTION}" --answer-selection "${ANSWER_SELECTION}" \
-  --output "${ANALYSIS}"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] Prompt-distribution control complete"

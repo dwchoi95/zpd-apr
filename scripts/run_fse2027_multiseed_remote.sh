@@ -96,12 +96,5 @@ for seed in 2028 2029; do
   evaluate_seed "${seed}" seen-test 997
   evaluate_seed "${seed}" unseen-test 250
 done
-"${PYTHON}" scripts/analyze_fse2027_robustness.py \
-  --eval-root "${RUN_ROOT}/eval" \
-  --output "${RUN_ROOT}/analysis/fse2027-robustness.json"
-"${PYTHON}" scripts/analyze_fse2027_multiseed.py \
-  --eval-root "${RUN_ROOT}/eval" \
-  --robustness "${RUN_ROOT}/analysis/fse2027-robustness.json" \
-  --output "${RUN_ROOT}/analysis/fse2027-multiseed.json"
 touch "${SEED_OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] Completed additional training seeds"

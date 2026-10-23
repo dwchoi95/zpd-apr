@@ -92,10 +92,5 @@ for split in seen unseen; do
   done
 done
 
-"${PYTHON}" scripts/analyze_paired_target_control.py \
-  --root "${OUTPUT_ROOT}" --dataset-root "${PAIRED_ROOT}" \
-  --train-summary "${PAIRED_ROOT}/train.summary.json" \
-  --valid-summary "${PAIRED_ROOT}/valid.summary.json" \
-  --output "${RUN_ROOT}/analysis/fse2027-paired-target-control.json"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] paired target control complete"

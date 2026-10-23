@@ -172,5 +172,3 @@ for split in seen unseen; do
   done
 done
 
-"${PYTHON}" scripts/analyze_fse2027_selected_portfolios.py \
-  --selection "${SELECTION}" --eval-root "${EVAL_ROOT}" --output "${ANALYSIS}"

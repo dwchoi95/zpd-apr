@@ -58,5 +58,4 @@ for split in seen unseen; do
     "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" "${folder}/${family}3.evaluation.jsonl" --method "CurrentOnly-${family}3" "${stages[@]}"
   done
 done
-"${PYTHON}" scripts/analyze_current_only_factorial.py --root "${OUTPUT}" --output "${RUN_ROOT}/analysis/fse2027-current-only-factorial.json"
 touch "${OUTPUT}/COMPLETE"

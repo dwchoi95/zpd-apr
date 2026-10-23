@@ -95,10 +95,5 @@ for split in seen unseen; do
   done
 done
 
-"${PYTHON}" scripts/analyze_cross_user_target_control.py \
-  --root "${OUTPUT_ROOT}" \
-  --train-summary "${CONTROL_ROOT}/train.summary.json" \
-  --valid-summary "${CONTROL_ROOT}/valid.summary.json" \
-  --output "${RUN_ROOT}/analysis/fse2027-cross-user-target-control.json"
 touch "${OUTPUT_ROOT}/COMPLETE"
 echo "[$(date --iso-8601=seconds)] cross-user target control complete"
