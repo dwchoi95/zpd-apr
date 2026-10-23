@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.audit_verdict_order_sensitivity import (
+from src.experiments.audit_verdict_order_sensitivity import (
     ORDERS,
     pareto,
     require_all_valid,

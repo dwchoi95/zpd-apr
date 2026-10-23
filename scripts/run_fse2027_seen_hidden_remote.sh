@@ -22,7 +22,7 @@ exec >>"${RUN_ROOT}/logs/independent-hidden-seen.log" 2>&1
 export PYTHONPATH=. HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 
-"${PYTHON}" scripts/build_observed_hidden_evaluation.py \
+"${PYTHON}" src/experiments/build_observed_hidden_evaluation.py \
   "${SOURCE_DATA_ROOT}" "${SOURCE_DATASET}" "${DATASET}" \
   "${OBSERVED_ROOT}" "${HIDDEN_ROOT}" "${MANIFEST}" --seed 52027
 test "$(wc -l < "${DATASET}")" -eq 997
@@ -49,7 +49,7 @@ if [[ "${needs_generation}" == true ]]; then
   for name in "${members[@]}"; do
     adapter_args+=(--adapter "${name}=$(checkpoint_for "${name}")")
   done
-  "${PYTHON}" scripts/generate_vllm_greedy_adapters.py \
+  "${PYTHON}" src/experiments/generate_vllm_greedy_adapters.py \
     "${DATASET}" "${OUTPUT_ROOT}" --base-model "${BASE_MODEL}" \
     --max-new-tokens 4096 --max-model-len 8192 --gpu-memory-utilization 0.82 \
     "${adapter_args[@]}"
@@ -63,7 +63,7 @@ for name in "${members[@]}"; do
     "${PYTHON}" run.py evaluate "${DATASET}" "${generations}" "${observed}" \
       --data-root "${OBSERVED_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
   fi
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${observed}" \
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${observed}" \
     --reference "${DATASET}"
   if [[ ! -s "${hidden}" ]] || [[ "$(wc -l < "${hidden}")" -ne 997 ]]; then
     "${PYTHON}" run.py evaluate "${DATASET}" "${generations}" "${hidden}" \
@@ -71,12 +71,12 @@ for name in "${members[@]}"; do
   fi
 done
 
-"${PYTHON}" scripts/compose_answer_seed_control.py "${DATASET}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${DATASET}" \
   "${OUTPUT_ROOT}/zpdpatch.observed.selected.jsonl" --method ZPDPatch-ObservedOnly \
   --stage "Answer2028=${OUTPUT_ROOT}/Answer2028.observed.evaluation.jsonl" \
   --stage "Progress2027=${OUTPUT_ROOT}/Progress2027.observed.evaluation.jsonl" \
   --stage "Strict2028=${OUTPUT_ROOT}/Strict2028.observed.evaluation.jsonl"
-"${PYTHON}" scripts/compose_answer_seed_control.py "${DATASET}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${DATASET}" \
   "${OUTPUT_ROOT}/answer9.observed.selected.jsonl" --method Answer-9Choose3-ObservedOnly \
   --stage "Answer2032=${OUTPUT_ROOT}/Answer2032.observed.evaluation.jsonl" \
   --stage "Answer2033=${OUTPUT_ROOT}/Answer2033.observed.evaluation.jsonl" \

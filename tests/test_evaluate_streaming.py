@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from src.repair.evaluate import evaluate_generations
+from src.core.evaluate import evaluate_generations
 
 
 class _FakeRunner:
@@ -133,12 +133,12 @@ class EvaluateStreamingTest(unittest.TestCase):
             _write_jsonl(generations, [_generation("a", "wrong-a")])
 
             with (
-                patch("src.repair.evaluate.PythonSubmissionRunner", _FakeRunner),
+                patch("src.core.evaluate.PythonSubmissionRunner", _FakeRunner),
                 patch(
-                    "src.repair.evaluate.load_testcases",
+                    "src.core.evaluate.load_testcases",
                     return_value=[object()],
                 ),
-                patch("src.repair.evaluate.tree_edit_distance") as ted,
+                patch("src.core.evaluate.tree_edit_distance") as ted,
             ):
                 summary = evaluate_generations(
                     dataset.parent,
@@ -165,9 +165,9 @@ class EvaluateStreamingTest(unittest.TestCase):
             _write_jsonl(dataset, [_record("a", "buggy-a")])
             _write_jsonl(generations, [_generation("a", "fixed-a")])
             with (
-                patch("src.repair.evaluate.PythonSubmissionRunner", _FakeRunner),
-                patch("src.repair.evaluate.load_testcases", return_value=[object()]),
-                patch("src.repair.evaluate.tree_edit_distance") as ted,
+                patch("src.core.evaluate.PythonSubmissionRunner", _FakeRunner),
+                patch("src.core.evaluate.load_testcases", return_value=[object()]),
+                patch("src.core.evaluate.tree_edit_distance") as ted,
             ):
                 summary = evaluate_generations(
                     dataset.parent,
@@ -198,8 +198,8 @@ class EvaluateStreamingTest(unittest.TestCase):
                 "buggy_pass_rate": 0.25,
             }])
             with (
-                patch("src.repair.evaluate.PythonSubmissionRunner", _FakeRunner),
-                patch("src.repair.evaluate.load_testcases", return_value=[object()]),
+                patch("src.core.evaluate.PythonSubmissionRunner", _FakeRunner),
+                patch("src.core.evaluate.load_testcases", return_value=[object()]),
             ):
                 evaluate_generations(
                     dataset.parent,
@@ -220,9 +220,9 @@ class EvaluateStreamingTest(unittest.TestCase):
 
 def _evaluate(dataset: Path, generations: Path, output: Path) -> object:
     with (
-        patch("src.repair.evaluate.PythonSubmissionRunner", _FakeRunner),
-        patch("src.repair.evaluate.load_testcases", return_value=[object()]),
-        patch("src.repair.evaluate.tree_edit_distance", return_value=0),
+        patch("src.core.evaluate.PythonSubmissionRunner", _FakeRunner),
+        patch("src.core.evaluate.load_testcases", return_value=[object()]),
+        patch("src.core.evaluate.tree_edit_distance", return_value=0),
     ):
         return evaluate_generations(
             dataset.parent,

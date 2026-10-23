@@ -8,8 +8,8 @@ from typing import Any, Iterable
 
 from tqdm import tqdm
 
-from ..runner.dataset import load_testcases
-from ..runner.python_runner import PythonSubmissionRunner
+from .runner.dataset import load_testcases
+from .runner.python_runner import PythonSubmissionRunner
 from .dataset import load_split_problem_ids, load_split_trajectory_ids
 
 

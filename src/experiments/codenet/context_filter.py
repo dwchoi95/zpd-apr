@@ -8,12 +8,12 @@ from typing import Any, Iterable
 
 from tqdm import tqdm
 
-from ..repair.dataset import (
+from ...core.dataset import (
     _build_adapter_examples,
     _is_strict_improvement,
     _load_problem_context,
 )
-from ..repair.prompts import build_messages, render_generation_prompt
+from ...core.prompts import build_messages, render_generation_prompt
 
 
 CONTEXT_WINDOW_TOKENS = 4_096

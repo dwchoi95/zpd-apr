@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import torch
 
-from src.repair.lsgen import _RepairPair, _describe_pairs
+from src.experiments.lsgen import _RepairPair, _describe_pairs
 
 
 class _Batch(dict):

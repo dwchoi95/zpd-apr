@@ -102,7 +102,7 @@ else
       --case-workers 1 \
       --timeout-sec 2.5
   done
-  "${PYTHON}" scripts/merge_outcome_caches.py \
+  "${PYTHON}" src/experiments/merge_outcome_caches.py \
     "${MERGED_CACHE}" \
     "${CACHE_ROOT}/seen-train.jsonl" \
     "${CACHE_ROOT}/seen-valid.jsonl" \
@@ -225,7 +225,7 @@ for mode in strict progress; do
 done
 
 echo "[$(date --iso-8601=seconds)] Auditing all materialized datasets against 4,096 tokens"
-"${PYTHON}" scripts/audit_repair_dataset_tokens.py \
+"${PYTHON}" src/experiments/audit_repair_dataset_tokens.py \
   "${DATASET_ROOT}/train-answer.jsonl" \
   "${DATASET_ROOT}/valid-answer.jsonl" \
   "${DATASET_ROOT}/train-strict.jsonl" \

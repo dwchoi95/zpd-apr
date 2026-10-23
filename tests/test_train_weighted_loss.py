@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as functional
 from accelerate.utils.operations import convert_outputs_to_fp32
 
-from src.repair.train import (
+from src.core.train import (
     _edit_weighted_causal_loss,
     _forward_without_output_fp32_conversion,
 )

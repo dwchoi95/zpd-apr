@@ -42,11 +42,11 @@ evaluate_family() {
   done
   for sampling_seed in 4101 4102 4103; do
     local prefix=${family}/sample-${sampling_seed}
-    "${PYTHON}" scripts/normalize_evaluation_baseline.py \
+    "${PYTHON}" src/experiments/normalize_evaluation_baseline.py \
       "${prefix}.evaluation.jsonl" --reference "${baseline}"
     stages+=(--stage "Sample${sampling_seed}=${prefix}.evaluation.jsonl")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${family}/stochastic3.evaluation.jsonl" \
     --method "${split}-Stochastic-3" "${stages[@]}"
 }
@@ -67,7 +67,7 @@ for split in seen unseen; do
         [[ -e "${family}/sample-${sampling_seed}.evaluation.jsonl" ]] || cp "${source}.evaluation.jsonl" "${family}/sample-${sampling_seed}.evaluation.jsonl"
       done
     elif ! complete_jsonl "${family}/sample-4103.generations.jsonl" "${expected}"; then
-      "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+      "${PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py \
         "${dataset}" "${family}" --base-model "${BASE_MODEL}" --adapter "${PRIMARY}" \
         --method-prefix "Answer2027-T${temperature}" \
         --sampling-seed 4101 --sampling-seed 4102 --sampling-seed 4103 \
@@ -86,7 +86,7 @@ for split in seen unseen; do
     [[ "${checkpoint_seed}" != 2027 ]] && checkpoint=${SEEDS_ROOT}/seed-${checkpoint_seed}/answer
     if ! complete_jsonl "${family}/sample-${sampling_seed}.generations.jsonl" "${expected}"; then
       tempdir=${family}/adapter-${checkpoint_seed}
-      "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+      "${PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py \
         "${dataset}" "${tempdir}" --base-model "${BASE_MODEL}" --adapter "${checkpoint}" \
         --method-prefix "Answer${checkpoint_seed}-T0.8" --sampling-seed "${sampling_seed}" \
         --temperature 0.8 --top-p 0.95 --max-new-tokens 4096 --max-model-len 8192 \
@@ -102,7 +102,7 @@ for split in seen unseen; do
   family=${OUTPUT_ROOT}/base-stochastic/${split}
   mkdir -p "${family}"
   if ! complete_jsonl "${family}/sample-4103.generations.jsonl" "${expected}"; then
-    "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+    "${PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py \
       "${dataset}" "${family}" --base-model "${BASE_MODEL}" --method-prefix "Base-T0.8" \
       --sampling-seed 4101 --sampling-seed 4102 --sampling-seed 4103 \
       --temperature 0.8 --top-p 0.95 --max-new-tokens 4096 --max-model-len 8192 \

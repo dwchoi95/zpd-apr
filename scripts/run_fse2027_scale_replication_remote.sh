@@ -60,7 +60,7 @@ evaluate_member() {
       --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
   fi
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${evaluation}" \
     --reference "${dataset}"
 }
 
@@ -88,8 +88,8 @@ for seed in 2030 2031 2032 2033 2034 2035; do
   evaluate_member "${name}" Answer "${seed}" "${valid}" validation "${valid_n}"
   answer_args+=(--evaluation "${name}=${OUTPUT_ROOT}/validation/${name}.evaluation.jsonl")
 done
-"${PYTHON}" scripts/select_execution_portfolio.py "${mixed_args[@]}" --output "${MIXED_SELECTION}"
-"${PYTHON}" scripts/select_answer_seed_portfolio.py "${answer_args[@]}" --output "${ANSWER_SELECTION}"
+"${PYTHON}" src/experiments/select_execution_portfolio.py "${mixed_args[@]}" --output "${MIXED_SELECTION}"
+"${PYTHON}" src/experiments/select_answer_seed_portfolio.py "${answer_args[@]}" --output "${ANSWER_SELECTION}"
 
 mapfile -t mixed_members < <(
   "${PYTHON}" -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1]))["best_unconstrained"]["members"]))' "${MIXED_SELECTION}"
@@ -119,13 +119,13 @@ print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
       [[ "${name}" == ${relation}* ]] && stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl")
     done
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/mixed-${split}-test.evaluation.jsonl" --method Mixed-1.5B-9Choose3 "${stages[@]}"
   stages=()
   for name in "${answer_members[@]}"; do
     stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/answer9-${split}-test.evaluation.jsonl" --method Answer-1.5B-9Choose3 "${stages[@]}"
 
   for budget in 5 10 20 40 80 160; do
@@ -138,7 +138,7 @@ print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
         [[ "${name}" == ${relation}* ]] && stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl")
       done
     done
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${OUTPUT_ROOT}/mixed-budget-${budget}-${split}-test.evaluation.jsonl" \
       --method "Mixed-1.5B-9Choose3-TED-${budget}" --max-ted "${budget}" "${stages[@]}"
 
@@ -149,7 +149,7 @@ print("\n".join(sorted(names)))' "${MIXED_SELECTION}" "${ANSWER_SELECTION}"
     for name in "${selected[@]}"; do
       stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${split}/${name}.evaluation.jsonl")
     done
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${OUTPUT_ROOT}/answer9-budget-${budget}-${split}-test.evaluation.jsonl" \
       --method "Answer-1.5B-9Choose3-TED-${budget}" --max-ted "${budget}" "${stages[@]}"
   done

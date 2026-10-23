@@ -10,10 +10,10 @@ from pathlib import Path
 from threading import Lock
 from typing import Any, Iterable
 
-from ..runner.dataset import load_testcases
-from ..runner.python_runner import PythonSubmissionRunner
-from .evaluate import budget_bounded_tree_edit_distance, tree_edit_distance
-from .inference import _generation_token_budget, extract_python_code
+from ..core.runner.dataset import load_testcases
+from ..core.runner.python_runner import PythonSubmissionRunner
+from ..core.evaluate import budget_bounded_tree_edit_distance, tree_edit_distance
+from ..core.inference import _generation_token_budget, extract_python_code
 
 
 _LSGEN_SYSTEM = """You are a skilled programmer experienced in debugging and providing optimal code fixes.

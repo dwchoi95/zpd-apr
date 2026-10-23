@@ -9,7 +9,7 @@ import statistics
 from pathlib import Path
 from typing import Any, Callable
 
-from src.repair.prompts import build_messages, render_generation_prompt
+from src.core.prompts import build_messages, render_generation_prompt
 
 
 Row = dict[str, Any]

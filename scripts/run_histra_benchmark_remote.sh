@@ -33,13 +33,13 @@ evaluate() {
     "${PYTHON}" run.py evaluate "${TEST}" "${generations}" "${evaluation}" \
       --data-root "${DATA}" --workers "${WORKERS}" --ted-workers 24 --timeout-sec 2.5
   fi
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" --reference "${TEST}"
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${evaluation}" --reference "${TEST}"
 }
 
 log "Source $(cat SOURCE_COMMIT); $("${PYTHON}" -c 'import sys,torch,transformers,peft,bitsandbytes as b; print("python", sys.version.split()[0], "torch", torch.__version__, "transformers", transformers.__version__, "peft", peft.__version__, "bitsandbytes", b.__version__)')"
 log "Preparing the benchmark"
 if [[ ! -s "${FAMILY}/prepare-summary.json" ]]; then
-  "${PYTHON}" scripts/prepare_histra_benchmark.py --histra-data "${HISTRA}/data" \
+  "${PYTHON}" src/experiments/prepare_histra_benchmark.py --histra-data "${HISTRA}/data" \
     --histra-approaches "${HISTRA}/approaches" --train-answer "${CANONICAL}/train-answer.jsonl" \
     --valid-answer "${CANONICAL}/valid-answer.jsonl" --out "${FAMILY}"
 fi
@@ -97,10 +97,10 @@ for seed in "${SEEDS[@]}"; do
   stages+=(--stage "Answer${seed}=${evaluation}")
 done
 
-"${PYTHON}" scripts/compose_answer_seed_control.py "${TEST}" "${EVAL}/answer-3seed.evaluation.jsonl" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${TEST}" "${EVAL}/answer-3seed.evaluation.jsonl" \
   --method CurrentOnly-Answer-3Seed "${stages[@]}"
 for budget in 5 10 20 40 80 160; do
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${TEST}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${TEST}" \
     "${EVAL}/answer-3seed.max-ted-${budget}.evaluation.jsonl" \
     --method "CurrentOnly-Answer-3Seed-TED-${budget}" --max-ted "${budget}" "${stages[@]}"
 done

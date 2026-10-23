@@ -34,7 +34,7 @@ for split in seen unseen; do
   "${PYTHON}" run.py build-repair-data --data-root "${DATA_ROOT}" \
     --split "${canonical_split}" --target-mode answer --output "${raw}"
   "${PYTHON}" run.py filter-rq1-data "${raw}" "${OUTCOME_CACHE}" "${filtered}"
-  "${PYTHON}" scripts/build_all_prefix_evaluation.py \
+  "${PYTHON}" src/experiments/build_all_prefix_evaluation.py \
     "${filtered}" "${dataset}" "${baseline}" \
     --summary "${CONTROL_ROOT}/${split}.summary.json"
   expected=$(wc -l < "${dataset}")
@@ -57,7 +57,7 @@ for split in seen unseen; do
       fi
       stages+=(--stage "answer-${seed}=${prefix}.evaluation.jsonl")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${OUTPUT_ROOT}/${split}/answer3.evaluation.jsonl" \
       --method "AllPrefix-Answer3" "${stages[@]}"
 done

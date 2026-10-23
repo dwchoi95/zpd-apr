@@ -8,8 +8,8 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Iterable
 
-from .inference import _generation_token_budget, extract_python_code
-from .sequential import (
+from ..core.inference import _generation_token_budget, extract_python_code
+from ..core.sequential import (
     SequentialRepairSummary,
     _append_problem_outputs,
     _build_summary,
@@ -41,7 +41,7 @@ def run_zero_shot_repairs(
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    from .prompts import build_messages, render_generation_prompt
+    from ..core.prompts import build_messages, render_generation_prompt
 
     if max_attempts < 1:
         raise ValueError("max_attempts must be at least 1")
@@ -69,7 +69,7 @@ def run_zero_shot_repairs(
     for record in records:
         records_by_problem[str(record["problem_id"])].append(record)
 
-    from ..runner.python_runner import PythonSubmissionRunner
+    from ..core.runner.python_runner import PythonSubmissionRunner
 
     runner = PythonSubmissionRunner(
         timeout_sec=timeout_sec,
@@ -319,7 +319,7 @@ def _build_retry_prompt(
 ) -> tuple[str, int]:
     """Keep retry outcomes while omitting oversized generated code blocks."""
 
-    from .prompts import render_generation_prompt
+    from ..core.prompts import render_generation_prompt
 
     if context_length < 1:
         raise ValueError("Model context length must be positive.")

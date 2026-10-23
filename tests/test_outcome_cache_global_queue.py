@@ -8,7 +8,7 @@ from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from src.repair.outcomes import build_outcome_cache
+from src.core.outcomes import build_outcome_cache
 
 
 class _FakeRunner:
@@ -75,23 +75,23 @@ class OutcomeCacheGlobalQueueTest(unittest.TestCase):
 
             with (
                 patch(
-                    "src.repair.outcomes.load_split_problem_ids",
+                    "src.core.outcomes.load_split_problem_ids",
                     return_value=["p1", "p2"],
                 ),
                 patch(
-                    "src.repair.outcomes.load_split_trajectory_ids",
+                    "src.core.outcomes.load_split_trajectory_ids",
                     return_value=None,
                 ),
                 patch(
-                    "src.repair.outcomes.load_testcases",
+                    "src.core.outcomes.load_testcases",
                     return_value=[object()],
                 ),
                 patch(
-                    "src.repair.outcomes._load_problem_submissions",
+                    "src.core.outcomes._load_problem_submissions",
                     side_effect=submissions,
                 ),
                 patch(
-                    "src.repair.outcomes.PythonSubmissionRunner",
+                    "src.core.outcomes.PythonSubmissionRunner",
                     _FakeRunner,
                 ),
             ):

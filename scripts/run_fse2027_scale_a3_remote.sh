@@ -63,7 +63,7 @@ ensure_split_member() {
     fi
   fi
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${evaluation}" \
     --reference "${dataset}"
 }
 
@@ -77,7 +77,7 @@ for split in unseen seen; do
   for seed in 2027 2028 2029; do
     stages+=(--stage "Answer${seed}=${OUTPUT_ROOT}/members/${split}/Answer${seed}.evaluation.jsonl")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/answer3-${split}-test.evaluation.jsonl" \
     --method Answer-1.5B-3Seed "${stages[@]}"
 done

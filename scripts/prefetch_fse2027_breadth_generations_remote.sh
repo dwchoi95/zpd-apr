@@ -26,7 +26,7 @@ generate_three() {
   shift 4
   if ! complete_jsonl "${family}/sample-4103.generations.jsonl" "${expected}"; then
     mkdir -p "${family}"
-    "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+    "${PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py \
       "${dataset}" "${family}" --base-model "${BASE_MODEL}" \
       --method-prefix "${method}" --sampling-seed 4101 --sampling-seed 4102 \
       --sampling-seed 4103 --top-p 0.95 --max-new-tokens 4096 \
@@ -52,7 +52,7 @@ for split in seen unseen; do
     [[ "${checkpoint_seed}" != 2027 ]] && checkpoint=${SEEDS_ROOT}/seed-${checkpoint_seed}/answer
     if ! complete_jsonl "${family}/sample-${sampling_seed}.generations.jsonl" "${expected}"; then
       tempdir=${family}/adapter-${checkpoint_seed}
-      "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+      "${PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py \
         "${dataset}" "${tempdir}" --base-model "${BASE_MODEL}" \
         --adapter "${checkpoint}" --method-prefix "Answer${checkpoint_seed}-T0.8" \
         --sampling-seed "${sampling_seed}" --temperature 0.8 --top-p 0.95 \

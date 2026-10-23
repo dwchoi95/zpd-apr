@@ -12,8 +12,8 @@ try:
     from select_answer_seed_portfolio import select as select_answer
     from select_execution_portfolio import read_jsonl, select_portfolios
 except ModuleNotFoundError:
-    from scripts.select_answer_seed_portfolio import select as select_answer
-    from scripts.select_execution_portfolio import read_jsonl, select_portfolios
+    from src.experiments.select_answer_seed_portfolio import select as select_answer
+    from src.experiments.select_execution_portfolio import read_jsonl, select_portfolios
 
 
 Row = dict[str, Any]

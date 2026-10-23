@@ -23,7 +23,7 @@ export PYTHONPATH=. HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 
 echo "[$(date --iso-8601=seconds)] Build observed/hidden testcase partition"
-"${PYTHON}" scripts/build_observed_hidden_evaluation.py \
+"${PYTHON}" src/experiments/build_observed_hidden_evaluation.py \
   "${SOURCE_DATA_ROOT}" "${SOURCE_DATASET}" "${DATASET}" \
   "${OBSERVED_ROOT}" "${HIDDEN_ROOT}" "${MANIFEST}" --seed 2027
 test "$(wc -l < "${DATASET}")" -eq 250
@@ -57,14 +57,14 @@ for name in Answer2027 Answer2028 Answer2029 Progress2027; do
     --data-root "${HIDDEN_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
 done
 
-"${PYTHON}" scripts/compose_answer_seed_control.py "${DATASET}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${DATASET}" \
   "${OUTPUT_ROOT}/zpdpatch.observed.selected.jsonl" \
   --method ZPDPatch-ObservedOnly \
   --stage "Progress2027=${OUTPUT_ROOT}/Progress2027.observed.evaluation.jsonl" \
   --stage "Answer2027=${OUTPUT_ROOT}/Answer2027.observed.evaluation.jsonl" \
   --stage "Answer2028=${OUTPUT_ROOT}/Answer2028.observed.evaluation.jsonl"
 
-"${PYTHON}" scripts/compose_answer_seed_control.py "${DATASET}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${DATASET}" \
   "${OUTPUT_ROOT}/answer3.observed.selected.jsonl" \
   --method Answer-3Seed-ObservedOnly \
   --stage "Answer2027=${OUTPUT_ROOT}/Answer2027.observed.evaluation.jsonl" \

@@ -56,7 +56,7 @@ current_dataset() {
   audit=${CONTROL_DATASET_ROOT}/${name}.audit.json
   "${PYTHON}" run.py make-current-code-only "${source}" "${output}" >&2
   test "$(wc -l < "${output}")" -eq "${expected}"
-  "${PYTHON}" scripts/verify_prompt_current_only_datasets.py \
+  "${PYTHON}" src/experiments/verify_prompt_current_only_datasets.py \
     --pair "${name}:${source}:${output}" --output "${audit}" >&2
   test -s "${audit}"
   printf '%s\n' "${output}"
@@ -78,7 +78,7 @@ evaluate_member() {
       --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
   fi
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${evaluation}" \
     --reference "${dataset}"
 }
 
@@ -102,9 +102,9 @@ for seed in 2030 2031 2032 2033 2034 2035; do
   evaluate_member "${name}" "${validation}" validation "${validation_n}"
   answer_args+=(--evaluation "${name}=${OUTPUT_ROOT}/validation/${name}.evaluation.jsonl")
 done
-"${PYTHON}" scripts/select_execution_portfolio.py "${mixed_args[@]}" \
+"${PYTHON}" src/experiments/select_execution_portfolio.py "${mixed_args[@]}" \
   --skip-budget-objective --output "${MIXED_SELECTION}"
-"${PYTHON}" scripts/select_answer_seed_portfolio.py "${answer_args[@]}" \
+"${PYTHON}" src/experiments/select_answer_seed_portfolio.py "${answer_args[@]}" \
   --output "${ANSWER_SELECTION}"
 
 members_from() {
@@ -138,7 +138,7 @@ for split in seen unseen; do
         && mixed_stages+=(--stage "${name}=${OUTPUT_ROOT}/${split}/${name}.evaluation.jsonl")
     done
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/${split}/mixed-reselected.evaluation.jsonl" \
     --method CurrentOnly-Mixed-Reselected "${mixed_stages[@]}"
 
@@ -146,7 +146,7 @@ for split in seen unseen; do
   for name in "${current_answer[@]}"; do
     answer_stages+=(--stage "${name}=${OUTPUT_ROOT}/${split}/${name}.evaluation.jsonl")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/${split}/answer-reselected.evaluation.jsonl" \
     --method CurrentOnly-Answer-Reselected "${answer_stages[@]}"
 
@@ -157,7 +157,7 @@ for split in seen unseen; do
         && mixed_stages+=(--stage "${name}=${OUTPUT_ROOT}/${split}/${name}.evaluation.jsonl")
     done
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/${split}/mixed-full-selection.evaluation.jsonl" \
     --method CurrentOnly-Mixed-FullSelection "${mixed_stages[@]}"
 
@@ -165,7 +165,7 @@ for split in seen unseen; do
   for name in "${full_answer[@]}"; do
     answer_stages+=(--stage "${name}=${OUTPUT_ROOT}/${split}/${name}.evaluation.jsonl")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/${split}/answer-full-selection.evaluation.jsonl" \
     --method CurrentOnly-Answer-FullSelection "${answer_stages[@]}"
 done

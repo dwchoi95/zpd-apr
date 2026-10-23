@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from src.codenet.context_filter import (
+from src.experiments.codenet.context_filter import (
     CONTEXT_WINDOW_TOKENS,
     _progress_envelope_examples,
     _trajectory_configuration_lengths,

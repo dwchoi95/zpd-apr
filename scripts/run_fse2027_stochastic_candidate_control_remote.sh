@@ -33,7 +33,7 @@ for split in seen unseen; do
       || needs_generation=true
   done
   if [[ "${needs_generation}" == true ]]; then
-    "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+    "${PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py \
       "${dataset}" "${OUTPUT_ROOT}/${split}" --base-model "${BASE_MODEL}" \
       --adapter "${CHECKPOINT}" --sampling-seed 3101 --sampling-seed 3102 \
       --sampling-seed 3103 --temperature 0.8 --top-p 0.95 \
@@ -51,11 +51,11 @@ for split in seen unseen; do
     fi
     test "$(wc -l < "${generations}")" -eq "${expected}"
     test "$(wc -l < "${evaluation}")" -eq "${expected}"
-    "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+    "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${evaluation}" \
       --reference "${baseline}"
     stages+=(--stage "Sample${sampling_seed}=${evaluation}")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/${split}/stochastic3.evaluation.jsonl" \
     --method Same-Checkpoint-Stochastic-3 "${stages[@]}"
 done

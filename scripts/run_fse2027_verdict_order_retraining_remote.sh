@@ -45,7 +45,7 @@ for partition in train valid; do
   for relation in progress strict; do build_dataset "${partition}" "${relation}"; done
 done
 
-"${PYTHON}" scripts/audit_repair_dataset_tokens.py \
+"${PYTHON}" src/experiments/audit_repair_dataset_tokens.py \
   "${ALT_DATASET_ROOT}/train-progress.jsonl" \
   "${ALT_DATASET_ROOT}/train-strict.jsonl" \
   "${ALT_DATASET_ROOT}/valid-progress.jsonl" \
@@ -54,7 +54,7 @@ done
   --output "${TOKEN_AUDIT}"
 "${PYTHON}" -c 'import json,sys; assert json.load(open(sys.argv[1]))["total_overlength_examples"] == 0' "${TOKEN_AUDIT}"
 
-"${PYTHON}" scripts/audit_verdict_order_sensitivity.py \
+"${PYTHON}" src/experiments/audit_verdict_order_sensitivity.py \
   --dataset-root "${ALT_DATASET_ROOT}" --require-order accepted_vs_failure \
   --output "${LABEL_AUDIT}"
 
@@ -93,7 +93,7 @@ evaluate_adapter() {
       --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
   fi
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${evaluation}" \
     --reference "${dataset}"
 }
 

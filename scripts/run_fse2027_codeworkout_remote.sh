@@ -77,7 +77,7 @@ evaluate_member() {
   source_root=${ARCHIVE}/derived/java-eval/${split}/${name}/sources
   status_root=${ARCHIVE}/derived/java-eval/${split}/${name}/status
   mkdir -p "${source_root}" "${status_root}"
-  "${PYTHON}" scripts/prepare_codeworkout_evaluation.py \
+  "${PYTHON}" src/experiments/prepare_codeworkout_evaluation.py \
     "${dataset}" "${generations}" \
     "${ARCHIVE}/source/test-case-query-results/test_cases-1-26-24.csv" \
     "${ARCHIVE}/source/test-case-query-results/test_case_37.csv" \
@@ -88,7 +88,7 @@ evaluate_member() {
     -v "${source_root}:/sources:ro" -v "${status_root}:/status:rw" \
     -v "${WORK_ROOT}/scripts/run_codeworkout_java_container.sh:/runner.sh:ro" \
     --entrypoint /bin/bash "${IMAGE}" /runner.sh /sources /status
-  "${PYTHON}" scripts/collect_codeworkout_evaluation.py \
+  "${PYTHON}" src/experiments/collect_codeworkout_evaluation.py \
     "${ARCHIVE}/derived/java-eval/${split}/${name}/manifest.jsonl" \
     "${status_root}" "${evaluation}" \
     --summary "${evaluation%.jsonl}.summary.json"
@@ -103,7 +103,7 @@ for name in "${all_members[@]}"; do
     "${name}:${relation}=${VALIDATION_ROOT}/${name}.evaluation.jsonl")
 done
 
-"${PYTHON}" scripts/select_execution_portfolio.py \
+"${PYTHON}" src/experiments/select_execution_portfolio.py \
   "${selection_args[@]}" --skip-budget-objective \
   --output "${EXTERNAL_SELECTION}"
 mapfile -t relation_members < <(

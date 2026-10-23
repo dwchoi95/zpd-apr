@@ -11,10 +11,10 @@ from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Callable
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from src.repair.evaluate import budget_bounded_tree_edit_distance, tree_edit_distance
+from src.core.evaluate import budget_bounded_tree_edit_distance, tree_edit_distance
 
 
 Row = dict[str, Any]

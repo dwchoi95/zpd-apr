@@ -24,13 +24,13 @@ export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 for split in train valid; do
   mkdir -p "${SHARD_ROOT}/${split}"
   seq 0 $((SHARDS - 1)) | xargs -P"${SHARDS}" -I{} \
-    "${PYTHON}" scripts/build_cross_user_target_control.py \
+    "${PYTHON}" src/experiments/build_cross_user_target_control.py \
       "${DATASET_ROOT}/${split}-progress.jsonl" \
       "${SHARD_ROOT}/${split}/same-{}.jsonl" \
       "${SHARD_ROOT}/${split}/cross-{}.jsonl" \
       --summary "${SHARD_ROOT}/${split}/summary-{}.json" \
       --maximum-target-reuse 3 --shard-count "${SHARDS}" --shard-index {}
-  "${PYTHON}" scripts/finalize_cross_user_target_control.py \
+  "${PYTHON}" src/experiments/finalize_cross_user_target_control.py \
     "${SHARD_ROOT}/${split}" \
     "${CONTROL_ROOT}/${split}-same-user.jsonl" \
     "${CONTROL_ROOT}/${split}-cross-user.jsonl" \
@@ -89,7 +89,7 @@ for split in seen unseen; do
       fi
       stages+=(--stage "${relation}-${seed}=${prefix}.evaluation.jsonl")
     done
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${OUTPUT_ROOT}/${split}/${relation}3.evaluation.jsonl" \
       --method "CrossUserControl-${relation}3" "${stages[@]}"
   done

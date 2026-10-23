@@ -25,7 +25,7 @@ BATCH_SIZE=${ZPD_VALIDATION_BATCH_SIZE:-4}
 
 DATASET=${DATASET_ROOT}/seen-valid-final.problem-balanced.jsonl
 if [[ ! -s "${DATASET}" ]]; then
-  "${PYTHON}" scripts/sample_problem_balanced_dataset.py \
+  "${PYTHON}" src/experiments/sample_problem_balanced_dataset.py \
     "${DATASET_ROOT}/seen-valid-final.jsonl" "${DATASET}" --seed 2027
 fi
 VALIDATION_EXAMPLES=461
@@ -78,7 +78,7 @@ for relation in Progress Strict Answer; do
   done
 done
 
-"${PYTHON}" scripts/select_execution_portfolio.py \
+"${PYTHON}" src/experiments/select_execution_portfolio.py \
   "${selection_args[@]}" \
   --output "${RUN_ROOT}/analysis/fse2027-portfolio-validation-selection.json"
 

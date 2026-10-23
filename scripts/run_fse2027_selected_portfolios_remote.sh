@@ -95,25 +95,25 @@ for split in seen unseen; do
         flat_seed_args+=(--flat "${relation_control_prefix}.evaluation.jsonl")
       fi
       if [[ ! -s "${generations}" ]]; then
-        "${PYTHON}" scripts/seed_policy_generations.py "${dataset}" "${generations}" \
+        "${PYTHON}" src/experiments/seed_policy_generations.py "${dataset}" "${generations}" \
           --method "${name}" --sequential-evaluation "${relation}=${source_eval}" \
           "${extra_generation_args[@]}"
       fi
-      "${PYTHON}" scripts/filter_generation_token_cap.py "${generations}" \
+      "${PYTHON}" src/experiments/filter_generation_token_cap.py "${generations}" \
         --tokenizer "${BASE_MODEL}" --cap 4096 --decoded-slack 128
       "${PYTHON}" run.py generate "${dataset}" "${generations}" \
         --method "${name}" --prompt D --base-model "${BASE_MODEL}" \
         --adapter "$(checkpoint_for "${name}")" --batch-size 1 \
         --max-new-tokens 4096
       test "$(wc -l < "${generations}")" -eq "${expected}"
-      "${PYTHON}" scripts/seed_policy_evaluations.py \
+      "${PYTHON}" src/experiments/seed_policy_evaluations.py \
         "${dataset}" "${generations}" "${evaluation}" \
         --method "${name}" --source "${relation}=${source_eval}" \
         "${flat_seed_args[@]}"
       "${PYTHON}" run.py evaluate "${dataset}" "${generations}" "${evaluation}" \
         --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5
     fi
-    "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+    "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${evaluation}" \
       --reference "${baseline_reference}"
   done
 
@@ -135,11 +135,11 @@ for split in seen unseen; do
         fi
       done
     done
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${OUTPUT_ROOT}/${kind}-${split}-test.evaluation.jsonl" \
       --method "Validation-Selected-${kind}" "${stage_args[@]}"
     for budget in 5 10 20 40 80 160; do
-      "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+      "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
         "${OUTPUT_ROOT}/${kind}-${split}-test.max-ted-${budget}.evaluation.jsonl" \
         --method "Validation-Selected-${kind}-TED-${budget}" \
         --max-ted "${budget}" "${stage_args[@]}"
@@ -164,7 +164,7 @@ for split in seen unseen; do
           fi
         done
       done
-      "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+      "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
         "${OUTPUT_ROOT}/budget-indexed-${controller}-${split}-test.max-ted-${budget}.evaluation.jsonl" \
         --method "Validation-Selected-Budget-Indexed-${controller}-TED-${budget}" \
         --max-ted "${budget}" "${stage_args[@]}"

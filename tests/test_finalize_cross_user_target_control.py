@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.finalize_cross_user_target_control import finalize
+from src.experiments.finalize_cross_user_target_control import finalize
 
 
 class FinalizeCrossUserTargetControlTest(unittest.TestCase):

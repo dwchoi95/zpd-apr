@@ -8,8 +8,8 @@ import json
 import time
 from pathlib import Path
 
-from src.repair.inference import extract_python_code
-from src.repair.prompts import build_messages, render_generation_prompt
+from src.core.inference import extract_python_code
+from src.core.prompts import build_messages, render_generation_prompt
 
 
 def read_jsonl(path: Path) -> list[dict]:

@@ -47,7 +47,7 @@ ensure_mixed_test() {
   name=${relation}${seed}
   existing=${EVAL_ROOT}/selected-portfolios/${name}-seen-test.evaluation.jsonl
   if complete "${existing}"; then
-    "${PYTHON}" scripts/normalize_evaluation_baseline.py "${existing}" \
+    "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${existing}" \
       --reference "${DATASET}" 1>&2
     printf '%s\n' "${existing}"
     return
@@ -65,7 +65,7 @@ ensure_mixed_test() {
       --data-root "${DATA_ROOT}" --workers 64 --ted-workers 24 --timeout-sec 2.5 1>&2
     test "$(wc -l < "${evaluation}")" -eq "${EXPECTED}"
   fi
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" \
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${evaluation}" \
     --reference "${DATASET}" 1>&2
   printf '%s\n' "${evaluation}"
 }
@@ -76,7 +76,7 @@ for relation in Progress Strict Answer; do
   for seed in 2027 2028 2029; do
     name=${relation}${seed}
     validation_path=${EVAL_ROOT}/portfolio-validation/${name}.evaluation.jsonl
-    "${PYTHON}" scripts/normalize_evaluation_baseline.py "${validation_path}" \
+    "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${validation_path}" \
       --reference "${VALIDATION_DATASET}"
     mixed_validation_args+=(--mixed-validation "${name}=${validation_path}")
     test_path=$(ensure_mixed_test "${relation}" "${seed}")
@@ -90,9 +90,9 @@ for seed in 2027 2028 2029 2030 2031 2032 2033 2034 2035; do
   name=Answer${seed}
   validation_path=${EVAL_ROOT}/answer9-control/${name}-validation.evaluation.jsonl
   test_path=${EVAL_ROOT}/answer9-control/${name}-seen-test.evaluation.jsonl
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${validation_path}" \
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${validation_path}" \
     --reference "${VALIDATION_DATASET}"
-  "${PYTHON}" scripts/normalize_evaluation_baseline.py "${test_path}" \
+  "${PYTHON}" src/experiments/normalize_evaluation_baseline.py "${test_path}" \
     --reference "${DATASET}"
   answer_validation_args+=(--answer-validation "${name}=${validation_path}")
   answer_test_args+=(--answer-test "${name}=${test_path}")

@@ -15,7 +15,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
-from src.repair.dataset import _build_adapter_examples
+from src.core.dataset import _build_adapter_examples
 
 
 Row = dict[str, Any]

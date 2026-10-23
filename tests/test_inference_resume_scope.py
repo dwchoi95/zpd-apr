@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from src.repair.inference import _load_resumable_generations
+from src.core.inference import _load_resumable_generations
 
 
 class InferenceResumeScopeTest(unittest.TestCase):

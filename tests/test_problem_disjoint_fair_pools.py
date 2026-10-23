@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.select_problem_disjoint_fair_pools import select_disjoint
+from src.experiments.select_problem_disjoint_fair_pools import select_disjoint
 
 
 def row(problem: str, repaired: bool) -> dict:

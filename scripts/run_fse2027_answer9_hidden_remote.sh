@@ -57,7 +57,7 @@ for name in "${members[@]}"; do
   stage_args+=(--stage "${name}=${OUTPUT_ROOT}/${name}.observed.evaluation.jsonl")
   hidden_parts+=("${name}=${OUTPUT_ROOT}/${name}.hidden.evaluation.jsonl")
 done
-"${PYTHON}" scripts/compose_answer_seed_control.py "${DATASET}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${DATASET}" \
   "${OUTPUT_ROOT}/answer9.observed.selected.jsonl" \
   --method Answer-9Choose3-ObservedOnly "${stage_args[@]}"
 

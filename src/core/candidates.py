@@ -10,8 +10,8 @@ from typing import Any, Iterable
 
 from tqdm import tqdm
 
-from ..runner.dataset import load_testcases
-from ..runner.python_runner import PythonSubmissionRunner
+from .runner.dataset import load_testcases
+from .runner.python_runner import PythonSubmissionRunner
 from .evaluate import tree_edit_distance
 from .inference import _generation_token_budget, extract_python_code
 

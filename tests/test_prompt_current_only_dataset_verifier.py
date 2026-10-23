@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.verify_prompt_current_only_datasets import verify_pair
+from src.experiments.verify_prompt_current_only_datasets import verify_pair
 
 
 class PromptCurrentOnlyDatasetVerifierTest(unittest.TestCase):

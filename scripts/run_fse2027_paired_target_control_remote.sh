@@ -22,7 +22,7 @@ export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 while [[ ! -f "${RUN_ROOT}/eval/breadth-extension/COMPLETE" ]]; do sleep 60; done
 
 for split in train valid; do
-  "${PYTHON}" scripts/build_paired_target_control.py \
+  "${PYTHON}" src/experiments/build_paired_target_control.py \
     "${DATASET_ROOT}/${split}-progress.jsonl" "${DATASET_ROOT}/${split}-answer.jsonl" \
     "${PAIRED_ROOT}/${split}-progress.jsonl" "${PAIRED_ROOT}/${split}-answer.jsonl" \
     --summary "${PAIRED_ROOT}/${split}.summary.json"
@@ -76,15 +76,15 @@ for split in seen unseen; do
           --workers 64 --ted-workers 24 --timeout-sec 2.5 \
           --baseline-reference "${baseline}"
       fi
-      "${PYTHON}" scripts/normalize_evaluation_baseline.py \
+      "${PYTHON}" src/experiments/normalize_evaluation_baseline.py \
         "${prefix}.evaluation.jsonl" --reference "${baseline}"
       stages+=(--stage "${relation}-${seed}=${prefix}.evaluation.jsonl")
     done
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${OUTPUT_ROOT}/${split}/${relation}3.evaluation.jsonl" \
       --method "PairedTarget-${relation}3" "${stages[@]}"
     for budget in "${BUDGETS[@]}"; do
-      "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+      "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
         "${OUTPUT_ROOT}/${split}/${relation}3.max-ted-${budget}.evaluation.jsonl" \
         --method "PairedTarget-${relation}3-B${budget}" \
         --max-ted "${budget}" "${stages[@]}"

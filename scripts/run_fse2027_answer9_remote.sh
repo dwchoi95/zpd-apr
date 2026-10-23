@@ -98,7 +98,7 @@ for seed in 2027 2028 2029 2030 2031 2032 2033 2034 2035; do
   evaluate_candidate "${seed}" validation "${validation}" 461
   selection_args+=(--evaluation "Answer${seed}=${OUTPUT_ROOT}/Answer${seed}-validation.evaluation.jsonl")
 done
-"${PYTHON}" scripts/select_answer_seed_portfolio.py "${selection_args[@]}" --output "${SELECTION}"
+"${PYTHON}" src/experiments/select_answer_seed_portfolio.py "${selection_args[@]}" --output "${SELECTION}"
 
 mapfile -t members < <(
   "${PYTHON}" -c 'import json,sys; d=json.load(open(sys.argv[1])); print("\n".join(sorted({m for k in ("selected_unrestricted","selected_mean_budget") for m in d[k]["members"]} | {m for x in d["selected_by_budget"].values() for m in x["members"]})))' "${SELECTION}"
@@ -119,7 +119,7 @@ for split in seen unseen; do
   for name in "${selected[@]}"; do
     stage_args+=(--stage "${name}=${OUTPUT_ROOT}/${name}-${split}-test.evaluation.jsonl")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${OUTPUT_ROOT}/answer9-unrestricted-${split}-test.evaluation.jsonl" \
     --method Answer-9Choose3 "${stage_args[@]}"
 
@@ -131,7 +131,7 @@ for split in seen unseen; do
     for name in "${selected[@]}"; do
       stage_args+=(--stage "${name}=${OUTPUT_ROOT}/${name}-${split}-test.evaluation.jsonl")
     done
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${OUTPUT_ROOT}/answer9-budget-${budget}-${split}-test.evaluation.jsonl" \
       --method "Answer-9Choose3-TED-${budget}" --max-ted "${budget}" "${stage_args[@]}"
   done

@@ -18,8 +18,8 @@ try:
         read_jsonl,
         single_budget_objective,
     )
-except ModuleNotFoundError:  # Imported as scripts.select_answer_seed_portfolio.
-    from scripts.select_execution_portfolio import (
+except ModuleNotFoundError:  # Imported as src.experiments.select_answer_seed_portfolio.
+    from src.experiments.select_execution_portfolio import (
         BUDGETS,
         budget_objective,
         keyed,

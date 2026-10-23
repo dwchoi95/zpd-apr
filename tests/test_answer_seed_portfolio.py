@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.select_answer_seed_portfolio import select
+from src.experiments.select_answer_seed_portfolio import select
 
 
 def row(example_id: str, repaired: bool) -> dict:

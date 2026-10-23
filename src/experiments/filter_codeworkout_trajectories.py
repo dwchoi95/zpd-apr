@@ -10,9 +10,9 @@ from typing import Any
 
 from transformers import AutoTokenizer
 
-from scripts.build_codeworkout_repair_datasets import canonical_submission, payload
-from scripts.build_codeworkout_trajectories import split_users
-from src.repair.prompts import build_messages, render_generation_prompt
+from src.experiments.build_codeworkout_repair_datasets import canonical_submission, payload
+from src.experiments.build_codeworkout_trajectories import split_users
+from src.core.prompts import build_messages, render_generation_prompt
 
 
 Row = dict[str, Any]

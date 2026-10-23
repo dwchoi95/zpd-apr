@@ -39,7 +39,7 @@ evaluate_chunk() {
   done
   for pid in "${pids[@]}"; do wait "${pid}"; done
   for sampling_seed in "$@"; do
-    "${PYTHON}" scripts/normalize_evaluation_baseline.py \
+    "${PYTHON}" src/experiments/normalize_evaluation_baseline.py \
       "${family}/sample-${sampling_seed}.evaluation.jsonl" \
       --reference "${baseline}"
   done
@@ -70,7 +70,7 @@ for split in seen unseen; do
       mkdir -p "${tempdir}"
       generation_args=()
       for sampling_seed in "${missing[@]}"; do generation_args+=(--sampling-seed "${sampling_seed}"); done
-      "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+      "${PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py \
         "${dataset}" "${tempdir}" --base-model "${BASE_MODEL}" --adapter "${PRIMARY}" \
         --method-prefix "Answer2027-T0.8-KSweep" "${generation_args[@]}" \
         --temperature 0.8 --top-p 0.95 --max-new-tokens 4096 \
@@ -88,7 +88,7 @@ for split in seen unseen; do
     family=${OUTPUT_ROOT}/temperature/${temperature}/${split}
     mkdir -p "${family}"
     if ! complete_jsonl "${family}/sample-4103.generations.jsonl" "${expected}"; then
-      "${PYTHON}" scripts/generate_vllm_stochastic_candidates.py \
+      "${PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py \
         "${dataset}" "${family}" --base-model "${BASE_MODEL}" --adapter "${PRIMARY}" \
         --method-prefix "Answer2027-T${temperature}" \
         --sampling-seed 4101 --sampling-seed 4102 --sampling-seed 4103 \
@@ -96,7 +96,7 @@ for split in seen unseen; do
         --max-model-len 8192 --gpu-memory-utilization 0.82
     fi
     evaluate_chunk "${family}" "${dataset}" "${baseline}" "${expected}" 4101 4102 4103
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${family}/stochastic3.evaluation.jsonl" \
       --method "${split}-T${temperature}-Stochastic-3" \
       --stage "Sample4101=${family}/sample-4101.evaluation.jsonl" \

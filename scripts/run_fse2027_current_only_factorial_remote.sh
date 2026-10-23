@@ -23,11 +23,11 @@ for split in seen unseen; do
   folder=${OUTPUT}/${split}
   mkdir -p "${folder}/greedy" "${folder}/same" "${folder}/distinct"
   if ! complete "${folder}/greedy/Answer2029.generations.jsonl" "${expected}"; then
-    "${GEN_PYTHON}" scripts/generate_vllm_greedy_adapters.py "${dataset}" "${folder}/greedy" --base-model "${BASE}" \
+    "${GEN_PYTHON}" src/experiments/generate_vllm_greedy_adapters.py "${dataset}" "${folder}/greedy" --base-model "${BASE}" \
       --adapter "Answer2027=${PRIMARY}" --adapter "Answer2028=${SEEDS}/seed-2028/answer" --adapter "Answer2029=${SEEDS}/seed-2029/answer" --gpu-memory-utilization 0.82
   fi
   if ! complete "${folder}/same/sample-4103.generations.jsonl" "${expected}"; then
-    "${GEN_PYTHON}" scripts/generate_vllm_stochastic_candidates.py "${dataset}" "${folder}/same" --base-model "${BASE}" --adapter "${PRIMARY}" \
+    "${GEN_PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py "${dataset}" "${folder}/same" --base-model "${BASE}" --adapter "${PRIMARY}" \
       --sampling-seed 4101 --sampling-seed 4102 --sampling-seed 4103 --temperature 0.8 --top-p 0.95 --gpu-memory-utilization 0.82
   fi
   # Reuse the identical Answer2027 draw in both stochastic cells.
@@ -37,7 +37,7 @@ for split in seen unseen; do
   for pair in 2028:4102 2029:4103; do
     checkpoint=${pair%:*}; seed=${pair#*:}
     if ! complete "${folder}/distinct/sample-${seed}.generations.jsonl" "${expected}"; then
-      "${GEN_PYTHON}" scripts/generate_vllm_stochastic_candidates.py "${dataset}" "${folder}/distinct" --base-model "${BASE}" --adapter "${SEEDS}/seed-${checkpoint}/answer" \
+      "${GEN_PYTHON}" src/experiments/generate_vllm_stochastic_candidates.py "${dataset}" "${folder}/distinct" --base-model "${BASE}" --adapter "${SEEDS}/seed-${checkpoint}/answer" \
         --method-prefix "Answer${checkpoint}" --sampling-seed "${seed}" --temperature 0.8 --top-p 0.95 --gpu-memory-utilization 0.82
     fi
   done
@@ -55,7 +55,7 @@ for split in seen unseen; do
       stages+=(--stage "${name}=${prefix}.evaluation.jsonl")
     done
     for pid in "${pids[@]}"; do wait "${pid}"; done
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" "${folder}/${family}3.evaluation.jsonl" --method "CurrentOnly-${family}3" "${stages[@]}"
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" "${folder}/${family}3.evaluation.jsonl" --method "CurrentOnly-${family}3" "${stages[@]}"
   done
 done
 touch "${OUTPUT}/COMPLETE"

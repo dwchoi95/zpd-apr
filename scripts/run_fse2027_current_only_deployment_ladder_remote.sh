@@ -18,11 +18,11 @@ for split in seen unseen; do
     test -s "${evaluation}"
     stages+=(--stage "${name}=${evaluation}")
   done
-  "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
     "${EVAL_ROOT}/${split}/answer-3seed.evaluation.jsonl" \
     --method CurrentOnly-Answer-3Seed "${stages[@]}"
   for budget in 5 10 20 40 80 160; do
-    "${PYTHON}" scripts/compose_answer_seed_control.py "${dataset}" \
+    "${PYTHON}" src/experiments/compose_answer_seed_control.py "${dataset}" \
       "${EVAL_ROOT}/${split}/answer-3seed.max-ted-${budget}.evaluation.jsonl" \
       --method "CurrentOnly-Answer-3Seed-TED-${budget}" --max-ted "${budget}" \
       "${stages[@]}"

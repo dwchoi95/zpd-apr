@@ -62,32 +62,32 @@ if [[ ! -s "${SELECTION}" ]]; then
     selection_args+=(--checkpoint "${relation}:2028=${SEED_ROOT}/seed-2028/${lower}")
     selection_args+=(--checkpoint "${relation}:2029=${SEED_ROOT}/seed-2029/${lower}")
   done
-  "${PYTHON}" scripts/select_relation_seed_portfolio.py \
+  "${PYTHON}" src/experiments/select_relation_seed_portfolio.py \
     "${selection_args[@]}" --output "${SELECTION}"
 fi
 "${PYTHON}" -c 'import json,sys; d=json.load(open(sys.argv[1])); got={k:v["seed"] for k,v in d["selected"].items()}; assert got=={"Progress":2027,"Strict":2028,"Answer":2029}, got' "${SELECTION}"
 
-"${PYTHON}" scripts/build_answer_seed_control_subset.py \
+"${PYTHON}" src/experiments/build_answer_seed_control_subset.py \
   "${DATASET}" "${STRICT_DATA}" --previous-evaluation "${PROGRESS}"
 if [[ ! -e "${STRICT_GEN}" ]]; then
-  "${PYTHON}" scripts/seed_policy_generations.py "${STRICT_DATA}" "${STRICT_GEN}" \
+  "${PYTHON}" src/experiments/seed_policy_generations.py "${STRICT_DATA}" "${STRICT_GEN}" \
     --method Strict2028 \
     --sequential-evaluation "Strict=${EVAL_ROOT}/acceptance-seeds/seed-2028-seen-test.evaluation.jsonl"
 fi
 run_candidate Strict2028 "${STRICT_DATA}" "${SEED_ROOT}/seed-2028/strict" "${STRICT_EVAL}"
 
-"${PYTHON}" scripts/build_answer_seed_control_subset.py \
+"${PYTHON}" src/experiments/build_answer_seed_control_subset.py \
   "${DATASET}" "${ANSWER_DATA}" \
   --previous-evaluation "${PROGRESS}" --previous-evaluation "${STRICT_EVAL}"
 if [[ ! -e "${ANSWER_GEN}" ]]; then
-  "${PYTHON}" scripts/seed_policy_generations.py "${ANSWER_DATA}" "${ANSWER_GEN}" \
+  "${PYTHON}" src/experiments/seed_policy_generations.py "${ANSWER_DATA}" "${ANSWER_GEN}" \
     --method Answer2029 \
     --generations "${EVAL_ROOT}/answer-seed-control/answer2029-seen-test.generations.jsonl" \
     --sequential-evaluation "Answer=${EVAL_ROOT}/acceptance-seeds/seed-2029-seen-test.evaluation.jsonl"
 fi
 run_candidate Answer2029 "${ANSWER_DATA}" "${SEED_ROOT}/seed-2029/answer" "${ANSWER_EVAL}"
 
-"${PYTHON}" scripts/compose_answer_seed_control.py "${DATASET}" "${FINAL}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${DATASET}" "${FINAL}" \
   --method Relation-Seed-Portfolio \
   --stage "Progress2027=${PROGRESS}" \
   --stage "Strict2028=${STRICT_EVAL}" \

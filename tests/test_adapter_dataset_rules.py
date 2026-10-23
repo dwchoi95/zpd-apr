@@ -6,24 +6,24 @@ import unittest
 from collections import Counter
 from types import SimpleNamespace
 
-from src.repair.candidates import generate_candidate_repairs
-from src.repair.dataset import (
+from src.core.candidates import generate_candidate_repairs
+from src.core.dataset import (
     VERDICT_ORDERS,
     _build_adapter_examples,
     _is_testcase_verdict_improvement,
     build_repair_dataset,
 )
-from src.repair.inference import (
+from src.core.inference import (
     _example_sampling_seed,
     _generation_token_budget,
     generate_repairs,
 )
-from src.repair.lsgen import generate_lsgen_repairs
-from src.repair.outcomes import build_outcome_cache
-from src.repair.prompts import build_messages
-from src.repair.sequential import _build_stage_prompt, run_sequential_repairs
-from src.repair.train import train_qlora
-from src.repair.zero_shot import _build_retry_prompt, run_zero_shot_repairs
+from src.experiments.lsgen import generate_lsgen_repairs
+from src.core.outcomes import build_outcome_cache
+from src.core.prompts import build_messages
+from src.core.sequential import _build_stage_prompt, run_sequential_repairs
+from src.core.train import train_qlora
+from src.experiments.zero_shot import _build_retry_prompt, run_zero_shot_repairs
 
 
 def _submission(position: int, verdict: str) -> tuple[int, dict[str, object]]:

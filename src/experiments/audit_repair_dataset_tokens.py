@@ -7,7 +7,7 @@ from typing import Any, Iterable
 
 from transformers import AutoTokenizer
 
-from src.repair.prompts import build_messages, render_generation_prompt
+from src.core.prompts import build_messages, render_generation_prompt
 
 
 def _iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:

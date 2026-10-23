@@ -14,11 +14,11 @@ exec >>"${RUN}/logs/paired-java-control.log" 2>&1
 export PYTHONPATH=. HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TOKENIZERS_PARALLELISM=false
 export PYTORCH_ALLOC_CONF=expandable_segments:True
 for split in train valid; do
-  "${PYTHON}" scripts/build_paired_target_control.py "${ARCHIVE}/derived/datasets/${split}-progress.jsonl" "${ARCHIVE}/derived/datasets/${split}-answer.jsonl" \
+  "${PYTHON}" src/experiments/build_paired_target_control.py "${ARCHIVE}/derived/datasets/${split}-progress.jsonl" "${ARCHIVE}/derived/datasets/${split}-answer.jsonl" \
     "${DATA}/${split}-progress.jsonl" "${DATA}/${split}-answer.jsonl" --summary "${DATA}/${split}.summary.json"
 done
 "${PYTHON}" run.py make-current-code-only "${ARCHIVE}/derived/datasets/test-final.jsonl" "${DATA}/test.jsonl"
-"${PYTHON}" scripts/audit_repair_dataset_tokens.py "${DATA}/train-progress.jsonl" "${DATA}/train-answer.jsonl" "${DATA}/valid-progress.jsonl" "${DATA}/valid-answer.jsonl" "${DATA}/test.jsonl" \
+"${PYTHON}" src/experiments/audit_repair_dataset_tokens.py "${DATA}/train-progress.jsonl" "${DATA}/train-answer.jsonl" "${DATA}/valid-progress.jsonl" "${DATA}/valid-answer.jsonl" "${DATA}/test.jsonl" \
   --base-model "${BASE}" --prompt D --max-total-tokens 4096 --output "${DATA}/token-audit.json"
 docker image inspect oj:java-21-e5acbd8e27 >/dev/null
 test -s "${ARCHIVE}/derived/java-eval/RecordedOracle.summary.json"
@@ -41,12 +41,12 @@ for relation in progress answer; do
       source_root=${OUT}/harness/${relation}-${seed}/sources
       status_root=${OUT}/harness/${relation}-${seed}/status
       mkdir -p "${source_root}" "${status_root}"
-      "${PYTHON}" scripts/prepare_codeworkout_evaluation.py "${DATA}/test.jsonl" "${prefix}.generations.jsonl" \
+      "${PYTHON}" src/experiments/prepare_codeworkout_evaluation.py "${DATA}/test.jsonl" "${prefix}.generations.jsonl" \
         "${ARCHIVE}/source/test-case-query-results/test_cases-1-26-24.csv" "${ARCHIVE}/source/test-case-query-results/test_case_37.csv" "${source_root}"
       docker run --rm --network none --read-only --user 1000:1000 --memory 16g --cpus 32 --pids-limit 4096 --tmpfs /tmp:rw,size=4g \
         -e ZPD_JAVA_WORKERS=32 -v "${source_root}:/sources:ro" -v "${status_root}:/status:rw" \
         -v "${WORK_ROOT}/scripts/run_codeworkout_java_container.sh:/runner.sh:ro" --entrypoint /bin/bash oj:java-21-e5acbd8e27 /runner.sh /sources /status
-      "${PYTHON}" scripts/collect_codeworkout_evaluation.py "${OUT}/harness/${relation}-${seed}/manifest.jsonl" "${status_root}" "${prefix}.evaluation.jsonl" --summary "${prefix}.summary.json"
+      "${PYTHON}" src/experiments/collect_codeworkout_evaluation.py "${OUT}/harness/${relation}-${seed}/manifest.jsonl" "${status_root}" "${prefix}.evaluation.jsonl" --summary "${prefix}.summary.json"
     fi
   done
 done

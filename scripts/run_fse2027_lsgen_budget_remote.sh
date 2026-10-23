@@ -25,7 +25,7 @@ LEGACY_DESCRIPTION_CACHE=${EVAL_ROOT}/lsgen-seen-test.evaluation.pair-descriptio
 if [[ ! -s "${DESCRIPTION_CACHE}" ]] && [[ -s "${LEGACY_DESCRIPTION_CACHE}" ]]; then
   cp "${LEGACY_DESCRIPTION_CACHE}" "${DESCRIPTION_CACHE}"
 fi
-"${PYTHON}" scripts/seed_lsgen_always_three.py \
+"${PYTHON}" src/experiments/seed_lsgen_always_three.py \
   "${DATASET_ROOT}/seen-test-final.jsonl" \
   "${EVAL_ROOT}/lsgen-seen-test.evaluation.jsonl" "${ALWAYS_THREE}" \
   --tokenizer "${BASE_MODEL}" --cap 4096 --decoded-slack 128 --workers 24 \
@@ -42,7 +42,7 @@ fi
 test "$(wc -l < "${ALWAYS_THREE}")" -eq 997
 
 
-"${PYTHON}" scripts/audit_generation_token_cap.py \
+"${PYTHON}" src/experiments/audit_generation_token_cap.py \
   --input-root "${EVAL_ROOT}/portfolio-validation" \
   --input-root "${EVAL_ROOT}/selected-portfolios" \
   --input-root "${EVAL_ROOT}/codeworkout" \

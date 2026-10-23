@@ -70,7 +70,7 @@ evaluate_member() {
   local source_root=${ARCHIVE}/derived/java-eval/answer9-${split}/Answer${seed}/sources
   local status_root=${ARCHIVE}/derived/java-eval/answer9-${split}/Answer${seed}/status
   mkdir -p "${source_root}" "${status_root}"
-  "${PYTHON}" scripts/prepare_codeworkout_evaluation.py "${dataset}" "${generations}" \
+  "${PYTHON}" src/experiments/prepare_codeworkout_evaluation.py "${dataset}" "${generations}" \
     "${ARCHIVE}/source/test-case-query-results/test_cases-1-26-24.csv" \
     "${ARCHIVE}/source/test-case-query-results/test_case_37.csv" "${source_root}"
   docker run --rm --network none --read-only --user 1000:1000 \
@@ -79,7 +79,7 @@ evaluate_member() {
     -v "${status_root}:/status:rw" \
     -v "${WORK_ROOT}/scripts/run_codeworkout_java_container.sh:/runner.sh:ro" \
     --entrypoint /bin/bash "${IMAGE}" /runner.sh /sources /status
-  "${PYTHON}" scripts/collect_codeworkout_evaluation.py \
+  "${PYTHON}" src/experiments/collect_codeworkout_evaluation.py \
     "${ARCHIVE}/derived/java-eval/answer9-${split}/Answer${seed}/manifest.jsonl" \
     "${status_root}" "${evaluation}" --summary "${evaluation%.jsonl}.summary.json"
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
@@ -93,7 +93,7 @@ for seed in 2027 2028 2029 2030 2031 2032 2033 2034 2035; do
   evaluate_member "${seed}" validation "${valid}" "${valid_n}" "${OUTPUT_ROOT}/validation"
   selection_args+=(--evaluation "Answer${seed}=${OUTPUT_ROOT}/validation/Answer${seed}.evaluation.jsonl")
 done
-"${PYTHON}" scripts/select_answer_seed_portfolio.py "${selection_args[@]}" --output "${SELECTION}"
+"${PYTHON}" src/experiments/select_answer_seed_portfolio.py "${selection_args[@]}" --output "${SELECTION}"
 
 mapfile -t answer_members < <(
   "${PYTHON}" -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1]))["selected_unrestricted"]["members"]))' "${SELECTION}"
@@ -111,14 +111,14 @@ answer_args=()
 for name in "${answer_members[@]}"; do
   answer_args+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
 done
-"${PYTHON}" scripts/compose_answer_seed_control.py "${testset}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${testset}" \
   "${OUTPUT_ROOT}/answer9-test.evaluation.jsonl" --method Answer-9Choose3 "${answer_args[@]}"
 
 zpd_args=()
 for name in "${zpd_members[@]}"; do
   zpd_args+=(--stage "${name}=${LEGACY_ROOT}/test/${name}.evaluation.jsonl")
 done
-"${PYTHON}" scripts/compose_answer_seed_control.py "${testset}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${testset}" \
   "${OUTPUT_ROOT}/zpdpatch-test.evaluation.jsonl" --method ZPDPatch "${zpd_args[@]}"
 
 touch "${OUTPUT_ROOT}/COMPLETE"

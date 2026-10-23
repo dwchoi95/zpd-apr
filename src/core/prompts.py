@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 
-PROMPT_ROOT = Path(__file__).resolve().parents[1] / "prompts"
+PROMPT_ROOT = Path(__file__).resolve().parent / "prompts"
 
 
 def build_messages(

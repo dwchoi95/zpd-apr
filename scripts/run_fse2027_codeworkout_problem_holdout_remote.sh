@@ -24,7 +24,7 @@ export TOKENIZERS_PARALLELISM=false PYTORCH_ALLOC_CONF=expandable_segments:True
 
 while [[ ! -f "${RUN_ROOT}/eval/scale-1.5b/A3_COMPLETE" ]]; do sleep 60; done
 
-"${PYTHON}" scripts/audit_repair_dataset_tokens.py \
+"${PYTHON}" src/experiments/audit_repair_dataset_tokens.py \
   "${DATASETS}/train-answer.jsonl" \
   "${DATASETS}/train-strict.jsonl" \
   "${DATASETS}/train-progress.jsonl" \
@@ -71,7 +71,7 @@ evaluate_member() {
   local source_root=${ARCHIVE}/derived/java-eval/problem-holdout-${split}/${name}/sources
   local status_root=${ARCHIVE}/derived/java-eval/problem-holdout-${split}/${name}/status
   mkdir -p "${source_root}" "${status_root}"
-  "${PYTHON}" scripts/prepare_codeworkout_evaluation.py "${dataset}" "${generations}" \
+  "${PYTHON}" src/experiments/prepare_codeworkout_evaluation.py "${dataset}" "${generations}" \
     "${ARCHIVE}/source/test-case-query-results/test_cases-1-26-24.csv" \
     "${ARCHIVE}/source/test-case-query-results/test_case_37.csv" "${source_root}"
   docker run --rm --network none --read-only --user 1000:1000 \
@@ -80,7 +80,7 @@ evaluate_member() {
     -v "${status_root}:/status:rw" \
     -v "${WORK_ROOT}/scripts/run_codeworkout_java_container.sh:/runner.sh:ro" \
     --entrypoint /bin/bash "${IMAGE}" /runner.sh /sources /status
-  "${PYTHON}" scripts/collect_codeworkout_evaluation.py \
+  "${PYTHON}" src/experiments/collect_codeworkout_evaluation.py \
     "${ARCHIVE}/derived/java-eval/problem-holdout-${split}/${name}/manifest.jsonl" \
     "${status_root}" "${evaluation}" --summary "${evaluation%.jsonl}.summary.json"
   test "$(wc -l < "${evaluation}")" -eq "${expected}"
@@ -108,8 +108,8 @@ for seed in 2030 2031 2032 2033 2034 2035; do
   evaluate_member "${name}" Answer "${seed}" "${valid}" validation "${valid_n}"
   answer_args+=(--evaluation "${name}=${OUTPUT_ROOT}/validation/${name}.evaluation.jsonl")
 done
-"${PYTHON}" scripts/select_execution_portfolio.py "${mixed_args[@]}" --skip-budget-objective --output "${MIXED_SELECTION}"
-"${PYTHON}" scripts/select_answer_seed_portfolio.py "${answer_args[@]}" --output "${ANSWER_SELECTION}"
+"${PYTHON}" src/experiments/select_execution_portfolio.py "${mixed_args[@]}" --skip-budget-objective --output "${MIXED_SELECTION}"
+"${PYTHON}" src/experiments/select_answer_seed_portfolio.py "${answer_args[@]}" --output "${ANSWER_SELECTION}"
 
 mapfile -t mixed_members < <("${PYTHON}" -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1]))["best_unconstrained"]["members"]))' "${MIXED_SELECTION}")
 mapfile -t answer_members < <("${PYTHON}" -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1]))["selected_unrestricted"]["members"]))' "${ANSWER_SELECTION}")
@@ -126,17 +126,17 @@ for relation in Progress Strict Answer; do
     [[ "${name}" == ${relation}* ]] && stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
   done
 done
-"${PYTHON}" scripts/compose_answer_seed_control.py "${testset}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${testset}" \
   "${OUTPUT_ROOT}/mixed-test.evaluation.jsonl" --method Mixed-ExerciseHoldout-9Choose3 "${stages[@]}"
 stages=()
 for name in "${answer_members[@]}"; do stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl"); done
-"${PYTHON}" scripts/compose_answer_seed_control.py "${testset}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${testset}" \
   "${OUTPUT_ROOT}/answer9-test.evaluation.jsonl" --method Answer-ExerciseHoldout-9Choose3 "${stages[@]}"
 stages=()
 for name in Answer2027 Answer2028 Answer2029; do
   stages+=(--stage "${name}=${OUTPUT_ROOT}/test/${name}.evaluation.jsonl")
 done
-"${PYTHON}" scripts/compose_answer_seed_control.py "${testset}" \
+"${PYTHON}" src/experiments/compose_answer_seed_control.py "${testset}" \
   "${OUTPUT_ROOT}/answer3-test.evaluation.jsonl" --method Answer-ExerciseHoldout-3Seed "${stages[@]}"
 
 touch "${OUTPUT_ROOT}/COMPLETE"

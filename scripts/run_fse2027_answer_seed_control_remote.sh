@@ -80,7 +80,7 @@ seed_from_sequential() {
   local sequential_evaluation=$4
   local generations=${CONTROL_ROOT}/answer${seed}-${split}.generations.jsonl
   if [[ ! -e "${generations}" ]]; then
-    "${PYTHON}" scripts/extract_answer_generations.py \
+    "${PYTHON}" src/experiments/extract_answer_generations.py \
       "${dataset}" "${sequential_evaluation}" "${generations}" \
       --method "Answer${seed}"
   fi
@@ -113,7 +113,7 @@ run_split() {
   fi
 
   local dataset2028=${CONTROL_ROOT}/answer2028-${split}.dataset.jsonl
-  "${PYTHON}" scripts/build_answer_seed_control_subset.py \
+  "${PYTHON}" src/experiments/build_answer_seed_control_subset.py \
     "${dataset}" "${dataset2028}" \
     --previous-evaluation "${eval2027}"
   seed_from_sequential \
@@ -124,7 +124,7 @@ run_split() {
 
   local eval2028=${CONTROL_ROOT}/answer2028-${split}.evaluation.jsonl
   local dataset2029=${CONTROL_ROOT}/answer2029-${split}.dataset.jsonl
-  "${PYTHON}" scripts/build_answer_seed_control_subset.py \
+  "${PYTHON}" src/experiments/build_answer_seed_control_subset.py \
     "${dataset}" "${dataset2029}" \
     --previous-evaluation "${eval2027}" \
     --previous-evaluation "${eval2028}"
@@ -134,7 +134,7 @@ run_split() {
   run_candidate \
     "${split}" 2029 "${dataset2029}" "${SEED_CHECKPOINT_ROOT}/seed-2029/answer"
 
-  "${PYTHON}" scripts/compose_answer_seed_control.py \
+  "${PYTHON}" src/experiments/compose_answer_seed_control.py \
     "${dataset}" "${final_output}" \
     --stage "Answer2027=${eval2027}" \
     --stage "Answer2028=${eval2028}" \

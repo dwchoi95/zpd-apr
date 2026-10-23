@@ -37,7 +37,7 @@ class PrepareHistraBenchmarkTests(unittest.TestCase):
 
             out = tmp / "out"
             subprocess.run(
-                [sys.executable, str(ROOT / "scripts" / "prepare_histra_benchmark.py"),
+                [sys.executable, str(ROOT / "src" / "experiments" / "prepare_histra_benchmark.py"),
                  "--histra-data", str(tmp / "histra"), "--histra-approaches", str(approaches),
                  "--train-answer", str(tmp / "train.jsonl"), "--valid-answer", str(tmp / "valid.jsonl"),
                  "--out", str(out)],
