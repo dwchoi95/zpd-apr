@@ -6,6 +6,14 @@
 \usepackage[ruled]{algorithm}
 \usepackage[noend]{algpseudocode}
 \usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18,
+ tick label style={font=\scriptsize}, label style={font=\footnotesize},
+ legend style={font=\scriptsize, draw=none},
+ reference/.style={fill=white, draw=black},
+ baseline1/.style={fill=gray!35, draw=black},
+ baseline2/.style={fill=gray!60, draw=black},
+ baseline3/.style={fill=gray!85, draw=black}}
 \usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
 \hypersetup{pdftitle={ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence},pdfauthor={}}
 \title{ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence}
@@ -80,18 +88,35 @@ Existing techniques instantiate Algorithm~\ref{alg:generic} in different ways. A
 
 \begin{figure}[h]
 \centering
-\includegraphics{output/icse-seet-student-reach.pdf}
-\caption{Students' own steps and \textsc{LSGen}'s returns within each budget}
+\begin{tikzpicture}
+\begin{axis}[ybar, width=\columnwidth, height=4.6cm, bar width=6pt, enlarge x limits=0.22,
+ symbolic x coords={20,160,none}, xtick={20,160,none}, xticklabels={$B=20$, $B=160$, No budget},
+ ymin=0, ymax=122, ytick={0,25,50,75,100}, ylabel={Share of inputs (\%)},
+ xlabel={Edit budget (AST edit operations)}, ymajorgrids, grid style={gray!25},
+ nodes near coords, every node near coord/.append style={font=\tiny, rotate=90, anchor=west},
+ legend columns=2, area legend, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
+% rows:reach
+\addplot[reference] coordinates {(20,16.8) (160,86.8)};
+\addplot[baseline1] coordinates {(20,18.1) (160,49.7) (none,54.3)};
+\addplot[baseline2] coordinates {(20,16.7) (160,48.7) (none,54.9)};
+\addplot[baseline3] coordinates {(20,18.5) (160,74.4) (none,92.1)};
+% end rows
+\legend{Students' demonstrated reach, \textsc{Refactory}, \textsc{Brafar}, \textsc{LSGen}}
+\end{axis}
+\end{tikzpicture}
+\caption{Students' demonstrated reach and the repairs of three techniques within each budget}
 \label{fig:reach}
 \end{figure}
 
-Our key observation is that solution-supervised repair does not return a step from where the student stands. A return that replaces most of \(b\) is not a continuation of it. Locating a student's regions takes measurement of its own (Section~\ref{sec:introduction}), so we count how much of \(b\) the return keeps. We measure it by the \(\mathrm{ted}^{\dagger}\) of Algorithm~\ref{alg:generic} and by token retention (Section~\ref{sec:experiment}). More precisely, we call a return whose distance from \(b\) is at most a declared budget \(B\) a \emph{bounded step}, where \(B\) is the amount of a student's program a course is willing to give up to one repair.
+Our key observation is that solution-supervised repair does not return a step from where the student stands. A return that replaces most of \(b\) is not a continuation of it, so we measure how much of \(b\) a return keeps by the \(\mathrm{ted}^{\dagger}\) of Algorithm~\ref{alg:generic} and by token retention. A course can declare as the budget \(B\) how much of a student's program it is willing to give up to one repair.
 
-Figure~\ref{fig:reach} measures how large a step the students themselves take and what \textsc{LSGen} repairs within it, over the 997 Seen inputs. On Seen the 2,581 steps with a defined distance have a median of 15, and one step leaves a median of 96.1\% of the submission's tokens in place. Unrestricted, the returns of \textsc{LSGen} sit at 88.27 and those of the zero-shot model at 27.25. We call the largest step a student took unaided on a problem their \emph{demonstrated reach}. Its median is 39, with quartiles at 15 and 83. An average \textsc{LSGen} return is 2.5 times an average student step and larger than the biggest step the median student took alone. Twenty AST edit operations is close to the median student step and within the demonstrated reach of 30.9\% of students, where \textsc{LSGen} repairs 13.9\%, and 160 covers the demonstrated reach of 90.3\% of students. Surprisingly, four out of five of the submissions \textsc{LSGen} can repair are not repaired within one step, since it repairs 80.2\% of them when nothing bounds the step. This measurement counts what a student changes at once, not which steps lay inside that student's region.
+Figure~\ref{fig:reach} shows how large a step students take by themselves and how much the three techniques repair within it, over the 1,753 inputs of the RQ1 benchmark. The 6,820 steps that students took have a median of 19 AST edit operations, and one step keeps a median of 96.4\% of the submission's tokens. We call the largest step a student took unaided on a problem their \emph{demonstrated reach}; its median is 49, with quartiles at 26 and 116. The repaired returns of the three techniques are 52.4--127.7\% larger than an average student step and larger than the demonstrated reach of the median student. A budget of 20, close to the median student step, covers the demonstrated reach of 16.8\% of students, and a budget of 160 covers 86.8\%. Surprisingly, within a budget of 20 \textsc{LSGen} repairs 79.9\% fewer inputs than without a budget, because most of its returns are larger than one step.
 
-Prior techniques already ask for a small change: \textsc{Refactory} synthesizes minimal repairs~\cite{hu2019re} and \textsc{LSGen} instructs the model to make minimal changes~\cite{dai2026learner}. One alternative is to bound the step of an existing technique. The 13.9\% above is that alternative, and it costs \textsc{LSGen} 66.3 of its 80.2 points, because a generator steered toward an accepted solution has no smaller candidate to fall back on. Returning a hint sidesteps the budget, but the student still has to write the step, and the hint is still fitted to a solution space~\cite{rivers2017data,price2017isnap,roest2024next}. Another alternative is to swap the target for the student's own later submission and leave everything else alone. That is not a one-variable intervention: the same trajectories yield 40,454 Answer examples but 16,973 and 21,416 under Strict and Progress, and the source frequencies move too. What a rule retains moves with it too: among three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), verdict-only filtering cannot tell the second from the third, while test-wise progress retains the second, which keeps every passed test and gains one, and not the third, which gains one but loses another. Extra candidates also raise the repair rate on their own: three fixed draws alone account for 15.1 points (Section~\ref{sec:experiment}), so a comparison that does not hold the candidate budget fixed credits the target with them~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}.
+Prior techniques already ask for a small change: \textsc{Refactory} synthesizes minimal repairs~\cite{hu2019re} and \textsc{LSGen} instructs the model to make minimal changes~\cite{dai2026learner}. One alternative is to bound the step of an existing technique. The budget of 20 above is that alternative, and it makes \textsc{Refactory}, \textsc{Brafar}, and \textsc{LSGen} repair 66.7\%, 69.6\%, and 79.9\% fewer inputs than without a budget, because a generator steered toward an accepted solution has no smaller candidate to fall back on. Returning a hint sidesteps the budget, but the student still has to write the step, and the hint is still fitted to a solution space~\cite{rivers2017data,price2017isnap,roest2024next}.
 
-These limitations motivate our approach, which repairs under the guidance of the student's own trajectory. The goal of this paper is to repair a buggy program into one that passes the tests while keeping as much of the submission as possible. In terms of Algorithm~\ref{alg:generic}, we train the generator toward the student's own later submission rather than toward an accepted solution or a solution space. A later submission is a program the student actually produced, so it is reachable by construction; we use it as a preference and let the tests decide what is returned. Our work thus tackles two challenges, (1) that the student's later submission marks the next step only coarsely and may itself be accepted, and (2) that attributing a gain to the target requires holding the sources, the example counts, and the candidate budget fixed.
+Another alternative is to use the student's later submission as the target, but this is far from straightforward in practice, because the verdict does not reveal what the next step is. In the training corpus, 74.7\% of the 26,427 consecutive submission pairs before acceptance keep the same verdict, so the verdict alone cannot tell whether such a step moved forward or backward. Even counting passed tests, the challenge remains: among three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), the second and the third both pass two tests, but only the second keeps the test that was already passing. Moreover, changing the target rule changes the training population with it. The same trajectories yield 40,454 Answer examples but 16,973 and 21,416 under Strict and Progress, and the source frequencies differ too. Because extra candidates alone raise the repair rate (reducing the portfolio to one checkpoint repairs 19.3\% fewer inputs; Section~\ref{sec:experiment}), a comparison that does not hold these differences fixed credits the target with them~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}.
+
+These limitations motivate our approach, which learns the next step from student trajectories. The goal of this paper is to repair a buggy program into one that passes the tests with a patch that stays within the student's Zone of Proximal Development (ZPD), the region a student can reach on their own with help~\cite{cole1978mind}. Because a ZPD cannot be observed directly, we approximate it from the execution evidence of student trajectories, as tutoring systems approximate it from observable performance~\cite{murray2002toward}: a step within that region is one of the size students actually take that moves the submission forward on the tests. In terms of Algorithm~\ref{alg:generic}, we train the generator toward such steps, the later submissions of student trajectories, rather than toward an accepted solution or a solution space. A later submission is a program the student actually produced, so it is reachable by construction; we use it as a preference and let the tests decide what is returned. Our work thus tackles two key challenges: (1) identifying, without an instructor's solution, the steps that move forward from execution evidence alone, even though most steps leave the verdict unchanged, and (2) separating the effect of the target from the training population and the candidate budget that change with the target rule.
 
 \begin{figure}[h]
 \centering
