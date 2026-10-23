@@ -389,35 +389,37 @@ We trained and ran \textsc{ZPDPatch}, and judged every returned program, on a ma
 \noindent\textbf{Baselines.} We selected a recent technique from each of the two repair groups of Section~\ref{sec:formulation}: the reference-driven \textsc{Mentored}~\cite{choi2025automated} and the model-driven \textsc{LSGen}~\cite{dai2026learner}. \textsc{Mentored} combines the correct programs of the same problem into new structures and returns a modification fitted to the buggy submission once the tests validate it. \textsc{LSGen} retrieves other students' wrong-to-correct pairs whose edits best match the buggy submission, gives them to a Large Language Model (LLM), and repeats the repair, retrieving again after each failure. As the LLM, we used GPT-4o~\cite{hurst2024gpt}, the best-performing model in the evaluation of \textsc{LSGen} that is still available.
 
 \begin{table}[h]
-\caption{RQ1 benchmark problems}
+\caption{RQ1 benchmark problems and their students' steps}
 \label{tab:data}
-\centering\footnotesize
-\begin{tabular}{ll||rrr}
+\centering\scriptsize
+\begin{tabular}{ll||rrrrr}
 \toprule
-Problem & Concept & \#Inputs & \#Tests & Avg LOC \\
+Problem & Concept & Inputs & Tests & LOC & Step & Reach \\
 \midrule
-p02623 & Prefix sums, two pointers & 102 & 20 & 26.8 \\
-p02659 & Floating-point precision & 170 & 22 & 5.7 \\
-p02686 & Greedy ordering of strings & 109 & 32 & 44.2 \\
-p02694 & Simulation, integers & 101 & 18 & 8.8 \\
-p02742 & Parity, edge cases & 120 & 10 & 8.4 \\
-p02743 & Precision of square roots & 155 & 27 & 8.2 \\
-p02761 & Digits, leading zero & 143 & 18 & 23.9 \\
-p02823 & Parity, boundary moves & 106 & 20 & 11.1 \\
-p02891 & Runs across repetitions & 170 & 15 & 32.3 \\
-p02975 & Counting, XOR & 110 & 24 & 23.2 \\
-p03240 & Exhaustive search & 116 & 23 & 23.8 \\
-p03324 & Arithmetic, special case & 109 & 16 & 7.5 \\
-p03438 & Counting operations & 101 & 28 & 19.2 \\
-p03838 & Case analysis on signs & 141 & 14 & 19.8 \\
+% rows:data
+p02623 & Two-stack prefix sums & 102 & 20 & 26.8 & 30.5 & 153.5 \\
+p02659 & Exact decimals & 170 & 22 & 5.7 & 12 & 30 \\
+p02686 & Bracket ordering & 109 & 32 & 44.2 & 23 & 143 \\
+p02694 & Interest loop & 101 & 18 & 8.8 & 6 & 13 \\
+p02742 & Board parity & 120 & 10 & 8.4 & 17 & 23 \\
+p02743 & Square-root bounds & 155 & 27 & 8.2 & 19 & 36 \\
+p02761 & Digit constraints & 143 & 18 & 23.9 & 22 & 50 \\
+p02823 & Distance parity & 106 & 20 & 11.1 & 23 & 50 \\
+p02891 & Repeated-string runs & 170 & 15 & 32.3 & 32 & 135.5 \\
+p02975 & XOR circle & 110 & 24 & 23.2 & 33 & 114 \\
+p03240 & Center search & 116 & 23 & 23.8 & 23 & 85 \\
+p03324 & Divisibility count & 109 & 16 & 7.5 & 15 & 32 \\
+p03438 & Array operations & 101 & 28 & 19.2 & 19 & 58 \\
+p03838 & Sign cases & 141 & 14 & 19.8 & 22 & 76 \\
+% end rows
 \midrule
-Total & & 1,753 & 287 & 18.6 \\
+Total & & 1,753 & 287 & 18.6 & 19 & 49 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-% \noindent\textbf{Benchmarks.} RQ1에는 Project CodeNet~\cite{puri2021codenet}의 Python 제출 가운데 FixEval~\cite{haque2023fixeval}의 테스트가 딸린 AtCoder 문제 14개를 쓴다. 학생이 첫 accepted 제출 전에 서로 같지 않은 wrong-answer 제출을 둘 이상 냈고, 모든 제출이 파싱되며, 테스트가 모든 verdict를 재현하고, 우리 실행 환경에서도 버기 프로그램이 통과하지 못하는 trajectory만 남겼다. 이런 trajectory가 100개 이상인 문제만 골라 1,753개 trajectory를 입력으로 쓴다. Table~\ref{tab:data}는 문제마다 주로 다루는 개념, 입력 수, 테스트 수, 버기 프로그램의 평균 줄 수(Avg LOC)를 보인다. 문제들은 경계 조건, 부동소수점 정밀도, 누적 합 같은 입문 프로그래밍 개념을 다룬다.
-\noindent\textbf{Benchmarks.} For RQ1, we use 14 AtCoder problems whose Python submissions come from Project CodeNet~\cite{puri2021codenet} and whose tests come from FixEval~\cite{haque2023fixeval}. We kept a trajectory only if the student made at least two wrong-answer submissions, not all identical, before their first accepted one, every submission parses, the tests reproduce every verdict, and the buggy program still fails in our execution environment. Choosing the problems with at least 100 such trajectories yields 1,753 trajectories as inputs. Table~\ref{tab:data} lists, for each problem, the concept it mainly exercises, its number of inputs, its number of tests, and the average number of lines of its buggy programs (Avg LOC). The problems cover introductory programming concepts such as edge cases, floating-point precision, and prefix sums.
+% \noindent\textbf{Benchmarks.} RQ1에는 Project CodeNet~\cite{puri2021codenet}의 Python 제출 가운데 FixEval~\cite{haque2023fixeval}의 테스트가 딸린 AtCoder 문제 14개를 쓴다. 학생이 첫 accepted 제출 전에 서로 같지 않은 wrong-answer 제출을 둘 이상 냈고, 모든 제출이 파싱되며, 테스트가 모든 verdict를 재현하고, 우리 실행 환경에서도 버기 프로그램이 통과하지 못하는 trajectory만 남겼다. 이런 trajectory가 100개 이상인 문제만 골라 1,753개 trajectory를 입력으로 쓴다. Table~\ref{tab:data}는 문제마다 주로 다루는 개념, 입력 수(Inputs), 테스트 수(Tests), 버기 프로그램의 평균 줄 수(LOC), 그리고 그 문제 학생들의 걸음(Step)과 demonstrated reach(Reach)의 중앙값을 AST edit operation 단위로 보인다. 문제는 정수 계산을 쓰는 반복문부터 탐색과 정렬까지 걸쳐 있고, 학생 걸음의 중앙값은 문제에 따라 6에서 33까지 다르다.
+\noindent\textbf{Benchmarks.} For RQ1, we use 14 AtCoder problems whose Python submissions come from Project CodeNet~\cite{puri2021codenet} and whose tests come from FixEval~\cite{haque2023fixeval}. We kept a trajectory only if the student made at least two wrong-answer submissions, not all identical, before their first accepted one, every submission parses, the tests reproduce every verdict, and the buggy program still fails in our execution environment. Choosing the problems with at least 100 such trajectories yields 1,753 trajectories as inputs. Table~\ref{tab:data} lists, for each problem, the concept it mainly exercises, its numbers of inputs (Inputs) and tests (Tests), the average number of lines of its buggy programs (LOC), and the medians of its students' steps (Step) and demonstrated reach (Reach) in AST edit operations. The problems range from loops with integer arithmetic to search and ordering, and the median student step ranges from 6 to 33 operations across them.
 
 % RQ2--RQ4에는 같은 Python800의 더 큰 코퍼스를 쓴다. 문제를 trajectory 수 순으로 정렬해 상위 90\%인 492개를 Seen, 나머지 54개를 Unseen으로 두고, Seen trajectory는 문제마다 80:10:10으로 학습·검증·테스트에 나눈다. 테스트 입력은 성공한 trajectory의 마지막 non-AC 제출이며, Seen 997개(328문제, 평균 15.7줄)와 Unseen 250개(54문제, 평균 8.3줄)다. Seen 입력의 70.4\%는 wrong answer이고, 나머지는 runtime error, time limit, compile error다. Java에는 TIKTOC~\cite{duan2024tiktoc}가 공개한 입문 프로그래밍(CS1) 과목의 CodeWorkout 제출과 강사가 만든 테스트를 쓴다. 학생 224명과 exercise 17개의 trajectory 1,125개이며, 학습에서 뺀 학생 33명의 trajectory 181개가 테스트다.
 For RQ2--RQ4, we use a larger corpus from the same Python800 benchmark. Ranking the problems by trajectory count, we assign the top 90\%, 492 problems, to Seen and the remaining 54 to Unseen, and split the Seen trajectories of every problem 80:10:10 into training, validation, and test. A test input is the last non-AC submission of an eventually successful trajectory: 997 on Seen (328 problems, 15.7 lines on average) and 250 on Unseen (54 problems, 8.3 lines). On Seen, 70.4\% of the inputs fail with a wrong answer and the rest with a runtime error, a time limit, or a compile error. For Java, we use the CodeWorkout submissions and instructor-written tests of an Introductory Programming (CS1) course released by TIKTOC~\cite{duan2024tiktoc}: 1,125 trajectories of 224 students on 17 exercises, of which the 181 trajectories of the 33 students held out of training form the test set.

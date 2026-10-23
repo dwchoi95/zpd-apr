@@ -349,34 +349,36 @@ We trained and ran \textsc{ZPDPatch}, and judged every returned program, on a ma
 \noindent\textbf{Baselines.} We selected a recent technique from each of the two repair groups of Section~\ref{sec:formulation}: the reference-driven \textsc{Mentored}~\cite{choi2025automated} and the model-driven \textsc{LSGen}~\cite{dai2026learner}. \textsc{Mentored} combines the correct programs of the same problem into new structures and returns a modification fitted to the buggy submission once the tests validate it. \textsc{LSGen} retrieves other students' wrong-to-correct pairs whose edits best match the buggy submission, gives them to a Large Language Model (LLM), and repeats the repair, retrieving again after each failure. As the LLM, we used GPT-4o~\cite{hurst2024gpt}, the best-performing model in the evaluation of \textsc{LSGen} that is still available.
 
 \begin{table}[h]
-\caption{RQ1 benchmark problems}
+\caption{RQ1 benchmark problems and their students' steps}
 \label{tab:data}
-\centering\footnotesize
-\begin{tabular}{ll||rrr}
+\centering\scriptsize
+\begin{tabular}{ll||rrrrr}
 \toprule
-Problem & Concept & \#Inputs & \#Tests & Avg LOC \\
+Problem & Concept & Inputs & Tests & LOC & Step & Reach \\
 \midrule
-p02623 & Prefix sums, two pointers & 102 & 20 & 26.8 \\
-p02659 & Floating-point precision & 170 & 22 & 5.7 \\
-p02686 & Greedy ordering of strings & 109 & 32 & 44.2 \\
-p02694 & Simulation, integers & 101 & 18 & 8.8 \\
-p02742 & Parity, edge cases & 120 & 10 & 8.4 \\
-p02743 & Precision of square roots & 155 & 27 & 8.2 \\
-p02761 & Digits, leading zero & 143 & 18 & 23.9 \\
-p02823 & Parity, boundary moves & 106 & 20 & 11.1 \\
-p02891 & Runs across repetitions & 170 & 15 & 32.3 \\
-p02975 & Counting, XOR & 110 & 24 & 23.2 \\
-p03240 & Exhaustive search & 116 & 23 & 23.8 \\
-p03324 & Arithmetic, special case & 109 & 16 & 7.5 \\
-p03438 & Counting operations & 101 & 28 & 19.2 \\
-p03838 & Case analysis on signs & 141 & 14 & 19.8 \\
+% rows:data
+p02623 & Two-stack prefix sums & 102 & 20 & 26.8 & 30.5 & 153.5 \\
+p02659 & Exact decimals & 170 & 22 & 5.7 & 12 & 30 \\
+p02686 & Bracket ordering & 109 & 32 & 44.2 & 23 & 143 \\
+p02694 & Interest loop & 101 & 18 & 8.8 & 6 & 13 \\
+p02742 & Board parity & 120 & 10 & 8.4 & 17 & 23 \\
+p02743 & Square-root bounds & 155 & 27 & 8.2 & 19 & 36 \\
+p02761 & Digit constraints & 143 & 18 & 23.9 & 22 & 50 \\
+p02823 & Distance parity & 106 & 20 & 11.1 & 23 & 50 \\
+p02891 & Repeated-string runs & 170 & 15 & 32.3 & 32 & 135.5 \\
+p02975 & XOR circle & 110 & 24 & 23.2 & 33 & 114 \\
+p03240 & Center search & 116 & 23 & 23.8 & 23 & 85 \\
+p03324 & Divisibility count & 109 & 16 & 7.5 & 15 & 32 \\
+p03438 & Array operations & 101 & 28 & 19.2 & 19 & 58 \\
+p03838 & Sign cases & 141 & 14 & 19.8 & 22 & 76 \\
+% end rows
 \midrule
-Total & & 1,753 & 287 & 18.6 \\
+Total & & 1,753 & 287 & 18.6 & 19 & 49 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Benchmarks.} For RQ1, we use 14 AtCoder problems whose Python submissions come from Project CodeNet~\cite{puri2021codenet} and whose tests come from FixEval~\cite{haque2023fixeval}. We kept a trajectory only if the student made at least two wrong-answer submissions, not all identical, before their first accepted one, every submission parses, the tests reproduce every verdict, and the buggy program still fails in our execution environment. Choosing the problems with at least 100 such trajectories yields 1,753 trajectories as inputs. Table~\ref{tab:data} lists, for each problem, the concept it mainly exercises, its number of inputs, its number of tests, and the average number of lines of its buggy programs (Avg LOC). The problems cover introductory programming concepts such as edge cases, floating-point precision, and prefix sums.
+\noindent\textbf{Benchmarks.} For RQ1, we use 14 AtCoder problems whose Python submissions come from Project CodeNet~\cite{puri2021codenet} and whose tests come from FixEval~\cite{haque2023fixeval}. We kept a trajectory only if the student made at least two wrong-answer submissions, not all identical, before their first accepted one, every submission parses, the tests reproduce every verdict, and the buggy program still fails in our execution environment. Choosing the problems with at least 100 such trajectories yields 1,753 trajectories as inputs. Table~\ref{tab:data} lists, for each problem, the concept it mainly exercises, its numbers of inputs (Inputs) and tests (Tests), the average number of lines of its buggy programs (LOC), and the medians of its students' steps (Step) and demonstrated reach (Reach) in AST edit operations. The problems range from loops with integer arithmetic to search and ordering, and the median student step ranges from 6 to 33 operations across them.
 
 For RQ2--RQ4, we use a larger corpus from the same Python800 benchmark. Ranking the problems by trajectory count, we assign the top 90\%, 492 problems, to Seen and the remaining 54 to Unseen, and split the Seen trajectories of every problem 80:10:10 into training, validation, and test. A test input is the last non-AC submission of an eventually successful trajectory: 997 on Seen (328 problems, 15.7 lines on average) and 250 on Unseen (54 problems, 8.3 lines). On Seen, 70.4\% of the inputs fail with a wrong answer and the rest with a runtime error, a time limit, or a compile error. For Java, we use the CodeWorkout submissions and instructor-written tests of an Introductory Programming (CS1) course released by TIKTOC~\cite{duan2024tiktoc}: 1,125 trajectories of 224 students on 17 exercises, of which the 181 trajectories of the 33 students held out of training form the test set.
 
