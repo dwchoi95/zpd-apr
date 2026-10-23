@@ -59,9 +59,10 @@ class PaperBudgetTableTest(unittest.TestCase):
 
     def test_claims_are_rendered_from_evidence(self) -> None:
         lsgen, current = self.fixtures()
-        claims = expected_claims(lsgen, current)
-        self.assertTrue(claims[0].startswith("Per-budget Seen rates are 10.0/20.0/5.0"))
-        self.assertIn("and 15.0/25.0/30.0 at 160", claims[0])
+        claims, frontier = expected_claims(lsgen, current)
+        self.assertTrue(frontier.startswith("Per-budget Seen rates are 10.0/20.0/5.0"))
+        self.assertIn("and 15.0/25.0/30.0 at 160", frontier)
+        self.assertTrue(any("At TED 20" in claim for claim in claims))
 
     def test_verify_accepts_reported_prose_without_a_figure(self) -> None:
         lsgen, current = self.fixtures()

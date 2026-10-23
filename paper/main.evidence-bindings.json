@@ -259,25 +259,6 @@
       ]
     },
     {
-      "template": "Per-budget Seen rates are \\CurrentOnlyAnswerThreeTEDFiveSeenRR/22.5/4.8\\% at TED 5, \\CurrentOnlyAnswerThreeTEDTenSeenRR/32.4/8.0 at 10, \\CurrentOnlyAnswerThreeTEDTwentySeenRR/44.0/13.9 at 20, \\CurrentOnlyAnswerThreeTEDFortySeenRR/50.9/30.4 at 40, \\CurrentOnlyAnswerThreeTEDEightySeenRR/56.0/50.8 at 80, and \\CurrentOnlyAnswerThreeTEDOneSixtySeenRR/57.9/67.6 at 160",
-      "commands": [
-        "CurrentOnlyAnswerThreeTEDEightySeenRR",
-        "CurrentOnlyAnswerThreeTEDFiveSeenRR",
-        "CurrentOnlyAnswerThreeTEDFortySeenRR",
-        "CurrentOnlyAnswerThreeTEDOneSixtySeenRR",
-        "CurrentOnlyAnswerThreeTEDTenSeenRR",
-        "CurrentOnlyAnswerThreeTEDTwentySeenRR"
-      ]
-    },
-    {
-      "template": "On Unseen, Mixed versus current-only Answer-3Seed is 38.8\\% versus \\CurrentOnlyAnswerThreeTEDFiveUnseenRR\\% at 5, 48.0\\% versus \\CurrentOnlyAnswerThreeTEDTenUnseenRR\\% at 10, and 57.6\\% versus \\CurrentOnlyAnswerThreeTEDTwentyUnseenRR\\% at 20",
-      "commands": [
-        "CurrentOnlyAnswerThreeTEDFiveUnseenRR",
-        "CurrentOnlyAnswerThreeTEDTenUnseenRR",
-        "CurrentOnlyAnswerThreeTEDTwentyUnseenRR"
-      ]
-    },
-    {
       "template": "The gains are \\PromptFrozenMixedCurrentMinusFullSeen/\\PromptFrozenAnswerNineCurrentMinusFullSeen Seen points and \\PromptFrozenMixedCurrentMinusFullUnseen/\\PromptFrozenAnswerNineCurrentMinusFullUnseen Unseen points for Mixed/Answer, with all intervals excluding zero.",
       "commands": [
         "PromptFrozenAnswerNineCurrentMinusFullSeen",

@@ -62,12 +62,13 @@ def expected_claims(lsgen: dict[str, Any], current_only: dict[str, Any]) -> list
         ", ".join(f"{triple} at {budget}" for triple, budget in zip(triples[1:-1], BUDGETS[1:-1])) +
         f", and {triples[-1]} at {BUDGETS[-1]}"
     )
-    return [
-        frontier,
+    claims = [
         rf"At TED 20, Mixed repairs {series['ZPDPatch'][index]}\% of Seen inputs versus LSGen's {series['LSGen'][index]}\%",
         f"difference [{lo:.2f}, {hi:.2f}]",
         f"over LSGen is {rate(mean['difference'])} points [{mean_lo:.2f}, {mean_hi:.2f}]",
     ]
+    # The per-budget series reaches the reader either as this sentence or as the guarded figure.
+    return claims, frontier
 
 
 def figure_literals(script: Path) -> dict[str, list[float]]:
@@ -91,7 +92,11 @@ def verify(paper: Path, figure_script: Path, lsgen_path: Path, current_only_path
         if r"\ref{fig:budget}" not in paper_text:
             raise ValueError("paper includes the frontier figure without referencing it")
 
-    claims = expected_claims(lsgen, current_only)
+    claims, frontier = expected_claims(lsgen, current_only)
+    if not checked_figure:
+        claims = claims + [frontier]
+    elif frontier in paper_text:
+        claims = claims + [frontier]
     missing = [claim for claim in claims if claim not in paper_text]
     if missing:
         raise ValueError("paper frontier prose differs from evidence: " + repr(missing))
