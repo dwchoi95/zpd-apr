@@ -168,6 +168,32 @@ def breadth_figure(data, out):
     plt.close(fig)
 
 
+def breadth_compact_figure(data, out):
+    """One panel for Section IV-D: what more draws buy and what they cost."""
+    fig, ax = plt.subplots(figsize=(3.33, 1.85))
+    for split, colour, marker in (('seen', ACCENT, 'o'), ('unseen', BASE, '^')):
+        label = 'Seen' if split == 'seen' else 'Unseen'
+        ax.plot(data['k'], data['k_union'][split], marker=marker, linestyle='-', color=colour,
+                markerfacecolor='white', markeredgewidth=0.8, label=label)
+        for k, rate, calls in zip(data['k'], data['k_union'][split], data['k_calls'][split]):
+            if k in (3, 20):
+                ax.annotate(f'{calls:.2f} calls', xy=(k, rate), xytext=(0, -9 if split == 'seen' else 5),
+                            textcoords='offset points', ha='center', fontsize=6, color='#444444')
+    ax.set_xscale('log', base=2)
+    ax.set_xticks(data['k'])
+    ax.set_xticklabels([str(k) for k in data['k']])
+    ax.set_xlabel('Candidate budget $k$ (draws at $T=0.8$)')
+    ax.set_ylabel('Union repair rate (%)')
+    ax.set_ylim(35, 92)
+    ax.grid(axis='y')
+    ax.set_axisbelow(True)
+    for side in ('top', 'right'):
+        ax.spines[side].set_visible(False)
+    ax.legend(loc='lower right', handlelength=1.6)
+    fig.savefig(out)
+    plt.close(fig)
+
+
 def check(series, data, reach):
     """Guard against evidence drift: values must match the reported numbers."""
     assert reach["Students' own step within $B$"] == [10.7, 18.5, 30.9, 51.2, 73.4, 90.3], reach
@@ -177,6 +203,7 @@ def check(series, data, reach):
     assert series['Current $A_3$'] == [16.9, 28.5, 40.3, 51.4, 61.0, 66.8], series['Current $A_3$']
     assert data['union']['seen'][3] == 57.6 and data['single']['seen'][3] == 42.5
     assert data['k_union']['seen'][-1] == 74.8 and data['k_calls']['seen'][-1] == 7.44
+    assert data['k_union']['seen'][0] == 41.0 and data['k_union']['unseen'][-1] == 84.0
 
 
 if __name__ == '__main__':
@@ -196,5 +223,6 @@ if __name__ == '__main__':
     args.outdir.mkdir(parents=True, exist_ok=True)
     budget_figure(series, args.outdir / 'fse2027-budget-frontier.pdf')
     breadth_figure(data, args.outdir / 'fse2027-breadth.pdf')
+    breadth_compact_figure(data, args.outdir / 'icse-seet-breadth-cost.pdf')
     reach_figure(reach, args.outdir / 'icse-seet-student-reach.pdf')
     print(json.dumps({'budget_frontier': series, 'breadth_k_union': data['k_union'], 'student_reach': reach}, indent=1))
