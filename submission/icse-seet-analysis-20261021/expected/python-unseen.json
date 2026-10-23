@@ -1,0 +1,107 @@
+{
+  "problem_id": {
+    "left": "Paired-source-Progress3",
+    "right": "Paired-source-Answer3",
+    "left_summary": {
+      "examples": 250,
+      "problems": 54,
+      "pr": 0.7859489212975146,
+      "rr": 0.656,
+      "ir": 0.72,
+      "problem_balanced_rr": 0.6651234567901234,
+      "mean_ted_buggy_fixed_on_repaired": 8.118881118881118,
+      "parseable_repaired_for_buggy_fixed_ted": 143,
+      "mean_ted_fixed_oracle_on_repaired": 10.231707317073171,
+      "parseable_repaired_for_fixed_oracle_ted": 164
+    },
+    "right_summary": {
+      "examples": 250,
+      "problems": 54,
+      "pr": 0.8588902607196724,
+      "rr": 0.768,
+      "ir": 0.844,
+      "problem_balanced_rr": 0.7851410934744267,
+      "mean_ted_buggy_fixed_on_repaired": 17.362573099415204,
+      "parseable_repaired_for_buggy_fixed_ted": 171,
+      "mean_ted_fixed_oracle_on_repaired": 16.53125,
+      "parseable_repaired_for_fixed_oracle_ted": 192
+    },
+    "rr_contingency": {
+      "both_repaired": 154,
+      "left_only": 10,
+      "right_only": 38,
+      "neither": 48
+    },
+    "exact_mcnemar_two_sided_p": 6.169640777642371e-05,
+    "paired_ted": {
+      "joint_repairs": 134,
+      "joint_repair_problems": 50,
+      "right_minus_left_mean_ted": 6.8283582089552235,
+      "instance_bootstrap_95ci": [
+        4.566977611940299,
+        9.388059701492537
+      ],
+      "problem_cluster_bootstrap_95ci": [
+        4.576861702127659,
+        9.391675000000001
+      ],
+      "right_minus_left_problem_balanced_mean_ted": 9.398333333333333,
+      "problem_bootstrap_95ci": [
+        5.570908333333334,
+        13.951758333333334
+      ]
+    },
+    "paired": [
+      {
+        "metric": "rr",
+        "examples": 250,
+        "problems": 54,
+        "left_minus_right_instance_weighted": -0.112,
+        "cluster_bootstrap_95ci": [
+          -0.17372922256396833,
+          -0.04878048780487805
+        ],
+        "left_minus_right_problem_balanced": -0.12001763668430335,
+        "problem_bootstrap_95ci": [
+          -0.18055776014109345,
+          -0.06009479717813054
+        ]
+      },
+      {
+        "metric": "pr",
+        "examples": 250,
+        "problems": 54,
+        "left_minus_right_instance_weighted": -0.07294133942215784,
+        "cluster_bootstrap_95ci": [
+          -0.11299920957680777,
+          -0.03532235364423233
+        ],
+        "left_minus_right_problem_balanced": -0.0768306686647598,
+        "problem_bootstrap_95ci": [
+          -0.11773379214849033,
+          -0.039222539351565125
+        ]
+      },
+      {
+        "metric": "ir",
+        "examples": 250,
+        "problems": 54,
+        "left_minus_right_instance_weighted": -0.124,
+        "cluster_bootstrap_95ci": [
+          -0.16854040208360238,
+          -0.0796812749003984
+        ],
+        "left_minus_right_problem_balanced": -0.12376543209876543,
+        "problem_bootstrap_95ci": [
+          -0.1692691798941799,
+          -0.08024581128747797
+        ]
+      }
+    ]
+  },
+  "joint_repairs": 154,
+  "retention_means": {
+    "token_retention": 0.06463962706654527,
+    "line_retention": 0.10359543859925831
+  }
+}

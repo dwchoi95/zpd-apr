@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "scope": "ICSE-SEET literal manuscript assertions expanded from retained evidence; not a LaTeX input",
+  "bindings": [
+    {
+      "template": "at \\CurrentOnlyAnswerThreeSeenRR\\% Seen and \\CurrentOnlyAnswerThreeUnseenRR\\% Unseen.",
+      "commands": [
+        "CurrentOnlyAnswerThreeSeenRR",
+        "CurrentOnlyAnswerThreeUnseenRR"
+      ]
+    },
+    {
+      "template": "Answer-9Choose3 & C & \\CurrentOnlyAnswerNineSeenRR & 35.41 & \\CurrentOnlyAnswerNineUnseenRR & 20.06",
+      "commands": [
+        "CurrentOnlyAnswerNineSeenRR",
+        "CurrentOnlyAnswerNineUnseenRR"
+      ]
+    },
+    {
+      "template": "Progress-minus-Answer RR is \\PairedTargetProgressMinusAnswerSeen points \\PairedTargetProgressMinusAnswerSeenCI on Seen and \\PairedTargetProgressMinusAnswerUnseen \\PairedTargetProgressMinusAnswerUnseenCI on Unseen",
+      "commands": [
+        "PairedTargetProgressMinusAnswerSeen",
+        "PairedTargetProgressMinusAnswerSeenCI",
+        "PairedTargetProgressMinusAnswerUnseen",
+        "PairedTargetProgressMinusAnswerUnseenCI"
+      ]
+    },
+    {
+      "template": "Among \\PairedTargetJointRepairsSeen Seen and \\PairedTargetJointRepairsUnseen Unseen jointly repaired inputs, \\PairedTargetJointTEDRepairsSeen and \\PairedTargetJointTEDRepairsUnseen have defined source-to-repair TED for both methods.",
+      "commands": [
+        "PairedTargetJointRepairsSeen",
+        "PairedTargetJointRepairsUnseen",
+        "PairedTargetJointTEDRepairsSeen",
+        "PairedTargetJointTEDRepairsUnseen"
+      ]
+    },
+    {
+      "template": "Answer-minus-Progress mean TED is \\PairedTargetAnswerMinusProgressTEDSeen \\PairedTargetAnswerMinusProgressTEDSeenCI and \\PairedTargetAnswerMinusProgressTEDUnseen \\PairedTargetAnswerMinusProgressTEDUnseenCI.",
+      "commands": [
+        "PairedTargetAnswerMinusProgressTEDSeen",
+        "PairedTargetAnswerMinusProgressTEDSeenCI",
+        "PairedTargetAnswerMinusProgressTEDUnseen",
+        "PairedTargetAnswerMinusProgressTEDUnseenCI"
+      ]
+    },
+    {
+      "template": "Token retention improves by \\PairedTargetProgressMinusAnswerTokenRetentionSeen \\PairedTargetProgressMinusAnswerTokenRetentionSeenCI and \\PairedTargetProgressMinusAnswerTokenRetentionUnseen \\PairedTargetProgressMinusAnswerTokenRetentionUnseenCI points; line retention improves by \\PairedTargetProgressMinusAnswerLineRetentionSeen \\PairedTargetProgressMinusAnswerLineRetentionSeenCI and \\PairedTargetProgressMinusAnswerLineRetentionUnseen \\PairedTargetProgressMinusAnswerLineRetentionUnseenCI.",
+      "commands": [
+        "PairedTargetProgressMinusAnswerLineRetentionSeen",
+        "PairedTargetProgressMinusAnswerLineRetentionSeenCI",
+        "PairedTargetProgressMinusAnswerLineRetentionUnseen",
+        "PairedTargetProgressMinusAnswerLineRetentionUnseenCI",
+        "PairedTargetProgressMinusAnswerTokenRetentionSeen",
+        "PairedTargetProgressMinusAnswerTokenRetentionSeenCI",
+        "PairedTargetProgressMinusAnswerTokenRetentionUnseen",
+        "PairedTargetProgressMinusAnswerTokenRetentionUnseenCI"
+      ]
+    },
+    {
+      "template": "replacement raises RR from \\CrossUserTargetSameUserSeenRR\\% to \\CrossUserTargetOtherUserSeenRR\\% on Seen and from \\CrossUserTargetSameUserUnseenRR\\% to \\CrossUserTargetOtherUserUnseenRR\\% on Unseen.",
+      "commands": [
+        "CrossUserTargetOtherUserSeenRR",
+        "CrossUserTargetOtherUserUnseenRR",
+        "CrossUserTargetSameUserSeenRR",
+        "CrossUserTargetSameUserUnseenRR"
+      ]
+    },
+    {
+      "template": "Same-minus-peer intervals are \\CrossUserTargetSameMinusOtherSeenCI and \\CrossUserTargetSameMinusOtherUnseenCI",
+      "commands": [
+        "CrossUserTargetSameMinusOtherSeenCI",
+        "CrossUserTargetSameMinusOtherUnseenCI"
+      ]
+    },
+    {
+      "template": "Progress-minus-Answer intervals are \\PairedJavaStudentRRCI under student clustering and \\PairedJavaExerciseRRCI under exercise clustering.",
+      "commands": [
+        "PairedJavaExerciseRRCI",
+        "PairedJavaStudentRRCI"
+      ]
+    },
+    {
+      "template": "Among \\PairedJavaJointRepairs joint repairs, Progress targets increase lexical-token retention by \\PairedJavaLexicalRetention points and line retention by \\PairedJavaLineRetention points, with intervals \\PairedJavaLexicalStudentCI and \\PairedJavaLineStudentCI.",
+      "commands": [
+        "PairedJavaJointRepairs",
+        "PairedJavaLexicalRetention",
+        "PairedJavaLexicalStudentCI",
+        "PairedJavaLineRetention",
+        "PairedJavaLineStudentCI"
+      ]
+    },
+    {
+      "template": "Mixed reaches \\ScaleMixedSeenRR\\% and the nine-checkpoint Answer control \\ScaleAnswerNineSeenRR\\% on Seen.",
+      "commands": [
+        "ScaleAnswerNineSeenRR",
+        "ScaleMixedSeenRR"
+      ]
+    },
+    {
+      "template": "Absolute RR is \\CodeWorkoutProblemMixedRR\\% versus \\CodeWorkoutProblemAnswerNineRR\\% over 304 exercise-held-out trajectories and \\CodeWorkoutStudentMixedRR\\% versus \\CodeWorkoutStudentAnswerNineRR\\% over 181 student-held-out trajectories.",
+      "commands": [
+        "CodeWorkoutProblemAnswerNineRR",
+        "CodeWorkoutProblemMixedRR",
+        "CodeWorkoutStudentAnswerNineRR",
+        "CodeWorkoutStudentMixedRR"
+      ]
+    },
+    {
+      "template": "Replacing greedy decoding by one stochastic draw costs 7.6 points \\StochasticOneMinusGreedyOneSeenCI, whereas execution-selecting three of those identical fixed draws contributes \\SameDrawThreeMinusOneSeen points \\SameDrawThreeMinusOneSeenCI on Seen.",
+      "commands": [
+        "SameDrawThreeMinusOneSeen",
+        "SameDrawThreeMinusOneSeenCI",
+        "StochasticOneMinusGreedyOneSeenCI"
+      ]
+    },
+    {
+      "template": "Through \\(T=1.0\\) the one-draw rate stays within \\SweepTOnePointZeroSeenSingleRR--\\SweepTPointTwoSeenSingleRR\\% on Seen, the three-draw union reaches \\SweepTOnePointZeroSeenRR/\\SweepTOnePointZeroUnseenRR\\%, and at \\(T=1.5\\) the decoder collapses to \\SweepTOnePointFiveSeenRR/\\SweepTOnePointFiveUnseenRR\\%.",
+      "commands": [
+        "SweepTOnePointFiveSeenRR",
+        "SweepTOnePointFiveUnseenRR",
+        "SweepTOnePointZeroSeenRR",
+        "SweepTOnePointZeroSeenSingleRR",
+        "SweepTOnePointZeroUnseenRR",
+        "SweepTPointTwoSeenSingleRR"
+      ]
+    },
+    {
+      "template": "the matched base-model three-draw union reaches only \\BaseStochasticThreeSeenRR/\\BaseStochasticThreeUnseenRR\\%, so adaptation adds \\AnswerStochasticMinusBaseSeen points \\AnswerStochasticMinusBaseSeenCI on Seen and \\AnswerStochasticMinusBaseUnseen points \\AnswerStochasticMinusBaseUnseenCI on Unseen.",
+      "commands": [
+        "AnswerStochasticMinusBaseSeen",
+        "AnswerStochasticMinusBaseSeenCI",
+        "AnswerStochasticMinusBaseUnseen",
+        "AnswerStochasticMinusBaseUnseenCI",
+        "BaseStochasticThreeSeenRR",
+        "BaseStochasticThreeUnseenRR"
+      ]
+    },
+    {
+      "template": "changes RR by \\CheckpointStochasticMinusSameCheckpointSeen points \\CheckpointStochasticMinusSameCheckpointSeenCI on Seen and \\CheckpointStochasticMinusSameCheckpointUnseen points \\CheckpointStochasticMinusSameCheckpointUnseenCI on Unseen.",
+      "commands": [
+        "CheckpointStochasticMinusSameCheckpointSeen",
+        "CheckpointStochasticMinusSameCheckpointSeenCI",
+        "CheckpointStochasticMinusSameCheckpointUnseen",
+        "CheckpointStochasticMinusSameCheckpointUnseenCI"
+      ]
+    },
+    {
+      "template": "Three greedy checkpoints gain \\FactorialGreedyThreeMinusOneSeen \\FactorialGreedyThreeMinusOneSeenCI and \\FactorialGreedyThreeMinusOneUnseen \\FactorialGreedyThreeMinusOneUnseenCI points over one, but under the matched stochastic decoder distinct checkpoints add only \\FactorialDistinctMinusSameSeen points \\FactorialDistinctMinusSameSeenCI and \\FactorialDistinctMinusSameUnseen points \\FactorialDistinctMinusSameUnseenCI, with the equal-problem Seen interval including zero.",
+      "commands": [
+        "FactorialDistinctMinusSameSeen",
+        "FactorialDistinctMinusSameSeenCI",
+        "FactorialDistinctMinusSameUnseen",
+        "FactorialDistinctMinusSameUnseenCI",
+        "FactorialGreedyThreeMinusOneSeen",
+        "FactorialGreedyThreeMinusOneSeenCI",
+        "FactorialGreedyThreeMinusOneUnseen",
+        "FactorialGreedyThreeMinusOneUnseenCI"
+      ]
+    },
+    {
+      "template": "Its median is \\StudentReachSeenMedian, with quartiles at \\StudentReachSeenLowerQuartile and \\StudentReachSeenUpperQuartile.",
+      "commands": [
+        "StudentReachSeenLowerQuartile",
+        "StudentReachSeenMedian",
+        "StudentReachSeenUpperQuartile"
+      ]
+    },
+    {
+      "template": "the \\StudentStepStepSeenDefined steps with a defined distance have a median of \\StudentStepStepSeenMedian, and one step leaves a median of \\StudentStepStepSeenTokenRetention\\% of the submission's tokens in place.",
+      "commands": [
+        "StudentStepStepSeenDefined",
+        "StudentStepStepSeenMedian",
+        "StudentStepStepSeenTokenRetention"
+      ]
+    },
+    {
+      "template": "within the reach of \\StudentReachSeenWithinTEDTwenty\\% of students, where LSGen repairs 13.9\\%, and 160 covers the reach of \\StudentReachSeenWithinTEDOneSixty\\% of students.",
+      "commands": [
+        "StudentReachSeenWithinTEDOneSixty",
+        "StudentReachSeenWithinTEDTwenty"
+      ]
+    },
+    {
+      "template": "Answer higher & \\PairedJavaExercisesTerminalHigher & Answer higher & \\PairedJavaLexicalRetentionLossShare\\%",
+      "commands": [
+        "PairedJavaExercisesTerminalHigher",
+        "PairedJavaLexicalRetentionLossShare"
+      ]
+    },
+    {
+      "template": "Tied & \\PairedJavaExercisesTied & Tied & \\PairedJavaLexicalRetentionTieShare\\%",
+      "commands": [
+        "PairedJavaExercisesTied",
+        "PairedJavaLexicalRetentionTieShare"
+      ]
+    },
+    {
+      "template": "Progress higher & \\PairedJavaExercisesProgressHigher & Progress higher & \\PairedJavaLexicalRetentionGainShare\\%",
+      "commands": [
+        "PairedJavaExercisesProgressHigher",
+        "PairedJavaLexicalRetentionGainShare"
+      ]
+    },
+    {
+      "template": "Extra Answer repairs & \\PairedJavaExerciseDeficitTotal & Median gain & \\PairedJavaLexicalRetentionGainMedian",
+      "commands": [
+        "PairedJavaExerciseDeficitTotal",
+        "PairedJavaLexicalRetentionGainMedian"
+      ]
+    },
+    {
+      "template": "Largest gap & \\PairedJavaExerciseDeficitMaximum & Retention range & \\PairedJavaLexicalRetentionMinimum / \\PairedJavaLexicalRetentionMaximum",
+      "commands": [
+        "PairedJavaExerciseDeficitMaximum",
+        "PairedJavaLexicalRetentionMaximum",
+        "PairedJavaLexicalRetentionMinimum"
+      ]
+    },
+    {
+      "template": "One exercise accounts for \\PairedJavaExerciseDeficitMaximum of the \\PairedJavaExerciseDeficitTotal additional Answer repairs, and there Progress targets repair \\PairedJavaWorstExerciseProgressRepairs of \\PairedJavaWorstExerciseExamples trajectories against \\PairedJavaWorstExerciseTerminalRepairs.",
+      "commands": [
+        "PairedJavaExerciseDeficitMaximum",
+        "PairedJavaExerciseDeficitTotal",
+        "PairedJavaWorstExerciseExamples",
+        "PairedJavaWorstExerciseProgressRepairs",
+        "PairedJavaWorstExerciseTerminalRepairs"
+      ]
+    },
+    {
+      "template": "Line retention behaves the same, zero for \\PairedJavaLineRetentionTieShare\\% of students with maximum \\PairedJavaLineRetentionMaximum.",
+      "commands": [
+        "PairedJavaLineRetentionMaximum",
+        "PairedJavaLineRetentionTieShare"
+      ]
+    },
+    {
+      "template": "the Progress rule repairs \\PairedTargetProgressSeenRR\\% of Seen inputs and improves \\PairedTargetProgressSeenIR\\%, so a further \\PairedTargetProgressSeenImproveOnly points receive a program that advances without passing, against \\PairedTargetAnswerSeenRR\\% and \\PairedTargetAnswerSeenIR\\% for the Answer rule.",
+      "commands": [
+        "PairedTargetAnswerSeenIR",
+        "PairedTargetAnswerSeenRR",
+        "PairedTargetProgressSeenIR",
+        "PairedTargetProgressSeenImproveOnly",
+        "PairedTargetProgressSeenRR"
+      ]
+    },
+    {
+      "template": "The same two gaps are \\PairedTargetProgressUnseenImproveOnly and \\PairedTargetAnswerUnseenImproveOnly points on Unseen, and \\PairedJavaProgressImproveOnly against \\PairedJavaAnswerImproveOnly on Java, where Answer targets already repair \\PairedJavaAnswerRR\\% outright.",
+      "commands": [
+        "PairedJavaAnswerImproveOnly",
+        "PairedJavaAnswerRR",
+        "PairedJavaProgressImproveOnly",
+        "PairedTargetAnswerUnseenImproveOnly",
+        "PairedTargetProgressUnseenImproveOnly"
+      ]
+    },
+    {
+      "template": "Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of \\PairedJavaLexicalRetentionGainMedian points, and a few get less.",
+      "commands": [
+        "PairedJavaLexicalRetentionGainMedian"
+      ]
+    },
+    {
+      "template": "The gains are \\PromptFrozenMixedCurrentMinusFullSeen/\\PromptFrozenAnswerNineCurrentMinusFullSeen Seen points and \\PromptFrozenMixedCurrentMinusFullUnseen/\\PromptFrozenAnswerNineCurrentMinusFullUnseen Unseen points for Mixed/Answer, with all intervals excluding zero.",
+      "commands": [
+        "PromptFrozenAnswerNineCurrentMinusFullSeen",
+        "PromptFrozenAnswerNineCurrentMinusFullUnseen",
+        "PromptFrozenMixedCurrentMinusFullSeen",
+        "PromptFrozenMixedCurrentMinusFullUnseen"
+      ]
+    },
+    {
+      "template": "The primary five-fold cross-fitted mixed-minus-Answer contrast is +\\CrossFitMixedMinusAnswerNineSeen points \\CrossFitMixedMinusAnswerNineSeenCI, compared with the non-cross-fitted +\\MixedMinusAnswerNineSeen \\MixedMinusAnswerNineSeenCI.",
+      "commands": [
+        "CrossFitMixedMinusAnswerNineSeen",
+        "CrossFitMixedMinusAnswerNineSeenCI",
+        "MixedMinusAnswerNineSeen",
+        "MixedMinusAnswerNineSeenCI"
+      ]
+    },
+    {
+      "template": "changes the raw gap into \\DifficultyMatchedUnseenMinusSeen equal-problem points \\DifficultyMatchedUnseenMinusSeenCI.",
+      "commands": [
+        "DifficultyMatchedUnseenMinusSeen",
+        "DifficultyMatchedUnseenMinusSeenCI"
+      ]
+    },
+    {
+      "template": "Repeating the procedure on all 328 Seen problems with a distinct seed yields \\SeenHiddenMixedHiddenConfirmation\\% and \\SeenHiddenAnswerNineHiddenConfirmation\\% confirmation",
+      "commands": [
+        "SeenHiddenAnswerNineHiddenConfirmation",
+        "SeenHiddenMixedHiddenConfirmation"
+      ]
+    },
+    {
+      "template": "current-only Answer-3Seed reaches \\AllPrefixSeenRR\\% and \\AllPrefixUnseenRR\\% RR. The early, middle, and last thirds reach \\AllPrefixEarlySeenRR\\%, \\AllPrefixMiddleSeenRR\\%, and \\AllPrefixLastSeenRR\\% on Seen and \\AllPrefixEarlyUnseenRR\\%, \\AllPrefixMiddleUnseenRR\\%, and \\AllPrefixLastUnseenRR\\% on Unseen.",
+      "commands": [
+        "AllPrefixEarlySeenRR",
+        "AllPrefixEarlyUnseenRR",
+        "AllPrefixLastSeenRR",
+        "AllPrefixLastUnseenRR",
+        "AllPrefixMiddleSeenRR",
+        "AllPrefixMiddleUnseenRR",
+        "AllPrefixSeenRR",
+        "AllPrefixUnseenRR"
+      ]
+    },
+    {
+      "template": "At 1.5B parameters three checkpoints still gain \\ScaleAnswerThreeMinusOneSeen points over one \\ScaleAnswerThreeMinusOneSeenCI, but mixed-minus-Answer is \\ScaleMixedMinusAnswerNineSeen \\ScaleMixedMinusAnswerNineSeenCI.",
+      "commands": [
+        "ScaleAnswerThreeMinusOneSeen",
+        "ScaleAnswerThreeMinusOneSeenCI",
+        "ScaleMixedMinusAnswerNineSeen",
+        "ScaleMixedMinusAnswerNineSeenCI"
+      ]
+    },
+    {
+      "template": "Its interval is \\CodeWorkoutProblemMixedMinusAnswerNineExerciseCI on held-out exercises and \\CodeWorkoutStudentMixedMinusAnswerNineStudentCI on held-out students.",
+      "commands": [
+        "CodeWorkoutProblemMixedMinusAnswerNineExerciseCI",
+        "CodeWorkoutStudentMixedMinusAnswerNineStudentCI"
+      ]
+    },
+    {
+      "template": "refitting with one exercise left out keeps the contrast between \\ExerciseSensitivityLOOMinimum and \\ExerciseSensitivityLOOMaximum points, and single exercises range from \\ExerciseSensitivityPerMinimum to \\ExerciseSensitivityPerMaximum points.",
+      "commands": [
+        "ExerciseSensitivityLOOMaximum",
+        "ExerciseSensitivityLOOMinimum",
+        "ExerciseSensitivityPerMaximum",
+        "ExerciseSensitivityPerMinimum"
+      ]
+    },
+    {
+      "template": "Models retrained on them agree with the canonical ones on \\VerdictOrderStrictAgreementSeen\\% and \\VerdictOrderProgressAgreementSeen\\% of Seen repair decisions",
+      "commands": [
+        "VerdictOrderProgressAgreementSeen",
+        "VerdictOrderStrictAgreementSeen"
+      ]
+    },
+    {
+      "template": "Retraining changes Progress RR by +\\VerdictOrderProgressCanonicalMinusAlternativeSeen Seen and \\VerdictOrderProgressCanonicalMinusAlternativeUnseen Unseen points in the canonical-minus-alternative direction.",
+      "commands": [
+        "VerdictOrderProgressCanonicalMinusAlternativeSeen",
+        "VerdictOrderProgressCanonicalMinusAlternativeUnseen"
+      ]
+    },
+    {
+      "template": "exact matches between a returned repair and a training-time accepted program occur in \\SeenOverlapMixedExactRate\\% and \\SeenOverlapAnswerNineExactRate\\% of selections, near-duplicates above a 0.90 token-similarity threshold in \\SeenOverlapMixedNearNinetyRate\\% and \\SeenOverlapAnswerNineNearNinetyRate\\%, and median maximum similarity to a same-problem training target is \\SeenOverlapMixedMedianSimilarity\\% and \\SeenOverlapAnswerNineMedianSimilarity\\%.",
+      "commands": [
+        "SeenOverlapAnswerNineExactRate",
+        "SeenOverlapAnswerNineMedianSimilarity",
+        "SeenOverlapAnswerNineNearNinetyRate",
+        "SeenOverlapMixedExactRate",
+        "SeenOverlapMixedMedianSimilarity",
+        "SeenOverlapMixedNearNinetyRate"
+      ]
+    }
+  ]
+}

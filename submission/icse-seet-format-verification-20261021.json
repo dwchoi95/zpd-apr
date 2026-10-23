@@ -1,0 +1,209 @@
+{
+  "body_pages": 10,
+  "reference_pages": 2,
+  "total_pages": 12,
+  "references_first_page": 11,
+  "heading_pages": {
+    "Introduction": 1,
+    "Preliminaries": 2,
+    "Our Approach": 3,
+    "Experiments": 5,
+    "Related Work": 10,
+    "Conclusion": 10,
+    "Data Availability": 10
+  },
+  "float_order": {
+    "Table I": {
+      "caption_page_column_y": [
+        3,
+        0,
+        305.0
+      ],
+      "first_reference_page_column_y": [
+        3,
+        1,
+        76.0
+      ],
+      "caption_xy": [
+        159.0,
+        305.0
+      ],
+      "first_reference_xy": [
+        312.0,
+        76.0
+      ]
+    },
+    "Table II": {
+      "caption_page_column_y": [
+        4,
+        0,
+        54.0
+      ],
+      "first_reference_page_column_y": [
+        5,
+        1,
+        686.0
+      ],
+      "caption_xy": [
+        158.0,
+        54.0
+      ],
+      "first_reference_xy": [
+        312.0,
+        686.0
+      ]
+    },
+    "Table III": {
+      "caption_page_column_y": [
+        5,
+        1,
+        495.0
+      ],
+      "first_reference_page_column_y": [
+        6,
+        1,
+        626.0
+      ],
+      "caption_xy": [
+        420.0,
+        495.0
+      ],
+      "first_reference_xy": [
+        312.0,
+        626.0
+      ]
+    },
+    "Table IV": {
+      "caption_page_column_y": [
+        7,
+        0,
+        54.0
+      ],
+      "first_reference_page_column_y": [
+        7,
+        0,
+        518.0
+      ],
+      "caption_xy": [
+        156.0,
+        54.0
+      ],
+      "first_reference_xy": [
+        49.0,
+        518.0
+      ]
+    },
+    "Table V": {
+      "caption_page_column_y": [
+        7,
+        1,
+        257.0
+      ],
+      "first_reference_page_column_y": [
+        8,
+        0,
+        112.0
+      ],
+      "caption_xy": [
+        421.0,
+        257.0
+      ],
+      "first_reference_xy": [
+        49.0,
+        112.0
+      ]
+    },
+    "Figure 1": {
+      "caption_page_column_y": [
+        3,
+        1,
+        608.0
+      ],
+      "first_reference_page_column_y": [
+        4,
+        0,
+        558.0
+      ],
+      "caption_xy": [
+        312.0,
+        608.0
+      ],
+      "first_reference_xy": [
+        49.0,
+        558.0
+      ]
+    },
+    "Figure 2": {
+      "caption_page_column_y": [
+        7,
+        1,
+        552.0
+      ],
+      "first_reference_page_column_y": [
+        8,
+        0,
+        231.0
+      ],
+      "caption_xy": [
+        312.0,
+        552.0
+      ],
+      "first_reference_xy": [
+        49.0,
+        231.0
+      ]
+    },
+    "Algorithm 1": {
+      "caption_page_column_y": [
+        2,
+        1,
+        362.0
+      ],
+      "first_reference_page_column_y": [
+        2,
+        1,
+        710.0
+      ],
+      "caption_xy": [
+        312.0,
+        362.0
+      ],
+      "first_reference_xy": [
+        322.0,
+        710.0
+      ]
+    },
+    "Algorithm 2": {
+      "caption_page_column_y": [
+        4,
+        0,
+        293.0
+      ],
+      "first_reference_page_column_y": [
+        4,
+        0,
+        558.0
+      ],
+      "caption_xy": [
+        49.0,
+        293.0
+      ],
+      "first_reference_xy": [
+        49.0,
+        558.0
+      ]
+    }
+  },
+  "schema_version": 1,
+  "venue": "ICSE-SEET 2027 Research Paper",
+  "cfp": "https://conf.researchr.org/track/icse-2027/icse-2027-software-engineering-education-and-training--seet-",
+  "pdf": "paper/main.en.pdf",
+  "source": "paper/main.en.tex",
+  "title_pt": 24,
+  "body_pt": 10,
+  "font_count": 21,
+  "embedded_fonts": true,
+  "type3_fonts": false,
+  "sha256": "c8de24b639f1d86784534bf8c42844e34616bb23c3897dfbc610ae773450c564",
+  "source_sha256": "6cf4c029dcc97eaf1a01719f3da05a6f8a4b065fd498d2d551499ebae6b341d3"
+}

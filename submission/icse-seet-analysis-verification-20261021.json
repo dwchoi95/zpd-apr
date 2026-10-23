@@ -1,0 +1,32 @@
+{
+  "verified_files": 22,
+  "comparisons": {
+    "python-seen": {
+      "examples": 997,
+      "progress_success": 339,
+      "answer_success": 530,
+      "joint_success": 299,
+      "cluster_intervals_reproduced": true
+    },
+    "python-unseen": {
+      "examples": 250,
+      "progress_success": 164,
+      "answer_success": 192,
+      "joint_success": 154,
+      "cluster_intervals_reproduced": true
+    },
+    "java": {
+      "examples": 181,
+      "progress_success": 92,
+      "answer_success": 155,
+      "joint_success": 90,
+      "cluster_intervals_reproduced": true
+    }
+  },
+  "history_holm": {
+    "rq2_unseen_strict_full_vs_current": 0.31341552734375,
+    "rq2_seen_strict_full_vs_current": 1.0,
+    "rq2_unseen_progress_full_vs_current": 1.0,
+    "rq2_seen_progress_full_vs_current": 1.0
+  }
+}
