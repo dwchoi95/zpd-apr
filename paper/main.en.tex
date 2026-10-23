@@ -100,11 +100,6 @@ Prior techniques already ask for a small change: Refactory synthesizes minimal r
 
 These limitations motivate our approach, which repairs under the guidance of the student's own trajectory. The goal of this paper is to repair a buggy program into one that passes the tests while keeping as much of the submission as possible, and to make the gain readable as the target's. In terms of Algorithm~\ref{alg:generic}, we train the generator toward the student's own later submission rather than toward an accepted solution or a solution space. A later submission is a program the student actually produced, so it is reachable by construction, but it need not be correct; we therefore use it as a preference and let the tests decide what is returned. Our work thus tackles two challenges, (1) that the student's later submission marks the next step only coarsely and may itself be accepted, and (2) that attributing a gain to the target requires holding the sources, the example counts, and the candidate budget fixed.
 
-\section{Our Approach}
-\label{sec:approach}
-
-\subsection{Overview}
-
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[font=\scriptsize, >={Latex[length=1.3mm,width=0.9mm]}, line width=0.45pt,
@@ -189,6 +184,53 @@ These limitations motivate our approach, which repairs under the guidance of the
 \label{fig:overview}
 \end{figure}
 
+\begin{figure*}[t]
+\centering\scriptsize
+\begin{minipage}[t]{0.315\textwidth}
+\textbf{(a) Buggy submission $b$}\par
+\begin{tabular}{@{}r@{~}l@{}}
+{\color{black!55}1} & \makebox[4.3cm][l]{\texttt{N~=~int(input())}} \\
+{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
+{\color{black!55}3} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
+{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>~N:}}} \\
+{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
+{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.315\textwidth}
+\textbf{(b) Progress target: the next submission}\par
+\begin{tabular}{@{}r@{~}l@{}}
+{\color{black!55}1} & \makebox[4.3cm][l]{\texttt{N~=~int(input())}} \\
+{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
+{\color{black!55}3} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
+{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>=~N:}}} \\
+{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
+{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+\end{tabular}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.315\textwidth}
+\textbf{(c) Answer target: the accepted submission}\par
+\begin{tabular}{@{}r@{~}l@{}}
+{\color{black!55}1} & \makebox[4.3cm][l]{\texttt{n~=~int(input())}} \\
+{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{}} \\
+{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{ans~=~0}}} \\
+{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{}}} \\
+{\color{black!55}5} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{for~a~in~range(10**5~+~1):}}} \\
+{\color{black!55}6} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~a**2~<=~n:}}} \\
+{\color{black!55}7} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}} \\
+{\color{black!55}8} & \makebox[4.3cm][l]{\texttt{}} \\
+{\color{black!55}9} & \makebox[4.3cm][l]{\texttt{print(ans)}} \\
+\end{tabular}
+\end{minipage}
+\caption{Running example (p03556)}
+\label{fig:example}
+\end{figure*}
+
+\section{Our Approach}
+\label{sec:approach}
+
+\subsection{Overview}
+
 \begin{algorithm}[h]
 \caption{\textsc{ZPDPatch}}
 \label{alg:construct}
@@ -231,41 +273,9 @@ Figure~\ref{fig:overview} illustrates how \textsc{ZPDPatch} repairs a buggy prog
 
 \subsection{\textup{\textsc{ZPDPatch}}}
 
-\begin{figure}[h]
-\scriptsize
-\begin{minipage}[c]{3.95cm}
-\textbf{(a)} Buggy submission $b$\par
-\makebox[3.6cm][l]{\texttt{N~=~int(input())}}\par
-\makebox[3.6cm][l]{\texttt{for~i~in~range(N):}}\par
-\colorbox{black!10}{\makebox[3.45cm][l]{\texttt{~~~~if~i**2~>~N:}}}\par
-\makebox[3.6cm][l]{\texttt{~~~~~~~~print((i-1)**2)}}\par
-\makebox[3.6cm][l]{\texttt{~~~~~~~~exit()}}\par
-\smallskip
-\textbf{(b)} Progress target: next state\par
-\makebox[3.6cm][l]{\texttt{N~=~int(input())}}\par
-\makebox[3.6cm][l]{\texttt{for~i~in~range(N):}}\par
-\colorbox{black!10}{\makebox[3.45cm][l]{\texttt{~~~~if~i**2~>=~N:}}}\par
-\makebox[3.6cm][l]{\texttt{~~~~~~~~print((i-1)**2)}}\par
-\makebox[3.6cm][l]{\texttt{~~~~~~~~exit()}}
-\end{minipage}\hfill
-\begin{minipage}[c]{4.35cm}
-\textbf{(c)} Answer target: accepted state\par
-\makebox[4.2cm][l]{\texttt{n~=~int(input())}}\par
-\colorbox{black!10}{\begin{minipage}{3.98cm}
-\makebox[3.98cm][l]{\texttt{ans~=~0}}\par
-\makebox[3.98cm][l]{\texttt{for~a~in~range(10**5~+~1):}}\par
-\makebox[3.98cm][l]{\texttt{~~~~if~a**2~<=~n:}}\par
-\makebox[3.98cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}
-\end{minipage}}\par
-\makebox[4.2cm][l]{\texttt{print(ans)}}
-\end{minipage}
-\caption{Running example (p03556), blank lines omitted}
-\label{fig:example}
-\end{figure}
-
 Algorithm~\ref{alg:construct} details how \textsc{ZPDPatch} instantiates Algorithm~\ref{alg:generic}. Taking \(\mathcal T\) and \(\mathcal O\) in addition to the inputs of Algorithm~\ref{alg:generic}, it builds the generator set offline and requires no instructor solution, no pool of reference programs, and no learner model.
 
-At lines~2--9, Mine scans each trajectory \(\tau\) and emits the pairs of each rule (Section~\ref{sec:mine}). The Answer rule pairs every non-accepted state with the accepted endpoint (line~4), whereas the Strict and Progress rules carry a retained prefix \(R\) and append a state only when the rule's improvement predicate holds on the execution evidence \(\mathcal O\) (lines~7--9), emitting \((R,c_t)\) before the state is appended. At lines~10--12, Train fits one adapter per rule and seed, so the pool \(V\) holds \(|\Sigma|\) checkpoints per rule (Section~\ref{sec:train}). At lines~13--16, Select runs each checkpoint on the validation inputs \(U\) under the edit budget \(B\), records the inputs it repairs, and freezes the ordered triple whose union covers the most of \(U\), where \(\eta_k=3\) in our experiments (Section~\ref{sec:select}). The returned portfolio \(S\) is what line~3 of Algorithm~\ref{alg:generic} iterates over at deployment.
+At lines~2--9, Mine scans each trajectory \(\tau\) and emits the pairs of each rule (Section~\ref{sec:mine}). The Answer rule pairs every non-accepted state with the accepted endpoint (line~4), whereas the Strict and Progress rules carry a retained prefix \(R\) and append a state only when the rule's improvement predicate holds on the execution evidence \(\mathcal O\) (lines~7--9), emitting \((R,c_t)\) before the state is appended. At lines~10--12, Train fits one adapter per rule and seed, so the pool \(V\) holds \(|\Sigma|\) checkpoints per rule (Section~\ref{sec:train}). At lines~13--16, Select runs each checkpoint on the validation inputs \(U\) under the edit budget \(B\), records the inputs it repairs, and freezes the ordered triple whose union covers the most of \(U\), where \(\eta_k=3\) in our experiments (Section~\ref{sec:select}). Choosing by executed validation repairs rather than by training loss ties the choice to the only outcome a deployment can observe. The returned portfolio \(S\) is what line~3 of Algorithm~\ref{alg:generic} iterates over at deployment.
 
 The order of \(S\) affects which passing program a student receives, not whether one is found, because every checkpoint of \(S\) is invoked until a candidate passes and the gate returns \(b\) unchanged when none does. Hence, given deterministic test outcomes, the repair set of the portfolio contains that of each of its members.
 
@@ -371,7 +381,7 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 
 The primary endpoint is the last recorded non-AC submission of an eventually successful trajectory. Runtime eligibility requires the buggy program to remain non-AC and the recorded accepted endpoint to pass the available tests on replay. This leaves 997 of 1,754 Seen test trajectories, from 328 problems, and 250 of 259 Unseen trajectories, from all 54 problems. Excluded trajectories do not enter the denominator. CodeNet users are online-judge participants, not a verified classroom population. We also use TIKTOC's release of authentic Java CodeWorkout submissions and tests from an Introductory Programming (CS1) course~\cite{duan2024tiktoc}: 1,125 trajectories from 224 students and 17 exercises, with 181 test trajectories from 33 held-out students. CodeWorkout is a practice platform on which a course assigns short method-level exercises with instructor-authored tests, the setting a returned repair would enter. A separate exercise split has 10/3/4 train/validation/test exercises and 605/216/304 trajectories.
 
-\noindent\textbf{Other Settings.} Canonical Python evaluation runs one subprocess per test with a 2.5-second timeout and a 2GB address-space limit; Java 21 runs in a network-disabled container with 15-second limits, a different harness rather than a common per-test budget. The primary comparison permits three generations of at most 4,096 output tokens each. Matched-target training uses batch size 2 with accumulation 8. Each target rule uses the three seeds in order with greedy decoding and current-only prompts, and does not search nine-checkpoint portfolios. The supplement maps these conditions and source hashes.
+\noindent\textbf{Other Settings.} Canonical Python evaluation runs one subprocess per test with a 2.5-second timeout and a 2GB address-space limit; Java 21 runs in a network-disabled container with 15-second limits, a different harness rather than a common per-test budget. The primary comparison permits three generations. Matched-target training uses batch size 2 with accumulation 8. Each target rule uses the three seeds in order with greedy decoding and current-only prompts, and does not search nine-checkpoint portfolios. The supplement maps these conditions and source hashes.
 
 \noindent\textbf{Evaluation Metrics.} We measure three kinds of outcome: whether the returned program passes the tests, how large its change is, and how much of the submission it keeps. Repair Rate (RR) is the fraction of eligible inputs whose returned program passes every test. Pass Rate (PR) averages passed-test fractions; Improvement Rate (IR) records an increased fraction. Tree Edit Distance (TED) between ASTs measures current-to-returned change~\cite{zhang1989simple,pawlik2016tree} and is undefined when either program does not parse. Undefined cases remain in unrestricted RR but not TED summaries; finite gates reject undefined-distance changes. Unpaired TED averages successful, parseable returns; paired locality uses joint successes. Retention divides tokens or nonempty stripped lines matched by \texttt{SequenceMatcher} (autojunk disabled) by the source count. Retention differences are percentage points (pp).
 
@@ -406,7 +416,7 @@ LSGen repairs 800/997 Seen inputs versus Mixed's 613/997, a difference of -18.8 
 
 \noindent\textbf{Matched targets.} Table~\ref{tab:targets} changes the target while holding current inputs and training counts fixed. Progress-minus-Answer RR is -19.2 points [-22.96, -15.54] on Seen and -11.2 [-17.37, -4.88] on Unseen, with exact McNemar \(p=7.85\times10^{-34}\) and \(p=6.17\times10^{-5}\). Thus the canonical Answer dataset's advantage cannot be attributed only to having more training records. The paired population is restricted to sources with distinct targets, and a Progress target can itself be accepted, so the intervention is the retained-evidence target rule rather than a clean contrast between incorrect and correct targets. Under the matched inputs the Progress rule repairs 34.0\% of Seen inputs and improves 43.4\%, so a further 9.4 points receive a program that advances without passing, against 53.2\% and 65.0\% for the Answer rule. The same two gaps are 6.4 and 7.6 points on Unseen, and 9.4 against 2.2 on Java, where Answer targets already repair 85.6\% outright. Part of the coverage the Progress rule gives up therefore returns as partial progress, counted by test execution and not by comprehension.
 
-Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures describe successful outputs that retain more of the submission, but they establish neither easier comprehension nor which method best helps a particular student.
+Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR. These measures describe successful outputs that retain more of the submission, but they establish neither easier comprehension nor which method best helps a particular student.
 
 \begin{table}[h]
 \caption{Java matched-target outcomes over 17 exercises and 90 jointly repaired students}
@@ -458,7 +468,7 @@ print(ans)
 \end{figure}
 
 Java retraining uses 600 training and 118 validation pairs per target and reproduces this direction without Python AST distance. Answer targets repair 155 trajectories and Progress targets 92, a difference of 34.8 points; Progress-minus-Answer intervals are [-44.91, -25.47] under student clustering and [-47.31, -23.79] under exercise clustering. Among 90 joint repairs, Progress targets increase lexical-token retention by 4.8 points and line retention by 5.1 points, with intervals [2.79, 7.19] and [2.92, 7.25]. This is evidence for a coverage--locality tradeoff across two languages and populations, not that the same magnitude generalizes to other classrooms.
-\noindent\textbf{What a student receives.} Cohort means do not describe an individual student, so Table~\ref{tab:uneven} resolves the Java contrast by exercise and by student. The coverage cost is concentrated rather than uniform. One exercise accounts for 12 of the 63 additional Answer repairs, and there Progress targets repair 3 of 15 trajectories against 15. The retention gain is a minority effect with a long tail. Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of 9.6 points, and a few get less. Line retention behaves the same, zero for 64.4\% of students with maximum 47.6. Figure~\ref{fig:case} illustrates that tail on Python. Submission (a) passes 93.3\% of tests after the student's own preceding edit changed \texttt{i<j} to \texttt{i<=j}, the Progress-target repair differs from it only in \texttt{j>0} becoming \texttt{j>=0} (TED 1), and the Answer-target repair (b) replaces the approach (TED 83). Both pass every test under the same gate and budget. Which rule a course deploys therefore depends on the exercise and on whether coverage or locality binds.
+\noindent\textbf{What a student receives.} Cohort means do not describe an individual student, so Table~\ref{tab:uneven} resolves the Java contrast by exercise and by student. One exercise accounts for 12 of the 63 additional Answer repairs, and there Progress targets repair 3 of 15 trajectories against 15. Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of 9.6 points, and a few get less. Line retention behaves the same, zero for 64.4\% of students with maximum 47.6. Figure~\ref{fig:case} illustrates that tail on Python. Submission (a) passes 93.3\% of tests after the student's own preceding edit changed \texttt{i<j} to \texttt{i<=j}, the Progress-target repair differs from it only in \texttt{j>0} becoming \texttt{j>=0} (TED 1), and the Answer-target repair (b) replaces the approach (TED 83). Both pass every test under the same gate and budget.
 
 \noindent\textbf{Peer targets.} The separate outcome- and distance-matched replacement raises RR from 50.4\% to 54.7\% on Seen and from 78.4\% to 84.4\% on Unseen. Same-minus-peer intervals are [-7.71, -0.84] and [-11.79, -0.41], with exact McNemar \(p=0.005\) and \(p=0.032\). The result concerns this caliper, donor cap, and replacement rule, and equal outcomes with nearby edit distance still permit differences in structure and length, so the contrast does not isolate user identity. Matched peer targets improve coverage here; one's own trajectory is not uniquely necessary under this control.
 
@@ -471,17 +481,17 @@ The temperature sweep retains all declared conditions instead of selecting the b
 
 At matched temperature, replacing three draws of one checkpoint by one draw from each of three checkpoints changes RR by -0.1 points [-2.00, 1.80] on Seen and 2.4 points [-0.41, 5.31] on Unseen. These intervals do not establish a consistent advantage from checkpoint diversity. They also do not show equivalence. A deterministic multi-seed gain can coexist with this result because sampling from one checkpoint already supplies diversity.
 
-A current-only factorial on one inference stack tests this explanation. Three greedy checkpoints gain 9.8 [7.85, 11.92] and 10.8 [7.23, 14.64] points over one, but under the matched stochastic decoder distinct checkpoints add only 2.1 points [0.00, 4.16] and 1.2 points [-2.93, 5.93]. The equal-problem Seen interval includes zero, so this does not establish a robust checkpoint benefit. Absolute Seen/Unseen rates on that stack are 53.1/67.2\% for one greedy checkpoint, 62.9/78.0\% for three greedy checkpoints, 66.8/79.6\% for a same-checkpoint stochastic triple, and 68.9/80.8\% for a distinct-checkpoint triple, against 72.0/81.2\% on the historical one. Backend sensitivity is material, and the deployment recommendation is restricted to the evaluated stack rather than asserted as backend-independent superiority.
+A current-only factorial on one inference stack tests this explanation. Three greedy checkpoints gain 9.8 [7.85, 11.92] and 10.8 [7.23, 14.64] points over one, but under the matched stochastic decoder distinct checkpoints add only 2.1 points [0.00, 4.16] and 1.2 points [-2.93, 5.93]. The equal-problem Seen interval includes zero, so this does not establish a robust checkpoint benefit. Absolute Seen/Unseen rates on that stack are 53.1/67.2\% for one greedy checkpoint, 62.9/78.0\% for three greedy checkpoints, 66.8/79.6\% for a same-checkpoint stochastic triple, and 68.9/80.8\% for a distinct-checkpoint triple, against 72.0/81.2\% on the historical one. Backend sensitivity is material, so the recommendation is restricted to the evaluated stack.
 
 \noindent\textbf{Serialized history.} Removing earlier submissions from the frozen triples raises repair for both pools. The gains are 8.8/11.1 Seen points and 7.6/6.0 Unseen points for Mixed/Answer, with all intervals excluding zero. Matched retraining without that context shows no significant difference after Holm correction, with smallest adjusted \(p=0.313\), so serialized history is not part of the measured advantage and the deployed configuration uses current-only prompts.
 
-Selection-space controls also fail to establish a general heterogeneous-target benefit. Answer-9Choose3 receives the same nine-checkpoint pool size and 84-subset opportunity as Mixed. The primary five-fold cross-fitted mixed-minus-Answer contrast is +2.2 points [-0.19, 4.63], compared with the non-cross-fitted +1.7 [-0.79, 4.29]. These estimates are positive but uncertain. Overall, candidate breadth and adaptation each contribute measured gains, whereas distinct checkpoints add no consistent advantage once the stochastic decoder is matched and serialized history is not supported as a necessary input.
+Answer-9Choose3 receives the same nine-checkpoint pool size and 84-subset opportunity as Mixed. The primary five-fold cross-fitted mixed-minus-Answer contrast is +2.2 points [-0.19, 4.63], compared with the non-cross-fitted +1.7 [-0.79, 4.29]. These estimates are positive but uncertain. Overall, candidate breadth and adaptation each contribute measured gains, whereas distinct checkpoints add no consistent advantage once the stochastic decoder is matched and serialized history is not supported as a necessary input.
 
 \subsection{RQ4: Generality}
 \label{sec:generality}
 \noindent\textbf{Problems and execution suites.} Within Unseen, Mixed exceeds Zero-shot by 12.8 points [6.83, 18.75], with 45 versus 13 exclusive successes and exact McNemar \(p=3.01\times10^{-5}\). Among 142 joint repairs, 122 have defined TED for both methods; on those 122 it reduces TED by 6.41 [3.43, 9.89]. The higher absolute Unseen than Seen RR is not evidence of stronger generalization: the partitions differ in trajectory availability and problem composition. Matching all 54 Unseen problems to distinct Seen problems on six pre-repair difficulty covariates changes the raw gap into -4.6 equal-problem points [-14.18, 5.30]. We therefore rely on within-split paired contrasts rather than the raw cross-split difference.
 
-A complementary check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests, so the conditional percentage must not replace the full-denominator repair rate.
+A complementary check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests.
 
 \noindent\textbf{Earlier prefixes.} Across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, current-only Answer-3Seed reaches 69.6\% and 80.1\% RR. The early, middle, and last thirds reach 70.0\%, 67.6\%, and 71.4\% on Seen and 82.9\%, 77.3\%, and 81.8\% on Unseen. It extends evaluation beyond the last failed submission and finds no monotonic position effect. It does not cover trajectories that never reach acceptance and multiple prefixes from one trajectory are dependent, so the 2,770-prefix rate is not added to the 997-input result.
 
