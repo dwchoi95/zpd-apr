@@ -1,18 +1,11 @@
 \documentclass[10pt,conference]{IEEEtran}
-\usepackage{booktabs,multirow,array,amsmath,amssymb,graphicx}
-\usepackage{textcomp,upquote}
+\usepackage{booktabs,multirow,amsmath,graphicx}
 \usepackage{cite}
 \usepackage[hidelinks]{hyperref}
 \usepackage{xurl}
 \usepackage[ruled]{algorithm}
 \usepackage[noend]{algpseudocode}
-\renewcommand{\algorithmicrequire}{\textbf{Input:}}
-\renewcommand{\algorithmicensure}{\textbf{Output:}}
 \usepackage{tikz}
-% Float placement only: let a column carry the two approach floats above the text that cites them.
-\renewcommand{\topfraction}{0.9}
-\renewcommand{\textfraction}{0.08}
-\renewcommand{\floatpagefraction}{0.75}
 \usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds}
 \hypersetup{pdftitle={ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence},pdfauthor={}}
 \title{ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence}
@@ -58,8 +51,8 @@ Existing techniques for repairing programming assignments aim to turn a buggy su
 \label{alg:generic}
 \footnotesize
 \begin{algorithmic}[1]
-\Require Buggy program ($b$), Context ($x$), Ordered generators ($S$), Tests ($\mathcal E$), Edit budget ($B$)
-\Ensure Returned program ($f$)
+\item[\textbf{Input:}] Buggy program ($b$), Context ($x$), Ordered generators ($S$), Tests ($\mathcal E$), Edit budget ($B$)
+\item[\textbf{Output:}] Returned program ($f$)
 \Procedure{Repair}{$b, x, S, \mathcal E, B$}
 \State $f\gets b$; $q^*\gets\textsc{Execute}(b,\mathcal E)$
 \For{$g\in S$}
@@ -231,8 +224,8 @@ These limitations motivate our approach, which repairs under the guidance of the
 \label{alg:construct}
 \footnotesize
 \begin{algorithmic}[1]
-\Require Trajectories ($\mathcal T$), Execution evidence ($\mathcal O$), Validation inputs ($U$), Seeds ($\Sigma$), Portfolio size ($\eta_k$), Edit budget ($B$)
-\Ensure Frozen ordered checkpoint portfolio ($S$)
+\item[\textbf{Input:}] Trajectories ($\mathcal T$), Execution evidence ($\mathcal O$), Validation inputs ($U$), Seeds ($\Sigma$), Portfolio size ($\eta_k$), Edit budget ($B$)
+\item[\textbf{Output:}] Frozen ordered checkpoint portfolio ($S$)
 \Procedure{ZPDPatch}{$\mathcal T, \mathcal O, U, \Sigma, \eta_k, B$}
  \Statex\hspace{\algorithmicindent}\textit{/* Stage 1. Mine */}
 \State $(D_A,D_S,D_P)\gets(\emptyset,\emptyset,\emptyset)$
