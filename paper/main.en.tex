@@ -107,73 +107,83 @@ These limitations motivate our approach, which repairs under the guidance of the
 
 \begin{figure}[h]
 \centering
-\begin{tikzpicture}[font=\scriptsize, >={Latex[length=1.4mm,width=1mm]}, line width=0.45pt,
- stage/.style={draw, rounded corners=3pt, minimum width=11mm, minimum height=5mm, align=center,
+\begin{tikzpicture}[font=\scriptsize, >={Latex[length=1.3mm,width=0.9mm]}, line width=0.45pt,
+ stage/.style={draw, rounded corners=3pt, minimum width=11mm, minimum height=4.6mm, align=center,
                font=\footnotesize\bfseries, fill=white, inner sep=1pt},
- sub/.style={draw, minimum width=20mm, minimum height=5mm, inner sep=1pt, align=center, fill=white},
- lbl/.style={font=\scriptsize, inner sep=0.6pt},
- item/.style={align=center, inner sep=0.5pt, font=\scriptsize},
+ sub/.style={draw, minimum width=19mm, minimum height=4.6mm, inner sep=1pt, align=center, fill=white},
+ lbl/.style={font=\scriptsize, inner sep=0.5pt},
+ item/.style={align=center, inner sep=0.4pt, font=\scriptsize},
  icsheet/.pic={\draw[fill=white, line width=0.4pt]
-               (-1.4mm,-1.9mm) -- (-1.4mm,1.9mm) -- (0.6mm,1.9mm) -- (1.4mm,1.1mm) -- (1.4mm,-1.9mm) -- cycle;
-             \draw[line width=0.4pt] (0.6mm,1.9mm) -- (0.6mm,1.1mm) -- (1.4mm,1.1mm);},
+               (-1.3mm,-1.8mm) -- (-1.3mm,1.8mm) -- (0.5mm,1.8mm) -- (1.3mm,1.0mm) -- (1.3mm,-1.8mm) -- cycle;
+             \draw[line width=0.4pt] (0.5mm,1.8mm) -- (0.5mm,1.0mm) -- (1.3mm,1.0mm);},
  iccode/.pic={\pic{icsheet};
-            \foreach \y/\a/\b in {0.7/-1.0/0.2, 0.0/-1.0/0.8, -0.7/-1.0/0.4, -1.4/-1.0/0.9}
-              \draw[line width=0.45pt, black!55] (\a mm,\y mm) -- (\b mm,\y mm);},
- icstack/.pic={\pic at (0.45mm,0.45mm) {icsheet}; \pic at (0mm,0mm) {icsheet}; \pic at (-0.45mm,-0.45mm) {iccode};},
- icbadge/.pic={\draw[fill=white, line width=0.4pt] (0,0) circle (1.0mm);},
- icclock/.pic={\pic{icbadge}; \draw[line width=0.35pt] (0,0) -- (0,0.5mm); \draw[line width=0.35pt] (0,0) -- (0.42mm,-0.12mm);},
- iccross/.pic={\pic{icbadge}; \draw[line width=0.45pt] (-0.38mm,-0.38mm) -- (0.38mm,0.38mm) (-0.38mm,0.38mm) -- (0.38mm,-0.38mm);},
- ictick/.pic={\pic{icbadge}; \draw[line width=0.5pt] (-0.42mm,0.02mm) -- (-0.1mm,-0.34mm) -- (0.46mm,0.42mm);},
- ictests/.pic={\pic{icsheet};
-             \foreach \y in {0.8,-0.2,-1.2} {
-               \draw[line width=0.33pt] (-1.0mm,\y mm-0.3mm) rectangle (-0.45mm,\y mm+0.3mm);
-               \draw[line width=0.42pt] (-0.95mm,\y mm) -- (-0.75mm,\y mm-0.25mm) -- (-0.4mm,\y mm+0.35mm);
-               \draw[line width=0.45pt, black!55] (-0.05mm,\y mm) -- (0.95mm,\y mm);}},
- ictraj/.pic={\pic{icstack}; \pic at (1.1mm,-2.2mm) {icclock};},
- icbuggy/.pic={\pic{iccode}; \pic at (1.5mm,-2.0mm) {iccross};},
- icfixed/.pic={\pic{iccode}; \pic at (1.5mm,-2.0mm) {ictick};}]
+            \foreach \y/\a/\b in {0.6/-0.9/0.2, -0.1/-0.9/0.7, -0.8/-0.9/0.3, -1.4/-0.9/0.8}
+              \draw[line width=0.42pt, black!55] (\a mm,\y mm) -- (\b mm,\y mm);},
+ icstack/.pic={\pic at (0.4mm,0.4mm) {icsheet}; \pic at (0mm,0mm) {icsheet}; \pic at (-0.4mm,-0.4mm) {iccode};},
+ icbadge/.pic={\draw[fill=white, line width=0.4pt] (0,0) circle (0.95mm);},
+ icclock/.pic={\pic{icbadge}; \draw[line width=0.35pt] (0,0) -- (0,0.45mm); \draw[line width=0.35pt] (0,0) -- (0.4mm,-0.1mm);},
+ iccross/.pic={\pic{icbadge}; \draw[line width=0.45pt] (-0.35mm,-0.35mm) -- (0.35mm,0.35mm) (-0.35mm,0.35mm) -- (0.35mm,-0.35mm);},
+ ictick/.pic={\pic{icbadge}; \draw[line width=0.5pt] (-0.4mm,0.02mm) -- (-0.08mm,-0.32mm) -- (0.44mm,0.4mm);},
+ ichead/.pic={\pic{icsheet};
+            \draw[fill=black!35, line width=0pt] (-0.9mm,0.55mm) rectangle (0.7mm,1.0mm);
+            \foreach \y in {-0.2,-0.8,-1.4} \draw[line width=0.42pt, black!55] (-0.9mm,\y mm) -- (0.7mm,\y mm);},
+ iclist/.pic={\pic{icsheet};
+            \foreach \y in {0.7,-0.2,-1.1} {
+              \draw[line width=0.33pt] (-0.95mm,\y mm-0.28mm) rectangle (-0.45mm,\y mm+0.28mm);
+              \draw[line width=0.4pt] (-0.9mm,\y mm) -- (-0.72mm,\y mm-0.22mm) -- (-0.4mm,\y mm+0.32mm);
+              \draw[line width=0.42pt, black!55] (-0.05mm,\y mm) -- (0.85mm,\y mm);}},
+ iclog/.pic={\pic{icsheet};
+            \draw[line width=0.45pt] (-0.95mm,0.75mm) -- (-0.75mm,0.5mm) -- (-0.4mm,1.05mm);
+            \draw[line width=0.45pt] (-0.95mm,-0.45mm) -- (-0.4mm,0.1mm) (-0.95mm,0.1mm) -- (-0.4mm,-0.45mm);
+            \draw[line width=0.45pt] (-0.95mm,-1.5mm) -- (-0.75mm,-1.75mm) -- (-0.4mm,-1.2mm);
+            \foreach \y in {0.75,-0.2,-1.35} \draw[line width=0.42pt, black!55] (-0.05mm,\y mm) -- (0.85mm,\y mm);},
+ icruler/.pic={\draw[fill=white, line width=0.4pt] (-1.5mm,-0.9mm) rectangle (1.5mm,0.9mm);
+            \foreach \x in {-1.0,-0.5,0,0.5,1.0} \draw[line width=0.35pt] (\x mm,0.9mm) -- (\x mm,0.25mm);
+            \draw[line width=0.35pt] (-1.5mm,-0.35mm) -- (1.5mm,-0.35mm);},
+ ictraj/.pic={\pic{icstack}; \pic at (1.0mm,-2.1mm) {icclock};},
+ icbuggy/.pic={\pic{iccode}; \pic at (1.4mm,-1.9mm) {iccross};},
+ icfixed/.pic={\pic{iccode}; \pic at (1.4mm,-1.9mm) {ictick};}]
 
- % offline band
- \node[stage] (mine)  at (2.70,  7mm) {Mine};
- \node[stage] (train) at (4.25,  7mm) {Train};
- \node[stage] (sel)   at (5.80,  7mm) {Select};
-
- % deployment band
- \node[sub] (gen)  at (2.95, -11mm) {Frozen triple $S$};
- \node[sub, minimum width=22mm] (gate) at (5.65, -11mm) {Execution gate\\$\mathrm{ted}^{\dagger}\!\le\!B$, else $b$};
- \node[font=\footnotesize\bfseries, inner sep=0.5pt] (dtitle) at (4.30, -4.2mm) {Deployment};
+ % ---- bands
+ \node[stage] (mine)  at (2.80,  5mm) {Mine};
+ \node[stage] (train) at (4.30,  5mm) {Train};
+ \node[stage] (sel)   at (5.80,  5mm) {Select};
+ \node[sub] (gen)  at (3.05, -10mm) {Frozen triple $S$};
+ \node[sub, minimum width=20mm] (gate) at (5.60, -10mm) {Execution gate\\$\mathrm{ted}^{\dagger}\!\le\!B$, else $b$};
+ \node[font=\footnotesize\bfseries, inner sep=0.4pt] (dtitle) at (4.35, -4mm) {Deployment};
  \begin{scope}[on background layer]
-   \node[draw, rounded corners=3pt, fit=(dtitle)(gen)(gate), inner xsep=1.6mm, inner ysep=1.2mm, fill=black!4] (dep) {};
+   \node[draw, rounded corners=3pt, fit=(dtitle)(gen)(gate), inner xsep=1.2mm, inner ysep=0.8mm, fill=black!4] (dep) {};
  \end{scope}
  \begin{scope}[on background layer]
-   \node[draw, line width=0.9pt, rounded corners=4pt, fit=(mine)(sel)(dep), inner xsep=2mm, inner ysep=2.6mm] (tool) {};
+   \node[draw, line width=0.9pt, rounded corners=4pt, fit=(mine)(sel)(dep), inner xsep=1.4mm, inner ysep=1.8mm] (tool) {};
  \end{scope}
- \node[fill=white, inner xsep=2pt, inner ysep=0.5pt, font=\footnotesize\bfseries] at (tool.north) {\textsc{ZPDPatch}};
+ \node[fill=white, inner xsep=2pt, inner ysep=0.4pt, font=\footnotesize\bfseries] at (tool.north) {\textsc{ZPDPatch}};
 
- % inputs and output, each label centred on its icon
- \pic at (0.6, 7mm) {ictraj};
- \node[item, anchor=north] at (0.6, 3.6mm) {Trajectories $\mathcal T$,\\evidence $\mathcal O$};
- \pic at (0.6, -11mm) {icbuggy};
- \node[item, anchor=north] at (0.6, -14.4mm) {Buggy program $b$,\\context $x$};
- \pic at (5.80, 14.5mm) {icfixed};
- \node[item, anchor=south] at (5.80, 17.9mm) {Validation inputs $U$};
- \pic at (5.65, -19.5mm) {ictests};
- \node[item, anchor=north] at (5.65, -22.9mm) {Tests $\mathcal E$, budget $B$};
- \pic at (7.85, -11mm) {icfixed};
- \node[item, anchor=north] at (7.85, -14.4mm) {Returned\\program $f$};
+ % ---- one icon per named item
+ \pic at (0.56,  9mm) {ictraj};   \node[item, anchor=north] at (0.56,  6.2mm) {Trajectories $\mathcal T$};
+ \pic at (0.56,  1mm) {iclog};    \node[item, anchor=north] at (0.56, -1.8mm) {Evidence $\mathcal O$};
+ \pic at (0.56, -9mm) {icbuggy};  \node[item, anchor=north] at (0.56,-11.8mm) {Buggy program $b$};
+ \pic at (0.56,-17mm) {ichead};   \node[item, anchor=north] at (0.56,-19.8mm) {Context $x$};
+ \pic at (5.80, 13mm) {icfixed}; \node[item, anchor=south] at (5.80, 15.8mm) {Validation inputs $U$};
+ \pic at (5.00,-18mm) {iclist};  \node[item, anchor=north] at (5.00,-20.8mm) {Tests $\mathcal E$};
+ \pic at (6.20,-18mm) {icruler}; \node[item, anchor=north] at (6.20,-20.8mm) {Budget $B$};
+ \pic at (7.48,-10mm) {icfixed}; \node[item, anchor=north] at (7.48,-12.8mm) {Returned $f$};
 
- % wires
- \coordinate (bus) at (1.55, 0);
- \coordinate (corr) at (0, -0.5mm);
- \draw[->] (1.05, 7mm) -- (1.05, 7mm -| bus) |- (mine.west);
- \draw[->] (1.05, -11mm) -- (1.05, -11mm -| bus) |- (gen.west);
- \draw[->] (5.80, 12.6mm) -- (sel.north);
- \draw[->] (5.65, -17.6mm) -- (gate.south);
+ % ---- wires
+ \coordinate (bus) at (1.65, 0);
+ \coordinate (corr) at (0, -0.6mm);
+ \draw[->] (1.01,  9mm) -- (1.65,  9mm) |- (mine.west);
+ \draw[->] (1.01,  1mm) -- (1.65,  1mm) |- (mine.west);
+ \draw[->] (1.01, -9mm) -- (1.65, -9mm) |- (gen.west);
+ \draw[->] (1.01,-17mm) -- (1.65,-17mm) |- (gen.west);
+ \draw[->] (5.80, 11.2mm) -- (sel.north);
+ \draw[->] (5.00,-16.2mm) -- (5.00,-12.4mm);
+ \draw[->] (6.20,-16.2mm) -- (6.20,-12.4mm);
  \draw[->] (mine) -- node[lbl, above] {$D_\rho$} (train);
  \draw[->] (train) -- node[lbl, above] {$V$} (sel);
  \draw[->] (sel.south) -- (sel.south |- corr) -- node[lbl, above] {$S$} (gen.north |- corr) -- (gen.north);
  \draw[->] (gen) -- node[lbl, above] {$z$} (gate);
- \draw[->] (gate.east) -- (7.45, -11mm);
+ \draw[->] (gate.east) -- (7.13, -10mm);
 \end{tikzpicture}
 \caption{Overview of \textsc{ZPDPatch}}
 \label{fig:overview}
@@ -221,6 +231,34 @@ Figure~\ref{fig:overview} illustrates how \textsc{ZPDPatch} repairs a buggy prog
 
 \subsection{\textup{\textsc{ZPDPatch}}}
 
+\begin{figure}[h]
+\centering\scriptsize
+\begin{minipage}[b]{0.48\columnwidth}
+\begin{verbatim}
+N = int(input())
+
+for i in range(N):
+    if i**2 > N:
+        print((i-1)**2)
+        exit()
+\end{verbatim}
+\centering (a) buggy program $b$
+\end{minipage}\hfill
+\begin{minipage}[b]{0.48\columnwidth}
+\begin{verbatim}
+N = int(input())
+
+for i in range(N):
+    if i**2 >= N:
+        print((i-1)**2)
+        exit()
+\end{verbatim}
+\centering (b) Progress target
+\end{minipage}
+\caption{Running example (p03556)}
+\label{fig:example}
+\end{figure}
+
 Algorithm~\ref{alg:construct} details how \textsc{ZPDPatch} instantiates Algorithm~\ref{alg:generic}. Taking \(\mathcal T\) and \(\mathcal O\) in addition to the inputs of Algorithm~\ref{alg:generic}, it builds the generator set offline and requires no instructor solution, no pool of reference programs, and no learner model.
 
 At lines~2--9, Mine scans each trajectory \(\tau\) and emits the pairs of each rule (Section~\ref{sec:mine}). The Answer rule pairs every non-accepted state with the accepted endpoint (line~4), whereas the Strict and Progress rules carry a retained prefix \(R\) and append a state only when the rule's improvement predicate holds on the execution evidence \(\mathcal O\) (lines~7--9), emitting \((R,c_t)\) before the state is appended. At lines~10--12, Train fits one adapter per rule and seed, so the pool \(V\) holds \(|\Sigma|\) checkpoints per rule (Section~\ref{sec:train}). At lines~13--16, Select runs each checkpoint on the validation inputs \(U\) under the edit budget \(B\), records the inputs it repairs, and freezes the ordered triple whose union covers the most of \(U\), where \(\eta_k=3\) in our experiments (Section~\ref{sec:select}). The returned portfolio \(S\) is what line~3 of Algorithm~\ref{alg:generic} iterates over at deployment.
@@ -247,7 +285,8 @@ Total & & 546 & 10,088 & 17,794 & 68,752 & 50,958 & -- \\
 
 \subsection{Mine}
 \label{sec:mine}
-The goal of Mine is to make every supervision pair traceable to an observed source and a later submission. Submissions are grouped by problem and user, chronologically ordered, and cut at the first acceptance. Canonical normalization removes consecutive duplicates while preserving the source code used for generation and execution. A whole-trajectory filter instead excludes a trajectory before splitting if any required prompt--target configuration exceeds 4,096 tokens. Exclusion changes the evaluated population, but never truncates a program or history.
+
+The goal of the Mine stage is to make every supervision pair traceable to an observed source and a later submission (lines~2--9). Figure~\ref{fig:example} shows what that choice changes on one trajectory. For the buggy submission (a), the Progress rule takes as target (b), the submission the student actually made next, one AST operation away and differing only in a comparison. The Answer rule takes the accepted submission the same trajectory reached, 33 operations away, which counts to \(10^5\) and keeps a running maximum instead. Submissions are grouped by problem and user, chronologically ordered, and cut at the first acceptance. Canonical normalization removes consecutive duplicates while preserving the source code used for generation and execution. A whole-trajectory filter instead excludes a trajectory before splitting if any required prompt--target configuration exceeds 4,096 tokens. Exclusion changes the evaluated population, but never truncates a program or history.
 
 The coarse severity function assigns 0 to Accepted (AC), 1 to Wrong Answer (WA), 2 to Time or Memory Limit Exceeded (TLE/MLE), 3 to Runtime Error (RE), and 4 to Compile Error (CE); unrecognized and internal outcomes occupy the most severe category. Strict compares recorded verdicts. Progress additionally compares replayed outcomes when the recorded verdict strings agree. Its cache must be complete, and compared vectors must have equal, nonempty testcase keys. Provenance includes problem, code, tests, and execution configuration.
 
@@ -322,17 +361,17 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Baselines.} Zero-shot uses the same base model without fine-tuning and appends verdict/pass-count feedback after failure. LSGen retains repair-pair filtering, edit-vector retrieval, diff-guided generation, and re-retrieval~\cite{dai2026learner}; its same-problem Seen-Train references are unavailable under our Unseen information constraint, so that condition is not evaluated. Answer-1 uses one Answer checkpoint. Answer-3Seed uses seeds 2027--2029 on the same 40,454 Answer pairs, controlling independent training without heterogeneous targets. Answer-9Choose3 adds seeds 2030--2035 and selects three from nine. Mixed-9Choose3 denotes the primary unconstrained \textsc{ZPDPatch} pool.
+\noindent\textbf{Baselines.} Zero-shot uses the same base model without fine-tuning and appends verdict/pass-count feedback after failure. LSGen retains repair-pair filtering, edit-vector retrieval, diff-guided generation, and re-retrieval~\cite{dai2026learner}; its same-problem Seen-Train references are unavailable under our Unseen information constraint, so that condition is not evaluated. Answer-1 uses one Answer checkpoint. Answer-3Seed uses seeds 2027--2029 on the same 40,454 Answer pairs. Answer-9Choose3 adds seeds 2030--2035 and selects three from nine. Mixed-9Choose3 denotes the primary unconstrained \textsc{ZPDPatch} pool.
 
-\noindent\textbf{Benchmarks.} Table~\ref{tab:data} describes the Project CodeNet Python800 corpus~\cite{puri2021project} by partition (Part.) and submissions (Subm.); its Seen problems and tests are shared across partitions, so the user counts are not additive. We retain trajectories with at least three submissions, a non-AC state before the first acceptance, and an accepted endpoint in the benchmark reference set. Users must appear in at least three problems, and retained problems contain at least two trajectories. The refined corpus has 546 problems, 21,454 trajectories, 99,432 submissions, and 10,088 tests. Whole-trajectory 4,096-token filtering removes 3,660 trajectories before splitting. Problems ranked by eligible trajectory count supply the top 90\% to Seen (492) and the remaining 54 low-resource problems to Unseen. Seen trajectories are split 80:10:10 within every problem, retaining at least one in each partition.
+\noindent\textbf{Benchmarks.} Table~\ref{tab:data} describes the Project CodeNet Python800 corpus~\cite{puri2021project} by partition (Part.) and submissions (Subm.); its Seen problems and tests are shared across partitions, so the user counts are not additive. We retain trajectories with at least three submissions, a non-AC state before the first acceptance, and an accepted endpoint in the benchmark reference set. Users must appear in at least three problems, and retained problems contain at least two trajectories. Whole-trajectory 4,096-token filtering removes 3,660 trajectories before splitting. Problems ranked by eligible trajectory count supply the top 90\% to Seen (492) and the remaining 54 low-resource problems to Unseen. Seen trajectories are split 80:10:10 within every problem, retaining at least one in each partition.
 
-The primary endpoint is the last recorded non-AC submission of an eventually successful trajectory. Runtime eligibility requires the buggy program to remain non-AC and the recorded accepted endpoint to pass the available tests on replay. This leaves 997 of 1,754 Seen test trajectories, from 328 problems, and 250 of 259 Unseen trajectories, from all 54 problems. Excluded trajectories do not enter the denominator. CodeNet users are online-judge participants, not a verified classroom population. We also use TIKTOC's release of authentic Java CodeWorkout submissions and tests from an Introductory Programming (CS1) course~\cite{duan2024tiktoc}: 1,125 trajectories from 224 students and 17 exercises, with 181 test trajectories from 33 held-out students. CodeWorkout is a practice platform on which a course assigns short method-level exercises with instructor-authored tests, the setting a returned repair would enter. This corpus supplies the classroom population and CodeNet the scale. A separate exercise split has 10/3/4 train/validation/test exercises and 605/216/304 trajectories.
+The primary endpoint is the last recorded non-AC submission of an eventually successful trajectory. Runtime eligibility requires the buggy program to remain non-AC and the recorded accepted endpoint to pass the available tests on replay. This leaves 997 of 1,754 Seen test trajectories, from 328 problems, and 250 of 259 Unseen trajectories, from all 54 problems. Excluded trajectories do not enter the denominator. CodeNet users are online-judge participants, not a verified classroom population. We also use TIKTOC's release of authentic Java CodeWorkout submissions and tests from an Introductory Programming (CS1) course~\cite{duan2024tiktoc}: 1,125 trajectories from 224 students and 17 exercises, with 181 test trajectories from 33 held-out students. CodeWorkout is a practice platform on which a course assigns short method-level exercises with instructor-authored tests, the setting a returned repair would enter. A separate exercise split has 10/3/4 train/validation/test exercises and 605/216/304 trajectories.
 
-\noindent\textbf{Other Settings.} Canonical Python evaluation runs one subprocess per test with a 2.5-second timeout and a 2GB address-space limit, whereas Java 21 runs in a network-disabled, read-only container (16GB shared) with 15-second compilation and whole-harness limits; these are different harnesses, not a common per-test budget. The primary comparison permits three generations of at most 4,096 output tokens each. Matched-target training uses batch size 2 with accumulation 8. Each target rule uses the three seeds in order with greedy decoding and current-only prompts, and does not search nine-checkpoint portfolios. The supplement maps these conditions and source hashes.
+\noindent\textbf{Other Settings.} Canonical Python evaluation runs one subprocess per test with a 2.5-second timeout and a 2GB address-space limit; Java 21 runs in a network-disabled container with 15-second limits, a different harness rather than a common per-test budget. The primary comparison permits three generations of at most 4,096 output tokens each. Matched-target training uses batch size 2 with accumulation 8. Each target rule uses the three seeds in order with greedy decoding and current-only prompts, and does not search nine-checkpoint portfolios. The supplement maps these conditions and source hashes.
 
-\noindent\textbf{Evaluation Metrics.} We measure three kinds of outcome: whether the returned program passes the tests, how large its change is, and how much of the submission it keeps. Repair Rate (RR) is the fraction of eligible inputs whose returned program passes every test. Pass Rate (PR) averages passed-test fractions; Improvement Rate (IR) records an increased fraction. Tree Edit Distance (TED) between ASTs measures current-to-returned change~\cite{zhang1989simple,pawlik2016tree} and is undefined when either program does not parse. Undefined cases remain in unrestricted RR but not TED summaries; finite gates reject undefined-distance changes. Unpaired TED averages successful, parseable returns; paired locality uses joint successes. Retention divides tokens or nonempty stripped lines matched by \texttt{SequenceMatcher} (autojunk disabled) by the source count. Python tokenization omits layout tokens but keeps comments; Java separates words and punctuation. Retention differences are percentage points (pp), not token counts or learning measures.
+\noindent\textbf{Evaluation Metrics.} We measure three kinds of outcome: whether the returned program passes the tests, how large its change is, and how much of the submission it keeps. Repair Rate (RR) is the fraction of eligible inputs whose returned program passes every test. Pass Rate (PR) averages passed-test fractions; Improvement Rate (IR) records an increased fraction. Tree Edit Distance (TED) between ASTs measures current-to-returned change~\cite{zhang1989simple,pawlik2016tree} and is undefined when either program does not parse. Undefined cases remain in unrestricted RR but not TED summaries; finite gates reject undefined-distance changes. Unpaired TED averages successful, parseable returns; paired locality uses joint successes. Retention divides tokens or nonempty stripped lines matched by \texttt{SequenceMatcher} (autojunk disabled) by the source count. Retention differences are percentage points (pp).
 
-Unless stated otherwise, brackets give 95\% percentile bootstrap intervals from 10,000 problem-cluster resamples with replacement, preserving all paired inputs in each sampled cluster~\cite{efron1979bootstrap}. Java separately resamples students and exercises. Instance-weighted estimates divide pooled differences by sampled inputs; equal-problem estimates average problem means. Exact two-sided McNemar tests are supplementary to the cluster-aware intervals, not substitutes for them~\cite{mcnemar1947note}. Holm adjustment covers the four history-removal retraining tests (Strict/Progress $\times$ Seen/Unseen), not every exploratory contrast~\cite{holm1979simple}; individual-rate Wilson intervals are reported separately~\cite{wilson1927probable}. Protocols identify when controls were frozen, but the study was not externally preregistered, and adaptively inspected development remains exploratory.
+Unless stated otherwise, brackets give 95\% percentile bootstrap intervals from 10,000 problem-cluster resamples with replacement, preserving all paired inputs in each sampled cluster~\cite{efron1979bootstrap}. Java separately resamples students and exercises. Instance-weighted estimates divide pooled differences by sampled inputs; equal-problem estimates average problem means. Exact two-sided McNemar tests are supplementary to the cluster-aware intervals, not substitutes for them~\cite{mcnemar1947note}. Holm adjustment covers the four history-removal retraining tests (Strict/Progress $\times$ Seen/Unseen), not every exploratory contrast~\cite{holm1979simple}; individual-rate Wilson intervals are reported separately~\cite{wilson1927probable}. The study was not externally preregistered, and adaptively inspected development remains exploratory.
 
 \noindent\textbf{Research process.} OpenAI Codex assisted with design, code, orchestration, diagnostics, and manuscript preparation under author instructions, and automated agents executed authorized jobs; we do not claim authors manually ran every job. Outcomes come from retained execution records rather than generated prose. The experiment program stopped at its declared cutoff of 21 October 2026, and this synthesis adds no training, generation, or testcase rerun.
 
@@ -361,7 +400,7 @@ LSGen repairs 800/997 Seen inputs versus Mixed's 613/997, a difference of -18.8 
 
 \subsection{RQ2: Target Construction and Locality}
 
-\noindent\textbf{Matched targets.} Table~\ref{tab:targets} changes the target while holding current inputs and training counts fixed. Progress-minus-Answer RR is -19.2 points [-22.96, -15.54] on Seen and -11.2 [-17.37, -4.88] on Unseen, with exact McNemar \(p=7.85\times10^{-34}\) and \(p=6.17\times10^{-5}\). Thus the canonical Answer dataset's advantage cannot be attributed only to having more training records. The paired population is restricted to sources with distinct targets, and a Progress target can itself be accepted, so the intervention is the retained-evidence target rule rather than a clean contrast between incorrect and correct targets. A returned program can move a submission forward without finishing it. Under the matched inputs the Progress rule repairs 34.0\% of Seen inputs and improves 43.4\%, so a further 9.4 points receive a program that advances without passing, against 53.2\% and 65.0\% for the Answer rule. The same two gaps are 6.4 and 7.6 points on Unseen, and 9.4 against 2.2 on Java, where Answer targets already repair 85.6\% outright. Part of the coverage the Progress rule gives up therefore returns as partial progress, counted by test execution and not by comprehension.
+\noindent\textbf{Matched targets.} Table~\ref{tab:targets} changes the target while holding current inputs and training counts fixed. Progress-minus-Answer RR is -19.2 points [-22.96, -15.54] on Seen and -11.2 [-17.37, -4.88] on Unseen, with exact McNemar \(p=7.85\times10^{-34}\) and \(p=6.17\times10^{-5}\). Thus the canonical Answer dataset's advantage cannot be attributed only to having more training records. The paired population is restricted to sources with distinct targets, and a Progress target can itself be accepted, so the intervention is the retained-evidence target rule rather than a clean contrast between incorrect and correct targets. Under the matched inputs the Progress rule repairs 34.0\% of Seen inputs and improves 43.4\%, so a further 9.4 points receive a program that advances without passing, against 53.2\% and 65.0\% for the Answer rule. The same two gaps are 6.4 and 7.6 points on Unseen, and 9.4 against 2.2 on Java, where Answer targets already repair 85.6\% outright. Part of the coverage the Progress rule gives up therefore returns as partial progress, counted by test execution and not by comprehension.
 
 Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures describe successful outputs that retain more of the submission, but they establish neither easier comprehension nor which method best helps a particular student.
 
@@ -422,13 +461,13 @@ Java retraining uses 600 training and 118 validation pairs per target and reprod
 \noindent\textbf{Operational locality.} A declared structural budget gives patch size an explicit engineering meaning: the deployment admits only changes within it. Per-budget Seen rates are 16.9/22.5/4.8\% at TED 5, 28.5/32.4/8.0 at 10, 40.3/44.0/13.9 at 20, 51.4/50.9/30.4 at 40, 61.0/56.0/50.8 at 80, and 66.8/57.9/67.6 at 160 for current-only Answer-3Seed/Mixed/LSGen, each over 997 inputs. At TED 20, Mixed repairs 44.0\% of Seen inputs versus LSGen's 13.9\%, a 30.1-point difference [26.45, 33.82]. Across the six prespecified budgets its mean advantage over LSGen is 14.7 points [12.03, 17.43]. This is a budget-indexed outcome, not an unrestricted superiority claim: LSGen wins at 160, and current-only Answer-3Seed overtakes Mixed from 40 onward. On Unseen, Mixed versus current-only Answer-3Seed is 38.8\% versus 32.0\% at 5, 48.0\% versus 40.8\% at 10, and 57.6\% versus 54.8\% at 20; the order reverses at 40. Overall, target construction moves coverage and locality in opposite directions under matched inputs, in the same direction on student-held-out Java, and not uniformly across exercises or students, and matched peer targets also improve coverage, so the effect is not uniquely personal supervision.
 
 \subsection{RQ3: Component Efficacy}
-\noindent\textbf{Fixed candidate breadth.} For three stored draws with success indicators \(a_{ij}\), the expected uniformly selected one-draw success for input \(i\) is \(\frac{1}{3}\sum_j a_{ij}\), whereas the three-draw union succeeds when \(\max_j a_{ij}=1\). Their paired difference isolates additional opportunities within the identical candidate set. Replacing greedy decoding by one stochastic draw costs 7.6 points [-9.81, -5.41], whereas execution-selecting three of those identical fixed draws contributes 15.1 points [13.48, 16.76] on Seen. This is a descriptive decomposition of stored executions, and it shows why comparing a portfolio only with one adapter overstates the evidence for its training signal.
+\noindent\textbf{Fixed candidate breadth.} For three stored draws with success indicators \(a_{ij}\), the expected uniformly selected one-draw success for input \(i\) is \(\frac{1}{3}\sum_j a_{ij}\), whereas the three-draw union succeeds when \(\max_j a_{ij}=1\). Their paired difference isolates additional opportunities within the identical candidate set. Replacing greedy decoding by one stochastic draw costs 7.6 points [-9.81, -5.41], whereas execution-selecting three of those identical fixed draws contributes 15.1 points [13.48, 16.76] on Seen. It shows why comparing a portfolio only with one adapter overstates the evidence for its training signal.
 
 The temperature sweep retains all declared conditions instead of selecting the best one for the headline. Through \(T=1.0\) the one-draw rate stays within 41.1--43.1\% on Seen, the three-draw union reaches 60.0/75.2\%, and at \(T=1.5\) the decoder collapses to 15.8/35.2\%. A separate 20-draw stream at \(T=0.8\) reaches 74.8\% Seen and 84.0\% Unseen, using on average 7.44 and 5.08 calls under early stopping. Those higher rates spend a different generation budget and do not replace the three-call primary results. Fine-tuning also matters: the matched base-model three-draw union reaches only 30.4/65.6\%, so adaptation adds 27.2 points [22.99, 31.41] on Seen and 6.4 points [1.19, 11.34] on Unseen. Breadth alone therefore does not explain all improvement over the base model.
 
 At matched temperature, replacing three draws of one checkpoint by one draw from each of three checkpoints changes RR by -0.1 points [-2.00, 1.80] on Seen and 2.4 points [-0.41, 5.31] on Unseen. These intervals do not establish a consistent advantage from checkpoint diversity. They also do not show equivalence. A deterministic multi-seed gain can coexist with this result because sampling from one checkpoint already supplies diversity.
 
-A current-only factorial on one inference stack tests this explanation. Three greedy checkpoints gain 9.8 [7.85, 11.92] and 10.8 [7.23, 14.64] points over one, but under the matched stochastic decoder distinct checkpoints add only 2.1 points [0.00, 4.16] and 1.2 points [-2.93, 5.93]. The equal-problem Seen interval includes zero, so the rounded instance-weighted lower bound does not establish a robust checkpoint benefit. Absolute Seen/Unseen rates on that stack are 53.1/67.2\% for one greedy checkpoint, 62.9/78.0\% for three greedy checkpoints, 66.8/79.6\% for a same-checkpoint stochastic triple, and 68.9/80.8\% for a distinct-checkpoint triple, against 72.0/81.2\% on the historical one. Backend sensitivity is material, and the deployment recommendation is restricted to the evaluated stack rather than asserted as backend-independent superiority.
+A current-only factorial on one inference stack tests this explanation. Three greedy checkpoints gain 9.8 [7.85, 11.92] and 10.8 [7.23, 14.64] points over one, but under the matched stochastic decoder distinct checkpoints add only 2.1 points [0.00, 4.16] and 1.2 points [-2.93, 5.93]. The equal-problem Seen interval includes zero, so this does not establish a robust checkpoint benefit. Absolute Seen/Unseen rates on that stack are 53.1/67.2\% for one greedy checkpoint, 62.9/78.0\% for three greedy checkpoints, 66.8/79.6\% for a same-checkpoint stochastic triple, and 68.9/80.8\% for a distinct-checkpoint triple, against 72.0/81.2\% on the historical one. Backend sensitivity is material, and the deployment recommendation is restricted to the evaluated stack rather than asserted as backend-independent superiority.
 
 \noindent\textbf{Serialized history.} Removing earlier submissions from the frozen triples raises repair for both pools. The gains are 8.8/11.1 Seen points and 7.6/6.0 Unseen points for Mixed/Answer, with all intervals excluding zero. Matched retraining without that context shows no significant difference after Holm correction, with smallest adjusted \(p=0.313\), so serialized history is not part of the measured advantage and the deployed configuration uses current-only prompts.
 
@@ -438,7 +477,7 @@ Selection-space controls also fail to establish a general heterogeneous-target b
 \label{sec:generality}
 \noindent\textbf{Problems and execution suites.} Within Unseen, Mixed exceeds Zero-shot by 12.8 points [6.83, 18.75], with 45 versus 13 exclusive successes and exact McNemar \(p=3.01\times10^{-5}\). Among 142 joint repairs, 122 have defined TED for both methods; on those 122 it reduces TED by 6.41 [3.43, 9.89]. The higher absolute Unseen than Seen RR is not evidence of stronger generalization: the partitions differ in trajectory availability and problem composition. Matching all 54 Unseen problems to distinct Seen problems on six pre-repair difficulty covariates changes the raw gap into -4.6 equal-problem points [-14.18, 5.30]. We therefore rely on within-split paired contrasts rather than the raw cross-split difference, since matching cannot balance unobserved difficulty.
 
-A complementary observed/hidden-slice check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests, so the conditional percentage must not replace the full-denominator repair rate.
+A complementary check partitions the existing authored suite. On Unseen, Mixed and Answer-9Choose3 jointly pass observed and held-back slices on 189/250 and 184/250 inputs, respectively. Conditional confirmation among observed-suite successes is 189/192 (98.4\%) and 184/186 (98.9\%); 13 versus 8 exclusive joint successes yield \(p=0.383\). Repeating the procedure on all 328 Seen problems with a distinct seed yields 97.8\% and 97.9\% confirmation, but joint success is 452/997 versus 469/997. High confirmation thus does not demonstrate that Mixed wins. These are held-back slices of the same authored tests, so the conditional percentage must not replace the full-denominator repair rate.
 
 \noindent\textbf{Earlier prefixes.} Across 2,770 Seen and 674 Unseen executable prefixes of eventually successful trajectories, current-only Answer-3Seed reaches 69.6\% and 80.1\% RR. The early, middle, and last thirds reach 70.0\%, 67.6\%, and 71.4\% on Seen and 82.9\%, 77.3\%, and 81.8\% on Unseen. It extends evaluation beyond the last failed submission and finds no monotonic position effect. It does not cover trajectories that never reach acceptance and multiple prefixes from one trajectory are dependent, so the 2,770-prefix rate is not added to the 997-input result.
 
