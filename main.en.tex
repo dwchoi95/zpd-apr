@@ -524,15 +524,12 @@ Variant & Variant & \textsc{ZPDPatch} & Variant & \textsc{ZPDPatch} \\
 \textsc{ZPDPatch}-Portfolio & 58.1 & 72.0 & 69.6 & 81.2 \\
 \textsc{ZPDPatch}-Distinct & 66.8 & 68.9 & 79.6 & 80.8 \\
 \textsc{ZPDPatch}+History & 61.7 & 72.0 & 73.2 & 81.2 \\
-\midrule
--Portfolio, 1.5B model & 37.8 & 51.3 & 48.4 & 66.4 \\
--Portfolio, Java & 75.1 & 84.5 & 45.4 & 52.3 \\
 % end rows
 \bottomrule
 \end{tabular}
 \end{table}
 
-The upper part of Table~\ref{tab:ablation} lists the repair rates of each variant and of \textsc{ZPDPatch}. Removing training repairs 47.2\% fewer inputs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.3\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the context repairs 14.3\% and 9.9\% fewer.
+Table~\ref{tab:ablation} lists the repair rates of each variant and of \textsc{ZPDPatch}. Removing training repairs 47.2\% fewer inputs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.3\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the context repairs 14.3\% and 9.9\% fewer.
 
 Training and the portfolio contribute the most. Training transfers the steps that a target rule selects to the model, so it repairs inputs that the base model cannot, and the portfolio gives an input on which one checkpoint fails another candidate, which raises the chance that the execution gate finds one that passes. Distinct checkpoints contribute little here because stochastic decoding already diversifies the candidates of one checkpoint; \textsc{ZPDPatch} decodes deterministically, and there distinct checkpoints supply that diversity. Earlier submissions lower the repair rate because an Answer training input holds only the current submission, so a history makes an input unlike those seen in training; \textsc{ZPDPatch} is therefore deployed with the current submission alone. These results indicate that training and a portfolio selected by execution produce the repairs of \textsc{ZPDPatch}, and that deployment needs only the current submission.
 
@@ -541,7 +538,24 @@ Training and the portfolio contribute the most. Training transfers the steps tha
 \label{sec:generality}
 RQ4 asks whether the gain of the portfolio holds for another model scale, another language and student population, and other positions in a trajectory. To this end, we repeated the comparison with a 1.5B model, on Java with exercises or students held out of training, and on every earlier prefix of the successful trajectories.
 
-The lower part of Table~\ref{tab:ablation} lists, for each setting, the repair rates of one checkpoint (\textsc{ZPDPatch}-Portfolio) and of the portfolio; for Java, the Seen columns hold the students held out of training and the Unseen columns the exercises held out. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out. Over all earlier prefixes of the successful trajectories, \textsc{ZPDPatch} repairs 69.6\% of Seen and 80.1\% of Unseen inputs, and its Seen repair rate stays within 67.6--71.4\% across the first, middle, and last thirds of a trajectory.
+\begin{table}[h]
+\caption{Repair rate (\%) of one checkpoint and of the portfolio by setting}
+\label{tab:generality}
+\centering\scriptsize
+\begin{tabular}{l||rr|rr}
+\toprule
+ & \multicolumn{2}{c|}{Seen} & \multicolumn{2}{c}{Unseen} \\
+Setting & One & Portfolio & One & Portfolio \\
+\midrule
+% rows:generality
+1.5B model & 37.8 & 51.3 & 48.4 & 66.4 \\
+Java & 75.1 & 84.5 & 45.4 & 52.3 \\
+% end rows
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:generality} lists, for each setting, the repair rates of one checkpoint (\textsc{ZPDPatch}-Portfolio) and of the portfolio; for Java, the Seen columns hold the students held out of training and the Unseen columns the exercises held out. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out. Over all earlier prefixes of the successful trajectories, \textsc{ZPDPatch} repairs 69.6\% of Seen and 80.1\% of Unseen inputs, and its Seen repair rate stays within 67.6--71.4\% across the first, middle, and last thirds of a trajectory.
 
 The relative gain is larger for the smaller model because the lower the repair rate of one checkpoint, the more failures another checkpoint can fill. These results indicate that the gain of the portfolio holds across model scale, language, student population, and position in a trajectory.
 
