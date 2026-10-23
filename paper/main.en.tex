@@ -51,14 +51,14 @@ Experimental results demonstrate that \textsc{ZPDPatch} changes the least of a s
 \subsection{Automated Program Repair for Programming Assignments}
 \label{sec:formulation}
 
-Existing techniques for repairing programming assignments aim to turn a buggy submission into a program that passes every test of its problem. A problem \(p\), whether an online judge poses it or a course assigns it, comes with a problem context \(d_p\), its statement and resource limits, and an available test suite \(\mathcal E\). That aim asks only whether a return passes the tests, and nothing about what the student submitted. We define the rest of the setting on the student's submissions themselves. A student working on \(p\) submits repeatedly. We define a submission as a triple \(s=(c,v,o)\), where \(c\) represents its source code, \(v\) denotes the verdict the platform recorded, and \(o\) indicates execution evidence that sends each test of \(\mathcal E\) to its re-executed outcome. The recorded verdict and the replayed outcome stay in separate fields, because runtime versions and execution variability can change what a program is observed to do. The \emph{trajectory} \(\tau=[s_1,\ldots,s_n,s_{\mathit{ac}}]\) orders those states chronologically, with \(s_1,\ldots,s_n\) buggy and \(s_{\mathit{ac}}\) the first accepted submission, which serves only as evaluation ground truth and never reaches a technique. The submission to be repaired is the latest buggy one, and we call it the \emph{buggy program} \(b=s_n\). Cutting each trajectory at its first recorded acceptance yields the \emph{canonical} dataset and its frozen split, on which every measurement below is taken.
+Existing techniques for repairing programming assignments aim to turn a buggy submission into a program that passes every test of its problem. A problem \(p\), whether an online judge poses it or a course assigns it, comes with a problem context \(d_p\), its statement and resource limits, and an available test suite \(\mathcal E\). That aim asks only whether a return passes the tests, and nothing about what the student submitted. We define the rest of the setting on the student's submissions themselves. A student working on \(p\) submits repeatedly. We define a submission as a triple \(s=(c,v,o)\), where \(c\) represents its source code, \(v\) denotes the verdict the platform recorded, and \(o\) indicates execution evidence that sends each test of \(\mathcal E\) to its re-executed outcome. The recorded verdict and the replayed outcome stay in separate fields, because runtime versions and execution variability can change what a program is observed to do. The \emph{trajectory} \(\tau=[s_1,\ldots,s_n,s_{\mathit{ac}}]\) orders those states chronologically, with \(s_1,\ldots,s_n\) buggy and \(s_{\mathit{ac}}\) the first accepted submission, which serves only as evaluation ground truth and never reaches a technique. The submission to be repaired is the latest buggy one, and we call it the \emph{buggy program} \(b=s_n\). Cutting each \(\tau\) at its first recorded acceptance yields the \emph{canonical} dataset and its frozen split, on which every measurement below is taken.
 
 \begin{algorithm}[h]
 \caption{APR for Programming Assignments}
 \label{alg:generic}
 \footnotesize
 \begin{algorithmic}[1]
-\Require Buggy program $b$, context $x$, ordered generators $S$, tests $\mathcal E$, edit budget $B$
+\Require Buggy program $b$, Context $x$, Ordered generators $S$, Tests $\mathcal E$, Edit budget $B$
 \Ensure Returned program $f$
 \State $f\gets b$; $q^*\gets\textsc{Execute}(b,\mathcal E)$
 \For{$g\in S$}
@@ -78,55 +78,25 @@ Existing techniques for repairing programming assignments aim to turn a buggy su
 
 Algorithm~\ref{alg:generic} describes a generic repair procedure for programming assignments in the style of existing techniques~\cite{gulwani2018automated,wang2018search,hu2020re}. It takes five inputs, a buggy program \(b\), a context \(x\), an ordered set \(S\) of generators, a test suite \(\mathcal E\), and an edit budget \(B\), and returns one program \(f\). Line~1 makes the buggy program \(b\) the fallback for the return \(f\) and uses \(\textsc{Execute}\) to record in \(q^*\) the fraction \(q\) of tests that \(b\) passes. Lines~2--3 take each generator \(g\) of the ordered set \(S\) in turn, and \(\mathsf{Generate}\) builds one complete candidate \(z\) from the context \(x\). Lines~4--5 skip a candidate whose \(\mathrm{ted}^{\dagger}\) from \(b\) exceeds the edit budget \(B\). Here \(\mathrm{ted}^{\dagger}\) is AST edit distance when both programs parse, zero for unchanged code, and infinity otherwise. An unrestricted \(B\) therefore admits syntax repair, whereas a finite one rejects changes whose distance is undefined. Line~6 executes the candidate and lines~7--8 return it as soon as every test passes. Lines~9--10 replace \(f\) with a candidate that passes a larger fraction, or the same fraction from closer to \(b\), and line~11 returns \(f\) when no candidate passes. For now, let us set aside what the context \(x\) holds and where \(S\) and \(B\) come from; all three are fixed in Section~\ref{sec:approach}.
 
-Existing techniques instantiate Algorithm~\ref{alg:generic} in different ways. Alignment-based techniques replace the generator at line~3 with an alignment against reference programs. CLARA~\cite{gulwani2018automated} uses the expressions of a reference cluster sharing the submission's control flow, Sarfgen~\cite{wang2018search} aligns same-control-flow references on their ASTs, Refactory~\cite{hu2020re} refactors references toward the submission's control flow, and assignment-aware techniques vary how references are chosen~\cite{heo2023referent,choi2021automated,choi2025automated}. Language-model-based techniques~\cite{joshi2023repair,zhang2024pydex,phung2023generating,liu2024fastfixer,yang2024cref,zhao2024peer,orvalho2025counterexample} replace line~3 and often the generator set at line~2 with a model. Retrieval-based LSGen~\cite{dai2026learner} keeps that model and retrieves a learner-specific solution into the context \(x\). Next-step hint generators~\cite{piech2015embeddings,rivers2017datadriven,price2017isnap,roest2024next} return one edit rather than a program, so neither line~6 nor line~4 applies to them. In every case the generator is steered toward an accepted solution or a solution space, never toward the later submissions of the student being helped.
+Existing techniques instantiate Algorithm~\ref{alg:generic} in different ways. Alignment-based techniques replace the generator at line~3 with an alignment against reference programs. CLARA~\cite{gulwani2018automated} uses the expressions of a reference cluster sharing the control flow of \(b\), Sarfgen~\cite{wang2018search} aligns same-control-flow references on their ASTs, Refactory~\cite{hu2020re} refactors references toward the control flow of \(b\), and assignment-aware techniques vary how references are chosen~\cite{heo2023referent,choi2021automated,choi2025automated}. Language-model-based techniques~\cite{joshi2023repair,zhang2024pydex,phung2023generating,liu2024fastfixer,yang2024cref,zhao2024peer,orvalho2025counterexample} replace line~3 and often the generator set at line~2 with a model. Retrieval-based LSGen~\cite{dai2026learner} keeps that model and retrieves a learner-specific solution into the context \(x\). Next-step hint generators~\cite{piech2015embeddings,rivers2017datadriven,price2017isnap,roest2024next} return one edit rather than a program, so neither line~6 nor line~4 applies to them. In every case the generator is steered toward an accepted solution or a solution space, never toward the later submissions of the student being helped.
 
 \subsection{Limitation of Solution-Supervised Repair}
 \label{sec:limitation}
 
+\begin{figure}[h]
+\centering
+\includegraphics{Figures/icse-seet-student-reach.pdf}
+\caption{Students' own steps and LSGen's returns within each budget}
+\label{fig:reach}
+\end{figure}
 
-\begin{table}[h]
-\caption{What one step costs, at the budgets Section~\ref{sec:experiment} reports. The student column is the share of the 997 Seen students whose largest unaided step on their own problem is within the budget, measured on the stored trajectories. The LSGen column is the share of the same inputs it repairs with a return within the budget.}
-\label{tab:steps}
-\centering\small
-\begin{tabular}{r||r||r@{}}
-\toprule
-Budget & Student & LSGen \\
-\midrule
-5 & 10.7\% & 4.8\% \\
-10 & 18.5\% & 8.0\% \\
-20 & 30.9\% & 13.9\% \\
-40 & 51.2\% & 30.4\% \\
-80 & 73.4\% & 50.8\% \\
-160 & 90.3\% & 67.6\% \\
-\bottomrule
-\end{tabular}
-\end{table}
+Our key observation is that solution-supervised repair does not return a step from where the student stands. A return that replaces most of \(b\) is not a continuation of it, whether or not the student could reach it with guidance. As Section~\ref{sec:introduction} notes, locating a student's regions takes measurement of its own, so we count what separates a continuation from a replacement, namely how much of \(b\) the return keeps. We measure it by the \(\mathrm{ted}^{\dagger}\) of Algorithm~\ref{alg:generic} and by token retention, the fraction of the tokens of \(b\) that the return preserves (Section~\ref{sec:experiment}). More precisely, we call a return whose distance from \(b\) is at most a declared budget \(B\) a \emph{bounded step}, where \(B\) is the amount of a student's program a course is willing to give up to one repair.
 
+Figure~\ref{fig:reach} measures how large a step the students themselves take, and what LSGen repairs within it, as the distance between consecutive submissions in the stored trajectories of the 997 Seen evaluation inputs, on the scale the returns are measured on. On Seen the 2,581 steps with a defined distance have a median of 15, and one step leaves a median of 96.1\% of the submission's tokens in place. Unrestricted, the returns of LSGen sit at 88.27 and those of the zero-shot model at 27.25. We call the largest step a student took unaided on a problem their \emph{demonstrated reach}. An average LSGen return is 2.5 times an average student step and larger than the biggest step the median student took alone. Twenty AST operations is close to the median student step and within the reach of 30.9\% of students, where LSGen repairs 13.9\%, and 160 covers the reach of 90.3\% of students. Surprisingly, four out of five of the submissions LSGen can repair are not repaired within one step, since it repairs 80.2\% of them when nothing bounds the step. This measurement counts what a student changes at once, not which steps lay inside that student's region.
 
-Our key observation is that solution-supervised repair does not return a step from where the student stands. A return that replaces most of the submission is not a continuation of it, whether or not the student could reach it with guidance. As Section~\ref{sec:introduction} notes, locating a student's regions takes measurement of its own, so we count what separates a continuation from a replacement, namely how much of the submission the return keeps. We measure it by the \(\mathrm{ted}^{\dagger}\) of Algorithm~\ref{alg:generic} and by token retention, the fraction of the submission's tokens the return preserves (Section~\ref{sec:experiment}). More precisely, we call a return whose distance from the submission is at most a declared budget \(B\) a \emph{bounded step}, where \(B\) is the amount of a student's program a course is willing to give up to one repair.
-
-
-\begin{table}[h]
-\caption{Canonical training rules before matched controls. Counts are examples, not unique sources or test successes.}
-\label{tab:rules}
-\centering\small
-\begin{tabular}{l||>{\raggedright\arraybackslash}p{4.1cm}|r}
-\toprule
-Rule & Target and context & Examples \\
-\midrule
-Answer & Each non-AC source alone to the accepted endpoint & 40,454 \\
-Strict & Retained prefix to the next better-verdict state & 16,973 \\
-Progress & Retained prefix to the next verdict/test-progress state & 21,416 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:steps} measures how large a step the students themselves take, as the distance between consecutive submissions in the stored trajectories of the 997 Seen evaluation inputs, on the scale the returns are measured on. On Seen the 2,581 steps with a defined distance have a median of 15, and one step leaves a median of 96.1\% of the submission's tokens in place. Unrestricted, the returns of LSGen sit at 88.27 and those of the zero-shot model at 27.25. We call the largest step a student took unaided on a problem their \emph{demonstrated reach}. An average LSGen return is 2.5 times an average student step and larger than the biggest step the median student took alone. Twenty AST operations is close to the median student step and within the reach of 30.9\% of students, where LSGen repairs 13.9\%, and 160 covers the reach of 90.3\% of students. Surprisingly, four out of five of the submissions LSGen can repair are not repaired within one step, since it repairs 80.2\% of them when nothing bounds the step. This measurement counts what a student changes at once, not which steps lay inside that student's region.
-
-Prior techniques already ask for a small change: Refactory synthesizes minimal repairs~\cite{hu2020re} and LSGen instructs the model to make minimal changes~\cite{dai2026learner}. The LSGen returns measured above are what that instruction produces. One alternative is to bound the step of an existing technique. The 13.9\% above is that alternative, and it costs most of the coverage, because a generator steered toward an accepted solution has no smaller candidate to fall back on. Another is to swap the target for the student's own later submission and leave everything else alone. Table~\ref{tab:rules} shows why that is not a one-variable intervention, as the example counts and the source frequencies move with the rule. What a rule retains moves with it too: among three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), verdict-only filtering cannot tell the second from the third, while test-wise progress retains the second, which keeps every passed test and gains one, and not the third, which gains one but loses another. Extra candidates also raise the repair rate on their own, so a comparison that does not hold the candidate budget fixed does not estimate the target's effect~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}.
+Prior techniques already ask for a small change: Refactory synthesizes minimal repairs~\cite{hu2020re} and LSGen instructs the model to make minimal changes~\cite{dai2026learner}. The LSGen returns measured above are what that instruction produces. One alternative is to bound the step of an existing technique. The 13.9\% above is that alternative, and it costs most of the coverage, because a generator steered toward an accepted solution has no smaller candidate to fall back on. Another is to swap the target for the student's own later submission and leave everything else alone. That is not a one-variable intervention: from the same trajectories the Answer rule yields 40,454 examples but Strict and Progress yield 16,973 and 21,416, and the source frequencies move with the rule as well. What a rule retains moves with it too: among three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), verdict-only filtering cannot tell the second from the third, while test-wise progress retains the second, which keeps every passed test and gains one, and not the third, which gains one but loses another. Extra candidates also raise the repair rate on their own, so a comparison that does not hold the candidate budget fixed does not estimate the target's effect~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}.
 
 These limitations motivate our approach, which repairs under the guidance of the student's own trajectory. The goal of this paper is to repair a buggy program into one that passes the tests while keeping as much of the submission as possible, and to make the gain readable as the target's. In terms of Algorithm~\ref{alg:generic}, we train the generator toward the student's own later submission rather than toward an accepted solution or a solution space. Our work thus tackles two challenges, (1) that the student's later submission marks the next step only coarsely and may itself be accepted, and (2) that attributing a gain to the target requires holding the sources, the example counts, and the candidate budget fixed.
-
 
 \section{Our Approach}
 \label{sec:approach}
@@ -160,19 +130,16 @@ A training example pairs an input \(x=(d_p,h_i)\) with later code \(y\), where a
 \node[below=0.65cm of gate,font=\footnotesize] (tests) {Observed tests + edit budget};
 \draw[arr] (tests) -- (gate);
 \end{tikzpicture}
-\caption{\textsc{ZPDPatch} separates offline construction from online repair. Mine, Train, and Select run once per corpus; deployment then serves repairs from the frozen checkpoints behind the execution gate of Algorithm~\ref{alg:generic}.}
+\caption{Overview of \textsc{ZPDPatch}}
 \label{fig:overview}
 \end{figure}
-
-
-
 
 \begin{algorithm}[h]
 \caption{\textsc{ZPDPatch}}
 \label{alg:construct}
 \footnotesize
 \begin{algorithmic}[1]
-\Require Trajectories $\mathcal T$, execution evidence $\mathcal O$, validation inputs $U$, seeds $\Sigma$, portfolio size $\eta_k$, edit budget $B$
+\Require Trajectories $\mathcal T$, Execution evidence $\mathcal O$, Validation inputs $U$, Seeds $\Sigma$, Portfolio size $\eta_k$, Edit budget $B$
 \Ensure Frozen ordered checkpoint portfolio $S$
 \State /* Step 1. Mine the three target datasets */
 \State $(D_A,D_S,D_P)\gets(\emptyset,\emptyset,\emptyset)$
@@ -210,7 +177,7 @@ Our approach separates offline construction from online repair. Mine constructs 
 The primary configuration uses three seeds per relation and \(\eta_k=3\), and breadth and pool controls vary these opportunities. Figure~\ref{fig:overview} shows those two phases, Algorithm~\ref{alg:construct} constructs the frozen checkpoint portfolio, and Algorithm~\ref{alg:generic} deploys it to repair an input.
 
 \begin{table}[t]
-\caption{Corpus after whole-trajectory filtering. Part.: partition; Subm.: submissions; prefixes precede relation filtering. Seen problems/tests are shared across its partitions; user counts are not additive.}
+\caption{Corpus after whole-trajectory filtering}
 \label{tab:data}
 \centering\scriptsize\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{ll||rrrrrr}
@@ -277,11 +244,10 @@ In this section, we evaluate \textsc{ZPDPatch} to answer the following research 
 \end{itemize}
 We implemented \textsc{ZPDPatch} on top of Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, an open code model of a scale a course can host. All experiments were conducted on a single machine equipped with one NVIDIA RTX 5090.
 
-
 \subsection{Experimental Settings}
 
 \begin{table}[h]
-\caption{Primary Python evaluation. RR divides successful returns by 997 Seen or 250 Unseen inputs; TED averages defined distances among successful returns only. Portfolios permit at most three calls; Answer-1 permits one. H: history input; C: current-only. No cross-split ranking is implied.}
+\caption{Primary Python evaluation. H: history input; C: current-only}
 \label{tab:main}
 \centering\small
 \begin{tabular}{@{}ll||rr|rr@{}}
@@ -304,7 +270,7 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 
 \noindent\textbf{Baselines.} Zero-shot uses the same base model without fine-tuning and appends verdict/pass-count feedback after failure. LSGen retains repair-pair filtering, edit-vector retrieval, diff-guided generation, and re-retrieval~\cite{dai2026learner}; its same-problem Seen-Train references are unavailable under our Unseen information constraint, so that condition is not evaluated. Answer-1 uses one Answer checkpoint. Answer-3Seed uses seeds 2027--2029 on the same 40,454 Answer pairs, controlling independent training without heterogeneous targets. Answer-9Choose3 adds seeds 2030--2035 and selects three from nine. History and current-only prompts are explicitly labeled. Mixed-9Choose3 denotes the primary unconstrained \textsc{ZPDPatch} pool. Current-only reselection from the mixed pool chooses the same three Answer checkpoints as Answer-3Seed, not a relation-mixing improvement.
 
-\noindent\textbf{Benchmarks.} Table~\ref{tab:data} describes the Project CodeNet Python800 corpus~\cite{puri2021project}. We retain trajectories with at least three submissions, a non-AC state before the first acceptance, and an accepted endpoint in the benchmark reference set. Users must appear in at least three problems, and retained problems contain at least two trajectories. The refined corpus has 546 problems, 21,454 trajectories, 99,432 submissions, and 10,088 tests. Whole-trajectory 4,096-token filtering removes 3,660 trajectories before splitting. Problems ranked by eligible trajectory count supply the top 90\% to Seen (492) and the remaining 54 low-resource problems to Unseen. Seen trajectories are split 80:10:10 within every problem, retaining at least one in each partition.
+\noindent\textbf{Benchmarks.} Table~\ref{tab:data} describes the Project CodeNet Python800 corpus~\cite{puri2021project} by partition (Part.) and submissions (Subm.); its Seen problems and tests are shared across partitions, so the user counts are not additive. We retain trajectories with at least three submissions, a non-AC state before the first acceptance, and an accepted endpoint in the benchmark reference set. Users must appear in at least three problems, and retained problems contain at least two trajectories. The refined corpus has 546 problems, 21,454 trajectories, 99,432 submissions, and 10,088 tests. Whole-trajectory 4,096-token filtering removes 3,660 trajectories before splitting. Problems ranked by eligible trajectory count supply the top 90\% to Seen (492) and the remaining 54 low-resource problems to Unseen. Seen trajectories are split 80:10:10 within every problem, retaining at least one in each partition.
 
 The primary endpoint is the last recorded non-AC submission of an eventually successful trajectory. Runtime eligibility requires the buggy program to remain non-AC and the recorded accepted endpoint to pass the available tests on replay. This leaves 997 of 1,754 Seen test trajectories, from 328 problems, and 250 of 259 Unseen trajectories, from all 54 problems. Excluded trajectories do not enter the denominator. CodeNet users are online-judge participants, not a verified classroom population. We also use TIKTOC's release of authentic Java CodeWorkout submissions and tests from an Introductory Programming (CS1) course~\cite{duan2024tiktoc}: 1,125 trajectories from 224 students and 17 exercises, with 181 test trajectories from 33 held-out students. CodeWorkout is a practice platform on which a course assigns short method-level exercises with instructor-authored tests; students submit repeatedly and see which tests fail, the setting a returned repair would enter. This corpus supplies the classroom population and CodeNet the scale. A separate exercise split has 10/3/4 train/validation/test exercises and 605/216/304 trajectories.
 
@@ -319,7 +285,7 @@ Unless stated otherwise, brackets give 95\% percentile bootstrap intervals from 
 \subsection{RQ1: Repair Effectiveness}
 
 \begin{table}[h]
-\caption{Source- and count-matched target replacement. RR uses all eligible inputs; retention differences are Progress minus Answer on joint repairs. Java uses held-out students. Positive retention differences favor locality, not demonstrated learning.}
+\caption{Source- and count-matched target replacement}
 \label{tab:targets}
 \centering\small
 \begin{tabular}{l||rr|rr}
@@ -346,7 +312,7 @@ LSGen repairs 800/997 Seen inputs versus Mixed's 613/997, a difference of -18.8 
 Progress's locality benefit is visible on joint successes. Among 299 Seen and 154 Unseen jointly repaired inputs, 278 and 134 have defined source-to-repair TED for both methods. Answer-minus-Progress mean TED is 10.08 [7.53, 12.99] and 6.83 [4.58, 9.39]. Token retention improves by 5.6 [4.29, 6.94] and 6.5 [4.26, 8.95] points; line retention improves by 8.9 [6.64, 11.16] and 10.4 [6.95, 14.25]. The 21 and 20 undefined-TED cases remain in RR and are not declared unrepairable. These measures describe successful outputs that retain more of the submission, but they establish neither easier comprehension nor which method best helps a particular student.
 
 \begin{table}[h]
-\caption{Java matched-target outcomes resolved by exercise and by student. The left columns count the 17 exercises by which rule repairs more trajectories in that exercise, with the extra Answer repairs and the largest single-exercise gap. The right columns describe lexical-token retention among the 90 trajectories both rules repair, as the share of those students each rule favors, the median gain where progress is higher, and the minimum and maximum difference in percentage points.}
+\caption{Java matched-target outcomes over 17 exercises and 90 jointly repaired students}
 \label{tab:uneven}
 \centering\small
 \begin{tabular}{@{}lr||lr@{}}
@@ -390,12 +356,12 @@ print(ans)
 \end{verbatim}
 \centering (b) Answer-target repair
 \end{minipage}
-\caption{A jointly repaired Python case, selected post hoc for the largest Answer-minus-Progress TED gap and excluded from every estimate. Submission (a) passes 93.3\% of tests after the student's own preceding edit changed \texttt{i<j} to \texttt{i<=j}. The Progress-target repair differs from (a) only in \texttt{j>0} becoming \texttt{j>=0} (TED 1), with the elided lines identical; the Answer-target repair (b) replaces the approach (TED 83). Both pass every test under the same gate and budget.}
+\caption{A jointly repaired Python case, post hoc and outside every estimate}
 \label{fig:case}
 \end{figure}
 
 Java retraining uses 600 training and 118 validation pairs per target and reproduces this direction without Python AST distance. Answer targets repair 155 trajectories and Progress targets 92, a difference of 34.8 points; Progress-minus-Answer intervals are [-44.91, -25.47] under student clustering and [-47.31, -23.79] under exercise clustering. Among 90 joint repairs, Progress targets increase lexical-token retention by 4.8 points and line retention by 5.1 points, with intervals [2.79, 7.19] and [2.92, 7.25]. This is evidence for a coverage--locality tradeoff across these two languages and populations. It is not evidence that the same magnitude generalizes to other classrooms, nor a replication of the Python peer-target intervention.
-\noindent\textbf{What a student receives.} Cohort means do not describe an individual student, so Table~\ref{tab:uneven} resolves the Java contrast by exercise and by student. The coverage cost is concentrated rather than uniform. One exercise accounts for 12 of the 63 additional Answer repairs, and there Progress targets repair 3 of 15 trajectories against 15. The retention gain is a minority effect with a long tail. Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of 9.6 points, and a few get less. Line retention behaves the same, zero for 64.4\% of students with maximum 47.6. Figure~\ref{fig:case} illustrates that tail on Python, where the Progress-target repair continues the student's own boundary edit while the Answer-target repair replaces the algorithm. Which rule a course deploys therefore depends on the exercise and on whether coverage or locality binds.
+\noindent\textbf{What a student receives.} Cohort means do not describe an individual student, so Table~\ref{tab:uneven} resolves the Java contrast by exercise and by student. The coverage cost is concentrated rather than uniform. One exercise accounts for 12 of the 63 additional Answer repairs, and there Progress targets repair 3 of 15 trajectories against 15. The retention gain is a minority effect with a long tail. Most students who receive a working repair from either rule get back the same amount of their own code, about a third get more, by a median of 9.6 points, and a few get less. Line retention behaves the same, zero for 64.4\% of students with maximum 47.6. Figure~\ref{fig:case} illustrates that tail on Python. Submission (a) passes 93.3\% of tests after the student's own preceding edit changed \texttt{i<j} to \texttt{i<=j}, the Progress-target repair differs from it only in \texttt{j>0} becoming \texttt{j>=0} (TED 1), and the Answer-target repair (b) replaces the approach (TED 83). Both pass every test under the same gate and budget. Which rule a course deploys therefore depends on the exercise and on whether coverage or locality binds.
 
 \noindent\textbf{Peer targets.} The separate outcome- and distance-matched replacement raises RR from 50.4\% to 54.7\% on Seen and from 78.4\% to 84.4\% on Unseen. Same-minus-peer intervals are [-7.71, -0.84] and [-11.79, -0.41], with exact McNemar \(p=0.005\) and \(p=0.032\). Matches cover 5,231/21,416 canonical Progress training records (24.4\%) and 306/2,685 validation records (11.4\%). The result concerns this caliper, donor cap, and replacement rule, and equal outcomes with nearby edit distance still permit differences in target structure and length, so the contrast does not isolate user identity. Matched peer targets improve coverage here; one's own trajectory is not uniquely necessary under this control.
 

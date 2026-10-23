@@ -41,13 +41,13 @@ analyses are under `outputs/split-90-10/canonical-v5/analysis/`:
 
 | Current claim | Analysis |
 |---|---|
-| Table I (`tab:steps`) student step sizes and demonstrated reach | `icse-seet-student-step-size-20261023.json`, a post-deadline static comparison of stored student submissions; no generation, training, inference or testcase execution |
-| Table II (`tab:rules`) target rules and Table III (`tab:data`) corpus | `fse2027-supervision-audit.json`, canonical dataset summaries |
-| Table IV (`tab:main`) Python effectiveness and serving choice | `fse2027-result-bridge.json`, `fse2027-current-only-deployment-ladder.json` |
-| Table V (`tab:targets`) source-matched Python and Java | `fse2027-paired-target-control-corrected.json`, `fse2027-paired-java-control.json` |
-| Table VI (`tab:uneven`) per-exercise coverage and per-student retention distribution | `per_exercise` and `joint_preservation_rows` of `fse2027-paired-java-control.json`, summarized into the `PairedJava*` bridge commands |
+| Figure 1 (`fig:reach`) student step sizes and demonstrated reach | `icse-seet-student-step-size-20261023.json`, a post-deadline static comparison of stored student submissions; no generation, training, inference or testcase execution |
+| Target-rule example counts (Section II-B) and Table I (`tab:data`) corpus | `fse2027-supervision-audit.json`, canonical dataset summaries |
+| Table II (`tab:main`) Python effectiveness and serving choice | `fse2027-result-bridge.json`, `fse2027-current-only-deployment-ladder.json` |
+| Table III (`tab:targets`) source-matched Python and Java | `fse2027-paired-target-control-corrected.json`, `fse2027-paired-java-control.json` |
+| Table IV (`tab:uneven`) per-exercise coverage and per-student retention distribution | `per_exercise` and `joint_preservation_rows` of `fse2027-paired-java-control.json`, summarized into the `PairedJava*` bridge commands |
 | RQ2 forward step that is not a repair | `unrestricted` improvement rates of `fse2027-paired-target-control-corrected.json` and `methods` of `fse2027-paired-java-control.json`, as the `*ImproveOnly` bridge commands |
-| Figure 2 (`fig:case`) qualitative case (no estimate) | `fse2027-patch-locality-case.json`, selected by the recorded largest-TED-gap rule |
+| Figure 3 (`fig:case`) qualitative case (no estimate) | `fse2027-patch-locality-case.json`, selected by the recorded largest-TED-gap rule |
 | Peer replacement and coverage | `fse2027-cross-user-target-control.json`, `fse2027-peer-distributions.json` |
 | RQ2 reported per-budget frontier rates | `fse2027-lsgen-budget-controller.json`, current-only deployment ladder, checked by `scripts/verify_paper_budget_table.py` |
 | RQ3 same-stack decoder/checkpoint factorial | `fse2027-current-only-factorial-corrected.json` |

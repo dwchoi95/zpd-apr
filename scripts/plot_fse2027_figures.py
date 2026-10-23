@@ -42,6 +42,42 @@ def budget_series(lsgen_path, ladder_path):
     }
 
 
+def reach_series(step_path, lsgen_path):
+    """Student demonstrated reach and LSGen repairs within each declared budget."""
+    reach = json.loads(Path(step_path).read_text())['splits']['seen']['demonstrated_reach']
+    budget = json.loads(Path(lsgen_path).read_text())['per_budget']
+    pct = lambda x: round(100 * x, 1)
+    return {
+        "Students' own step within $B$": [pct(reach['share_within_budget'][str(b)]) for b in BUDGETS],
+        'LSGen returns within $B$': [pct(budget[str(b)]['lsgen']['repair_rate']) for b in BUDGETS],
+    }
+
+
+def reach_figure(series, out):
+    fig, ax = plt.subplots(figsize=(3.33, 1.95))
+    marks = [('o', '-', ACCENT), ('^', ':', BASE)]
+    for (name, values), (marker, dash, colour) in zip(series.items(), marks):
+        ax.plot(BUDGETS, values, marker=marker, linestyle=dash, color=colour, label=name,
+                markerfacecolor='white', markeredgewidth=0.8)
+    students, lsgen = list(series.values())
+    gap = students[2] - lsgen[2]
+    ax.annotate(f'{gap:.1f} points at $B=20$', xy=(20, (students[2] + lsgen[2]) / 2), xytext=(5.6, 52),
+                arrowprops=dict(arrowstyle='-', lw=0.4, color='#444444'), fontsize=6.5, color='#444444')
+    ax.set_xscale('log', base=2)
+    ax.set_xticks(BUDGETS)
+    ax.set_xticklabels([str(b) for b in BUDGETS])
+    ax.set_xlabel('Declared edit budget $B$ (AST nodes)')
+    ax.set_ylabel('Share of the 997 inputs (%)')
+    ax.set_ylim(0, 100)
+    ax.grid(axis='y')
+    ax.set_axisbelow(True)
+    for side in ('top', 'right'):
+        ax.spines[side].set_visible(False)
+    ax.legend(loc='upper left', handlelength=2.2)
+    fig.savefig(out)
+    plt.close(fig)
+
+
 def breadth_series(bridge_path):
     bridge = json.loads(Path(bridge_path).read_text())
     temps = bridge['breadth_controls']['temperatures']
@@ -132,8 +168,10 @@ def breadth_figure(data, out):
     plt.close(fig)
 
 
-def check(series, data):
+def check(series, data, reach):
     """Guard against evidence drift: values must match the reported numbers."""
+    assert reach["Students' own step within $B$"] == [10.7, 18.5, 30.9, 51.2, 73.4, 90.3], reach
+    assert reach['LSGen returns within $B$'] == [4.8, 8.0, 13.9, 30.4, 50.8, 67.6], reach
     assert series['ZPDPatch'] == [22.5, 32.4, 44.0, 50.9, 56.0, 57.9], series['ZPDPatch']
     assert series['LSGen'] == [4.8, 8.0, 13.9, 30.4, 50.8, 67.6], series['LSGen']
     assert series['Current $A_3$'] == [16.9, 28.5, 40.3, 51.4, 61.0, 66.8], series['Current $A_3$']
@@ -147,13 +185,16 @@ if __name__ == '__main__':
     parser.add_argument('--bridge', type=Path, default=analysis / 'fse2027-result-bridge.json')
     parser.add_argument('--lsgen-budget', type=Path, default=analysis / 'fse2027-lsgen-budget-controller.json')
     parser.add_argument('--current-ladder', type=Path, default=analysis / 'fse2027-current-only-deployment-ladder.json')
+    parser.add_argument('--student-step', type=Path, default=analysis / 'icse-seet-student-step-size-20261023.json')
     parser.add_argument('--outdir', type=Path, default=Path('paper/Figures'))
     args = parser.parse_args()
     style()
     series = budget_series(args.lsgen_budget, args.current_ladder)
     data = breadth_series(args.bridge)
-    check(series, data)
+    reach = reach_series(args.student_step, args.lsgen_budget)
+    check(series, data, reach)
     args.outdir.mkdir(parents=True, exist_ok=True)
     budget_figure(series, args.outdir / 'fse2027-budget-frontier.pdf')
     breadth_figure(data, args.outdir / 'fse2027-breadth.pdf')
-    print(json.dumps({'budget_frontier': series, 'breadth_k_union': data['k_union']}, indent=1))
+    reach_figure(reach, args.outdir / 'icse-seet-student-reach.pdf')
+    print(json.dumps({'budget_frontier': series, 'breadth_k_union': data['k_union'], 'student_reach': reach}, indent=1))

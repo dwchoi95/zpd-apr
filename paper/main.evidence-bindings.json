@@ -157,42 +157,6 @@
       ]
     },
     {
-      "template": "5 & \\StudentReachSeenWithinTEDFive\\% & 4.8\\%",
-      "commands": [
-        "StudentReachSeenWithinTEDFive"
-      ]
-    },
-    {
-      "template": "10 & \\StudentReachSeenWithinTEDTen\\% & 8.0\\%",
-      "commands": [
-        "StudentReachSeenWithinTEDTen"
-      ]
-    },
-    {
-      "template": "20 & \\StudentReachSeenWithinTEDTwenty\\% & 13.9\\%",
-      "commands": [
-        "StudentReachSeenWithinTEDTwenty"
-      ]
-    },
-    {
-      "template": "40 & \\StudentReachSeenWithinTEDForty\\% & 30.4\\%",
-      "commands": [
-        "StudentReachSeenWithinTEDForty"
-      ]
-    },
-    {
-      "template": "80 & \\StudentReachSeenWithinTEDEighty\\% & 50.8\\%",
-      "commands": [
-        "StudentReachSeenWithinTEDEighty"
-      ]
-    },
-    {
-      "template": "160 & \\StudentReachSeenWithinTEDOneSixty\\% & 67.6\\%",
-      "commands": [
-        "StudentReachSeenWithinTEDOneSixty"
-      ]
-    },
-    {
       "template": "the \\StudentStepStepSeenDefined steps with a defined distance have a median of \\StudentStepStepSeenMedian, and one step leaves a median of \\StudentStepStepSeenTokenRetention\\% of the submission's tokens in place.",
       "commands": [
         "StudentStepStepSeenDefined",

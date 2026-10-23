@@ -186,4 +186,4 @@ Acknowledgments / Data Availability / References
 | [floats.md](floats.md) | (섹션 공통) 플로트 유형 | 그림·표·알고리즘·수식의 시각 디자인, LaTeX 레시피 |
 | [related_work.md](related_work.md) | 주제 단락 | 주제 구성, 대비 문형 |
 | [conclusion.md](conclusion.md) | 문장 (move) | 결론 단락 구조 |
-| [reference-histra.md](reference-histra.md) | 섹션 → 문단 → 문장 | 같은 도메인 참고 논문(Histra)의 서사 관례. 서사가 충돌하면 이 문서를 우선한다 |
+| [reference-histra.md](reference-histra.md) | 섹션 → 문단 → 문장 | 같은 도메인·같은 venue(ICSE-SEET) 참고 논문(Histra). **다른 문서와 충돌하면 무조건 이 문서를 우선한다**(서사·표기·플로트·캡션·분량 전부) |

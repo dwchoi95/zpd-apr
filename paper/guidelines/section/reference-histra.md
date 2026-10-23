@@ -2,8 +2,39 @@
 
 [skeleton.md](skeleton.md)의 하위 문서. 사용자가 제공한 참고 논문을 **섹션 → 문단 → 문장** 단위로
 뜯어 관례를 뽑았다. 기존 네 편(ICSE25·ICSE26·ASE26·FSE26)은 symbolic execution 논문이고, 이
-논문은 **ZPDPatch와 같은 도메인·같은 문제 설정**이므로 서사 관례는 이 문서를 우선 따른다.
-표기·플로트·분량 규격은 기존 문서를 따른다.
+논문은 **ZPDPatch와 같은 도메인·같은 문제 설정이며 같은 ICSE-SEET를 목표로 쓰였다**.
+
+> **우선순위(2026-10-23 사용자 지시).** 기존 네 편과 이 문서가 충돌하면 **무조건 이 문서를 따른다.**
+> 서사뿐 아니라 표기·플로트·캡션·분량 규격까지 포함한다. 기존 문서는 이 문서가 침묵하는 곳에서만 쓴다.
+
+## 0-A. 실측 규격 (이 논문에서 직접 센 값)
+
+| 항목 | Histra | 우리 목표 |
+|---|---|---|
+| §1 Introduction | 939 words | ≈940 |
+| §2 Preliminaries | 1,121 words, 8문단, 2하위절 | ≈1,100 |
+| §3 Our Approach | 2,276 words, 15문단, 5하위절 | ≈2,300 |
+| §4 Experiments | 3,259 words, 17문단, 7하위절 | ≈3,300 |
+| §5 Related Work | 424 words, bold run-in 2개 | ≈430 |
+| §6 Conclusion | 128 words, 6문장 | ≈130 |
+| 플로트 구성 | 표 3 · 그림 4 · 알고리즘 2 (총 9) | 표를 그림보다 많이 두지 않는다 |
+| 캡션 길이 | 1--16 words (중위 8), 최대 34 | **12 words 이내**, 상세는 본문으로 |
+| §2 한계 측정 | **표가 아니라 그림**(Figure 1, 난이도별 skeleton loss) | 희소한 표는 그림으로 바꾼다 |
+| §3 예제 | Figure 3 running example (문제 번호까지 캡션에) | 단계 설명에 실행 예제를 붙인다 |
+
+## 0-B. 사용자 지시 규칙 (2026-10-23)
+
+1. **알고리즘 Input/Output의 쉼표 항목은 각각 대문자로 시작한다.** `Context $x$`, `Edit budget $B$`.
+2. **캡션은 짧게.** 자세한 설명은 본문에 둔다. 캡션에만 있는 정보를 남기지 않는다.
+3. **보여 줄 내용이 적거나 여백이 많은 표는 제거하거나 그림(그래프)으로 바꾼다.**
+4. **표·그림은 우리의 이점이 한눈에 드러나는 형태로 고른다.**
+5. **정의한 기호는 이후 그 기호로 부른다.** `trajectory \(\tau=[s_1,\ldots,s_n,s_{\mathit{ac}}]\)`를
+   정의했으면 그 뒤에는 \(\tau\)로 쓴다.
+6. **섹션 간 연결을 함께 고친다.** 한 섹션의 알고리즘·기호·수치를 고치면 그것을 쓰는 다른 섹션도 같은
+   커밋에서 고친다.
+7. **섹션마다 서술 수준을 달리한다.** Abstract·Introduction·Conclusion은 학술 톤을 유지하되 도메인
+   지식이 없는 독자도 따라올 수 있게 쓰고, Our Approach·Experiments·Related Work는 수식·기호·전문
+   용어로 쓴다. 다만 Experiments의 해석·분석·결론 문장은 비전문가도 읽을 수 있게 쓴다.
 
 **분석 범위.** 원고 전문(645줄)을 받아 Title, Abstract, §1 Introduction, §2 Preliminaries,
 §3 Our Approach, §4 Experiments, §5 Related Work, §6 Conclusion, Data Availability를 모두 분석했다.
