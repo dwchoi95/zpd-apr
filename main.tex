@@ -360,35 +360,48 @@ In this section, we evaluate \textsc{ZPDPatch} to answer the following research 
 % \item RQ4: portfolio의 이득은 모델 규모, 언어, 학생 집단, trajectory 위치에 걸쳐 유지되는가?
 \item RQ4: Does the gain of the portfolio hold across model scale, language, student population, and trajectory position?
 \end{itemize}
-% 우리는 \textsc{ZPDPatch}를 공개 코드 모델 Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2} 위에 구현했고, 모든 실험은 NVIDIA RTX 5090 한 장을 갖춘 단일 머신에서 수행했다.
-We implemented \textsc{ZPDPatch} on top of Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, an open code model of a scale a course can host. All experiments were conducted on a single machine equipped with one NVIDIA RTX 5090.
+% \textsc{ZPDPatch}의 학습과 생성, 그리고 모든 반환물의 판정은 NVIDIA RTX 5090 한 장을 단 Ubuntu 26.04 LTS 머신에서 수행했다.
+We trained and ran \textsc{ZPDPatch}, and judged every returned program, on a machine with one NVIDIA RTX 5090 running Ubuntu 26.04 LTS.
 
 \subsection{Experimental Settings}
 
 
-\begin{table}[t]
-\caption{Corpus after whole-trajectory filtering}
+% \noindent\textbf{Baselines.} Section~\ref{sec:formulation}의 세 그룹에서 최신 기법을 하나씩 baseline으로 골랐다: \textsc{Refactory}~\cite{hu2019re}, \textsc{Brafar}~\cite{xie2024brafar}, \textsc{LSGen}~\cite{dai2026learner}. \textsc{Refactory}는 참조 프로그램을 버기 제출의 제어 흐름에 맞게 refactoring하고, 아직 틀린 블록을 합성으로 고친다. \textsc{Brafar}는 두 프로그램을 양방향으로 refactoring해 제어 흐름을 맞추고, 실패한 테스트의 fault localization이 고른 블록만 고친다. \textsc{LSGen}은 버기 제출과 편집이 가장 비슷한 다른 학생의 오답--정답 쌍을 검색해 Large Language Model(LLM)에 주고, 실패할 때마다 다시 검색해 수리를 반복한다. LLM으로는 \textsc{LSGen}의 평가에서 지금도 쓸 수 있는 모델 가운데 가장 좋았던 GPT-4o~\cite{hurst2024gpt}를 썼다.
+\noindent\textbf{Baselines.} We selected one state-of-the-art technique from each of the three groups of Section~\ref{sec:formulation} as a baseline: \textsc{Refactory}~\cite{hu2019re}, \textsc{Brafar}~\cite{xie2024brafar}, and \textsc{LSGen}~\cite{dai2026learner}. \textsc{Refactory} refactors the reference programs to fit the control flow of the buggy submission and synthesizes repairs for the blocks that are still incorrect. \textsc{Brafar} refactors both programs bidirectionally to align their control flows and repairs only the blocks that fault localization on a failing test selects. \textsc{LSGen} retrieves other students' wrong-to-correct pairs whose edits best match the buggy submission, gives them to a Large Language Model (LLM), and repeats the repair, retrieving again after each failure. As the LLM, we used GPT-4o~\cite{hurst2024gpt}, the best-performing model in the evaluation of \textsc{LSGen} that is still available.
+
+\begin{table}[h]
+\caption{RQ1 benchmark problems}
 \label{tab:data}
-\centering\scriptsize\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{ll||rrrrrr}
+\centering\footnotesize
+\begin{tabular}{ll||rrr}
 \toprule
-Group & Part. & Probl. & Tests & Traj. & Subm. & Prefixes & Users \\
+Problem & Concept & \#Inputs & \#Tests & Avg LOC \\
 \midrule
-\multirow{3}{*}{Seen} & Train & 492 & 9,446 & 14,027 & 54,481 & 40,454 & 4,012 \\
- & Valid & 492 & 9,446 & 1,754 & 6,719 & 4,965 & 1,248 \\
- & Test & 492 & 9,446 & 1,754 & 6,598 & 4,844 & 1,250 \\
-Unseen & Test & 54 & 642 & 259 & 954 & 695 & 236 \\
+p02623 & Prefix sums, two pointers & 102 & 20 & 26.8 \\
+p02659 & Floating-point precision & 170 & 22 & 5.7 \\
+p02686 & Greedy ordering of strings & 109 & 32 & 44.2 \\
+p02694 & Simulation, integers & 101 & 18 & 8.8 \\
+p02742 & Parity, edge cases & 120 & 10 & 8.4 \\
+p02743 & Precision of square roots & 155 & 27 & 8.2 \\
+p02761 & Digits, leading zero & 143 & 18 & 23.9 \\
+p02823 & Parity, boundary moves & 106 & 20 & 11.1 \\
+p02891 & Runs across repetitions & 170 & 15 & 32.3 \\
+p02975 & Counting, XOR & 110 & 24 & 23.2 \\
+p03240 & Exhaustive search & 116 & 23 & 23.8 \\
+p03324 & Arithmetic, special case & 109 & 16 & 7.5 \\
+p03438 & Counting operations & 101 & 28 & 19.2 \\
+p03838 & Case analysis on signs & 141 & 14 & 19.8 \\
 \midrule
-Total & & 546 & 10,088 & 17,794 & 68,752 & 50,958 & -- \\
+Total & & 1,753 & 287 & 18.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-% \noindent\textbf{Baselines.} Zero-shot은 미세조정 없이 같은 base model을 쓰고, 실패 후 판정과 통과 테스트 수를 덧붙인다. \textsc{LSGen}은 repair-pair 필터링, edit-vector retrieval, diff 기반 생성, 재retrieval을 그대로 유지한다~\cite{dai2026learner}. 같은 문제의 Seen-Train 참조는 우리의 Unseen 정보 제약에서 사용할 수 없으므로 그 조건은 평가하지 않는다. Answer-1은 terminal checkpoint 하나를 쓴다. Answer-3Seed는 동일한 terminal 짝 40,454개에 seed 2027--2029를 쓴다. Answer-9Choose3은 seed 2030--2035를 더해 9개 중 3개를 고른다. Mixed-9Choose3은 제한 없는 기본 \textsc{ZPDPatch} pool을 가리킨다.
-\noindent\textbf{Baselines.} Zero-shot uses the same base model without fine-tuning and appends verdict/pass-count feedback after failure. \textsc{LSGen} retains repair-pair filtering, edit-vector retrieval, diff-guided generation, and re-retrieval~\cite{dai2026learner}; its same-problem Seen-Train references are unavailable under our Unseen information constraint, so that condition is not evaluated. Answer-1 uses one Answer checkpoint. Answer-3Seed uses seeds 2027--2029 on the same 40,454 Answer pairs. Answer-9Choose3 adds seeds 2030--2035 and selects three from nine. Mixed-9Choose3 denotes the primary unconstrained \textsc{ZPDPatch} pool.
+% \noindent\textbf{Benchmarks.} RQ1에는 Project CodeNet~\cite{puri2021codenet}의 Python 제출 가운데 FixEval~\cite{haque2023fixeval}의 테스트가 딸린 AtCoder 문제 14개를 쓴다. 학생이 첫 accepted 제출 전에 서로 같지 않은 wrong-answer 제출을 둘 이상 냈고, 모든 제출이 파싱되며, 테스트가 모든 verdict를 재현하고, 우리 실행 환경에서도 버기 프로그램이 통과하지 못하는 trajectory만 남겼다. 이런 trajectory가 100개 이상인 문제만 골라 1,753개 trajectory를 입력으로 쓴다. Table~\ref{tab:data}는 문제마다 주로 다루는 개념, 입력 수, 테스트 수, 버기 프로그램의 평균 줄 수(Avg LOC)를 보인다. 문제들은 경계 조건, 부동소수점 정밀도, 누적 합 같은 입문 프로그래밍 개념을 다룬다.
+\noindent\textbf{Benchmarks.} For RQ1, we use 14 AtCoder problems whose Python submissions come from Project CodeNet~\cite{puri2021codenet} and whose tests come from FixEval~\cite{haque2023fixeval}. We kept a trajectory only if the student made at least two wrong-answer submissions, not all identical, before their first accepted one, every submission parses, the tests reproduce every verdict, and the buggy program still fails in our execution environment. Choosing the problems with at least 100 such trajectories yields 1,753 trajectories as inputs. Table~\ref{tab:data} lists, for each problem, the concept it mainly exercises, its number of inputs, its number of tests, and the average number of lines of its buggy programs (Avg LOC). The problems cover introductory programming concepts such as edge cases, floating-point precision, and prefix sums.
 
-% \noindent\textbf{Benchmarks.} Table~\ref{tab:data}는 Project CodeNet Python800 코퍼스를 분할(Part.)과 제출 수(Subm.)로 기술한다~\cite{puri2021codenet}. Seen의 문제와 테스트는 그 분할들이 공유하므로 사용자 수는 더해지지 않는다. 우리는 제출이 3개 이상이고, 첫 acceptance 전에 AC가 아닌 상태가 있으며, accepted 끝점이 벤치마크 기준 집합에 있는 trajectory만 남긴다. whole-trajectory 4,096 토큰 필터링은 분할 전에 trajectory 3,660개를 제거한다. 적격 trajectory 수 상위 90\%(492개)가 Seen, 나머지 54개가 Unseen이며, Seen trajectory는 문제마다 80:10:10으로 나눈다. 기본 평가 지점은 결국 성공한 trajectory에서 마지막으로 기록된 AC 아닌 제출이고, 런타임 적격성은 버기 프로그램이 여전히 AC가 아니고 기록된 accepted 끝점이 재실행에서 사용 가능한 테스트를 통과할 것을 요구한다. 그 결과 Seen 테스트 trajectory 1,754개 중 997개(328개 문제에서), Unseen 259개 중 250개(54개 문제 전부에서)가 남으며, 제외된 trajectory는 분모에 들어가지 않는다. CodeNet 사용자는 online-judge 참가자이며 확인된 교실 모집단이 아니다. 우리는 TIKTOC~\cite{duan2024tiktoc}이 공개한, Introductory Programming(CS1) 과목의 실제 Java CodeWorkout 제출과 테스트도 사용한다. 학생 224명과 exercise 17개에서 온 trajectory 1,125개, 그리고 보류된 학생 33명에서 온 테스트 trajectory 181개다. CodeWorkout은 과목이 짧은 메서드 단위 연습문제를 강사 작성 테스트와 함께 내는 연습 플랫폼이다. 별도의 exercise 분할은 train/validation/test exercise를 10/3/4개, trajectory를 605/216/304개 갖는다.
-\noindent\textbf{Benchmarks.} Table~\ref{tab:data} describes the Project CodeNet Python800 corpus~\cite{puri2021codenet} by partition (Part.) and submissions (Subm.); its Seen problems and tests are shared across partitions, so the user counts are not additive. We retain trajectories with at least three submissions, a non-AC state before the first acceptance, and an accepted endpoint in the benchmark reference set. Whole-trajectory 4,096-token filtering removes 3,660 trajectories before splitting. Problems ranked by eligible trajectory count supply the top 90\% to Seen (492) and the remaining 54 to Unseen; Seen trajectories are split 80:10:10 within every problem. The primary endpoint is the last recorded non-AC submission of an eventually successful trajectory, and runtime eligibility requires the buggy program to remain non-AC and the recorded accepted endpoint to pass the available tests on replay. This leaves 997 of 1,754 Seen test trajectories, from 328 problems, and 250 of 259 Unseen trajectories, from all 54 problems; excluded trajectories do not enter the denominator. CodeNet users are online-judge participants, not a verified classroom population. We also use TIKTOC's~\cite{duan2024tiktoc} release of authentic Java CodeWorkout submissions and tests from an Introductory Programming (CS1) course: 1,125 trajectories from 224 students and 17 exercises, with 181 test trajectories from 33 held-out students. CodeWorkout is a practice platform where a course assigns short method-level exercises with instructor-authored tests. A separate exercise split has 10/3/4 train/validation/test exercises and 605/216/304 trajectories.
+% RQ2--RQ4에는 같은 Python800의 더 큰 코퍼스를 쓴다. 문제를 trajectory 수 순으로 정렬해 상위 90\%인 492개를 Seen, 나머지 54개를 Unseen으로 두고, Seen trajectory는 문제마다 80:10:10으로 학습·검증·테스트에 나눈다. 테스트 입력은 성공한 trajectory의 마지막 non-AC 제출이며, Seen 997개(328문제, 평균 15.7줄)와 Unseen 250개(54문제, 평균 8.3줄)다. Seen 입력의 70.4\%는 wrong answer이고, 나머지는 runtime error, time limit, compile error다. Java에는 TIKTOC~\cite{duan2024tiktoc}가 공개한 입문 프로그래밍(CS1) 과목의 CodeWorkout 제출과 강사가 만든 테스트를 쓴다. 학생 224명과 exercise 17개의 trajectory 1,125개이며, 학습에서 뺀 학생 33명의 trajectory 181개가 테스트다.
+For RQ2--RQ4, we use a larger corpus from the same Python800 benchmark. Ranking the problems by trajectory count, we assign the top 90\%, 492 problems, to Seen and the remaining 54 to Unseen, and split the Seen trajectories of every problem 80:10:10 into training, validation, and test. A test input is the last non-AC submission of an eventually successful trajectory: 997 on Seen (328 problems, 15.7 lines on average) and 250 on Unseen (54 problems, 8.3 lines). On Seen, 70.4\% of the inputs fail with a wrong answer and the rest with a runtime error, a time limit, or a compile error. For Java, we use the CodeWorkout submissions and instructor-written tests of an Introductory Programming (CS1) course released by TIKTOC~\cite{duan2024tiktoc}: 1,125 trajectories of 224 students on 17 exercises, of which the 181 trajectories of the 33 students held out of training form the test set.
 
 \begin{table}[h]
 \caption{Primary Python evaluation. H: history input; C: current-only}
@@ -412,8 +425,8 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 \end{tabular}
 \end{table}
 
-% \noindent\textbf{Evaluation Metrics.} 우리는 세 종류의 결과를 측정한다. 반환물이 테스트를 통과하는지, 그 변경이 얼마나 큰지, 제출물을 얼마나 남기는지이다. Repair Rate(RR)는 반환된 프로그램이 모든 테스트를 통과한 적격 입력의 비율이다. AST 사이의 Tree Edit Distance(TED)는 현재 코드에서 반환 코드까지의 변경을 측정하며~\cite{zhang1989simple,pawlik2016tree} 어느 한쪽이 파싱되지 않으면 정의되지 않는다. 정의되지 않는 경우는 제한 없는 RR에는 남지만 TED 요약에는 들어가지 않으며, 유한한 gate는 거리가 정의되지 않는 변경을 거부한다. 짝짓지 않은 TED는 성공하고 파싱 가능한 반환물의 평균이고, 짝지은 locality는 공동 성공만 쓴다. retention은 \texttt{SequenceMatcher}가 일치시킨 토큰 또는 공백을 제거한 비어 있지 않은 줄을 source 개수로 나눈다. 따로 언급하지 않으면 대괄호는 problem cluster에 대한 95\% percentile bootstrap 구간이고~\cite{efron1979bootstrap,wilson1927probable}, Java는 학생과 exercise를 따로 재표집하며, equal-problem 추정치는 문제별 평균을 평균한다. McNemar 검정은 그 구간을 보조할 뿐이고~\cite{mcnemar1947note}, Holm 보정은 history 제거 재학습 검정에 적용한다~\cite{holm1979simple}.
-\noindent\textbf{Evaluation Metrics.} We measure three kinds of outcome: whether the returned program passes the tests, how large its change is, and how much of the submission it keeps. \emph{Repair Rate} (RR) is the fraction of eligible inputs whose returned program passes every test. Tree Edit Distance (TED) between ASTs measures current-to-returned change~\cite{zhang1989simple,pawlik2016tree} and is undefined when either program does not parse. Undefined cases remain in unrestricted RR but not in TED summaries, and finite gates reject undefined-distance changes. Unpaired TED averages successful, parseable returns, while paired locality uses joint successes. \emph{Retention} divides tokens or nonempty stripped lines matched by \texttt{SequenceMatcher} by the source count. Unless stated otherwise, brackets give 95\% percentile bootstrap intervals over problem clusters~\cite{efron1979bootstrap,wilson1927probable}, Java resamples students and exercises separately, and equal-problem estimates average problem means. McNemar tests are supplementary to those intervals~\cite{mcnemar1947note}, and Holm adjustment covers the history-removal retraining tests~\cite{holm1979simple}.
+% \noindent\textbf{Evaluation Metrics.} 효과는 세 지표로 잰다. \emph{Repair Rate}(RR)는 반환물이 모든 테스트를 통과하는 입력의 비율이다. Tree Edit Distance(TED)는 버기 프로그램과 반환물의 Abstract Syntax Tree(AST) 사이 편집 연산 수로 반환물의 크기를 잰다~\cite{zhang1989simple,pawlik2016tree}. edit budget \(B\)에서의 RR은 TED가 \(B\) 이하인 반환물만 센다. \emph{Retention}은 버기 프로그램의 token(또는 공백이 아닌 줄) 가운데 반환물에 남은 비율이다. 그림의 오차 막대는 문제 단위 bootstrap 95\% 구간이다~\cite{efron1979bootstrap}.
+\noindent\textbf{Evaluation Metrics.} We measure effectiveness with three metrics. The \emph{Repair Rate} (RR) is the fraction of inputs whose returned program passes every test. The Tree Edit Distance (TED) between the Abstract Syntax Trees (ASTs) of the buggy program and the returned program measures the size of the return in edit operations~\cite{zhang1989simple,pawlik2016tree}, and the RR within an edit budget \(B\) counts only the returns whose TED is at most \(B\). \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the returned program. Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1979bootstrap}.
 
 
 \subsection{RQ1: Repair Effectiveness}
