@@ -21,24 +21,8 @@ checkpoints/
 archive/
 .runtime/
 
-paper/build/
-paper/tmp/
-paper/*.aux
-paper/*.log
-paper/*.out
-paper/*.bbl
-paper/*.blg
-paper/*.toc
-paper/*.fls
-paper/*.fdb_latexmk
-paper/*.synctex.gz
 tmp/pdfs/
 
 .DS_Store
 *.swp
 tmp_*.sh
-
-# third-party papers kept locally as style references
-paper/guidelines/*.pdf
-# Korean reading copy build output; the submission PDF is paper/main.en.pdf
-paper/main.pdf
