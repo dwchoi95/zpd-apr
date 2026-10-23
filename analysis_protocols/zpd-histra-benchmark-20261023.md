@@ -13,6 +13,7 @@ The paper's RQ1 baseline (LSGen) was a local re-implementation, and no other bas
 - **System:** current-only Answer-3Seed, composed by `compose_answer_seed_control.py`; edit budgets 5, 10, 20, 40, 80, 160.
 - **Baselines:** HISTRA's stored patches, re-judged by the same runner. A missing patch returns the submission unchanged.
 - **Judge:** 2.5 s per test (the paper's setting) and 16 workers for every technique.
+- **Environment:** `.runtime/fse-env` (Python 3.13.11, torch 2.14.0+cu130, transformers 4.57.6, peft 0.20.0, bitsandbytes 0.50.2). canonical-v5 Answer was trained with peft 0.19.1 in the former `env/`, which no longer holds torch. The retrained checkpoints are therefore new, and not a bit-for-bit reproduction.
 - **Reported:** repair rate, TED, retention, and budgeted repair rate over the filtered inputs for all four techniques. Drops from the filter are reported.
 
 ## Not changed

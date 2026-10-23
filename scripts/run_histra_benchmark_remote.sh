@@ -7,7 +7,7 @@ WORK_ROOT=/home/cdw/VSCode/zpd-apr
 FAMILY_ID=histra-bench-20261023-v1
 SRC=${WORK_ROOT}/.runtime/${FAMILY_ID}/source
 HISTRA=${WORK_ROOT}/.runtime/${FAMILY_ID}/histra
-PYTHON=${WORK_ROOT}/env/bin/python
+PYTHON=${WORK_ROOT}/.runtime/fse-env/bin/python
 BASE_MODEL=${WORK_ROOT}/.cache/huggingface/hub/models--Qwen--Qwen2.5-Coder-7B-Instruct/snapshots/c03e6d358207e414f1eca0bb1891e29f1db0e242
 CANONICAL=${WORK_ROOT}/outputs/split-90-10/canonical-v5/datasets
 FAMILY=${WORK_ROOT}/outputs/histra-bench-20261023
@@ -36,6 +36,7 @@ evaluate() {
   "${PYTHON}" scripts/normalize_evaluation_baseline.py "${evaluation}" --reference "${TEST}"
 }
 
+log "Source $(cat SOURCE_COMMIT); $("${PYTHON}" -c 'import sys,torch,transformers,peft,bitsandbytes as b; print("python", sys.version.split()[0], "torch", torch.__version__, "transformers", transformers.__version__, "peft", peft.__version__, "bitsandbytes", b.__version__)')"
 log "Preparing the benchmark"
 if [[ ! -s "${FAMILY}/prepare-summary.json" ]]; then
   "${PYTHON}" scripts/prepare_histra_benchmark.py --histra-data "${HISTRA}/data" \
