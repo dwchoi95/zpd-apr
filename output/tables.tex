@@ -59,7 +59,7 @@ TED & 17 & 14 \\
 \textsc{LSGen}\textsubscript{Qwen} & 79.4 & 42.2 & 33.5 & 99.6 & 62.2 & 31.4 \\
 \textsc{LSGen}\textsubscript{GPT} & 92.1 & 46.3 & 42.6 & 89.9 & 64.4 & 31.9 \\
 % rows:combined
-\addplot[variant, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 30.7 refactory 14.5 13.7\\ 32.0 brafar 13.5 12.4\\ 28.5 mentored 12.3 12.2\\ 33.5 lsgen_qwen 9.4 9.2\\ 42.6 lsgen 7.1 7.3\\};
+\addplot[baseline2, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 30.7 refactory 14.5 13.7\\ 32.0 brafar 13.5 12.4\\ 28.5 mentored 12.3 12.2\\ 33.5 lsgen_qwen 9.4 9.2\\ 42.6 lsgen 7.1 7.3\\};
 \addplot[proposed, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 42.4 refactory 9.7 9.5\\ 43.8 brafar 8.6 8.7\\ 42.0 mentored 10.1 10.8\\ 44.0 lsgen_qwen 8.0 8.4\\ 50.4 lsgen 6.8 7.3\\};
 % rows:targets
 \multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\

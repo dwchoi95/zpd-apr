@@ -378,7 +378,7 @@ def main():
         return [next((m[k] for m in by_id if m[k]["repaired"]), by_id[-1][k]) for k in sorted(by_id[0])]
 
     in_reach = lambda r: within_reach([r], rq1_reach) == 1
-    tables["combined"] = [bars("variant", "y", [(key, m, in_reach) for key, _, m in others]),
+    tables["combined"] = [bars("baseline2", "y", [(key, m, in_reach) for key, _, m in others]),
                           bars("proposed", "y", [(key, ordered(zpd, m), in_reach) for key, _, m in others])]
     z = {r["example_id"]: r for r in fixes(zpd)}
     for key, _, m in others:

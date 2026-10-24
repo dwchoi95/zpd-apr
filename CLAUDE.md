@@ -65,8 +65,8 @@ edits here; code goes to `dev` in the parent folder. Branch, repository, and art
   Keep this paper visibly distinct from that one: classify prior work by what it steers the repair toward
   (reference-driven, model-driven, solution-space hints; ours is trajectory-supervised), not by how it locates the fault;
   write every sentence fresh; and lead with what differs (steps learned from trajectories; deployment reads only the
-  current submission). RQ1 baselines are MENTORED (reference-driven) and LSGen with GPT-4o (model-driven), from their
-  stored upstream runs re-judged by our runner; their resource budget stays out of the paper (artifact README only).
+  current submission). RQ1 baselines (user decision of 2026-10-25) are the Reference-driven REFACTORY, BRAFAR and MENTORED and the
+  Model-driven LSGen with Qwen2.5-Coder-7B-Instruct and with GPT-4o, from their stored upstream runs re-judged by our runner; their resource budget stays out of the paper (artifact README only).
   RQ2-RQ4 keep the canonical CodeNet Seen/Unseen and CodeWorkout Java data.
 - The goal is framed by the Zone of Proximal Development (ZPD): a patch within the region a student reaches with help,
   approximated from execution evidence in student trajectories; the judge's verdict is the help before the next
