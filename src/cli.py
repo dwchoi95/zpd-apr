@@ -8,6 +8,7 @@ from pathlib import Path
 from .experiments.codenet import (
     audit_trajectory_contexts,
     build_python800_dataset,
+    build_rq1_benchmark,
     create_balanced_rq1_splits,
     create_longitudinal_splits,
     create_problem_holdout_split,
@@ -58,7 +59,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="ZPDPatch command-line interface")
     commands = parser.add_subparsers(dest="command", required=True)
 
-    build = commands.add_parser("build-data", help="Build the CodeNet Python800 dataset")
+    build = commands.add_parser("build-data", help="Build a dataset from Project CodeNet")
+    build.add_argument("--benchmark", choices=("python800", "rq1"), default="python800",
+                       help="python800: every Python800 problem; rq1: the 14-problem RQ1 benchmark")
     build.add_argument("--source-root", type=Path, default=DEFAULT_CODENET_ROOT)
     build.add_argument("--output-root", type=Path, default=Path("data"))
     build.add_argument("--overwrite", action="store_true")
@@ -568,6 +571,9 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    if args.command == "build-data" and args.benchmark == "rq1":
+        print(json.dumps(build_rq1_benchmark(args.source_root, args.output_root, overwrite=args.overwrite)))
+        return
     if args.command == "build-data":
         summary = build_python800_dataset(
             args.source_root,
