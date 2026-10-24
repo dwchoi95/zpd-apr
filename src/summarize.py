@@ -279,6 +279,31 @@ def main():
         " & Same AST & " + cells(against_fix(lambda r: near(r, 0))),
     ]
 
+    # Table (RQ1): the forward steps students took against those ZPDPatch returns without repairing.
+    short = {"Wrong Answer": "WA", "Time Limit Exceeded": "TLE", "Runtime Error": "RE", "Memory Limit Exceeded": "MLE"}
+    v = lambda x: short.get(x, x)
+    student_forward = [(v(a), v(b), pa, pb, t) for r in steps
+                       for (a, b), (pa, pb), t, c in zip(r["step_verdicts"], r["step_pass_rates"], r["step_ted"], r["step_class"])
+                       if c == "forward"]
+    zpd_forward = [(v(r["buggy_verdict"]), v(r["fixed_verdict"]), r["buggy_pass_rate"], r["fixed_pass_rate"], r["ted_buggy_returned"])
+                   for r in zpd if r["step_class"] == "forward"]
+    def step_column(items):
+        moves = [(a, b) for a, b, *_ in items]
+        share = lambda pair: pct(moves.count(pair) / len(moves))
+        rest = 1 - (moves.count(("WA", "WA")) + moves.count(("TLE", "WA"))) / len(moves)
+        return [f"{len(items):,}", share(("WA", "WA")), share(("TLE", "WA")), pct(rest),
+                pct(statistics.median(pb - pa for _, _, pa, pb, _ in items)),
+                pct(statistics.median(pb / pa - 1 for _, _, pa, pb, _ in items if pa > 0)),
+                num(statistics.median(t for *_, t in items if t is not None))]
+    labels = ["Forward steps", "WA $\\to$ WA (\\%)", "TLE $\\to$ WA (\\%)", "Other (\\%)",
+              "Pass rate gain (points)", "Pass rate gain (\\%)", "TED"]
+    columns = list(zip(step_column(student_forward), step_column(zpd_forward)))
+    tables["rq1steps"] = [f"{label} & {a} & {b} \\\\" + ("\n\\midrule" if i in (0, 3) else "") for i, (label, (a, b)) in enumerate(zip(labels, columns))]
+    student_classes = [c for r in steps for c in r["step_class"]]
+    changed = [r["step_class"] for r in zpd if r["step_class"] is not None]
+    numbers.update({"rq1.step.regress.share": pct(student_classes.count("regress") / len(student_classes)),
+                    "rq1.zpdpatch.changed.regress.share": pct(changed.count("regress") / len(changed))})
+
     # The students' own last step (to their accepted program) on the buggy programs ZPDPatch leaves and repairs.
     last = {r["example_id"]: r["step_ted"][-1] for r in steps}
     own = lambda repaired: statistics.mean(last[r["example_id"]] for r in zpd if bool(r["repaired"]) == repaired and last[r["example_id"]] is not None)
@@ -316,6 +341,16 @@ def main():
             f"rq2.{key}.combined.within_reach.more": more(within_reach(both, rq1_reach), within_reach(m, rq1_reach)),
             f"rq2.{key}.combined.ted.mean": f"{mean(both, 'ted_buggy_fixed'):.1f}"})
     numbers.update({f"rq2.zpdpatch.within{b}": pct(within_budget(zpd, b)) for b in (5, 10, 20)})
+    # A buggy program a technique does not repair: the existing techniques return the submission itself (no code kept),
+    # ZPDPatch the candidate passing the most test cases, judged by the Mine predicates (progress_step).
+    for _, _, m in others:
+        assert all(r["generated_code"] is None for r in m if not r["repaired"])
+    unrepaired = [r for r in zpd if not r["repaired"]]
+    forward = [r for r in unrepaired if r["step_class"] == "forward"]
+    numbers.update({
+        "rq2.zpdpatch.unrepaired.forward.share": pct(len(forward) / len(unrepaired)),
+        "rq2.zpdpatch.forward.pass_rate.gain.median": pct(statistics.median(r["fixed_pass_rate"] / r["buggy_pass_rate"] - 1 for r in forward if r["buggy_pass_rate"] > 0)),
+        "rq2.zpdpatch.forward.within_reach.share": pct(sum(r["ted_buggy_returned"] is not None and r["ted_buggy_returned"] <= rq1_reach[(r["problem_id"], r["user_id"])] for r in forward) / len(forward))})
     span = lambda values: f"{min(values):.1f}--{max(values):.1f}"
     numbers["rq2.zpdpatch.rr.fewer.range"] = span([float(more(rr(zpd), rr(m))) for _, _, m in others])
     numbers["rq2.within_reach.share.more.range"] = span([float(more(share_in_reach(zpd), share_in_reach(m))) for _, _, m in others])

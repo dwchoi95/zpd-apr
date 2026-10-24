@@ -404,8 +404,8 @@ Terminal pairing은 trajectory 길이에 선형이고, \(n\)개 제출을 \(m\)�
 이 절에서 우리는 다음 연구 질문에 답하기 위해 \textsc{ZPDPatch}를 평가한다:
 % EN: In this section, we evaluate \textsc{ZPDPatch} to answer the following research questions:
 \begin{itemize}
-\item RQ1: \textsc{ZPDPatch}의 patch는 학생의 demonstrated reach 안에 얼마나 머무는가?
-% EN: \item RQ1: How often do the patches of \textsc{ZPDPatch} stay within the student's demonstrated reach?
+\item RQ1: \textsc{ZPDPatch}가 돌려주는 걸음은 학생이 스스로 내딛는 걸음을 얼마나 닮았는가?
+% EN: \item RQ1: How closely do the steps that \textsc{ZPDPatch} returns resemble the steps students take by themselves?
 \item RQ2: \textsc{ZPDPatch}는 기존 수리 기법과 비교해 어떠한가?
 % EN: \item RQ2: How does \textsc{ZPDPatch} compare with existing repair techniques?
 \item RQ3: \textsc{ZPDPatch}의 각 설계 선택은 수리와, patch가 남기는 학생의 프로그램에 얼마나 기여하는가?
@@ -470,7 +470,7 @@ RQ3과 RQ4에는 같은 Python800의 더 큰 코퍼스를 쓴다. 문제를 traj
 % EN: \noindent\textbf{Implementation Details.} We chose Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, an open code model small enough for a course to run on one GPU, as the base model of \textsc{ZPDPatch}. It is an open model from the evaluation of \textsc{LSGen}, so the two techniques can be compared on the same model, whereas commercial models of that evaluation such as GPT-4o cannot be fine-tuned and thus cannot serve as the base model of \textsc{ZPDPatch}. Each adapter attaches Low-Rank Adaptation (LoRA) to the attention and feed-forward projections of the base model quantized to 4 bits and is trained with QLoRA~\cite{dettmers2023qlora}, using rank 16, \(\alpha=32\), a learning rate of \(2\times10^{-4}\), a batch size of 16, and one epoch, with early stopping on validation loss.
 
 
-\subsection{RQ1: Repairs Within Reach}
+\subsection{RQ1: Steps Within Reach}
 \label{sec:rq-effectiveness}
 
 \begin{figure}[h]
@@ -492,8 +492,8 @@ RQ3과 RQ4에는 같은 Python800의 더 큰 코퍼스를 쓴다. 문제를 traj
 \label{fig:patchsize}
 \end{figure}
 
-RQ1은 \textsc{ZPDPatch}의 patch가 학생의 demonstrated reach 안에 얼마나 머무는지 묻는다. 이를 위해 RQ1 벤치마크의 버기 프로그램 1,753개를 수리하고, 수리된 patch의 크기를 같은 학생들이 스스로 내딛은 걸음 6,820개의 크기와 AST edit operation 단위로 비교했다.
-% EN: RQ1 asks how often the patches of \textsc{ZPDPatch} stay within the student's demonstrated reach. To this end, we repaired the 1,753 buggy programs of the RQ1 benchmark and compared the size of each patch that repairs its buggy program, in AST edit operations, with the sizes of the 6,820 steps the same students took by themselves.
+RQ1은 \textsc{ZPDPatch}가 돌려주는 걸음이 학생이 스스로 내딛는 걸음을 얼마나 닮았는지 묻는다. 이를 위해 RQ1 벤치마크의 버기 프로그램 1,753개를 수리하고, \textsc{ZPDPatch}가 돌려준 프로그램을 같은 학생들이 스스로 내딛은 걸음 6,820개와 크기, 보존, 실행 결과의 변화로 비교했다.
+% EN: RQ1 asks how closely the steps that \textsc{ZPDPatch} returns resemble the steps students take by themselves. To this end, we repaired the 1,753 buggy programs of the RQ1 benchmark and compared the programs \textsc{ZPDPatch} returned with the 6,820 steps the same students took by themselves, in size, retention, and change of execution outcomes.
 
 Figure~\ref{fig:patchsize}는 patch와 학생 걸음 가운데 각 크기 이하인 것의 누적 비율을 보인다. \textsc{ZPDPatch} patch 크기의 중앙값은 18로, 학생 걸음의 중앙값 19와 거의 같다. 두 곡선은 15 이하에서 거의 겹치고, 그보다 큰 쪽에서는 patch 곡선이 위에 있다. 중앙 학생의 demonstrated reach인 49보다 큰 patch는 13.2\%로, 그만큼 큰 학생 걸음(22.6\%)보다 41.5\% 적다.
 % EN: Figure~\ref{fig:patchsize} plots the cumulative share of patches and of student steps up to each size. The median patch of \textsc{ZPDPatch} has 18 operations, nearly the median student step of 19. The two curves almost coincide up to 15 operations, and above that the patch curve lies higher. Of the patches, 13.2\% exceed 49 operations, the demonstrated reach of the median student, which is 41.5\% fewer than the 22.6\% of student steps that do.
@@ -530,39 +530,34 @@ Table~\ref{tab:rq1}은 난이도별로 \textsc{ZPDPatch}의 patch를 학생 자�
 patch는 학생의 한 걸음만큼 학생의 코드를 남긴다. patch는 버기 프로그램 token의 중앙값 96.2\%와 줄의 중앙값 83.3\%를 남기며, 학생의 한 걸음은 각각 96.4\%와 85.7\%를 남긴다.
 % EN: A patch also keeps as much of the student's code as a student step does: it keeps a median of 96.2\% of the buggy program's tokens and 83.3\% of its lines, against 96.4\% and 85.7\% for a student step.
 
-\begin{figure}[h]
-\centering\scriptsize
-\begin{minipage}[t]{0.47\columnwidth}
-\textbf{(a) \textsc{ZPDPatch} (TED 4), equal to the student's accepted program}\par\smallskip
-\begin{tabular}{@{}r@{~}l@{}}
-{\color{black!55}1} & \makebox[3.3cm][l]{\texttt{~~a=int(input())}} \\
-{\color{black!55}2} & \makebox[3.3cm][l]{\texttt{~~i=100}} \\
-{\color{black!55}3} & \makebox[3.3cm][l]{\texttt{~~f=0}} \\
-{\color{black!55}4} & \colorbox{red!10}{\makebox[3.3cm][l]{\texttt{-~while~(i/a)<1:}}} \\
- & \colorbox{green!15}{\makebox[3.3cm][l]{\texttt{+~while~(i<a):}}} \\
-{\color{black!55}5} & \makebox[3.3cm][l]{\texttt{~~~~i=i+i//100}} \\
-{\color{black!55}6} & \makebox[3.3cm][l]{\texttt{~~~~f=f+1}} \\
-{\color{black!55}7} & \makebox[3.3cm][l]{\texttt{~~print(f)}} \\
-\end{tabular}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.47\columnwidth}
-\textbf{(b) Both \textsc{LSGen} configurations (TED 25)}\par\smallskip
-\begin{tabular}{@{}r@{~}l@{}}
-{\color{black!55}1} & \makebox[3.3cm][l]{\texttt{a~=~int(input())}} \\
-{\color{black!55}2} & \colorbox{black!10}{\makebox[3.3cm][l]{\texttt{x~=~100}}} \\
-{\color{black!55}3} & \colorbox{black!10}{\makebox[3.3cm][l]{\texttt{count~=~0}}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[3.3cm][l]{\texttt{while~a~>~x:}}} \\
-{\color{black!55}5} & \colorbox{black!10}{\makebox[3.3cm][l]{\texttt{~~~~count~+=~1}}} \\
-{\color{black!55}6} & \colorbox{black!10}{\makebox[3.3cm][l]{\texttt{~~~~x~+=~x~//~100}}} \\
-{\color{black!55}7} & \colorbox{black!10}{\makebox[3.3cm][l]{\texttt{print(count)}}} \\
-\end{tabular}
-\end{minipage}
-\caption{Patches for a buggy program submitted after 41 failed attempts}
-\label{fig:rq1case}
-\end{figure}
+특히, 같은 버기 프로그램에서 학생이 실제로 accepted 프로그램까지 내디딘 걸음과 비교하면(Table~\ref{tab:rq1}의 Student's fix), patch의 56.6\%는 그 걸음보다 크지 않고, 32.9\%는 학생의 accepted 프로그램과 AST edit operation 10개 이내로 가까우며, 16.3\%는 그 프로그램과 AST가 같다. 그 프로그램은 학습에도 수리에도 쓰이지 않으므로, 이 patch들은 학생이 스스로 쓴 수정에 그대로 도달한 것이다.
+% EN: Notably, against the step with which the student actually reached an accepted program from the same buggy program (Student's fix in Table~\ref{tab:rq1}), 56.6\% of the patches are no larger than that step, 32.9\% lie within ten AST edit operations of the student's accepted program, and 16.3\% have the same AST as that program. That program is used neither in training nor in repair, so these patches arrive exactly at the fix the student wrote.
 
-특히, 같은 버기 프로그램에서 학생이 실제로 accepted 프로그램까지 내디딘 걸음과 비교하면(Table~\ref{tab:rq1}의 Student's fix), patch의 56.6\%는 그 걸음보다 크지 않고, 32.9\%는 학생의 accepted 프로그램과 AST edit operation 10개 이내로 가까우며, 16.3\%는 그 프로그램과 AST가 같다. 그 프로그램은 학습에도 수리에도 쓰이지 않으므로, 이 patch들은 학생이 스스로 쓴 수정에 그대로 도달한 것이다. Figure~\ref{fig:rq1case}(a)는 그런 예다. 이 학생은 accepted 전에 42번 실패했고, 마지막 실패 프로그램은 부동소수 나눗셈 \texttt{(i/a)<1}로 비교해 큰 입력에서 반올림 때문에 test case의 94.4\%만 통과했다. \textsc{ZPDPatch}는 이 조건만 \texttt{i<a}로 고쳐(TED 4) 학생이 다음에 직접 제출한 accepted 프로그램을 그대로 돌려준다. 이 결과들은 \textsc{ZPDPatch}의 patch가 학생이 스스로 내딛는 걸음과 같은 크기로 학생의 코드를 남기며, 난이도와 문제에 걸쳐 학생의 demonstrated reach 안에 머문다는 것을 보여 준다.
-% EN: Notably, against the step with which the student actually reached an accepted program from the same buggy program (Student's fix in Table~\ref{tab:rq1}), 56.6\% of the patches are no larger than that step, 32.9\% lie within ten AST edit operations of the student's accepted program, and 16.3\% have the same AST as that program. That program is used neither in training nor in repair, so these patches arrive exactly at the fix the student wrote. Figure~\ref{fig:rq1case}(a) shows one. This student failed 42 times before acceptance, and the last failing program compared by floating-point division, \texttt{(i/a)<1}, which rounds wrongly on large inputs, so it passed 94.4\% of the test cases. \textsc{ZPDPatch} corrects only that condition to \texttt{i<a} (TED 4) and returns exactly the accepted program the student submitted next. These results show that the patches of \textsc{ZPDPatch} have the size of the steps students take by themselves, keep as much of the student's code, and stay within the student's demonstrated reach across difficulties and problems.
+\begin{table}[h]
+\caption{Forward steps of students and of \textsc{ZPDPatch}}
+\label{tab:rq1steps}
+\centering\footnotesize
+\begin{tabular}{@{}l||rr@{}}
+\toprule
+ & Students & \textsc{ZPDPatch} \\
+\midrule
+% rows:rq1steps
+Forward steps & 1,397 & 109 \\
+\midrule
+WA $\to$ WA (\%) & 93.5 & 90.8 \\
+TLE $\to$ WA (\%) & 4.5 & 5.5 \\
+Other (\%) & 2.0 & 3.7 \\
+\midrule
+Pass rate gain (points) & 12.5 & 12.5 \\
+Pass rate gain (\%) & 17.6 & 20.0 \\
+TED & 17 & 14 \\
+% end rows
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textsc{ZPDPatch}가 수리하지 못한 버기 프로그램에서도, 돌려주는 걸음은 학생의 걸음을 닮았다. Algorithm~\ref{alg:generic}은 통과하는 후보가 없으면 제출보다 많이 통과하는 후보 가운데 가장 많이 통과하는 것을 돌려준다. 우리는 그 가운데 Mine의 개선 술어(Section~\ref{sec:mine})로 앞으로 나아간 걸음을, 학생 자신이 앞으로 나아간 걸음과 비교했다. Table~\ref{tab:rq1steps}에서 보듯 두 걸음은 verdict 변화의 구성이 같다. 학생 걸음의 93.5\%와 \textsc{ZPDPatch} 걸음의 90.8\%가 Wrong Answer(WA) verdict를 유지한 채 통과하는 test case를 늘리고, 각각 4.5\%와 5.5\%가 Time Limit Exceeded(TLE)에서 WA로 나아간다. 한 걸음에 늘어나는 통과율의 중앙값은 둘 다 12.5 포인트이고, 걸음의 크기도 AST edit operation 17과 14로 비슷하다. 또한 학생 걸음의 29.7\%는 원래 통과하던 test case를 깨는 퇴행이지만, \textsc{ZPDPatch}가 바꾸어 돌려준 프로그램 가운데 퇴행은 9.5\%다. 이 결과들은 \textsc{ZPDPatch}의 patch가 수리할 때는 학생이 스스로 내딛는 걸음과 같은 크기로 학생의 코드를 남기며 학생의 reach 안에 머물고, 수리하지 못할 때에도 학생이 스스로 나아가는 것과 같은 걸음을 돌려준다는 것을 보여 준다.
+% EN: Even on the buggy programs that \textsc{ZPDPatch} does not repair, the steps it returns resemble those of students. When no candidate passes, Algorithm~\ref{alg:generic} returns, among the candidates that pass more test cases than the submission, the one that passes the most. Among these returns, we compared the steps that move forward under the improvement predicates of Mine (Section~\ref{sec:mine}) with the steps students themselves took forward. As Table~\ref{tab:rq1steps} shows, the two have the same mix of verdict changes: 93.5\% of the students' steps and 90.8\% of those of \textsc{ZPDPatch} keep the Wrong Answer (WA) verdict while passing more test cases, and 4.5\% and 5.5\% move from Time Limit Exceeded (TLE) to WA. The median gain in pass rate per step is 12.5 points for both, and the steps are of similar size, 17 and 14 AST edit operations. Moreover, 29.7\% of the students' steps regress by failing a test case they used to pass, whereas 9.5\% of the changed programs that \textsc{ZPDPatch} returns do. These results show that the patches of \textsc{ZPDPatch} have the size of the steps students take by themselves, keep as much of the student's code, and stay within the student's reach when it repairs, and that when it does not, it still returns the kind of step students take forward by themselves.
 
 \subsection{RQ2: Comparison with Existing Techniques}
 \label{sec:rq-comparison}
@@ -589,11 +584,44 @@ Technique & RR & Within reach & TED & Tokens & Lines \\
 RQ2는 \textsc{ZPDPatch}가 기존 수리 기법과 비교해 어떠한지 묻는다. 이를 위해 RQ1과 같은 버기 프로그램 1,753개를 \textsc{Mentored}, \textsc{LSGen}\textsubscript{Qwen}, \textsc{LSGen}\textsubscript{GPT}로 수리하고, 모든 patch를 같은 실행 환경에서 판정했다.
 % EN: RQ2 asks how \textsc{ZPDPatch} compares with existing repair techniques. To this end, we repaired the same 1,753 buggy programs as in RQ1 with \textsc{Mentored}, \textsc{LSGen}\textsubscript{Qwen}, and \textsc{LSGen}\textsubscript{GPT}, and judged every patch in the same execution environment.
 
-Table~\ref{tab:comparison}은 기법마다 RR, 수리한 프로그램 가운데 within reach인 것의 비율, 그리고 수리한 프로그램의 평균 TED와 retention을 보인다. \textsc{ZPDPatch}가 수리한 프로그램은 76.7\%가 within reach로, 그 비율이 기존 기법보다 8.1--81.5\% 높다. Retention은 token에서 9.9--41.3\%, 줄에서 68.6--127.2\% 높다. 두 기법이 모두 수리한 버기 프로그램에서 \textsc{ZPDPatch}의 patch는 TED가 13.4--60.9\% 작다. 특히, 같은 base model을 쓰는 \textsc{LSGen}\textsubscript{Qwen}과 비교하면 함께 수리한 버기 프로그램의 68.9\%에서 \textsc{ZPDPatch}의 patch가 더 작다. 두 기법은 모델이 같고 \textsc{ZPDPatch}만 학생 trajectory로 학습했으므로, 이 차이는 학습이 patch를 학생의 걸음 크기로 만든다는 것을 보여 준다. Figure~\ref{fig:rq1case}(b)에서 보듯, 같은 버기 프로그램에서 두 \textsc{LSGen} 설정은 조건 하나 대신 변수 이름과 루프 본문까지 다시 써 TED가 25이고, \textsc{Mentored}는 수리하지 못한다.
-% EN: Table~\ref{tab:comparison} lists, for each technique, the RR, the share of its fixed programs that are within reach, and the mean TED and retention of its fixed programs. Of the fixed programs of \textsc{ZPDPatch}, 76.7\% are within reach, a share 8.1--81.5\% higher than those of the existing techniques. Their retention is 9.9--41.3\% higher in tokens and 68.6--127.2\% higher in lines. On the buggy programs that both techniques repair, the patches of \textsc{ZPDPatch} have a 13.4--60.9\% smaller TED. Notably, against \textsc{LSGen}\textsubscript{Qwen}, which shares the base model, the patch of \textsc{ZPDPatch} is the smaller one on 68.9\% of the jointly repaired buggy programs. The two techniques share the model and only \textsc{ZPDPatch} learns from student trajectories, so this difference shows that the training makes a patch the size of a student's step. As Figure~\ref{fig:rq1case}(b) shows, on the same buggy program both \textsc{LSGen} configurations rewrite the variable names and the loop body as well as the condition, with a TED of 25, and \textsc{Mentored} does not repair it.
+Table~\ref{tab:comparison}은 기법마다 RR, 수리한 프로그램 가운데 within reach인 것의 비율, 그리고 수리한 프로그램의 평균 TED와 retention을 보인다. \textsc{ZPDPatch}가 수리한 프로그램은 76.7\%가 within reach로, 그 비율이 기존 기법보다 8.1--81.5\% 높다. Retention은 token에서 9.9--41.3\%, 줄에서 68.6--127.2\% 높다. 두 기법이 모두 수리한 버기 프로그램에서 \textsc{ZPDPatch}의 patch는 TED가 13.4--60.9\% 작다. 특히, 같은 base model을 쓰는 \textsc{LSGen}\textsubscript{Qwen}과 비교하면 함께 수리한 버기 프로그램의 68.9\%에서 \textsc{ZPDPatch}의 patch가 더 작다. 두 기법은 모델이 같고 \textsc{ZPDPatch}만 학생 trajectory로 학습했으므로, 이 차이는 학습이 patch를 학생의 걸음 크기로 만든다는 것을 보여 준다.
+% EN: Table~\ref{tab:comparison} lists, for each technique, the RR, the share of its fixed programs that are within reach, and the mean TED and retention of its fixed programs. Of the fixed programs of \textsc{ZPDPatch}, 76.7\% are within reach, a share 8.1--81.5\% higher than those of the existing techniques. Their retention is 9.9--41.3\% higher in tokens and 68.6--127.2\% higher in lines. On the buggy programs that both techniques repair, the patches of \textsc{ZPDPatch} have a 13.4--60.9\% smaller TED. Notably, against \textsc{LSGen}\textsubscript{Qwen}, which shares the base model, the patch of \textsc{ZPDPatch} is the smaller one on 68.9\% of the jointly repaired buggy programs. The two techniques share the model and only \textsc{ZPDPatch} learns from student trajectories, so this difference shows that the training makes a patch the size of a student's step.
 
 Edit budget이 작을 때는 이 차이가 수리 수로 이어진다. Budget 5 안에서 \textsc{ZPDPatch}는 버기 프로그램의 7.0\%를 수리해 기존 기법보다 26.8--105.0\% 많이 수리하고, budget 20에서도 \textsc{LSGen}\textsubscript{Qwen}과 \textsc{LSGen}\textsubscript{GPT}보다 2.5--9.9\% 많이 수리한다.
 % EN: Under a small edit budget, this difference turns into more repairs. Within a budget of 5, \textsc{ZPDPatch} repairs 7.0\% of the buggy programs, 26.8--105.0\% more than the existing techniques, and at a budget of 20 it still repairs 2.5--9.9\% more than \textsc{LSGen}\textsubscript{Qwen} and \textsc{LSGen}\textsubscript{GPT}.
+
+\begin{figure}[h]
+\centering\scriptsize
+\begin{minipage}[t]{\columnwidth}
+\textbf{(a) Edits of \textsc{ZPDPatch} (Z) and of the student's accepted program (S)}\par\smallskip
+\begin{tabular}{@{}r@{~}l@{}}
+{\color{black!55}1} & \makebox[5.2cm][l]{\texttt{~~d,n~=~map(int,input().split())}} \\
+{\color{black!55}2} & \makebox[5.2cm][l]{\texttt{~~ans~=~n}} \\
+{\color{black!55}3} & \makebox[5.2cm][l]{\texttt{~~if~d~!=~0:}} \\
+{\color{black!55}4} & \makebox[5.2cm][l]{\texttt{~~~~~~ans~*=~100**d}} \\
+{\color{black!55}5} & \makebox[5.2cm][l]{\texttt{~~if~n~==~100:}} \\
+{\color{black!55}6} & \colorbox{red!10}{\makebox[5.2cm][l]{\texttt{-~~~~ans~/=~100}}} \\
+{\color{black!55}Z} & \colorbox{blue!12}{\makebox[5.2cm][l]{\texttt{+~~~~ans~+=~100}}} \\
+{\color{black!55}S} & \colorbox{green!15}{\makebox[5.2cm][l]{\texttt{+~~~~ans~+=~100**d}}} \\
+{\color{black!55}7} & \colorbox{red!10}{\makebox[5.2cm][l]{\texttt{-~print(int(ans))}}} \\
+{\color{black!55}S} & \colorbox{green!15}{\makebox[5.2cm][l]{\texttt{+~print(ans)}}} \\
+\end{tabular}
+\end{minipage}\par\medskip
+\begin{minipage}[t]{\columnwidth}
+\textbf{(b) \textsc{LSGen}\textsubscript{GPT} (TED 31)}\par\smallskip
+\begin{tabular}{@{}r@{~}l@{}}
+{\color{black!55}1} & \makebox[5.2cm][l]{\texttt{d,~n~=~map(int,input().split())}} \\
+{\color{black!55}2} & \colorbox{black!10}{\makebox[5.2cm][l]{\texttt{if~n~==~100:}}} \\
+{\color{black!55}3} & \colorbox{black!10}{\makebox[5.2cm][l]{\texttt{~~~~n~=~101}}} \\
+{\color{black!55}4} & \colorbox{black!10}{\makebox[5.2cm][l]{\texttt{print(n~*~(100~**~d))}}} \\
+\end{tabular}
+\end{minipage}
+\caption{A forward step by \textsc{ZPDPatch} and a correct program by \textsc{LSGen}\textsubscript{GPT} for one buggy program}
+\label{fig:step}
+\end{figure}
+
+Budget이 없으면 \textsc{ZPDPatch}는 기존 기법보다 17.3--63.9\% 적게 수리한다(Table~\ref{tab:comparison}). 이 차이는 목표에서 온다. \textsc{ZPDPatch}는 학생 자신의 이후 제출을 target으로 배워 학생의 걸음 크기 안에서 고치는 반면, 기존 기법은 test suite를 통과하는 어떤 프로그램이든 향하고, \textsc{LSGen}은 실패할 때마다 다른 학생의 수정을 다시 검색해 수리를 반복한다. 실제로 \textsc{ZPDPatch}가 수리하지 못한 버기 프로그램에서는 학생 자신도 accepted 프로그램까지 평균 68.9\% 큰 걸음을 내디뎠다. 그러나 수리하지 못한 버기 프로그램에서도 두 쪽이 돌려주는 것은 다르다. 기존 기법은 수리에 실패하면 예외 없이 제출을 그대로 돌려준다. 반면 \textsc{ZPDPatch}는 그런 버기 프로그램의 9.3\%에서 학생의 걸음을 닮은 개선 걸음을 돌려주고(RQ1), 그 85.3\%가 학생의 reach 안에 든다. Figure~\ref{fig:step}는 그런 예다. 학생의 프로그램은 \texttt{n == 100}일 때 \texttt{ans /= 100}으로 처리해 test case의 81.3\%를 통과했다. \textsc{ZPDPatch}는 이 연산만 \texttt{ans += 100}으로 고쳐 87.5\%를 통과하게 하는데, 학생이 다음에 낸 accepted 프로그램도 같은 줄을 \texttt{ans += 100**d}로 고쳤다. 반면 정답을 낸 \textsc{LSGen}\textsubscript{GPT}와 \textsc{Mentored}는 프로그램을 31과 54 AST edit operation만큼 바꾸어 이 학생이 혼자 내딛은 가장 큰 걸음 14를 넘고, \textsc{LSGen}\textsubscript{Qwen}은 수리하지 못한다.
+% EN: Without a budget, \textsc{ZPDPatch} repairs 17.3--63.9\% fewer buggy programs than the existing techniques (Table~\ref{tab:comparison}). This gap comes from the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets and repairs within a student's step, whereas the existing techniques head for any program that passes the test suite, and \textsc{LSGen} retrieves other students' fixes again after each failure and repeats the repair. Indeed, on the buggy programs that \textsc{ZPDPatch} leaves unrepaired, the students' own steps to their accepted programs were 68.9\% larger on average than on those it repairs. Yet even on the buggy programs left unrepaired, the two sides return different things. The existing techniques return the submission itself whenever they fail to repair it, whereas on 9.3\% of such buggy programs \textsc{ZPDPatch} returns a forward step that resembles a student's step (RQ1), and 85.3\% of these steps lie within the student's reach. Figure~\ref{fig:step} shows one. The student's program handled \texttt{n == 100} with \texttt{ans /= 100} and passed 81.3\% of the test cases. \textsc{ZPDPatch} changes only that operation to \texttt{ans += 100}, which passes 87.5\%, and the accepted program the student submitted next changed the same line to \texttt{ans += 100**d}. In contrast, \textsc{LSGen}\textsubscript{GPT} and \textsc{Mentored}, which return correct programs, change 31 and 54 AST edit operations, beyond the largest step of 14 that this student took alone, and \textsc{LSGen}\textsubscript{Qwen} does not repair it.
 
 \begin{figure}[h]
 \centering
@@ -614,8 +642,8 @@ Edit budget이 작을 때는 이 차이가 수리 수로 이어진다. Budget 5 
 \label{fig:combined}
 \end{figure}
 
-Figure~\ref{fig:combined}는 각 기존 기법의 within-reach repair rate를 단독으로 쓸 때와 \textsc{ZPDPatch} 다음에 둘 때로 나누어 보인다. Budget이 없으면 \textsc{ZPDPatch} 혼자서는 기존 기법보다 17.3--63.9\% 적게 수리한다(Table~\ref{tab:comparison}). 이 차이는 목표에서 온다. \textsc{ZPDPatch}는 학생 자신의 이후 제출을 target으로 배워 학생의 걸음 크기 안에서 고치는 반면, 기존 기법은 test suite를 통과하는 어떤 프로그램이든 향하고, \textsc{LSGen}은 실패할 때마다 다른 학생의 수정을 다시 검색해 수리를 반복한다. 실제로 \textsc{ZPDPatch}가 수리하지 못한 버기 프로그램에서는 학생 자신도 accepted 프로그램까지 수리한 경우보다 평균 68.9\% 큰 걸음을 내디뎠다. 정답 프로그램이 꼭 필요하다면, Algorithm~\ref{alg:generic}은 순서가 정해진 어떤 generator든 받으므로 기존 기법을 \textsc{ZPDPatch} 다음 generator로 둘 수 있다. 그러면 RR은 줄지 않고 오히려 1.1--42.3\% 늘며, within-reach repair rate는 18.3--47.4\% 늘고, 수리한 프로그램의 평균 TED는 8.3--16.9\% 작아진다. \textsc{Mentored} 다음에 \textsc{LSGen}\textsubscript{Qwen}이나 \textsc{LSGen}\textsubscript{GPT}를 두는 순서 앞에 \textsc{ZPDPatch}를 넣어도 within-reach repair rate가 9.0--17.0\% 더 늘어나므로, \textsc{ZPDPatch}가 reach 안에서 고치는 버기 프로그램은 다른 기법이 대신하지 못한다. 이 결과들은 \textsc{ZPDPatch}가 기존 기법보다 학생의 reach 안에 머무는 patch를 내며, 기존 기법과 함께 쓰면 그 RR을 지키면서 reach 안의 수리를 늘린다는 것을 보여 준다.
-% EN: Figure~\ref{fig:combined} plots the within-reach repair rate of each existing technique alone and placed after \textsc{ZPDPatch}. Without a budget, \textsc{ZPDPatch} alone repairs 17.3--63.9\% fewer buggy programs than the existing techniques (Table~\ref{tab:comparison}). This gap comes from the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets and repairs within a student's step, whereas the existing techniques head for any program that passes the test suite, and \textsc{LSGen} retrieves other students' fixes again after each failure and repeats the repair. Indeed, on the buggy programs that \textsc{ZPDPatch} leaves unrepaired, the students' own steps to their accepted programs were 68.9\% larger on average than on those it repairs. When a correct program is required, Algorithm~\ref{alg:generic} accepts any ordered set of generators, so an existing technique can follow \textsc{ZPDPatch} as the next generator. The RR then does not drop but rises by 1.1--42.3\%, the within-reach repair rate rises by 18.3--47.4\%, and the mean TED of the fixed programs shrinks by 8.3--16.9\%. Placing \textsc{ZPDPatch} ahead of \textsc{Mentored} followed by \textsc{LSGen}\textsubscript{Qwen} or \textsc{LSGen}\textsubscript{GPT} still raises the within-reach repair rate by 9.0--17.0\%, so no other technique replaces the buggy programs that \textsc{ZPDPatch} repairs within reach. These results show that \textsc{ZPDPatch} returns patches that stay within the student's reach more often than existing techniques do, and that combined with an existing technique it keeps that technique's RR while adding repairs within reach.
+정답 프로그램이 꼭 필요하다면, Algorithm~\ref{alg:generic}은 순서가 정해진 어떤 generator든 받으므로 기존 기법을 \textsc{ZPDPatch} 다음 generator로 둘 수 있다. Figure~\ref{fig:combined}는 각 기존 기법의 within-reach repair rate를 단독으로 쓸 때와 \textsc{ZPDPatch} 다음에 둘 때로 나누어 보인다. 그러면 RR은 줄지 않고 오히려 1.1--42.3\% 늘며, within-reach repair rate는 18.3--47.4\% 늘고, 수리한 프로그램의 평균 TED는 8.3--16.9\% 작아진다. \textsc{Mentored} 다음에 \textsc{LSGen}\textsubscript{Qwen}이나 \textsc{LSGen}\textsubscript{GPT}를 두는 순서 앞에 \textsc{ZPDPatch}를 넣어도 within-reach repair rate가 9.0--17.0\% 더 늘어나므로, \textsc{ZPDPatch}가 reach 안에서 고치는 버기 프로그램은 다른 기법이 대신하지 못한다. 이 결과들은 \textsc{ZPDPatch}가 기존 기법보다 학생의 reach 안에 머무는 patch를 내고, 수리하지 못할 때에도 reach 안의 한 걸음을 돌려주며, 기존 기법과 함께 쓰면 그 RR을 지키면서 reach 안의 수리를 늘린다는 것을 보여 준다.
+% EN: When a correct program is required, Algorithm~\ref{alg:generic} accepts any ordered set of generators, so an existing technique can follow \textsc{ZPDPatch} as the next generator. Figure~\ref{fig:combined} plots the within-reach repair rate of each existing technique alone and placed after \textsc{ZPDPatch}. The RR then does not drop but rises by 1.1--42.3\%, the within-reach repair rate rises by 18.3--47.4\%, and the mean TED of the fixed programs shrinks by 8.3--16.9\%. Placing \textsc{ZPDPatch} ahead of \textsc{Mentored} followed by \textsc{LSGen}\textsubscript{Qwen} or \textsc{LSGen}\textsubscript{GPT} still raises the within-reach repair rate by 9.0--17.0\%, so no other technique replaces the buggy programs that \textsc{ZPDPatch} repairs within reach. These results show that \textsc{ZPDPatch} returns patches that stay within the student's reach more often than existing techniques do, that it returns a step within reach even when it does not repair, and that combined with an existing technique it keeps that technique's RR while adding repairs within reach.
 
 \subsection{RQ3: Ablation Study}
 \label{sec:rq-ablation}
