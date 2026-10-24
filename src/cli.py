@@ -61,9 +61,12 @@ def main() -> None:
     commands = parser.add_subparsers(dest="command", required=True)
 
     build = commands.add_parser("build-data", help="Build a dataset from Project CodeNet")
-    build.add_argument("--benchmark", choices=("python800", "rq1", "seen-unseen"), default="python800",
+    build.add_argument("--benchmark", choices=("python800", "rq1", "seen-unseen", "codeworkout"), default="python800",
                        help="python800: every Python800 problem; rq1: the 14-problem RQ1 benchmark; "
-                            "seen-unseen: the Seen/Unseen corpus of RQ2-RQ4")
+                            "seen-unseen: the Seen/Unseen corpus of RQ2-RQ4; codeworkout: the Java corpus "
+                            "(--source-root is a TIKTOC checkout)")
+    build.add_argument("--base-model", help="tokenizer for the 4,096-token filter (codeworkout)")
+    build.add_argument("--image", default="zpdpatch-java:21", help="Java judge image built from docker/java (codeworkout)")
     build.add_argument("--source-root", type=Path, default=DEFAULT_CODENET_ROOT)
     build.add_argument("--output-root", type=Path, default=Path("data"))
     build.add_argument("--overwrite", action="store_true")
@@ -573,6 +576,12 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+    if args.command == "build-data" and args.benchmark == "codeworkout":
+        from .experiments.codeworkout_data import build_codeworkout_benchmark
+
+        print(json.dumps(build_codeworkout_benchmark(
+            args.source_root, args.output_root, base_model=args.base_model, image=args.image, overwrite=args.overwrite)))
+        return
     if args.command == "build-data" and args.benchmark != "python800":
         build = build_rq1_benchmark if args.benchmark == "rq1" else build_seen_unseen_benchmark
         print(json.dumps(build(args.source_root, args.output_root, overwrite=args.overwrite)))
