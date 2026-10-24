@@ -19,7 +19,7 @@
  variant/.style={fill=gray!25, draw=black},
  referenceline/.style={green!55!black, thick},
  verdictline/.style={gray!70!black, thick},
- mentoredline/.style={gray!55, thick, densely dotted},
+ mentoredline/.style={gray!60!black, very thick, densely dotted},
  qwenline/.style={gray!75!black, thick, dashed},
  gptline/.style={black, thick},
  toacceptance/.style={fill=green!55!black!55, draw=black},
@@ -115,7 +115,7 @@ Algorithm~\ref{alg:generic}은 기존 기법들의 방식에 따라 프로그래
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}
-\begin{axis}[width=\columnwidth, height=4.6cm, xmode=log, xmin=1, xmax=1000, ymin=0, ymax=100, xtick={1,10,100,1000}, xticklabels={1,10,100,1000},
+\begin{axis}[width=\columnwidth, height=5.6cm, xmode=log, xmin=1, xmax=1000, ymin=0, ymax=100, xtick={1,10,100,1000}, xticklabels={1,10,100,1000},
  ytick={0,25,50,75,100}, ylabel={Share (\%)}, xlabel={Step budget $\beta$ (TED)}, ymajorgrids, grid style={gray!25},
  legend columns=2, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
 % rows:reach
