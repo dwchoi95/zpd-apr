@@ -316,7 +316,7 @@ Answer emits an independent pair for each non-AC source and the accepted endpoin
 
 \subsection{Train}
 \label{sec:train}
-The goal of the Train stage is to learn each rule independently while keeping the model and optimization the same across rules (lines~10--12). At line~11, \(\mathsf{Train}\) fits one adapter on the dataset \(D_\rho\) of rule \(\rho\) with seed \(\sigma\) and adds the resulting checkpoint to the pool \(V\). For each pair \((H,c)\in D_\rho\), the prompt \(x(H)\) holds the context \(x_p\), the submissions of \(H\) with their execution summaries (the current submission alone for Answer, the retained prefix for Strict and Progress), and a request for a complete program, and the target is the source code \(c\) of the later submission. Formally, \(\mathsf{Train}\) finds the adapter parameters \(\theta\) that minimize:
+The goal of the Train stage is to learn each rule independently while keeping the model and optimization the same across rules (lines~10--12). At line~12, \(\mathsf{Train}\) fits one adapter on the dataset \(D_\rho\) of rule \(\rho\) with seed \(\sigma\) and adds the resulting checkpoint to the pool \(V\). For each pair \((H,c)\in D_\rho\), the prompt \(x(H)\) holds the context \(x_p\), the submissions of \(H\) with their execution summaries (the current submission alone for Answer, the retained prefix for Strict and Progress), and a request for a complete program, and the target is the source code \(c\) of the later submission. Formally, \(\mathsf{Train}\) finds the adapter parameters \(\theta\) that minimize:
 \begin{equation}
  \mathcal L_\rho(\theta)=-\frac{1}{N_\rho}\sum_{(H,c)\in D_\rho}\sum_{j=1}^{|c|}\log p_\theta\bigl(c_j\mid x(H),c_{<j}\bigr),
 \label{eq:loss}
@@ -329,12 +329,14 @@ We train a separate adapter for each rule. A source can be paired with the accep
 
 \subsection{Select}
 \label{sec:select}
-The goal of the Select stage is to deploy a bounded portfolio chosen without final-test outcomes (lines~13--16). For validation inputs \(U\), let \(R_g^B\) be inputs repaired by checkpoint \(g\) within edit budget \(B\). Formally, selection maximizes:
+The goal of the Select stage is to deploy a bounded portfolio chosen without final-test outcomes (lines~13--16). At lines~13--14, \(\mathsf{Validate}\) runs each checkpoint \(g\) of the pool \(V\) once on every validation input in \(U\) and records the set \(R_g^B\subseteq U\) of inputs that the gate of Algorithm~\ref{alg:generic} accepts within the edit budget \(B\). At line~15, \(\mathsf{Select}\) chooses, among the portfolios of size \(\eta_k\), the one that maximizes:
 \begin{equation}
  J_B(\mathcal G)=\frac{1}{|U|}\left|\bigcup_{g\in\mathcal G} R_g^B\right|,\qquad |\mathcal G|=3.
 \label{eq:portfolio}
 \end{equation}
-Intuitively, Equation~\eqref{eq:portfolio} rewards complementary successes rather than low training loss or the presence of every rule. The pool holds nine checkpoints of three rules and three seeds, so the search covers 84 candidate portfolios. Validation draws one trajectory from each of 461 problems, and ties are broken by pass rate, improvement rate, and name. For example, with current-only prompts the best single checkpoint repairs 56.8\% of the validation inputs, whereas the union of the three Answer checkpoints that Select chooses covers 70.9\%, repairing 24.8\% more inputs. We deploy these three as the portfolio.
+Intuitively, Equation~\eqref{eq:portfolio} rewards complementary successes rather than low training loss or the presence of every rule. The pool holds nine checkpoints of three rules and three seeds, so there are only \(\binom{9}{3}=84\) candidate portfolios, and instead of a greedy approximation we evaluate every candidate on its executed repairs and choose the portfolio that is optimal on validation. Line~16 freezes the selected checkpoints and their order. Validation draws one trajectory from each of 461 problems, and ties are broken by pass rate, improvement rate, and name.
+
+For example, with current-only prompts one checkpoint repairs 42.3--56.8\% of the validation inputs. Of the three Answer checkpoints that Select chooses, the first repairs 54.7\%, the second repairs 53 inputs the first does not, and the third repairs 22 inputs the other two do not, so their union covers 70.9\%. That is 24.8\% more inputs than the best single checkpoint (56.8\%), and three calls obtain 95.6\% of the repairs of all nine checkpoints together (74.2\%). In contrast, the best portfolio forced to include one checkpoint of every rule covers only 66.4\%. We deploy these three as the portfolio.
 
 Selected checkpoints and their order are frozen. Each checkpoint emits at most one candidate, and the first observed acceptance stops generation. If no candidate passes every test, Algorithm~\ref{alg:generic} prefers a higher pass fraction and then a smaller distance. Because the unchanged code is also a candidate, for the same execution measurements the returned pass fraction cannot decrease and a finite edit budget cannot be exceeded. We set \(\eta_k=3\) to limit deployment to three calls, fewer than the up to four repair calls \textsc{LSGen} issues per input.
 
