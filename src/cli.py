@@ -47,13 +47,6 @@ from .experiments.report import select_prompt
 from .experiments.zero_shot import run_zero_shot_repairs
 
 
-DEFAULT_CODENET_ROOT = Path("/Users/cdw/VSCode/aria/data/Project_CodeNet")
-DEFAULT_PYTHON800_ROOT = (
-    DEFAULT_CODENET_ROOT
-    / "derived"
-    / "benchmarks"
-    / "Project_CodeNet_Python800"
-)
 
 
 def main() -> None:
@@ -67,7 +60,8 @@ def main() -> None:
                             "(--source-root is a TIKTOC checkout)")
     build.add_argument("--base-model", help="tokenizer for the 4,096-token filter (codeworkout)")
     build.add_argument("--image", default="zpdpatch-java:21", help="Java judge image built from docker/java (codeworkout)")
-    build.add_argument("--source-root", type=Path, default=DEFAULT_CODENET_ROOT)
+    build.add_argument("--source-root", type=Path, required=True,
+                       help="Project CodeNet checkout (a TIKTOC checkout for codeworkout)")
     build.add_argument("--output-root", type=Path, default=Path("data"))
     build.add_argument("--overwrite", action="store_true")
     build.add_argument("--require-testcases", action="store_true")
@@ -91,7 +85,8 @@ def main() -> None:
     benchmark_accepted.add_argument(
         "--benchmark-root",
         type=Path,
-        default=DEFAULT_PYTHON800_ROOT,
+        required=True,
+        help="<Project_CodeNet>/derived/benchmarks/Project_CodeNet_Python800",
     )
     benchmark_accepted.add_argument(
         "--min-trajectories-per-problem",
