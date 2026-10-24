@@ -12,6 +12,8 @@ Java & 17 & 181 & 305 & 18.0 & -- & -- \\
 Total & 399 & 1,428 & 6,470 & 14.7 & -- & -- \\
 % rows:reach
 \addplot[referenceline] coordinates {(1,0.1) (2,0.3) (3,0.4) (5,0.9) (7,2.3) (10,4.4) (15,9.9) (20,16.8) (30,30.6) (50,51.1) (70,60.4) (100,70.6) (150,83.9) (200,93.0) (300,97.8) (500,99.7) (1000,100.0)};
+\addplot[refactoryline] coordinates {(1,1.1) (2,1.5) (3,1.9) (5,3.3) (7,6.0) (10,8.4) (15,13.9) (20,18.1) (30,25.4) (50,33.3) (70,37.6) (100,42.0) (150,48.0) (200,52.5) (300,54.1) (500,54.3) (1000,54.3)};
+\addplot[brafarline] coordinates {(1,0.6) (2,0.9) (3,1.0) (5,2.6) (7,4.8) (10,7.8) (15,12.0) (20,16.7) (30,24.4) (50,33.7) (70,38.0) (100,42.4) (150,47.6) (200,50.7) (300,53.5) (500,54.8) (1000,54.9)};
 \addplot[mentoredline] coordinates {(1,1.8) (2,2.5) (3,3.2) (5,5.5) (7,9.6) (10,12.2) (15,17.0) (20,20.3) (30,25.6) (50,31.6) (70,34.1) (100,35.4) (150,38.2) (200,39.5) (300,40.0) (500,40.2) (1000,40.2)};
 \addplot[qwenline] coordinates {(1,1.0) (2,1.4) (3,1.9) (5,3.5) (7,6.0) (10,8.3) (15,13.3) (20,17.3) (30,24.9) (50,34.5) (70,41.8) (100,48.4) (150,58.1) (200,67.6) (300,76.4) (500,79.0) (1000,79.4)};
 \addplot[gptline] coordinates {(1,0.9) (2,1.2) (3,1.9) (5,3.4) (7,6.0) (10,8.9) (15,14.1) (20,18.5) (30,27.9) (50,44.3) (70,52.8) (100,61.8) (150,72.6) (200,81.4) (300,89.2) (500,91.8) (1000,92.1)};
@@ -51,12 +53,14 @@ Pass rate gain (\%) & 17.6 & 20.0 \\
 TED & 17 & 14 \\
 % rows:comparison
 \textsc{ZPDPatch} & 33.3 & 76.7 & 25.5 & 27.3 & 87.9 & 71.3 \\
+\textsc{Refactory} & 54.3 & 56.5 & 30.7 & 60.2 & 68.8 & 26.9 \\
+\textsc{Brafar} & 54.9 & 58.3 & 32.0 & 69.5 & 63.8 & 26.7 \\
 \textsc{Mentored} & 40.2 & 70.9 & 28.5 & 39.5 & 80.0 & 42.3 \\
 \textsc{LSGen}\textsubscript{Qwen} & 79.4 & 42.2 & 33.5 & 99.6 & 62.2 & 31.4 \\
 \textsc{LSGen}\textsubscript{GPT} & 92.1 & 46.3 & 42.6 & 89.9 & 64.4 & 31.9 \\
 % rows:combined
-\addplot[variant, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 28.5 mentored 12.3 12.2\\ 33.5 lsgen_qwen 9.4 9.2\\ 42.6 lsgen 7.1 7.3\\};
-\addplot[proposed, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 42.0 mentored 10.1 10.8\\ 44.0 lsgen_qwen 8.0 8.4\\ 50.4 lsgen 6.8 7.3\\};
+\addplot[variant, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 30.7 refactory 14.5 13.7\\ 32.0 brafar 13.5 12.4\\ 28.5 mentored 12.3 12.2\\ 33.5 lsgen_qwen 9.4 9.2\\ 42.6 lsgen 7.1 7.3\\};
+\addplot[proposed, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 42.4 refactory 9.7 9.5\\ 43.8 brafar 8.6 8.7\\ 42.0 mentored 10.1 10.8\\ 44.0 lsgen_qwen 8.0 8.4\\ 50.4 lsgen 6.8 7.3\\};
 % rows:targets
 \multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
  & Progress & 34.0 & 65.6 & 50.8 \\

@@ -163,6 +163,11 @@ def in_text(numbers, mentored, lsgen, steps, t, reach):
     rq1_fixed = [r for r in rows("approaches/zpdpatch.jsonl") if r["repaired"]]
     numbers["threats.rq1.training_copy"] = sum(r["training_copy"] for r in rq1_fixed)
     numbers["threats.rq1.repairs"] = len(rq1_fixed)
+    ast_copy = lambda name: [r["training_ast_copy"] for r in rows(f"approaches/{name}.jsonl") if r["repaired"]]
+    numbers["threats.rq1.training_ast_copy"] = sum(ast_copy("zpdpatch"))
+    numbers["threats.rq1.training_ast_copy.share"] = pct(statistics.mean(ast_copy("zpdpatch")))
+    shares = [100 * statistics.mean(ast_copy(n)) for n in ("refactory", "brafar", "mentored", "lsgen-qwen", "lsgen")]
+    numbers["threats.rq1.others.training_ast_copy.range"] = f"{min(shares):.1f}--{max(shares):.1f}"
     numbers["threats.training_copy.share"] = pct(sum(r["training_copy"] for r in port if r["repaired"]) / sum(r["repaired"] for r in port))
     rq1_inputs = rows("benchmark/rq1-inputs.jsonl")
     problems = len({r["problem_id"] for r in rq1_inputs} | {r["problem_id"] for r in canonical}) + corpus["codeworkout"]["exercises"]
@@ -215,16 +220,25 @@ def main():
     share = lambda b: sum(x <= b for x in all_reach) / len(all_reach)
     mentored, lsgen = rows("approaches/mentored.jsonl"), rows("approaches/lsgen.jsonl")
     qwen = rows("approaches/lsgen-qwen.jsonl")
+    refactory, brafar = rows("approaches/refactory.jsonl"), rows("approaches/brafar.jsonl")
+    baselines = (refactory, brafar, mentored, qwen, lsgen)
     grid = (1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 300, 500, 1000)
     curve = lambda style, share: f"\\addplot[{style}] coordinates {{" + " ".join(f"({b},{100 * share(b):.1f})" for b in grid) + "};"
     tables["reach"] = [curve("referenceline", share)] + [curve(style, lambda b, m=m: within_budget(m, b))
-                                                         for style, m in (("mentoredline", mentored), ("qwenline", qwen), ("gptline", lsgen))]
+                                                         for style, m in (("refactoryline", refactory), ("brafarline", brafar), ("mentoredline", mentored),
+                                                                         ("qwenline", qwen), ("gptline", lsgen))]
     fixed_ted = lambda m: statistics.mean(r["ted_buggy_fixed"] for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None)
     numbers.update({"lim.mentored.returns_submission.share": pct(1 - rr(mentored)), "lim.lsgen.returns_submission.share": pct(1 - rr(lsgen)),
                     "lim.lsgen_qwen.returns_submission.share": pct(1 - rr(qwen)), "rq1.lsgen_qwen.rr": pct(rr(qwen)),
                     "rq1.lsgen_qwen.ted_vs_step.more": more(fixed_ted(qwen), statistics.mean(all_steps)),
                     "lim.within20.fewer.range": "--".join(more(within_budget(m, 20), rr(m)) for m in (mentored, lsgen)) + " / qwen " + more(within_budget(qwen, 20), rr(qwen)),
-                    "lim.within20.rr.range": f"{min(100 * within_budget(m, 20) for m in (mentored, qwen, lsgen)):.1f}--{max(100 * within_budget(m, 20) for m in (mentored, qwen, lsgen)):.1f}"})
+                    "lim.within20.rr.range": f"{min(100 * within_budget(m, 20) for m in baselines):.1f}--{max(100 * within_budget(m, 20) for m in baselines):.1f}",
+                    "lim.within20.fewer.all.range": f"{min(float(more(within_budget(m, 20), rr(m))) for m in baselines):.1f}--{max(float(more(within_budget(m, 20), rr(m))) for m in baselines):.1f}",
+                    "lim.rr.range": f"{min(100 * rr(m) for m in baselines):.1f}--{max(100 * rr(m) for m in baselines):.1f}",
+                    "lim.returns_submission.range": f"{min(100 * (1 - rr(m)) for m in baselines):.1f}--{max(100 * (1 - rr(m)) for m in baselines):.1f}",
+                    "lim.ted_vs_step.max": f"{max(float(more(fixed_ted(m), statistics.mean(all_steps))) for m in baselines):.1f}",
+                    **{f"lim.{key}.rr": pct(rr(m)) for key, m in (("refactory", refactory), ("brafar", brafar))},
+                    **{f"lim.{key}.ted_vs_step.more": more(fixed_ted(m), statistics.mean(all_steps)) for key, m in (("refactory", refactory), ("brafar", brafar), ("mentored", mentored))}})
     numbers.update({"rq1.steps": len(all_steps), "rq1.step.median": num(statistics.median(all_steps)),
                     "rq1.step.mean": f"{statistics.mean(all_steps):.1f}", "rq1.reach.median": num(statistics.median(all_reach)),
                     "rq1.mentored.within20.fewer": more(within_budget(mentored, 20), rr(mentored)),
@@ -346,7 +360,8 @@ def main():
     numbers["rq1.zpdpatch.unrepaired.own_step.larger"] = more(own(False), own(True))
 
     # Table II and the RQ2 figure: ZPDPatch and the existing techniques on the same buggy programs.
-    others = (("mentored", "\\textsc{Mentored}", mentored), ("lsgen_qwen", "\\textsc{LSGen}\\textsubscript{Qwen}", qwen),
+    others = (("refactory", "\\textsc{Refactory}", refactory), ("brafar", "\\textsc{Brafar}", brafar),
+              ("mentored", "\\textsc{Mentored}", mentored), ("lsgen_qwen", "\\textsc{LSGen}\\textsubscript{Qwen}", qwen),
               ("lsgen", "\\textsc{LSGen}\\textsubscript{GPT}", lsgen))
     mean = lambda m, key: statistics.mean(r[key] for r in fixes(m))
     tables["comparison"] = [
@@ -396,13 +411,73 @@ def main():
     for key in ("token_retention", "line_retention"):
         numbers[f"rq2.{key}.more.range"] = span([float(more(mean(zpd, key), mean(m, key))) for _, _, m in others])
     numbers["rq2.within5.more.range"] = span([float(more(within_budget(zpd, 5), within_budget(m, 5))) for _, _, m in others])
-    numbers["rq2.lsgen.within20.more.range"] = span([float(more(within_budget(zpd, 20), within_budget(m, 20))) for _, _, m in others[1:]])
+    numbers["rq2.lsgen.within20.more.range"] = span([float(more(within_budget(zpd, 20), within_budget(m, 20))) for k, _, m in others if k.startswith("lsgen")])
     numbers["rq2.combined.rr.more.range"] = span([float(more(rr(ordered(zpd, m)), rr(m))) for _, _, m in others])
     numbers["rq2.combined.within_reach.more.range"] = span([float(more(within_reach(ordered(zpd, m), rq1_reach), within_reach(m, rq1_reach))) for _, _, m in others])
     numbers["rq2.combined.ted.smaller.range"] = span([float(more(mean(ordered(zpd, m), "ted_buggy_fixed"), mean(m, "ted_buggy_fixed"))) for _, _, m in others])
     for key, m in (("lsgen", lsgen), ("lsgen_qwen", qwen)):  # ZPDPatch adds within-reach fixes Mentored does not make
         numbers[f"rq2.mentored_{key}.zpdpatch_first.within_reach.more"] = more(
             within_reach(ordered(zpd, mentored, m), rq1_reach), within_reach(ordered(mentored, m), rq1_reach))
+
+    # Review responses on the RQ1 benchmark, from the stored returns only.
+    # (a) On the buggy programs both repair: retention and the share within reach, ZPDPatch against each technique.
+    zf = {r["example_id"]: r for r in fixes(zpd)}
+    joint_more = {"token_retention": [], "line_retention": [], "reach": []}
+    for key, _, m in others:
+        of = {r["example_id"]: r for r in fixes(m)}
+        joint = [k for k in zf if k in of]
+        for name in ("token_retention", "line_retention"):
+            value = more(statistics.mean(zf[k][name] for k in joint), statistics.mean(of[k][name] for k in joint))
+            numbers[f"rq2.{key}.joint.{name}.more"] = value
+            joint_more[name].append(float(value))
+        a, b = (within_reach([x[k] for k in joint], rq1_reach) for x in (zf, of))
+        numbers[f"rq2.{key}.joint.within_reach.{'more' if a >= b else 'fewer'}"] = more(a, b)
+        if a >= b:
+            joint_more["reach"].append(float(more(a, b)))
+    for name, values in joint_more.items():
+        numbers[f"rq2.joint.{name}.more.range"] = span(values)
+    # (b) By quartile of the student's own step to acceptance: the share of each technique's repairs within reach.
+    own_step = {r["example_id"]: r["step_ted"][-1] for r in steps}
+    cuts = statistics.quantiles([own_step[r["example_id"]] for r in zpd], n=4)
+    quartile = lambda r: sum(own_step[r["example_id"]] > c for c in cuts)
+    def quartile_shares(m):
+        return [within_reach([r for r in fixes(m) if quartile(r) == q], rq1_reach) * 100 for q in range(4)]
+    numbers["rq2.zpdpatch.quartile.share.range"] = span(quartile_shares(zpd))
+    numbers["rq2.zpdpatch.quartile.highest"] = all(
+        z >= max(o) for z, o in zip(quartile_shares(zpd), zip(*(quartile_shares(m) for _, _, m in others))))
+    numbers["rq2.others.quartile.share.max"] = f"{max(max(quartile_shares(m)) for _, _, m in others):.1f}"
+    # (c) Buggy programs ZPDPatch repairs within reach that no existing technique repairs within reach.
+    reached = lambda m: {r["example_id"] for r in m if within_reach([r], rq1_reach) == 1}
+    union = set().union(*(reached(m) for _, _, m in others))
+    numbers["rq2.zpdpatch.only_within_reach"] = len(reached(zpd) - union)
+    numbers["rq2.zpdpatch.only_within_reach.share"] = pct(len(reached(zpd) - union) / len(zpd))
+    numbers["rq2.others.union.within_reach.share"] = pct(len(union) / len(zpd))
+    # (d) Stricter reach: the largest step before the buggy program, the median step, and the step to acceptance.
+    variants = {}
+    for r in steps:
+        key, teds = tuple(r["example_id"].split(":")[:2]), [x for x in r["step_ted"] if x is not None]
+        variants.setdefault("before", {})[key] = max(teds[:-1]) if len(teds) > 1 else None
+        variants.setdefault("median", {})[key] = statistics.median(teds) if teds else None
+        variants.setdefault("own", {})[key] = teds[-1] if teds else None
+    for name, limits in variants.items():
+        share = lambda m: within_reach(m, limits) * len(m) / len(fixes(m))
+        numbers[f"rq2.reach_{name}.zpdpatch.share"] = pct(share(zpd))
+        numbers[f"rq2.reach_{name}.others.share.max"] = f"{max(100 * share(m) for _, _, m in others):.1f}"
+        numbers[f"rq2.reach_{name}.combined.more.range"] = span(
+            [float(more(within_reach(ordered(zpd, m), limits), within_reach(m, limits))) for _, _, m in others])
+    # (e) What ZPDPatch returns: repaired, a forward step, another program that passes more, or the submission.
+    changed = [r for r in unrepaired if r["generated_code"] is not None]
+    numbers.update({"rq2.zpdpatch.unrepaired.changed": len(changed),
+                    "rq2.zpdpatch.unrepaired.forward": len(forward),
+                    "rq2.zpdpatch.unrepaired.other_more": sum(r["step_class"] != "forward" and r["fixed_pass_rate"] > r["buggy_pass_rate"] for r in changed),
+                    "rq2.zpdpatch.unrepaired.unchanged.share": pct((len(unrepaired) - len(changed)) / len(zpd)),
+                    "rq1.step.pass_fewer.share": pct(sum(pb < pa for r in steps for pa, pb in r["step_pass_rates"]) / len(all_steps))})
+    # (f) A step budget: the budgets at which ZPDPatch repairs the most, and another technique in front instead.
+    numbers["rq2.zpdpatch.best_budgets"] = ",".join(str(b) for b in (1, 2, 3, 5, 7, 10, 15, 20, 30, 50)
+                                                     if within_budget(zpd, b) > max(within_budget(m, b) for _, _, m in others))
+    for key, _, m in others:
+        numbers[f"rq2.{key}.front.within_reach.range"] = span(
+            [100 * within_reach(ordered(f, m), rq1_reach) for k, _, f in others if k != key])
 
     # Tables IV and V: target rules (RQ3).
     reach = reach_by_trajectory(rows("benchmark/canonical-student-steps.jsonl"))
