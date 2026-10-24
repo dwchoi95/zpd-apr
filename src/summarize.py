@@ -242,6 +242,21 @@ def main():
                     "rq1.zpdpatch.above_reach_median.fewer": more(sum(x > statistics.median(all_reach) for x in patch) / len(patch),
                                                                   sum(x > statistics.median(all_reach) for x in all_steps) / len(all_steps))})
 
+    # Within reach by difficulty and by problem; line retention; the student's own fix of the same buggy program.
+    for points, name in difficulty.items():
+        group = [r for r in zpd if score[r["problem_id"]] == points]
+        numbers[f"rq1.zpdpatch.within_reach.share.{name.lower()}"] = pct(share_in_reach(group))
+    by_problem = defaultdict(list)
+    for r in zpd:
+        by_problem[r["problem_id"]].append(r)
+    numbers["rq1.zpdpatch.problems.within_reach.share.at_least_70"] = sum(share_in_reach(g) >= 0.7 for g in by_problem.values())
+    numbers["rq1.zpdpatch.line_retention.median"] = pct(statistics.median(r["line_retention"] for r in fixes(zpd)))
+    numbers["rq1.step.line_retention.median"] = pct(statistics.median(x for r in steps for x in r["step_line_retention"]))
+    own_fix = {r["example_id"]: r["step_ted"][-1] for r in steps}
+    judged = [r for r in fixes(zpd) if own_fix[r["example_id"]] is not None]
+    numbers["rq1.zpdpatch.no_larger_than_own_fix.share"] = pct(sum(r["ted_buggy_fixed"] <= own_fix[r["example_id"]] for r in judged) / len(judged))
+    numbers["rq1.zpdpatch.within10_of_own_accepted.share"] = pct(sum(r["ted_fixed_oracle"] is not None and r["ted_fixed_oracle"] <= 10 for r in fixes(zpd)) / len(fixes(zpd)))
+
     # The students' own last step (to their accepted program) on the buggy programs ZPDPatch leaves and repairs.
     last = {r["example_id"]: r["step_ted"][-1] for r in steps}
     own = lambda repaired: statistics.mean(last[r["example_id"]] for r in zpd if bool(r["repaired"]) == repaired and last[r["example_id"]] is not None)
@@ -332,9 +347,9 @@ def main():
     numbers["rq3.java.max_extra_one_exercise"] = max(a - p for a, p in per_exercise.values())
 
     # Table III: ablation (RQ3); each variant against ZPDPatch under the same inference conditions.
-    pairs = (("\\textsc{ZPDPatch}-Train", "no-training", "sampled"),
+    pairs = (("\\textsc{ZPDPatch}-Train\\(^\\dagger\\)", "no-training", "sampled"),
              ("\\textsc{ZPDPatch}-Portfolio", "one-checkpoint", "zpdpatch"),
-             ("\\textsc{ZPDPatch}-Distinct", "same-checkpoint", "distinct-checkpoints"),
+             ("\\textsc{ZPDPatch}-Distinct\\(^\\dagger\\)", "same-checkpoint", "distinct-checkpoints"),
              ("\\textsc{ZPDPatch}+History", "history", "zpdpatch"))
     tables["ablation"] = []
     for label, variant, reference in pairs:
