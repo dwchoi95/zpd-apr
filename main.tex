@@ -262,37 +262,46 @@ Figure~\ref{fig:climb}는 학생이 accepted에 한 번에 이르지 않음을 �
 \begin{figure*}[t]
 \centering\scriptsize
 \begin{minipage}[t]{0.315\textwidth}
-\textbf{(a) Buggy program $b$}\par
+\textbf{(a) Buggy program $b$ (61.1\% passed)}\par
 \begin{tabular}{@{}r@{~}l@{}}
-{\color{black!55}1} & \makebox[4.3cm][l]{\texttt{N~=~int(input())}} \\
-{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
-{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>~N:}}} \\
-{\color{black!55}4} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
-{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+{\color{black!55}\smash{$\vdots$}} & \\
+{\color{black!55}13} & \makebox[4.3cm][l]{\texttt{if~S[0]~==~0:}} \\
+{\color{black!55}14} & \makebox[4.3cm][l]{\texttt{~~~~print(-1)}} \\
+{\color{black!55}15} & \makebox[4.3cm][l]{\texttt{~~~~exit()}} \\
+{\color{black!55}16} & \makebox[4.3cm][l]{\texttt{if~S[0]~==~-1:}} \\
+{\color{black!55}17} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~S[-1]~=~1}}} \\
+{\color{black!55}\smash{$\vdots$}} & \\
 \end{tabular}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.315\textwidth}
-\textbf{(b) Progress target: the next submission}\par
+\textbf{(b) Progress target: the next submission (88.9\%)}\par
 \begin{tabular}{@{}r@{~}l@{}}
-{\color{black!55}1} & \makebox[4.3cm][l]{\texttt{N~=~int(input())}} \\
-{\color{black!55}2} & \makebox[4.3cm][l]{\texttt{for~i~in~range(N):}} \\
-{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~i**2~>=~N:}}} \\
-{\color{black!55}4} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print((i-1)**2)}} \\
-{\color{black!55}5} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+{\color{black!55}\smash{$\vdots$}} & \\
+{\color{black!55}13} & \makebox[4.3cm][l]{\texttt{if~S[0]~==~0:}} \\
+{\color{black!55}14} & \makebox[4.3cm][l]{\texttt{~~~~print(-1)}} \\
+{\color{black!55}15} & \makebox[4.3cm][l]{\texttt{~~~~exit()}} \\
+{\color{black!55}16} & \makebox[4.3cm][l]{\texttt{if~S[0]~==~-1:}} \\
+{\color{black!55}17} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~S[0]~=~1}}} \\
+{\color{black!55}\smash{$\vdots$}} & \\
 \end{tabular}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.315\textwidth}
 \textbf{(c) Answer target: the accepted submission}\par
 \begin{tabular}{@{}r@{~}l@{}}
-{\color{black!55}1} & \makebox[4.3cm][l]{\texttt{n~=~int(input())}} \\
-{\color{black!55}2} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{ans~=~0}}} \\
-{\color{black!55}3} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{for~a~in~range(10**5~+~1):}}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~a**2~<=~n:}}} \\
-{\color{black!55}5} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~~~~~ans~=~max(ans,~a**2)}}} \\
-{\color{black!55}6} & \makebox[4.3cm][l]{\texttt{print(ans)}} \\
+{\color{black!55}\smash{$\vdots$}} & \\
+{\color{black!55}13} & \makebox[4.3cm][l]{\texttt{if~S[0]~==~0:}} \\
+{\color{black!55}14} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~N~!=~1:}}} \\
+{\color{black!55}15} & \makebox[4.3cm][l]{\texttt{~~~~~~~~print(-1)}} \\
+{\color{black!55}16} & \makebox[4.3cm][l]{\texttt{~~~~~~~~exit()}} \\
+{\color{black!55}17} & \makebox[4.3cm][l]{\texttt{if~S[0]~==~-1:}} \\
+{\color{black!55}18} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~if~N~!=~1:}}} \\
+{\color{black!55}19} & \makebox[4.3cm][l]{\texttt{~~~~~~~~S[0]~=~1}} \\
+{\color{black!55}20} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~else:}}} \\
+{\color{black!55}21} & \colorbox{black!10}{\makebox[4.3cm][l]{\texttt{~~~~~~~~S[0]~=~0}}} \\
+{\color{black!55}\smash{$\vdots$}} & \\
 \end{tabular}
 \end{minipage}
-\caption{Running example (p03556)}
+\caption{Running example (p02761)}
 \label{fig:example}
 \end{figure*}
 
@@ -358,8 +367,8 @@ Algorithm~\ref{alg:construct}은 \textsc{ZPDPatch}가 Algorithm~\ref{alg:generic
 \subsection{Mine}
 \label{sec:mine}
 
-Mine 단계의 목표는 각 버기 제출 또는 그 retained prefix를, 학생이 실제로 도달한 이후 제출과 target rule마다 짝짓는 것이다(2--9번째 줄). Figure~\ref{fig:example}은 rule이 한 trajectory에서 무엇을 바꾸는지 보인다. Progress target (b)는 (a)와의 Tree Edit Distance(TED)가 1이고, Answer target (c)는 33이며 다른 접근을 택한다. 제출은 문제와 사용자로 묶어 시간순으로 놓고 첫 acceptance에서 자른다. Normalization은 연속된 중복을 지우되, 생성과 실행에 쓰는 소스 코드는 그대로 둔다. 어느 rule에서든 prompt와 target이 4,096 token을 넘는 trajectory는 분할 전에 통째로 빼므로, 프로그램이나 history를 자르지 않는다.
-% EN: The goal of the Mine stage is to pair each buggy submission, or its retained prefix, with a later submission the student actually reached, under each target rule (lines~2--9). Figure~\ref{fig:example} shows what the rule changes on one trajectory: the Progress target (b) is at a Tree Edit Distance (TED) of 1 from (a), while the Answer target (c) is at 33 and takes another approach. Submissions are grouped by problem and user, chronologically ordered, and cut at the first acceptance. Normalization removes consecutive duplicates while preserving the source code used for generation and execution. A trajectory whose prompt and target exceed 4,096 tokens under any rule is excluded as a whole before splitting, so no program or history is truncated.
+Mine 단계의 목표는 각 버기 제출 또는 그 retained prefix를, 학생이 실제로 도달한 이후 제출과 target rule마다 짝짓는 것이다(2--9번째 줄). Figure~\ref{fig:example}은 rule이 한 trajectory에서 무엇을 바꾸는지 보인다. Progress target (b)는 (a)에서 첫 자리를 고친 다음 제출로 (a)와의 Tree Edit Distance(TED)가 3이고, Answer target (c)는 \(N=1\)인 경우까지 처리한 accepted 제출로 TED가 22다. 제출은 문제와 사용자로 묶어 시간순으로 놓고 첫 acceptance에서 자른다. Normalization은 연속된 중복을 지우되, 생성과 실행에 쓰는 소스 코드는 그대로 둔다. 어느 rule에서든 prompt와 target이 4,096 token을 넘는 trajectory는 분할 전에 통째로 빼므로, 프로그램이나 history를 자르지 않는다.
+% EN: The goal of the Mine stage is to pair each buggy submission, or its retained prefix, with a later submission the student actually reached, under each target rule (lines~2--9). Figure~\ref{fig:example} shows what the rule changes on one trajectory: the Progress target (b), the next submission, fixes which digit is set and is at a Tree Edit Distance (TED) of 3 from (a), while the Answer target (c), the accepted submission, also handles \(N=1\) and is at 22. Submissions are grouped by problem and user, chronologically ordered, and cut at the first acceptance. Normalization removes consecutive duplicates while preserving the source code used for generation and execution. A trajectory whose prompt and target exceed 4,096 tokens under any rule is excluded as a whole before splitting, so no program or history is truncated.
 
 거친 severity 함수 \(\mathrm{sev}\)는 Accepted(AC)에 0, Wrong Answer(WA)에 1, Time/Memory Limit Exceeded(TLE/MLE)에 2, Runtime Error(RE)에 3, Compile Error(CE)에 4를 주고, 알 수 없는 결과와 내부 결과는 가장 심한 범주에 둔다. 이 함수는 기록된 verdict와 각 test case의 재실행 결과에 똑같이 적용된다. Strict는 기록된 verdict를 비교한다. Progress는 기록된 verdict가 같으면 재실행한 test case별 결과도 비교하며, 이 비교는 test suite가 같은 두 제출 사이에서만 한다.
 % EN: The coarse severity function \(\mathrm{sev}\) assigns 0 to Accepted (AC), 1 to Wrong Answer (WA), 2 to Time or Memory Limit Exceeded (TLE/MLE), 3 to Runtime Error (RE), and 4 to Compile Error (CE); unrecognized and internal outcomes occupy the most severe category. It applies alike to a recorded verdict and to the re-executed outcome of each test case. Strict compares recorded verdicts. Progress additionally compares the replayed test-case-wise outcomes when the recorded verdicts agree, and only between two submissions with the same test suite.
@@ -627,38 +636,8 @@ Table~\ref{tab:comparison}은 기법마다 RR, 수리한 프로그램 가운데 
 걸음 budget이 작을 때는 이 차이가 수리 수로 이어진다. Budget 5 안에서 \textsc{ZPDPatch}는 버기 프로그램의 7.0\%를 수리해 기존 기법보다 26.8--105.0\% 많이 수리하고, budget 20에서도 \textsc{LSGen}\textsubscript{Qwen}과 \textsc{LSGen}\textsubscript{GPT}보다 2.5--9.9\% 많이 수리한다.
 % EN: Under a small step budget, this difference turns into more repairs. Within a budget of 5, \textsc{ZPDPatch} repairs 7.0\% of the buggy programs, 26.8--105.0\% more than the existing techniques, and at a budget of 20 it still repairs 2.5--9.9\% more than \textsc{LSGen}\textsubscript{Qwen} and \textsc{LSGen}\textsubscript{GPT}.
 
-\begin{figure}[h]
-\centering\scriptsize
-\begin{minipage}[t]{\columnwidth}
-\textbf{(a) Edits of \textsc{ZPDPatch} (Z) and of the student's accepted program (S)}\par\smallskip
-\begin{tabular}{@{}r@{~}l@{}}
-{\color{black!55}1} & \makebox[5.2cm][l]{\texttt{~~d,n~=~map(int,input().split())}} \\
-{\color{black!55}2} & \makebox[5.2cm][l]{\texttt{~~ans~=~n}} \\
-{\color{black!55}3} & \makebox[5.2cm][l]{\texttt{~~if~d~!=~0:}} \\
-{\color{black!55}4} & \makebox[5.2cm][l]{\texttt{~~~~~~ans~*=~100**d}} \\
-{\color{black!55}5} & \makebox[5.2cm][l]{\texttt{~~if~n~==~100:}} \\
-{\color{black!55}6} & \colorbox{red!10}{\makebox[5.2cm][l]{\texttt{-~~~~ans~/=~100}}} \\
-{\color{black!55}Z} & \colorbox{blue!12}{\makebox[5.2cm][l]{\texttt{+~~~~ans~+=~100}}} \\
-{\color{black!55}S} & \colorbox{green!15}{\makebox[5.2cm][l]{\texttt{+~~~~ans~+=~100**d}}} \\
-{\color{black!55}7} & \colorbox{red!10}{\makebox[5.2cm][l]{\texttt{-~print(int(ans))}}} \\
-{\color{black!55}S} & \colorbox{green!15}{\makebox[5.2cm][l]{\texttt{+~print(ans)}}} \\
-\end{tabular}
-\end{minipage}\par\medskip
-\begin{minipage}[t]{\columnwidth}
-\textbf{(b) \textsc{LSGen}\textsubscript{GPT} (TED 31)}\par\smallskip
-\begin{tabular}{@{}r@{~}l@{}}
-{\color{black!55}1} & \makebox[5.2cm][l]{\texttt{d,~n~=~map(int,input().split())}} \\
-{\color{black!55}2} & \colorbox{black!10}{\makebox[5.2cm][l]{\texttt{if~n~==~100:}}} \\
-{\color{black!55}3} & \colorbox{black!10}{\makebox[5.2cm][l]{\texttt{~~~~n~=~101}}} \\
-{\color{black!55}4} & \colorbox{black!10}{\makebox[5.2cm][l]{\texttt{print(n~*~(100~**~d))}}} \\
-\end{tabular}
-\end{minipage}
-\caption{A forward step by \textsc{ZPDPatch} and a correct program by \textsc{LSGen}\textsubscript{GPT}}
-\label{fig:step}
-\end{figure}
-
-Budget이 없으면 \textsc{ZPDPatch}는 기존 기법보다 17.3--63.9\% 적게 수리한다(Table~\ref{tab:comparison}). 이 차이는 목표에서 온다. \textsc{ZPDPatch}는 학생 자신의 이후 제출을 target으로 배워 학생의 걸음 크기 안에서 고치는 반면, 기존 기법은 test suite를 통과하는 어떤 프로그램이든 향하고, \textsc{LSGen}은 실패할 때마다 다른 학생의 수정을 다시 검색해 수리를 반복한다. 실제로 \textsc{ZPDPatch}가 수리하지 못한 버기 프로그램에서는 학생 자신도 accepted 프로그램까지 평균 68.9\% 큰 걸음을 내디뎠다. 그러나 수리하지 못한 버기 프로그램에서도 두 쪽이 돌려주는 것은 다르다. 기존 기법은 수리에 실패하면 예외 없이 제출을 그대로 돌려준다. 반면 \textsc{ZPDPatch}는 그런 버기 프로그램의 9.3\%에서 학생의 걸음을 닮은 개선 걸음을 돌려주고(RQ1), 그 85.3\%가 학생의 reach 안에 든다. Figure~\ref{fig:step}는 그런 예다. 학생의 프로그램은 \texttt{n == 100}일 때 \texttt{ans /= 100}으로 처리해 test case의 81.3\%를 통과했다. \textsc{ZPDPatch}는 이 연산만 \texttt{ans += 100}으로 고쳐 87.5\%를 통과하게 하는데, 학생이 다음에 낸 accepted 프로그램도 같은 줄을 \texttt{ans += 100**d}로 고쳤다. 반면 정답을 낸 \textsc{LSGen}\textsubscript{GPT}와 \textsc{Mentored}는 프로그램을 TED 31과 54만큼 바꾸어 이 학생이 내디딘 가장 큰 걸음 14를 넘고, \textsc{LSGen}\textsubscript{Qwen}은 수리하지 못한다.
-% EN: Without a budget, \textsc{ZPDPatch} repairs 17.3--63.9\% fewer buggy programs than the existing techniques (Table~\ref{tab:comparison}). This gap comes from the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets and repairs within a student's step, whereas the existing techniques head for any program that passes the test suite, and \textsc{LSGen} retrieves other students' fixes again after each failure and repeats the repair. Indeed, on the buggy programs that \textsc{ZPDPatch} leaves unrepaired, the students' own steps to their accepted programs were 68.9\% larger on average than on those it repairs. Yet even on the buggy programs left unrepaired, the two sides return different things. The existing techniques return the submission itself whenever they fail to repair it, whereas on 9.3\% of such buggy programs \textsc{ZPDPatch} returns a forward step that resembles a student's step (RQ1), and 85.3\% of these steps lie within the student's reach. Figure~\ref{fig:step} shows one. The student's program handled \texttt{n == 100} with \texttt{ans /= 100} and passed 81.3\% of the test cases. \textsc{ZPDPatch} changes only that operation to \texttt{ans += 100}, which passes 87.5\%, and the accepted program the student submitted next changed the same line to \texttt{ans += 100**d}. In contrast, \textsc{LSGen}\textsubscript{GPT} and \textsc{Mentored}, which return correct programs, change the program by TEDs of 31 and 54, beyond the largest step of 14 that this student took, and \textsc{LSGen}\textsubscript{Qwen} does not repair it.
+Budget이 없으면 \textsc{ZPDPatch}는 기존 기법보다 17.3--63.9\% 적게 수리한다(Table~\ref{tab:comparison}). 이 차이는 목표에서 온다. \textsc{ZPDPatch}는 학생 자신의 이후 제출을 target으로 배워 학생의 걸음 크기 안에서 고치는 반면, 기존 기법은 test suite를 통과하는 어떤 프로그램이든 향하고, \textsc{LSGen}은 실패할 때마다 다른 학생의 수정을 다시 검색해 수리를 반복한다. 실제로 \textsc{ZPDPatch}가 수리하지 못한 버기 프로그램에서는 학생 자신도 accepted 프로그램까지 평균 68.9\% 큰 걸음을 내디뎠다. 그러나 수리하지 못한 버기 프로그램에서도 두 쪽이 돌려주는 것은 다르다. 기존 기법은 수리에 실패하면 예외 없이 제출을 그대로 돌려준다. 반면 \textsc{ZPDPatch}는 그런 버기 프로그램의 9.3\%에서 학생의 걸음을 닮은 개선 걸음을 돌려주고(RQ1), 그 85.3\%가 학생의 reach 안에 든다. Figure~\ref{fig:example}(b)는 그런 예로, 그 trajectory의 마지막 실패 제출이다. 학생은 이어서 \(N=1\)인 경우를 처리해 accepted에 닿았다(TED 19). \textsc{ZPDPatch}는 그 두 곳 가운데 한 곳에 같은 처리를 더한 걸음(TED 15)을 돌려주어 통과하는 test case를 88.9\%에서 94.4\%로 늘린다. 반면 정답을 낸 두 \textsc{LSGen} 설정은 프로그램을 TED 66과 83만큼 바꾸어 학생 자신의 걸음보다 3.5--4.4배 크고, \textsc{Mentored}는 수리하지 못한다.
+% EN: Without a budget, \textsc{ZPDPatch} repairs 17.3--63.9\% fewer buggy programs than the existing techniques (Table~\ref{tab:comparison}). This gap comes from the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets and repairs within a student's step, whereas the existing techniques head for any program that passes the test suite, and \textsc{LSGen} retrieves other students' fixes again after each failure and repeats the repair. Indeed, on the buggy programs that \textsc{ZPDPatch} leaves unrepaired, the students' own steps to their accepted programs were 68.9\% larger on average than on those it repairs. Yet even on the buggy programs left unrepaired, the two sides return different things. The existing techniques return the submission itself whenever they fail to repair it, whereas on 9.3\% of such buggy programs \textsc{ZPDPatch} returns a forward step that resembles a student's step (RQ1), and 85.3\% of these steps lie within the student's reach. Figure~\ref{fig:example}(b), the last failing submission of that trajectory, is one. The student then reached acceptance by handling the case \(N=1\) (TED 19). \textsc{ZPDPatch} returns a step that adds the same handling to one of the two places (TED 15), raising the share of test cases passed from 88.9\% to 94.4\%, whereas the two \textsc{LSGen} configurations return correct programs that change it by TEDs of 66 and 83, 3.5--4.4 times the student's own step, and \textsc{Mentored} does not repair it.
 
 \begin{figure}[h]
 \centering
@@ -738,8 +717,8 @@ Metric & Rule & Seen & Unseen & Java \\
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Target source.} target의 출처도 바꾸었다. 같은 prompt와 같은 학습 예제 수에서 target만 Answer에서 Progress로 바꾸어 학습하고, student-held-out Java에서 같은 비교를 반복했다. Table~\ref{tab:targets}는 두 rule의 repair rate와 보존율을 보인다. 두 rule이 모두 수리한 버기 프로그램에서 Progress의 patch는 Answer의 patch보다 학생의 token을 Seen에서 6.3\%, Unseen에서 7.9\% 더 남기고, 줄을 각각 12.3\%와 17.9\% 더 남긴다. 같은 버기 프로그램에서 Progress patch의 TED는 Answer보다 Seen에서 47.3\%, Unseen에서 45.5\% 작다. 이 차이는 target에서 온다. Progress target은 실행 증거가 개선으로 확인한 학생의 다음 제출이라 한 걸음이 작고, Answer target은 학생이 끝내 통과시킨 프로그램이라 다른 접근을 택할 수 있다(Figure~\ref{fig:example}에서 TED 1 대 33).
-% EN: \noindent\textbf{Target source.} We also replaced the source of the target, training on the same prompts with the same number of training examples but with Progress instead of Answer targets, and repeated the comparison on student-held-out Java. Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the buggy programs both rules repair, the patches of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same buggy programs, the TED of a Progress patch is 47.3\% smaller than that of an Answer patch on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (a TED of 1 against 33 in Figure~\ref{fig:example}).
+\noindent\textbf{Target source.} target의 출처도 바꾸었다. 같은 prompt와 같은 학습 예제 수에서 target만 Answer에서 Progress로 바꾸어 학습하고, student-held-out Java에서 같은 비교를 반복했다. Table~\ref{tab:targets}는 두 rule의 repair rate와 보존율을 보인다. 두 rule이 모두 수리한 버기 프로그램에서 Progress의 patch는 Answer의 patch보다 학생의 token을 Seen에서 6.3\%, Unseen에서 7.9\% 더 남기고, 줄을 각각 12.3\%와 17.9\% 더 남긴다. 같은 버기 프로그램에서 Progress patch의 TED는 Answer보다 Seen에서 47.3\%, Unseen에서 45.5\% 작다. 이 차이는 target에서 온다. Progress target은 실행 증거가 개선으로 확인한 학생의 다음 제출이라 한 걸음이 작고, Answer target은 학생이 끝내 통과시킨 프로그램이라 다른 접근을 택할 수 있다(Figure~\ref{fig:example}에서 TED 3 대 22).
+% EN: \noindent\textbf{Target source.} We also replaced the source of the target, training on the same prompts with the same number of training examples but with Progress instead of Answer targets, and repeated the comparison on student-held-out Java. Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the buggy programs both rules repair, the patches of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same buggy programs, the TED of a Progress patch is 47.3\% smaller than that of an Answer patch on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (a TED of 3 against 22 in Figure~\ref{fig:example}).
 
 그 대가로 Progress는 Answer보다 Seen에서 36.0\%, Unseen에서 14.6\% 적은 버기 프로그램을 수리한다. Answer target은 모두 accepted 제출인 반면, Progress target에는 아직 통과하지 못한 개선 제출도 포함되기 때문이다. 학생 자신의 demonstrated reach 안에서 재면 이 차이는 줄어든다. Progress는 Seen에서 19.2\% 적게 수리하는 데 그치고 Unseen에서는 8.9\% 더 많이 수리하는데, Progress 수리의 82.0\%와 74.4\%가 학생의 reach 안에 있는 반면 Answer 수리는 64.9\%와 58.3\%만 그 안에 있기 때문이다.
 % EN: In exchange, Progress repairs 36.0\% fewer buggy programs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass. Measured within each student's own demonstrated reach, the gap narrows: Progress repairs only 19.2\% fewer buggy programs on Seen and 8.9\% more on Unseen, because 82.0\% and 74.4\% of its repairs lie within the student's reach, against 64.9\% and 58.3\% of Answer's.
