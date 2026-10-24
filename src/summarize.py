@@ -304,10 +304,10 @@ def main():
         "\\multirow{2}{*}{Within reach} & Fixed (\\%) & " + cells([pct(share_in_reach(g)) for g in groups]),
         " & Problems ($\\geq$70\\%) & " + cells([f"{sum(share_in_reach(by_problem[p]) >= 0.7 for p in problems(g))}/{len(problems(g))}" for g in groups]),
         "\\midrule",
-        "\\multirow{2}{*}{Tokens kept (\\%)} & Patch & " + cells([pct(statistics.median(r["token_retention"] for r in fixes(g))) for g in groups]),
+        "\\multirow{2}{*}{Med.\\ tokens kept (\\%)} & Patch & " + cells([pct(statistics.median(r["token_retention"] for r in fixes(g))) for g in groups]),
         " & Student step & " + cells([pct(statistics.median(x for r in g for x in r["step_token_retention"])) for g in group_steps]),
         "\\midrule",
-        "\\multirow{2}{*}{Lines kept (\\%)} & Patch & " + cells([pct(statistics.median(r["line_retention"] for r in fixes(g))) for g in groups]),
+        "\\multirow{2}{*}{Med.\\ lines kept (\\%)} & Patch & " + cells([pct(statistics.median(r["line_retention"] for r in fixes(g))) for g in groups]),
         " & Student step & " + cells([pct(statistics.median(x for r in g for x in r["step_line_retention"])) for g in group_steps]),
         "\\midrule",
         "\\multirow{3}{*}{Student's fix (\\%)} & No larger & " + cells(against_fix(lambda r: own_fix[r["example_id"]] is not None and r["ted_buggy_fixed"] <= own_fix[r["example_id"]])),
@@ -350,9 +350,12 @@ def main():
               ("lsgen", "\\textsc{LSGen}\\textsubscript{GPT}", lsgen))
     mean = lambda m, key: statistics.mean(r[key] for r in fixes(m))
     tables["comparison"] = [
-        f"{label} & {pct(rr(m))} & {pct(share_in_reach(m))} & {mean(m, 'ted_buggy_fixed'):.1f} & "
+        f"{label} & {pct(rr(m))} & {pct(share_in_reach(m))} & {pct(within_reach(m, rq1_reach))} & {mean(m, 'ted_buggy_fixed'):.1f} & "
         f"{pct(mean(m, 'token_retention'))} & {pct(mean(m, 'line_retention'))} \\\\"
         for _, label, m in (("zpdpatch", "\\textsc{ZPDPatch}", zpd), *others)]
+
+    numbers.update({f"rq2.{key}.within_reach.rr": pct(within_reach(m, rq1_reach))
+                    for key, m in (("zpdpatch", zpd), *((k, m) for k, _, m in others))})
 
     def ordered(*techniques):
         """Algorithm 1 with these techniques as its ordered generators: the first fix, else the last one's return."""
@@ -435,7 +438,6 @@ def main():
     ex = [sum(a > p for a, p in per_exercise.values()), sum(a == p for a, p in per_exercise.values()), sum(a < p for a, p in per_exercise.values())]
     diffs = [r["token_retention"] - ja[r["example_id"]]["token_retention"] for r in t["java"]["progress"] if r["repaired"] and ja[r["example_id"]]["repaired"]]
     tr = [sum(d < 0 for d in diffs), sum(d == 0 for d in diffs), sum(d > 0 for d in diffs)]
-    tables["uneven"] = [f"{label} & {e} & {pct(n / len(diffs))}\\% \\\\" for label, e, n in zip(("Answer better", "Tied", "Progress better"), ex, tr)]
     numbers["rq3.java.extra_repairs"] = sum(a - p for a, p in per_exercise.values() if a > p)
     numbers["rq3.java.max_extra_one_exercise"] = max(a - p for a, p in per_exercise.values())
 
@@ -463,12 +465,6 @@ def main():
             cells += [pct(one), pct(port)]
             numbers[f"rq4.{path}.more"] = more(port, one)
         tables["generality"].append(f"{label} & {' & '.join(cells)} \\\\")
-    codes = {"seen": ("SF", "SM", "SL"), "unseen": ("UF", "UM", "UL")}
-    tables["position"] = [
-        bars(style, "x", [(code, [r for r in rows(f"generality/prefix/{s}/{name}.jsonl") if r["trajectory_phase"] == phase],
-                           lambda r: r["repaired"])
-                          for s in ("seen", "unseen") for phase, code in zip(("early", "middle", "last"), codes[s])])
-        for style, name in (("proposed", "zpdpatch"), ("variant", "one-checkpoint"))]
 
     in_text(numbers, mentored, lsgen, steps, t, reach)
     with open(os.path.join(PAPER, "output", "tables.tex"), "w") as f:

@@ -30,10 +30,10 @@ Total & 399 & 1,428 & 6,470 & 14.7 & -- & -- \\
 \multirow{2}{*}{Within reach} & Fixed (\%) & 75.9 & 76.3 & 100.0 & 76.7 \\
  & Problems ($\geq$70\%) & 2/3 & 8/10 & 1/1 & 11/14 \\
 \midrule
-\multirow{2}{*}{Tokens kept (\%)} & Patch & 97.1 & 94.4 & 99.6 & 96.2 \\
+\multirow{2}{*}{Med.\ tokens kept (\%)} & Patch & 97.1 & 94.4 & 99.6 & 96.2 \\
  & Student step & 96.4 & 96.3 & 97.9 & 96.4 \\
 \midrule
-\multirow{2}{*}{Lines kept (\%)} & Patch & 83.3 & 81.2 & 97.4 & 83.3 \\
+\multirow{2}{*}{Med.\ lines kept (\%)} & Patch & 83.3 & 81.2 & 97.4 & 83.3 \\
  & Student step & 85.0 & 85.7 & 93.8 & 85.7 \\
 \midrule
 \multirow{3}{*}{Student's fix (\%)} & No larger & 59.6 & 54.3 & 91.7 & 56.6 \\
@@ -50,10 +50,10 @@ Pass rate gain (points) & 12.5 & 12.5 \\
 Pass rate gain (\%) & 17.6 & 20.0 \\
 TED & 17 & 14 \\
 % rows:comparison
-\textsc{ZPDPatch} & 33.3 & 76.7 & 27.3 & 87.9 & 71.3 \\
-\textsc{Mentored} & 40.2 & 70.9 & 39.5 & 80.0 & 42.3 \\
-\textsc{LSGen}\textsubscript{Qwen} & 79.4 & 42.2 & 99.6 & 62.2 & 31.4 \\
-\textsc{LSGen}\textsubscript{GPT} & 92.1 & 46.3 & 89.9 & 64.4 & 31.9 \\
+\textsc{ZPDPatch} & 33.3 & 76.7 & 25.5 & 27.3 & 87.9 & 71.3 \\
+\textsc{Mentored} & 40.2 & 70.9 & 28.5 & 39.5 & 80.0 & 42.3 \\
+\textsc{LSGen}\textsubscript{Qwen} & 79.4 & 42.2 & 33.5 & 99.6 & 62.2 & 31.4 \\
+\textsc{LSGen}\textsubscript{GPT} & 92.1 & 46.3 & 42.6 & 89.9 & 64.4 & 31.9 \\
 % rows:combined
 \addplot[variant, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 28.5 mentored 12.3 12.2\\ 33.5 lsgen_qwen 9.4 9.2\\ 42.6 lsgen 7.1 7.3\\};
 \addplot[proposed, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 42.0 mentored 10.1 10.8\\ 44.0 lsgen_qwen 8.0 8.4\\ 50.4 lsgen 6.8 7.3\\};
@@ -69,10 +69,6 @@ TED & 17 & 14 \\
 \midrule
 \multirow{2}{*}{Lines (\%)} & Answer & 71.8 & 57.8 & 86.2 \\
  & Progress & 80.7 & 68.2 & 91.2 \\
-% rows:uneven
-Answer better & 15 & 5.6\% \\
-Tied & 2 & 63.3\% \\
-Progress better & 0 & 31.1\% \\
 % rows:ablation
 \textsc{ZPDPatch}-Train\(^\dagger\) & 30.4 & 57.6 & 65.6 & 72.0 \\
 \textsc{ZPDPatch}-Portfolio & 58.1 & 72.0 & 69.6 & 81.2 \\
@@ -81,6 +77,3 @@ Progress better & 0 & 31.1\% \\
 % rows:generality
 1.5B model & 37.8 & 51.3 & 48.4 & 66.4 \\
 Java & 75.1 & 84.5 & 45.4 & 52.3 \\
-% rows:position
-\addplot[proposed, error bars/.cd, x dir=both, x explicit] table[row sep=\\, x=v, y=at, x error plus=p, x error minus=m] {v at p m\\ 70.0 SF 5.4 5.8\\ 67.6 SM 4.7 4.5\\ 71.4 SL 4.3 4.2\\ 82.9 UF 8.4 10.3\\ 77.3 UM 8.2 8.3\\ 81.8 UL 6.7 7.0\\};
-\addplot[variant, error bars/.cd, x dir=both, x explicit] table[row sep=\\, x=v, y=at, x error plus=p, x error minus=m] {v at p m\\ 52.5 SF 6.3 6.0\\ 51.9 SM 5.0 4.7\\ 56.7 SL 4.7 4.3\\ 71.4 UF 9.8 10.8\\ 69.0 UM 8.6 8.6\\ 70.2 UL 8.5 8.9\\};
