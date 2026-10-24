@@ -18,10 +18,11 @@ edits here; code goes to `dev` in the parent folder. Branch, repository, and art
   §7 (common rules); `floats.md` covers figures and tables.
 - Final review: give review agents only the PDF and `guidelines/review_prompt.md` (the user's own review prompt, used
   verbatim); the procedure (venue criteria, calibration with accepted papers) is in `guidelines/review.md`.
-- Draft layout: every paragraph is exactly two lines in `main.tex`: the Korean paragraph on one line, commented out
-  with `%`, directly above the English paragraph on one line; a blank line between paragraphs, no line breaks inside a
-  paragraph. Floats, math, captions, abbreviations, and key terms stay English.
-  `python3 paper/src/to_english.py paper/main.tex > main.en.tex` drops the Korean for submission.
+- Draft layout (review draft, compiled with `\usepackage{kotex}`): every paragraph is exactly two lines in `main.tex`:
+  the Korean paragraph on one line, directly above its English paragraph on one line commented out as `% EN: `; a blank
+  line between paragraphs, no line breaks inside a paragraph. Floats, math, captions, abbreviations, and key terms stay
+  English. `python3 paper/src/to_english.py paper/main.tex` writes the English submission source to stdout (it swaps
+  in each `% EN: ` line and drops kotex); build checks of the English version use that output in a scratch copy.
 - Workflow: answer in Korean. Revise paragraph by paragraph: show the Korean version first, and once it is confirmed,
   show the English version (then proofread). Propose other changes in Korean first and apply them after approval. For a
   results subsection, review the paragraph flow before the paragraphs.
