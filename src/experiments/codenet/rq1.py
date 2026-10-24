@@ -12,6 +12,7 @@ from typing import Any
 from .builder import (
     _find_case_pairs,
     _load_problem_metadata,
+    _optional_int,
     _read_text,
     _validate_source_layout,
     _write_problem_metadata,
@@ -24,6 +25,26 @@ def python3_compatible(code: str) -> str:
     """fractions.gcd was removed in Python 3.9 (it was valid when the programs were submitted)."""
     code = code.replace("from fractions import gcd", "from math import gcd")
     return re.sub(r"\bfractions\.gcd\b", "math.gcd", code)
+
+
+def submission_rows(paths: dict[str, Path], problem_id: str) -> dict[str, dict[str, str]]:
+    with (paths["metadata"] / f"{problem_id}.csv").open(encoding="utf-8", newline="") as file:
+        return {row["submission_id"]: row for row in csv.DictReader(file)}
+
+
+def codenet_records(
+    paths: dict[str, Path], problem_id: str, submission_ids: list[str], rows: dict[str, dict[str, str]]
+) -> list[dict[str, Any]]:
+    """The listed submissions as the runner stores them, in the listed order."""
+    return [
+        {
+            "submission_id": submission_id,
+            "timestamp": _optional_int(rows[submission_id].get("date")),
+            "verdict": rows[submission_id].get("status") or None,
+            "code": _read_text(paths["data"] / problem_id / "Python" / f"{submission_id}.py"),
+        }
+        for submission_id in submission_ids
+    ]
 
 
 def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
@@ -57,20 +78,13 @@ def build_rq1_benchmark(
             {"case_id": f"case_{index:05d}", "input": _read_text(case.input_path), "expected_output": _read_text(case.output_path)}
             for index, case in enumerate(_find_case_pairs(paths["testcases"] / tests), start=1)
         ])
-        with (paths["metadata"] / f"{problem_id}.csv").open(encoding="utf-8", newline="") as file:
-            rows = {row["submission_id"]: row for row in csv.DictReader(file)}
+        rows = submission_rows(paths, problem_id)
         for listed_problem, user_id, submission_ids in manifest["trajectories"]:
             if listed_problem != problem_id:
                 continue
-            submissions = []
-            for position, submission_id in enumerate(submission_ids, start=1):
-                code = _read_text(paths["data"] / problem_id / "Python" / f"{submission_id}.py")
-                submissions.append({
-                    "submission_id": submission_id,
-                    "timestamp": int(rows[submission_id]["date"]),
-                    "verdict": rows[submission_id]["status"],
-                    "code": code if position == len(submission_ids) else python3_compatible(code),
-                })
+            submissions = codenet_records(paths, problem_id, submission_ids, rows)
+            for record in submissions[:-1]:
+                record["code"] = python3_compatible(record["code"])
             _write_jsonl(destination / "submissions" / f"{user_id}.jsonl", submissions)
             split_rows.append({
                 "problem_id": problem_id,

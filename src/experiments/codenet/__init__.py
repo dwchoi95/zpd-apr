@@ -2,6 +2,7 @@
 
 from .builder import BuildSummary, build_python800_dataset
 from .rq1 import build_rq1_benchmark
+from .seen_unseen import build_seen_unseen_benchmark
 from .context_filter import (
     TrajectoryContextAuditSummary,
     audit_trajectory_contexts,
@@ -41,6 +42,7 @@ __all__ = [
     "audit_trajectory_contexts",
     "build_python800_dataset",
     "build_rq1_benchmark",
+    "build_seen_unseen_benchmark",
     "create_balanced_rq1_splits",
     "create_longitudinal_splits",
     "create_problem_holdout_split",
