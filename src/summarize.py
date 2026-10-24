@@ -152,6 +152,11 @@ def in_text(numbers, mentored, lsgen, steps, t, reach):
 
         own, peer = (rows(f"targets/{split}/progress-{n}.jsonl") for n in ("same-user", "cross-user"))
         numbers[f"rq2.{split}.peer_targets.more"] = more(rr(peer), rr(own))
+        own, peer = ({r["example_id"]: r for r in items} for items in (own, peer))
+        joint = [k for k in own if own[k]["repaired"] and peer[k]["repaired"]
+                 and own[k]["ted_buggy_fixed"] is not None and peer[k]["ted_buggy_fixed"] is not None]
+        numbers[f"rq2.{split}.peer_targets.ted.larger"] = more(statistics.mean(peer[k]["ted_buggy_fixed"] for k in joint),
+                                                             statistics.mean(own[k]["ted_buggy_fixed"] for k in joint))
 
     # RQ4: the portfolio at every position of a trajectory.
     for split in ("seen", "unseen"):
