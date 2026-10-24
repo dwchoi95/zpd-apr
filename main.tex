@@ -79,7 +79,7 @@ Automated Feedback Generation, Zone of Proximal Development, Programming Assignm
 % EN: Existing techniques for repairing programming assignments aim to turn a buggy program into a program that passes every test case of its problem. A problem comes with a problem description \(\mathit{desc}\), its time and memory limits \(\mathit{limits}\), and a test suite \(T\). That aim asks only whether a patch passes the test suite, not what the student submitted, so we define the rest of the setting on the submissions themselves. A submission is a triple \(s=(c,v,o)\), where \(c\) is its source code, \(v\) the verdict the platform recorded, and \(o\) the execution evidence that maps each test case of \(T\) to its re-executed outcome. A student's \emph{trajectory} \(\tau=[s_1,\ldots,s_n]\) orders their submissions to a problem chronologically, with \(s_n\) the first accepted one, which for a test trajectory serves only as evaluation ground truth. The submission to be repaired is a failing one \(s_i\) with \(i<n\), the \emph{buggy program} \(b=s_i\); our benchmarks repair the latest, \(i=n-1\), and RQ4 also repairs every earlier one.
 
 \begin{algorithm}[h]
-\caption{Automated Program Repair for Programming Assignments}
+\caption{Generic repair procedure}
 \label{alg:generic}
 \footnotesize
 \begin{algorithmic}[1]
@@ -128,7 +128,7 @@ Algorithm~\ref{alg:generic}은 기존 기법들의 방식에 따라 프로그래
 \legend{Students' demonstrated reach, \textsc{Mentored}, \textsc{LSGen}\textsubscript{Qwen}, \textsc{LSGen}\textsubscript{GPT}}
 \end{axis}
 \end{tikzpicture}
-\caption{Students' demonstrated reach and the repairs of existing techniques within each step budget}
+\caption{Students' demonstrated reach and repairs of existing techniques by step budget}
 \label{fig:reach}
 \end{figure}
 
@@ -292,7 +292,7 @@ Figure~\ref{fig:climb}는 학생이 accepted에 한 번에 이르지 않음을 �
 {\color{black!55}6} & \makebox[4.3cm][l]{\texttt{print(ans)}} \\
 \end{tabular}
 \end{minipage}
-\caption{Running example (p03556), blank lines omitted}
+\caption{Running example (p03556)}
 \label{fig:example}
 \end{figure*}
 
@@ -653,7 +653,7 @@ Table~\ref{tab:comparison}은 기법마다 RR, 수리한 프로그램 가운데 
 {\color{black!55}4} & \colorbox{black!10}{\makebox[5.2cm][l]{\texttt{print(n~*~(100~**~d))}}} \\
 \end{tabular}
 \end{minipage}
-\caption{A forward step by \textsc{ZPDPatch} and a correct program by \textsc{LSGen}\textsubscript{GPT} for one buggy program}
+\caption{A forward step by \textsc{ZPDPatch} and a correct program by \textsc{LSGen}\textsubscript{GPT}}
 \label{fig:step}
 \end{figure}
 
@@ -714,7 +714,7 @@ Table~\ref{tab:ablation}은 변형과 \textsc{ZPDPatch}의 수리율을 보인�
 % EN: Training and the portfolio contribute the most. Training transfers the steps that a target rule selects to the model, so it repairs buggy programs that the base model cannot, and the portfolio gives a buggy program on which one checkpoint fails another candidate, which raises the chance that the execution gate finds one that passes. Distinct checkpoints contribute little here because stochastic decoding already diversifies the candidates of one checkpoint; \textsc{ZPDPatch} decodes deterministically when it repairs a new submission, and there distinct checkpoints supply that diversity. Earlier submissions lower the repair rate because an Answer training prompt holds only the current submission, so a history makes a prompt unlike those seen in training; \textsc{ZPDPatch} therefore repairs from the current submission alone.
 
 \begin{table}[h]
-\caption{Repair rate and kept tokens and lines by target rule; kept shares on jointly repaired buggy programs}
+\caption{Repair rate, within-reach repair rate, and retention by target rule}
 \label{tab:targets}
 \centering\footnotesize
 \begin{tabular}{ll||rrr}
