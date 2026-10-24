@@ -40,7 +40,7 @@ def collect(manifest: list[Row], status_root: Path) -> tuple[list[Row], Row]:
         fixed_pass_rate = sum(passed) / len(passed)
         rows.append(
             {
-                **record,
+                **{key: value for key, value in record.items() if key != "expected"},
                 "execution_status": status,
                 "fixed_tc_outcomes": {
                     f"case_{index:03d}": "AC" if value else "WA"

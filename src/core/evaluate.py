@@ -10,6 +10,7 @@ from typing import Any, Iterable
 
 from tqdm import tqdm
 
+from .retention import retention
 from .runner.dataset import load_testcases
 from .runner.python_runner import PythonSubmissionRunner
 
@@ -134,6 +135,7 @@ def evaluate_generations(
             "ted_buggy_fixed": None,
             "ted_fixed_oracle": None,
             "tree_edit_distance": None,
+            **retention(buggy_code, fixed_code),
             "fixed_tc_outcomes": {
                 case.case_id: case.verdict.value for case in fixed_outcome.cases
             },
@@ -298,6 +300,7 @@ def rescore_evaluations(
                 "ted_buggy_fixed": ted_buggy_fixed,
                 "ted_fixed_oracle": ted_fixed_oracle,
                 "tree_edit_distance": ted_buggy_fixed,
+                **retention(buggy_code, fixed_code),
             }
         )
     results.sort(key=lambda item: str(item["example_id"]))

@@ -12,6 +12,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from src.core.retention import retention
+
 
 Row = dict[str, Any]
 METHODS = {
@@ -123,6 +125,8 @@ def prepare(dataset: list[Row], generations: list[Row], cases: dict[int, list[tu
                 "expected": [expected for _argument, expected in cases[problem]],
                 "current_tc_outcomes": current["tc_outcomes"],
                 "current_pass_rate": current["pass_rate"],
+                "generated_code": generation["generated_code"],
+                **retention(str(current["code"]), str(generation["generated_code"]), language="java"),
             }
         )
     manifest_path = output.parent / "manifest.jsonl"

@@ -122,6 +122,10 @@ def compose(
                 "ted_fixed_oracle": (
                     None if selected is None else selected.get("ted_fixed_oracle")
                 ),
+                # The unchanged submission keeps everything and is not repeated here.
+                "generated_code": None if selected is None else selected.get("generated_code"),
+                "token_retention": 1.0 if selected is None else selected.get("token_retention"),
+                "line_retention": 1.0 if selected is None else selected.get("line_retention"),
             }
         )
     return results

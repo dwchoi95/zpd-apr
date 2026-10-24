@@ -123,6 +123,17 @@ class EvaluateStreamingTest(unittest.TestCase):
             _write_jsonl(generations, [_generation('a', 'print(1)')])
             self.assertEqual(_evaluate(dataset, generations, output).repaired, 1)
 
+    def test_rows_carry_retention_against_the_buggy_program(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            dataset, generations, output = (root / name for name in ('data.jsonl', 'gen.jsonl', 'eval.jsonl'))
+            _write_jsonl(dataset, [_record('a', 'buggy = 1\nprint(buggy)')])
+            _write_jsonl(generations, [_generation('a', 'buggy = 1\nprint(buggy + 1)')])
+            _evaluate(dataset, generations, output)
+            [result] = list(_iter_jsonl(output))
+            self.assertEqual(result["token_retention"], 1.0)
+            self.assertEqual(result["line_retention"], 0.5)
+
     def test_skips_ted_for_unsuccessful_repairs(self) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
