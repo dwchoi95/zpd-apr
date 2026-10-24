@@ -68,6 +68,86 @@ def joint_retention(a, b):
     return joint, {side: {key: mean(m, key) for key in ("token_retention", "line_retention")} for side, m in (("a", a), ("b", b))}
 
 
+def in_text(numbers, mentored, lsgen, steps, t, reach):
+    """Numbers the prose states that no table or figure carries."""
+    # Section II-B: a student's own step against a returned program.
+    all_steps = [s for r in steps for s in r["step_ted"] if s is not None]
+    numbers["rq1.step.token_retention.median"] = pct(statistics.median(x for r in steps for x in r["step_token_retention"] if x is not None))
+    lsgen_ted = statistics.mean(r["ted_buggy_fixed"] for r in lsgen if r["repaired"] and r["ted_buggy_fixed"] is not None)
+    numbers["rq1.lsgen.ted_vs_step.more"] = more(lsgen_ted, statistics.mean(all_steps))
+    numbers["rq1.mentored.rr"], numbers["rq1.lsgen.rr"] = pct(rr(mentored)), pct(rr(lsgen))
+
+    # Settings and Section III: the corpus.
+    with open(os.path.join(OUT, "benchmark/corpus.json")) as f:
+        corpus = json.load(f)
+    seen = corpus["seen_training"]
+    numbers.update({"train.trajectories": f"{seen['trajectories']:,}", "train.problems": seen["problems"],
+                    **{f"train.pairs.{k}": f"{v:,}" for k, v in seen["pairs"].items()},
+                    "train.progress.same_verdict": f"{seen['progress_pairs_same_verdict']:,}",
+                    "train.progress.same_verdict.share": pct(seen["progress_pairs_same_verdict"] / seen["pairs"]["progress"]),
+                    "train.consecutive_pairs": f"{seen['consecutive_failing_pairs']:,}",
+                    "train.consecutive_pairs.same_verdict.share": pct(seen["consecutive_failing_pairs_same_verdict"] / seen["consecutive_failing_pairs"]),
+                    **{f"java.{k}": f"{v:,}" for k, v in corpus["codeworkout"].items()}})
+    canonical = rows("benchmark/canonical-inputs.jsonl")
+    for split in ("seen", "unseen"):
+        items = [r for r in canonical if r["split"] == split]
+        numbers[f"{split}.inputs"], numbers[f"{split}.problems"] = len(items), len({r["problem_id"] for r in items})
+        numbers[f"{split}.loc.mean"] = f"{statistics.mean(r['loc'] for r in items):.1f}"
+    seen_inputs = [r for r in canonical if r["split"] == "seen"]
+    numbers["seen.wa.share"] = pct(sum(r["verdict"] == "WA" for r in seen_inputs) / len(seen_inputs))
+
+    # Section III-E: Select on the validation inputs.
+    names = [f"{rule}{seed}" for rule in ("Answer", "Progress", "Strict") for seed in (2027, 2028, 2029)]
+    repaired = {n: {r["example_id"] for r in rows(f"selection/{n}.jsonl") if r["repaired"]} for n in names}
+    validation = len(rows("selection/Answer2027.jsonl"))
+    union = lambda members: len(set().union(*(repaired[m] for m in members)))
+    single = [len(repaired[n]) / validation for n in names]
+    chosen = ["Answer2027", "Answer2028", "Answer2029"]
+    one_per_rule = max(union((a, p, s)) for a in names[:3] for p in names[3:6] for s in names[6:])
+    numbers.update({"select.validation": validation, "select.single.min": pct(min(single)), "select.single.max": pct(max(single)),
+                    "select.first": pct(len(repaired[chosen[0]]) / validation),
+                    "select.second.adds": len(repaired[chosen[1]] - repaired[chosen[0]]),
+                    "select.third.adds": len(repaired[chosen[2]] - repaired[chosen[0]] - repaired[chosen[1]]),
+                    "select.portfolio": pct(union(chosen) / validation), "select.portfolio.more": more(union(chosen) / validation, max(single)),
+                    "select.all_nine": pct(union(names) / validation), "select.share_of_nine": pct(union(chosen) / union(names)),
+                    "select.one_per_rule": pct(one_per_rule / validation)})
+
+    # RQ2: edit size and reach of the two rules.
+    for split in ("seen", "unseen"):
+        a, p = ({r["example_id"]: r for r in t[split][rule]} for rule in ("answer", "progress"))
+        joint = [k for k in a if a[k]["repaired"] and p[k]["repaired"]
+                 and a[k]["ted_buggy_fixed"] is not None and p[k]["ted_buggy_fixed"] is not None]
+        numbers[f"rq2.{split}.ted.smaller"] = more(statistics.mean(p[k]["ted_buggy_fixed"] for k in joint), statistics.mean(a[k]["ted_buggy_fixed"] for k in joint))
+        wa, wp = within_reach(t[split]["answer"], reach), within_reach(t[split]["progress"], reach)
+        numbers[f"rq2.{split}.within_reach.difference"] = more(wp, wa)
+        numbers[f"rq2.{split}.answer.repairs_within_reach.share"] = pct(wa / rr(t[split]["answer"]))
+        numbers[f"rq2.{split}.progress.repairs_within_reach.share"] = pct(wp / rr(t[split]["progress"]))
+
+        own, peer = (rows(f"targets/{split}/progress-{n}.jsonl") for n in ("same-user", "cross-user"))
+        numbers[f"rq2.{split}.peer_targets.more"] = more(rr(peer), rr(own))
+
+    # RQ4: the portfolio at every position of a trajectory.
+    for split in ("seen", "unseen"):
+        port, one = (rows(f"generality/prefix/{split}/{n}.jsonl") for n in ("zpdpatch", "one-checkpoint"))
+        by = lambda items, ph: rr([r for r in items if r["trajectory_phase"] == ph])
+        gains = [float(more(by(port, ph), by(one, ph))) for ph in ("early", "middle", "last")]
+        rates = [100 * by(port, ph) for ph in ("early", "middle", "last")]
+        numbers[f"rq4.prefix.{split}.more.range"] = f"{min(gains):.1f}--{max(gains):.1f}"
+        numbers[f"rq4.prefix.{split}.rr.range"] = f"{min(rates):.1f}--{max(rates):.1f}"
+
+    # Threats to Validity.
+    port = rows("ablation/seen/zpdpatch.jsonl")
+    numbers["threats.training_copy.share"] = pct(sum(r["training_copy"] for r in port if r["repaired"]) / sum(r["repaired"] for r in port))
+    rq1_inputs = rows("benchmark/rq1-inputs.jsonl")
+    problems = len({r["problem_id"] for r in rq1_inputs} | {r["problem_id"] for r in canonical}) + corpus["codeworkout"]["exercises"]
+    submissions = len({r["example_id"] for r in rq1_inputs} | {r["example_id"] for r in canonical}) + corpus["codeworkout"]["test_trajectories"]
+    stated = submissions // 1000 * 1000  # "over 3,000"
+    prior_problems, prior_submissions = (5, 65), (407, 1783)  # Refactory/Brafar and LSGen benchmarks, as their papers report
+    numbers.update({"threats.problems": problems, "threats.submissions": f"{submissions:,}", "threats.submissions.stated": f"{stated:,}",
+                    "threats.problems.times": f"{problems / max(prior_problems):.1f}--{problems / min(prior_problems):.1f}",
+                    "threats.submissions.times": f"{stated / max(prior_submissions):.1f}--{stated / min(prior_submissions):.1f}"})
+
+
 def main():
     tables, numbers = {}, {}
 
@@ -176,6 +256,7 @@ def main():
     tables["position"] = [f"\\addplot[proposed] coordinates {{{series['zpdpatch']}}};",
                           f"\\addplot[variant] coordinates {{{series['one-checkpoint']}}};"]
 
+    in_text(numbers, mentored, lsgen, steps, t, reach)
     with open(os.path.join(PAPER, "output", "tables.tex"), "w") as f:
         for name, body in tables.items():
             f.write(f"% rows:{name}\n" + "".join(line + "\n" for line in body))

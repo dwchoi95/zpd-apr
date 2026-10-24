@@ -483,7 +483,7 @@ RQ2 asks how the target rule changes how much of the student's program a returne
 
 Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the inputs both rules repair, the returned programs of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same inputs, the TED of a Progress return is 47.3\% smaller than that of an Answer return on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (1 against 33 AST edit operations in Figure~\ref{fig:example}).
 
-In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass. Measured within each student's own demonstrated reach, the gap narrows: Progress repairs only 19.1\% fewer inputs on Seen and 8.9\% more on Unseen, because 82.1\% and 74.4\% of its repairs lie within the student's reach, against 64.8\% and 58.3\% of Answer's.
+In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass. Measured within each student's own demonstrated reach, the gap narrows: Progress repairs only 19.2\% fewer inputs on Seen and 8.9\% more on Unseen, because 82.0\% and 74.4\% of its repairs lie within the student's reach, against 64.9\% and 58.3\% of Answer's.
 
 
 
@@ -539,7 +539,7 @@ The same tradeoff appears on student-held-out Java. With the two rules trained o
 
 Because a mean does not tell what one student receives, Table~\ref{tab:uneven} breaks the Java contrast down by exercise and by trajectory. Answer repairs more on 15 of the 17 exercises, and one exercise accounts for 12 of its 63 additional repairs. On 31.1\% of the trajectories both rules repair, the student gets more of their own tokens back from Progress, on 63.3\% the same amount, and on 5.6\% less. Figure~\ref{fig:case} shows what this difference looks like on Python. The student's preceding submission changed \texttt{i<j} to \texttt{i<=j} and passed 93.3\% of the tests. The return trained on Progress targets (a) changes one more line, \texttt{j>0} to \texttt{j>=0}, and keeps 20 of the 21 lines, whereas the return trained on Answer targets (b) is a five-line program that keeps 3 of the 21 lines. Both pass every test under the same gate and budget.
 
-To check whether the effect comes from the student's own submissions, we retrained Progress with each target replaced by another student's submission to the same problem whose execution outcomes are identical and whose distance is close. These peer targets repair 8.5\% more inputs on Seen and 7.7\% more on Unseen, so what produces the effect is the rule that selects the target by execution evidence, not whose submission the target is. These results indicate that the target rule trades coverage for locality, and that targets selected from trajectories by execution evidence yield returns that keep more of the student's program.
+To check whether the effect comes from the student's own submissions, we retrained Progress with each target replaced by another student's submission to the same problem whose execution outcomes are identical and whose distance is close. These peer targets repair 8.6\% more inputs on Seen and 7.7\% more on Unseen, so what produces the effect is the rule that selects the target by execution evidence, not whose submission the target is. These results indicate that the target rule trades coverage for locality, and that targets selected from trajectories by execution evidence yield returns that keep more of the student's program.
 
 \subsection{RQ3: Ablation Study}
 
@@ -612,7 +612,7 @@ Table~\ref{tab:generality} lists, for each setting, the repair rates of one chec
 \label{fig:position}
 \end{figure}
 
-Figure~\ref{fig:position} shows the repair rates of one checkpoint and of the portfolio over every earlier prefix of the successful trajectories, by position in the trajectory. At every position the portfolio repairs 25.9--33.3\% more inputs than one checkpoint on Seen and 12.0--16.5\% more on Unseen, and its repair rate stays within 67.6--71.4\% on Seen and 77.3--82.9\% on Unseen regardless of position.
+Figure~\ref{fig:position} shows the repair rates of one checkpoint and of the portfolio over every earlier prefix of the successful trajectories, by position in the trajectory. At every position the portfolio repairs 25.8--33.2\% more inputs than one checkpoint on Seen and 12.0--16.6\% more on Unseen, and its repair rate stays within 67.6--71.4\% on Seen and 77.3--82.9\% on Unseen regardless of position.
 
 The relative gain is larger for the smaller model because the lower the repair rate of one checkpoint, the more failures another checkpoint can fill. These results indicate that the gain of the portfolio holds across model scale, language, student population, and position in a trajectory.
 
