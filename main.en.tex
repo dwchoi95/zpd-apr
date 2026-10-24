@@ -113,9 +113,9 @@ Our key observation is that solution-supervised repair does not return a step fr
 
 Figure~\ref{fig:reach} shows how large a step students take by themselves and how much the two techniques repair within it, over the 1,753 inputs of the RQ1 benchmark. The 6,820 steps that students took have a median of 19 AST edit operations, and one step keeps a median of 96.4\% of the submission's tokens. We call the largest step a student took unaided on a problem their \emph{demonstrated reach}; its median is 49, with quartiles at 26 and 116. The two techniques sit at opposite ends. The returns of \textsc{Mentored} are as small as an average student step, but it repairs only 40.2\% of the inputs, whereas \textsc{LSGen} repairs 92.1\% with returns 127.7\% larger than an average student step and larger than the demonstrated reach of the median student. Within a budget of 20, close to the median student step, neither technique repairs more than 20.3\% of the inputs; that budget covers the demonstrated reach of 16.8\% of students, and a budget of 160 covers 86.8\%.
 
-Prior techniques already seek a small change: \textsc{Mentored} builds a modification fitted to \(b\)~\cite{choi2025automated} and \textsc{LSGen} instructs the model to make minimal changes~\cite{dai2026learner}. One alternative is to bound the step of an existing technique. The budget of 20 above is that alternative, and it makes \textsc{Mentored} and \textsc{LSGen} repair 49.5\% and 79.9\% fewer inputs than without a budget, because a generator steered toward a correct program has no smaller candidate to fall back on. Returning a hint sidesteps the budget, but the student still has to write the step, and the hint is still fitted to a solution space~\cite{rivers2017data,price2017isnap,roest2024next}.
+Prior techniques already seek a small change: \textsc{Mentored} builds a modification fitted to \(b\)~\cite{choi2025automated} and \textsc{LSGen} instructs the model to make minimal changes~\cite{dai2026learner}. One alternative is to bound the step of an existing technique. The budget of 20 above is that alternative, and it makes \textsc{Mentored} and \textsc{LSGen} repair 49.6\% and 79.9\% fewer inputs than without a budget, because a generator steered toward a correct program has no smaller candidate to fall back on. Returning a hint sidesteps the budget, but the student still has to write the step, and the hint is still fitted to a solution space~\cite{rivers2017data,price2017isnap,roest2024next}.
 
-Another alternative is to use the student's later submission as the target, but this is far from straightforward in practice, because the verdict does not reveal what the next step is. In the training corpus, 74.7\% of the 26,427 consecutive submission pairs before acceptance keep the same verdict, so the verdict alone cannot tell whether such a step moved forward or backward. Even counting passed tests, the challenge remains: among three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), the second and the third both pass two tests, but only the second keeps the test that was already passing. Moreover, changing the target rule changes the training population with it. The same trajectories yield 40,454 Answer examples but 16,973 and 21,416 under Strict and Progress, and the source frequencies differ too. Because extra candidates alone raise the repair rate (reducing the portfolio to one checkpoint repairs 19.3\% fewer inputs; Section~\ref{sec:experiment}), a comparison that does not hold these differences fixed credits the target with them~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}.
+Another alternative is to use the student's later submission as the target, but this is far from straightforward in practice, because the verdict does not reveal what the next step is. In the training corpus, 74.7\% of the 26,427 consecutive submission pairs before acceptance keep the same verdict, so the verdict alone cannot tell whether such a step moved forward or backward. Even counting passed tests, the challenge remains: among three wrong-answer submissions with pass vectors \((1,0,0)\), \((1,1,0)\), and \((0,1,1)\), the second and the third both pass two tests, but only the second keeps the test that was already passing. Moreover, changing the target rule changes the training population with it. The same trajectories yield 40,454 Answer examples but 16,973 and 21,416 under Strict and Progress, and the source frequencies differ too. Because extra candidates alone raise the repair rate (reducing the portfolio to one checkpoint repairs 19.4\% fewer inputs; Section~\ref{sec:experiment}), a comparison that does not hold these differences fixed credits the target with them~\cite{zhang2024pydex,koutcheme2024benchmarking,yang2024cref,orvalho2025counterexample,dai2026learner}.
 
 These limitations motivate our approach, which learns the next step from student trajectories. The goal of this paper is to repair a buggy program into one that passes the tests with a patch that stays within the student's Zone of Proximal Development (ZPD), the region a student can reach on their own with help~\cite{cole1978mind}. Because a ZPD cannot be observed directly, we approximate it from the execution evidence of student trajectories, as tutoring systems approximate it from observable performance~\cite{murray2002toward}: a step within that region is one of the size students actually take that moves the submission forward on the tests. In terms of Algorithm~\ref{alg:generic}, we train the generator toward such steps, the later submissions of student trajectories, rather than toward an accepted solution or a solution space. A later submission is a program the student actually produced, so it is reachable by construction; we use it as a preference and let the tests decide what is returned. Our work thus tackles two key challenges: (1) identifying, without an instructor's solution, the steps that move forward from execution evidence alone, even though most steps leave the verdict unchanged, and (2) separating the effect of the target from the training population and the candidate budget that change with the target rule.
 
@@ -398,7 +398,9 @@ p03438 & Array operations & 101 & 28 & 19.2 & 19 & 58 \\
 p03838 & Sign cases & 141 & 14 & 19.8 & 22 & 76 \\
 % end rows
 \midrule
+% rows:datatotal
 Total & & 1,753 & 287 & 18.6 & 19 & 49 \\
+% end rows
 \bottomrule
 \end{tabular}
 \end{table}
@@ -450,6 +452,7 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 \toprule
 Metric & Rule & Seen & Unseen & Java \\
 \midrule
+% rows:targets
 \multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
  & Progress & 34.0 & 65.6 & 50.8 \\
 \midrule
@@ -461,6 +464,7 @@ Metric & Rule & Seen & Unseen & Java \\
 \midrule
 \multirow{2}{*}{Lines (\%)} & Answer & 71.8 & 57.8 & 86.2 \\
  & Progress & 80.7 & 68.2 & 91.2 \\
+% end rows
 \bottomrule
 \end{tabular}
 \end{table}
@@ -501,7 +505,7 @@ Progress better & 0 & 31.1\% \\
 \end{tabular}
 \end{table}
 
-The same tradeoff appears on student-held-out Java. With the two rules trained on the same number of examples per target, on the submissions both rules repair the returned programs of Progress keep 5.3\% more tokens and 5.9\% more lines than those of Answer, and Progress repairs 40.7\% fewer trajectories than Answer (Table~\ref{tab:targets}).
+The same tradeoff appears on student-held-out Java. With the two rules trained on the same number of examples per target, on the submissions both rules repair the returned programs of Progress keep 5.3\% more tokens and 5.9\% more lines than those of Answer, and Progress repairs 40.6\% fewer trajectories than Answer (Table~\ref{tab:targets}).
 
 
 
@@ -560,7 +564,7 @@ Variant & Variant & \textsc{ZPDPatch} & Variant & \textsc{ZPDPatch} \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:ablation} lists the repair rates of each variant and of \textsc{ZPDPatch}. Removing training repairs 47.2\% fewer inputs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.3\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the context repairs 14.3\% and 9.9\% fewer.
+Table~\ref{tab:ablation} lists the repair rates of each variant and of \textsc{ZPDPatch}. Removing training repairs 47.2\% fewer inputs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.4\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the context repairs 14.3\% and 9.9\% fewer.
 
 Training and the portfolio contribute the most. Training transfers the steps that a target rule selects to the model, so it repairs inputs that the base model cannot, and the portfolio gives an input on which one checkpoint fails another candidate, which raises the chance that the execution gate finds one that passes. Distinct checkpoints contribute little here because stochastic decoding already diversifies the candidates of one checkpoint; \textsc{ZPDPatch} decodes deterministically at deployment, and there distinct checkpoints supply that diversity. Earlier submissions lower the repair rate because an Answer training input holds only the current submission, so a history makes an input unlike those seen in training; \textsc{ZPDPatch} is therefore deployed with the current submission alone. These results indicate that training and a portfolio selected by execution produce the repairs of \textsc{ZPDPatch}, and that deployment needs only the current submission.
 
@@ -586,7 +590,7 @@ Java & 75.1 & 84.5 & 45.4 & 52.3 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:generality} lists, for each setting, the repair rates of one checkpoint (\textsc{ZPDPatch}-Portfolio) and of the portfolio; for Java, the Seen columns hold the students held out of training and the Unseen columns the exercises held out. With the 1.5B model, the portfolio repairs 35.7\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out.
+Table~\ref{tab:generality} lists, for each setting, the repair rates of one checkpoint (\textsc{ZPDPatch}-Portfolio) and of the portfolio; for Java, the Seen columns hold the students held out of training and the Unseen columns the exercises held out. With the 1.5B model, the portfolio repairs 35.5\% more inputs than one checkpoint on Seen and 37.2\% more on Unseen. On Java, it repairs 15.2\% more with exercises held out of training and 12.5\% more with students held out.
 
 \begin{figure}[h]
 \centering

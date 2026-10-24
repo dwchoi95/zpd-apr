@@ -1,0 +1,48 @@
+% rows:data
+p02623 & Two-stack prefix sums & 102 & 20 & 26.8 & 30.5 & 153.5 \\
+p02659 & Exact decimals & 170 & 22 & 5.7 & 12 & 30 \\
+p02686 & Bracket ordering & 109 & 32 & 44.2 & 23 & 143 \\
+p02694 & Interest loop & 101 & 18 & 8.8 & 6 & 13 \\
+p02742 & Board parity & 120 & 10 & 8.4 & 17 & 23 \\
+p02743 & Square-root bounds & 155 & 27 & 8.2 & 19 & 36 \\
+p02761 & Digit constraints & 143 & 18 & 23.9 & 22 & 50 \\
+p02823 & Distance parity & 106 & 20 & 11.1 & 23 & 50 \\
+p02891 & Repeated-string runs & 170 & 15 & 32.3 & 32 & 135.5 \\
+p02975 & XOR circle & 110 & 24 & 23.2 & 33 & 114 \\
+p03240 & Center search & 116 & 23 & 23.8 & 23 & 85 \\
+p03324 & Divisibility count & 109 & 16 & 7.5 & 15 & 32 \\
+p03438 & Array operations & 101 & 28 & 19.2 & 19 & 58 \\
+p03838 & Sign cases & 141 & 14 & 19.8 & 22 & 76 \\
+% rows:datatotal
+Total & & 1,753 & 287 & 18.6 & 19 & 49 \\
+% rows:reach
+\addplot[reference] coordinates {(20,16.8) (160,86.8)};
+\addplot[baseline2] coordinates {(20,20.3) (160,38.6) (none,40.2)};
+\addplot[baseline3] coordinates {(20,18.5) (160,74.4) (none,92.1)};
+% rows:targets
+\multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
+ & Progress & 34.0 & 65.6 & 50.8 \\
+\midrule
+\multirow{2}{*}{Within reach (\%)} & Answer & 34.5 & 44.8 & -- \\
+ & Progress & 27.9 & 48.8 & -- \\
+\midrule
+\multirow{2}{*}{Tokens (\%)} & Answer & 87.9 & 81.5 & 91.0 \\
+ & Progress & 93.4 & 88.0 & 95.8 \\
+\midrule
+\multirow{2}{*}{Lines (\%)} & Answer & 71.8 & 57.8 & 86.2 \\
+ & Progress & 80.7 & 68.2 & 91.2 \\
+% rows:uneven
+Answer better & 15 & 5.6\% \\
+Tied & 2 & 63.3\% \\
+Progress better & 0 & 31.1\% \\
+% rows:ablation
+\textsc{ZPDPatch}-Train & 30.4 & 57.6 & 65.6 & 72.0 \\
+\textsc{ZPDPatch}-Portfolio & 58.1 & 72.0 & 69.6 & 81.2 \\
+\textsc{ZPDPatch}-Distinct & 66.8 & 68.9 & 79.6 & 80.8 \\
+\textsc{ZPDPatch}+History & 61.7 & 72.0 & 73.2 & 81.2 \\
+% rows:generality
+1.5B model & 37.8 & 51.3 & 48.4 & 66.4 \\
+Java & 75.1 & 84.5 & 45.4 & 52.3 \\
+% rows:position
+\addplot[proposed] coordinates {(70.0,SF) (67.6,SM) (71.4,SL) (82.9,UF) (77.3,UM) (81.8,UL)};
+\addplot[variant] coordinates {(52.5,SF) (51.9,SM) (56.7,SL) (71.4,UF) (69.0,UM) (70.2,UL)};
