@@ -160,6 +160,9 @@ def in_text(numbers, mentored, lsgen, steps, t, reach):
 
     # Threats to Validity.
     port = rows("ablation/seen/zpdpatch.jsonl")
+    rq1_fixed = [r for r in rows("approaches/zpdpatch.jsonl") if r["repaired"]]
+    numbers["threats.rq1.training_copy"] = sum(r["training_copy"] for r in rq1_fixed)
+    numbers["threats.rq1.repairs"] = len(rq1_fixed)
     numbers["threats.training_copy.share"] = pct(sum(r["training_copy"] for r in port if r["repaired"]) / sum(r["repaired"] for r in port))
     rq1_inputs = rows("benchmark/rq1-inputs.jsonl")
     problems = len({r["problem_id"] for r in rq1_inputs} | {r["problem_id"] for r in canonical}) + corpus["codeworkout"]["exercises"]
