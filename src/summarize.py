@@ -213,11 +213,17 @@ def main():
     mentored, lsgen = rows("approaches/mentored.jsonl"), rows("approaches/lsgen.jsonl")
     trajectories = [{"problem_id": p, "reach": x} for p in reach_by_problem for x in reach_by_problem[p]]
     within = lambda b: (lambda r: r["repaired"] and r["ted_buggy_fixed"] is not None and r["ted_buggy_fixed"] <= b)
+    qwen = rows("approaches/lsgen-qwen.jsonl")
     tables["reach"] = [
         bars("reference", "y", [(b, trajectories, lambda r, b=b: r["reach"] <= b) for b in (20, 160)]),
         *(bars(style, "y", [(20, m, within(20)), (160, m, within(160)), ("none", m, lambda r: r["repaired"])])
-          for style, m in (("baseline2", mentored), ("baseline3", lsgen)))]
-    numbers.update({"lim.mentored.returns_submission.share": pct(1 - rr(mentored)), "lim.lsgen.returns_submission.share": pct(1 - rr(lsgen))})
+          for style, m in (("baseline1", mentored), ("baseline2", qwen), ("baseline3", lsgen)))]
+    fixed_ted = lambda m: statistics.mean(r["ted_buggy_fixed"] for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None)
+    numbers.update({"lim.mentored.returns_submission.share": pct(1 - rr(mentored)), "lim.lsgen.returns_submission.share": pct(1 - rr(lsgen)),
+                    "lim.lsgen_qwen.returns_submission.share": pct(1 - rr(qwen)), "rq1.lsgen_qwen.rr": pct(rr(qwen)),
+                    "rq1.lsgen_qwen.ted_vs_step.more": more(fixed_ted(qwen), statistics.mean(all_steps)),
+                    "lim.within20.fewer.range": "--".join(more(within_budget(m, 20), rr(m)) for m in (mentored, lsgen)) + " / qwen " + more(within_budget(qwen, 20), rr(qwen)),
+                    "lim.within20.rr.range": f"{min(100 * within_budget(m, 20) for m in (mentored, qwen, lsgen)):.1f}--{max(100 * within_budget(m, 20) for m in (mentored, qwen, lsgen)):.1f}"})
     numbers.update({"rq1.steps": len(all_steps), "rq1.step.median": num(statistics.median(all_steps)),
                     "rq1.step.mean": f"{statistics.mean(all_steps):.1f}", "rq1.reach.median": num(statistics.median(all_reach)),
                     "rq1.mentored.within20.fewer": more(within_budget(mentored, 20), rr(mentored)),
