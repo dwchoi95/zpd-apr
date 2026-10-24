@@ -217,10 +217,34 @@ def main():
         bars("reference", "y", [(b, trajectories, lambda r, b=b: r["reach"] <= b) for b in (20, 160)]),
         *(bars(style, "y", [(20, m, within(20)), (160, m, within(160)), ("none", m, lambda r: r["repaired"])])
           for style, m in (("baseline2", mentored), ("baseline3", lsgen)))]
+    numbers.update({"lim.mentored.returns_submission.share": pct(1 - rr(mentored)), "lim.lsgen.returns_submission.share": pct(1 - rr(lsgen))})
     numbers.update({"rq1.steps": len(all_steps), "rq1.step.median": num(statistics.median(all_steps)),
                     "rq1.step.mean": f"{statistics.mean(all_steps):.1f}", "rq1.reach.median": num(statistics.median(all_reach)),
                     "rq1.mentored.within20.fewer": more(within_budget(mentored, 20), rr(mentored)),
                     "rq1.lsgen.within20.fewer": more(within_budget(lsgen, 20), rr(lsgen))})
+
+    # Section II-B figure: (a) pass rate and wrong-answer share of the submissions before acceptance, over the trajectories
+    # with at least four failing submissions (a fixed cohort); (b) the students' steps by class.
+    def states(r):  # the distinct submissions of a trajectory, from its steps: (verdict, pass rate)
+        return [(r["step_verdicts"][0][0], r["step_pass_rates"][0][0])] + [(b, pb) for (_, b), (_, pb) in zip(r["step_verdicts"], r["step_pass_rates"])]
+    cohort = [states(r) for r in steps if len(states(r)) - 1 >= 4]
+    at = lambda k: [t[len(t) - 1 + k] for t in cohort]
+    positions = range(-4, 1)
+    tables["climb"] = [
+        "\\addplot[referenceline, mark=*, mark size=1.3pt] coordinates {" + " ".join(f"({k},{100 * statistics.mean(p for _, p in at(k)):.1f})" for k in positions) + "};",
+        "\\addplot[verdictline, dashed, mark=square*, mark size=1.2pt] coordinates {" + " ".join(f"({k},{100 * sum(v == 'WA' for v, _ in at(k)) / len(cohort):.1f})" for k in positions) + "};"]
+    classes = [c for r in steps for c in r["step_class"]]
+    tables["stepclasses"] = [f"\\addplot[{style}] coordinates {{({100 * classes.count(c) / len(classes):.1f},0)}};"
+                             for c, style in (("AC", "toacceptance"), ("forward", "forwardstep"), ("sideways", "sidewaysstep"), ("regress", "regressstep"))]
+    numbers.update({"lim.cohort.trajectories": len(cohort), "lim.cohort.share": pct(len(cohort) / len(steps)),
+                    **{f"lim.cohort.pass_rate.{-k}": f"{100 * statistics.mean(p for _, p in at(k)):.1f}" for k in positions},
+                    "lim.cohort.wa.range": f"{min(100 * sum(v == 'WA' for v, _ in at(k)) / len(cohort) for k in positions if k < 0):.1f}--{max(100 * sum(v == 'WA' for v, _ in at(k)) / len(cohort) for k in positions if k < 0):.1f}",
+                    **{f"lim.steps.{c}.share": pct(classes.count(c) / len(classes)) for c in ("AC", "forward", "sideways", "regress")},
+                    "lim.trajectories.with_forward.share": pct(sum("forward" in r["step_class"] for r in steps) / len(steps)),
+                    "lim.forward.verdict_kept.share": pct(sum(a == b for r in steps for (a, b), c in zip(r["step_verdicts"], r["step_class"]) if c == "forward")
+                                                          / classes.count("forward")),
+                    "lim.regress.verdict_kept.share": pct(sum(a == b for r in steps for (a, b), c in zip(r["step_verdicts"], r["step_class"]) if c == "regress")
+                                                          / classes.count("regress"))})
 
     # RQ1 figure: the patches of ZPDPatch against the students' own steps.
     zpd, qwen = rows("approaches/zpdpatch.jsonl"), rows("approaches/lsgen-qwen.jsonl")
