@@ -139,23 +139,23 @@ def in_text(numbers, mentored, lsgen, steps, t, reach):
                     "select.all_nine": pct(union(names) / validation), "select.share_of_nine": pct(union(chosen) / union(names)),
                     "select.one_per_rule": pct(one_per_rule / validation)})
 
-    # RQ2: edit size and reach of the two rules.
+    # RQ3 (target source): edit size and reach of the two rules.
     for split in ("seen", "unseen"):
         a, p = ({r["example_id"]: r for r in t[split][rule]} for rule in ("answer", "progress"))
         joint = [k for k in a if a[k]["repaired"] and p[k]["repaired"]
                  and a[k]["ted_buggy_fixed"] is not None and p[k]["ted_buggy_fixed"] is not None]
-        numbers[f"rq2.{split}.ted.smaller"] = more(statistics.mean(p[k]["ted_buggy_fixed"] for k in joint), statistics.mean(a[k]["ted_buggy_fixed"] for k in joint))
+        numbers[f"rq3.{split}.ted.smaller"] = more(statistics.mean(p[k]["ted_buggy_fixed"] for k in joint), statistics.mean(a[k]["ted_buggy_fixed"] for k in joint))
         wa, wp = within_reach(t[split]["answer"], reach), within_reach(t[split]["progress"], reach)
-        numbers[f"rq2.{split}.within_reach.difference"] = more(wp, wa)
-        numbers[f"rq2.{split}.answer.repairs_within_reach.share"] = pct(wa / rr(t[split]["answer"]))
-        numbers[f"rq2.{split}.progress.repairs_within_reach.share"] = pct(wp / rr(t[split]["progress"]))
+        numbers[f"rq3.{split}.within_reach.difference"] = more(wp, wa)
+        numbers[f"rq3.{split}.answer.repairs_within_reach.share"] = pct(wa / rr(t[split]["answer"]))
+        numbers[f"rq3.{split}.progress.repairs_within_reach.share"] = pct(wp / rr(t[split]["progress"]))
 
         own, peer = (rows(f"targets/{split}/progress-{n}.jsonl") for n in ("same-user", "cross-user"))
-        numbers[f"rq2.{split}.peer_targets.more"] = more(rr(peer), rr(own))
+        numbers[f"rq3.{split}.peer_targets.more"] = more(rr(peer), rr(own))
         own, peer = ({r["example_id"]: r for r in items} for items in (own, peer))
         joint = [k for k in own if own[k]["repaired"] and peer[k]["repaired"]
                  and own[k]["ted_buggy_fixed"] is not None and peer[k]["ted_buggy_fixed"] is not None]
-        numbers[f"rq2.{split}.peer_targets.ted.larger"] = more(statistics.mean(peer[k]["ted_buggy_fixed"] for k in joint),
+        numbers[f"rq3.{split}.peer_targets.ted.larger"] = more(statistics.mean(peer[k]["ted_buggy_fixed"] for k in joint),
                                                              statistics.mean(own[k]["ted_buggy_fixed"] for k in joint))
 
     # RQ4: the portfolio at every position of a trajectory.
@@ -287,7 +287,7 @@ def main():
         numbers[f"rq2.mentored_{key}.zpdpatch_first.within_reach.more"] = more(
             within_reach(ordered(zpd, mentored, m), rq1_reach), within_reach(ordered(mentored, m), rq1_reach))
 
-    # Table III and IV: target rules (RQ2).
+    # Tables IV and V: target rules (RQ3).
     reach = reach_by_trajectory(rows("benchmark/canonical-student-steps.jsonl"))
     t = {split: {rule: rows(f"targets/{split}/{rule}.jsonl") for rule in ("answer", "progress")} for split in ("seen", "unseen", "java")}
     ret = {split: joint_retention(t[split]["answer"], t[split]["progress"]) for split in t}
@@ -295,7 +295,7 @@ def main():
     lines = []
     for label, f, java in (
         ("RR (\\%)", lambda s, r: pct(rr(t[s][r])), True),
-        ("Within reach (\\%)", lambda s, r: pct(within_reach(t[s][r], reach)), False),
+        ("Within-reach RR (\\%)", lambda s, r: pct(within_reach(t[s][r], reach)), False),
         ("Tokens (\\%)", lambda s, r: pct(ret[s][1]["a" if r == "answer" else "b"]["token_retention"]), True),
         ("Lines (\\%)", lambda s, r: pct(ret[s][1]["a" if r == "answer" else "b"]["line_retention"]), True),
     ):
@@ -308,10 +308,10 @@ def main():
     tables["targets"] = lines
     for s in t:
         a, b = ret[s][1]["a"], ret[s][1]["b"]
-        numbers[f"rq2.{s}.joint"] = len(ret[s][0])
-        numbers[f"rq2.{s}.tokens.more"] = more(b["token_retention"], a["token_retention"])
-        numbers[f"rq2.{s}.lines.more"] = more(b["line_retention"], a["line_retention"])
-        numbers[f"rq2.{s}.rr.fewer"] = more(rr(t[s]["progress"]), rr(t[s]["answer"]))
+        numbers[f"rq3.{s}.joint"] = len(ret[s][0])
+        numbers[f"rq3.{s}.tokens.more"] = more(b["token_retention"], a["token_retention"])
+        numbers[f"rq3.{s}.lines.more"] = more(b["line_retention"], a["line_retention"])
+        numbers[f"rq3.{s}.rr.fewer"] = more(rr(t[s]["progress"]), rr(t[s]["answer"]))
     ja = {r["example_id"]: r for r in t["java"]["answer"]}
     per_exercise = defaultdict(lambda: [0, 0])
     for r in t["java"]["answer"]:
@@ -322,10 +322,10 @@ def main():
     diffs = [r["token_retention"] - ja[r["example_id"]]["token_retention"] for r in t["java"]["progress"] if r["repaired"] and ja[r["example_id"]]["repaired"]]
     tr = [sum(d < 0 for d in diffs), sum(d == 0 for d in diffs), sum(d > 0 for d in diffs)]
     tables["uneven"] = [f"{label} & {e} & {pct(n / len(diffs))}\\% \\\\" for label, e, n in zip(("Answer better", "Tied", "Progress better"), ex, tr)]
-    numbers["rq2.java.extra_repairs"] = sum(a - p for a, p in per_exercise.values() if a > p)
-    numbers["rq2.java.max_extra_one_exercise"] = max(a - p for a, p in per_exercise.values())
+    numbers["rq3.java.extra_repairs"] = sum(a - p for a, p in per_exercise.values() if a > p)
+    numbers["rq3.java.max_extra_one_exercise"] = max(a - p for a, p in per_exercise.values())
 
-    # Table V: ablation (RQ3); each variant against ZPDPatch under the same inference conditions.
+    # Table III: ablation (RQ3); each variant against ZPDPatch under the same inference conditions.
     pairs = (("\\textsc{ZPDPatch}-Train", "no-training", "sampled"),
              ("\\textsc{ZPDPatch}-Portfolio", "one-checkpoint", "zpdpatch"),
              ("\\textsc{ZPDPatch}-Distinct", "same-checkpoint", "distinct-checkpoints"),

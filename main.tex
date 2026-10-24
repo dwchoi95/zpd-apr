@@ -359,8 +359,8 @@ Answer는 AC가 아닌 각 제출을 하나씩 accepted 끝점과 짝짓는다(4
 예를 들어 Seen의 학습 trajectory에서 Progress pair는 21,416개이고, 그 가운데 4,443개(20.7\%)는 기록된 판정이 그대로인 채 test case별 결과만 나아진 걸음이다. Strict pair 16,973개에는 이런 걸음이 하나도 없다. 판정만 비교하면 이 걸음들은 보이지 않는다.
 % EN: For example, the Seen training trajectories yield 21,416 Progress pairs, of which 4,443 (20.7\%) are steps whose recorded verdict stays the same while their test-case-wise outcomes improve. None of the 16,973 Strict pairs is such a step, since comparing verdicts alone cannot see them.
 
-Mine의 설계에는 세 가지 근거가 있다. 첫째, Progress는 기록된 판정에 더해 재실행한 test case별 결과를 비교한다. Section~\ref{sec:limitation}에서 보았듯 acceptance 전 연속 제출 쌍의 74.7\%는 판정이 바뀌지 않으므로, 판정만으로는 학생이 실제로 나아간 걸음을 많이 놓친다. 둘째, 각 제출을 바로 앞 제출이 아니라 마지막으로 보존한 상태와 비교한다. 바로 앞 제출과 비교하면 WA에서 RE로 퇴보했다가 같은 WA로 돌아온 제출도 개선이 되지만, 보존한 상태와 비교하면 보존된 모든 걸음이 앞서 보존된 상태보다 낫다. 셋째, severity 순서는 프로그램이 실행을 얼마나 멀리 마치는지를 따른다. CE는 실행되지 않고, RE는 도중에 멈추며, TLE와 MLE는 시간이나 메모리 제한을 넘고, WA는 끝까지 실행되지만 출력이 틀린다. 이렇게 만든 target의 효과는 Section~\ref{sec:rq-locality}에서 측정한다. 두 rule이 모두 수리한 Seen 버기 프로그램에서 Progress target으로 학습한 모델의 patch는 Answer target으로 학습한 모델의 patch보다 학생의 token을 6.3\% 더 남긴다.
-% EN: Three considerations shape Mine. First, Progress compares the replayed test-case-wise outcomes in addition to the recorded verdicts. As Section~\ref{sec:limitation} showed, 74.7\% of the consecutive submission pairs before acceptance keep the same verdict, so verdicts alone miss many of the steps a student actually took. Second, each submission is compared with the last retained state rather than with the immediately preceding submission. Against the preceding submission, a submission that returns to the same WA after regressing from WA to RE would count as an improvement; against the retained state, every retained step improves on the state retained before it. Third, the severity order follows how far a program gets through execution: a CE program does not run, an RE program stops partway, a TLE or MLE program exceeds its time or memory limit, and a WA program runs to the end but prints wrong output. Section~\ref{sec:rq-locality} measures the effect of these targets: on the Seen buggy programs both rules repair, the patches of the model trained on Progress targets keep 6.3\% more of the student's tokens than those of the model trained on Answer targets.
+Mine의 설계에는 세 가지 근거가 있다. 첫째, Progress는 기록된 판정에 더해 재실행한 test case별 결과를 비교한다. Section~\ref{sec:limitation}에서 보았듯 acceptance 전 연속 제출 쌍의 74.7\%는 판정이 바뀌지 않으므로, 판정만으로는 학생이 실제로 나아간 걸음을 많이 놓친다. 둘째, 각 제출을 바로 앞 제출이 아니라 마지막으로 보존한 상태와 비교한다. 바로 앞 제출과 비교하면 WA에서 RE로 퇴보했다가 같은 WA로 돌아온 제출도 개선이 되지만, 보존한 상태와 비교하면 보존된 모든 걸음이 앞서 보존된 상태보다 낫다. 셋째, severity 순서는 프로그램이 실행을 얼마나 멀리 마치는지를 따른다. CE는 실행되지 않고, RE는 도중에 멈추며, TLE와 MLE는 시간이나 메모리 제한을 넘고, WA는 끝까지 실행되지만 출력이 틀린다. 이렇게 만든 target의 효과는 Section~\ref{sec:rq-ablation}에서 측정한다. 두 rule이 모두 수리한 Seen 버기 프로그램에서 Progress target으로 학습한 모델의 patch는 Answer target으로 학습한 모델의 patch보다 학생의 token을 6.3\% 더 남긴다.
+% EN: Three considerations shape Mine. First, Progress compares the replayed test-case-wise outcomes in addition to the recorded verdicts. As Section~\ref{sec:limitation} showed, 74.7\% of the consecutive submission pairs before acceptance keep the same verdict, so verdicts alone miss many of the steps a student actually took. Second, each submission is compared with the last retained state rather than with the immediately preceding submission. Against the preceding submission, a submission that returns to the same WA after regressing from WA to RE would count as an improvement; against the retained state, every retained step improves on the state retained before it. Third, the severity order follows how far a program gets through execution: a CE program does not run, an RE program stops partway, a TLE or MLE program exceeds its time or memory limit, and a WA program runs to the end but prints wrong output. Section~\ref{sec:rq-ablation} measures the effect of these targets: on the Seen buggy programs both rules repair, the patches of the model trained on Progress targets keep 6.3\% more of the student's tokens than those of the model trained on Answer targets.
 
 \subsection{Train}
 \label{sec:train}
@@ -408,8 +408,8 @@ Terminal pairing은 trajectory 길이에 선형이고, \(n\)개 제출을 \(m\)�
 % EN: \item RQ1: How often do the patches of \textsc{ZPDPatch} stay within the student's demonstrated reach?
 \item RQ2: \textsc{ZPDPatch}는 기존 수리 기법과 비교해 어떠한가?
 % EN: \item RQ2: How does \textsc{ZPDPatch} compare with existing repair techniques?
-\item RQ3: \textsc{ZPDPatch}의 각 설계 선택은 수리에 얼마나 기여하는가?
-% EN: \item RQ3: How much does each design choice of \textsc{ZPDPatch} contribute to repair?
+\item RQ3: \textsc{ZPDPatch}의 각 설계 선택은 수리와, patch가 남기는 학생의 프로그램에 얼마나 기여하는가?
+% EN: \item RQ3: How much does each design choice of \textsc{ZPDPatch} contribute to repair and to how much of the student's program a patch keeps?
 \item RQ4: portfolio의 이득은 모델 규모, 언어, 학생 집단, trajectory 위치에 걸쳐 유지되는가?
 % EN: \item RQ4: Does the gain of the portfolio hold across model scale, language, student population, and trajectory position?
 \end{itemize}
@@ -462,28 +462,6 @@ Total & & 1,753 & 287 & 18.6 & 19 & 49 \\
 RQ3과 RQ4에는 같은 Python800의 더 큰 코퍼스를 쓴다. 문제를 trajectory 수 순으로 정렬해 상위 90\%인 492개를 Seen, 나머지 54개를 Unseen으로 두고, Seen trajectory는 문제마다 80:10:10으로 학습·검증·테스트에 나눈다. test trajectory의 버기 프로그램은 그 trajectory의 마지막 non-AC 제출이며, Seen 997개(328문제, 평균 15.7줄)와 Unseen 250개(54문제, 평균 8.3줄)다. Seen 버기 프로그램의 70.4\%는 wrong answer이고, 나머지는 runtime error, time limit, compile error다. Java에는 TIKTOC~\cite{duan2025test}가 공개한 입문 프로그래밍(CS1) 과목의 CodeWorkout 제출과 강사가 만든 test suite를 쓴다. 학생 224명과 문제 17개의 trajectory 1,125개이며, 학습에서 뺀 학생 33명의 trajectory 181개가 테스트다.
 % EN: For RQ3 and RQ4, we use a larger corpus from the same Python800 benchmark. Ranking the problems by trajectory count, we assign the top 90\%, 492 problems, to Seen and the remaining 54 to Unseen, and split the Seen trajectories of every problem 80:10:10 into training, validation, and test. The buggy program of a test trajectory is its last non-AC submission: 997 on Seen (328 problems, 15.7 lines on average) and 250 on Unseen (54 problems, 8.3 lines). On Seen, 70.4\% of the buggy programs fail with a wrong answer and the rest with a runtime error, a time limit, or a compile error. For Java, we use the CodeWorkout submissions and instructor-written test suites of an Introductory Programming (CS1) course released by TIKTOC~\cite{duan2025test}: 1,125 trajectories of 224 students on 17 problems, of which the 181 trajectories of the 33 students held out of training form the test set.
 
-\begin{table}[h]
-\caption{Primary Python evaluation. H: history prompt; C: current-only prompt}
-\label{tab:main}
-\centering\small
-\begin{tabular}{@{}ll||rr|rr@{}}
-\toprule
-Method & Input & \multicolumn{2}{c|}{Seen} & \multicolumn{2}{c}{Unseen} \\
- & & RR (\%) & TED & RR (\%) & TED \\
-\midrule
-Zero-shot & H & 30.7 & 27.25 & 62.0 & 17.46 \\
-\textsc{LSGen} & H & 80.2 & 88.27 & -- & -- \\
-Answer-1 & C & 58.1 & 30.27 & 69.6 & 15.30 \\
-Answer-3Seed & H & 61.7 & 24.52 & 73.2 & 13.38 \\
-Answer-9Choose3 & H & 59.8 & 25.46 & 74.8 & 15.19 \\
-Mixed-9Choose3 & H & 61.5 & 21.05 & 74.8 & 11.40 \\
-\midrule
-Answer-3Seed & C & 72.0 & 37.94 & 81.2 & 16.01 \\
-Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \noindent\textbf{Evaluation Metrics.} patch의 크기는 버기 프로그램과 patch의 Abstract Syntax Tree(AST) 사이 Tree Edit Distance(TED), 즉 편집 연산 수로 잰다~\cite{zhang1989simple,pawlik2016tree}. \emph{Retention}은 버기 프로그램의 token(또는 공백이 아닌 줄) 가운데 patch에 남은 비율이다. 모든 test case를 통과하는 patch의 TED가 그 학생의 demonstrated reach(Section~\ref{sec:limitation}) 이하이면 그 patch는 \emph{within reach}이며, 이는 학생의 Zone of Proximal Development(ZPD) 안 patch를 근사한다. \emph{Repair Rate}(RR)는 patch가 모든 test case를 통과하는 버기 프로그램의 비율이고, edit budget \(B\)에서의 RR은 TED가 \(B\) 이하인 patch만 센다. \emph{Within-reach repair rate}는 within reach인 patch로 수리된 버기 프로그램의 비율이다. 그림의 오차 막대는 문제 단위 bootstrap 95\% 구간이다~\cite{efron1992bootstrap}.
 % EN: \noindent\textbf{Evaluation Metrics.} The Tree Edit Distance (TED) between the Abstract Syntax Trees (ASTs) of the buggy program and the patch measures the size of the patch in edit operations~\cite{zhang1989simple,pawlik2016tree}. \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the patch. A patch that passes every test case is \emph{within reach} if its TED is no larger than the student's demonstrated reach (Section~\ref{sec:limitation}), which approximates a patch within the student's Zone of Proximal Development (ZPD). The \emph{Repair Rate} (RR) is the fraction of buggy programs whose patch passes every test case, and the RR within an edit budget \(B\) counts only the patches whose TED is at most \(B\). The \emph{within-reach repair rate} is the fraction of buggy programs repaired by a patch within reach. Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1992bootstrap}.
 
@@ -522,6 +500,90 @@ Figure~\ref{fig:patchsize}는 patch와 학생 걸음 가운데 각 크기 이하
 특히, 수리된 patch의 16.3\%는 학생이 이후에 직접 제출한 accepted 프로그램과 AST가 같다. 그 프로그램은 학습에도 수리에도 쓰이지 않으므로, 이 patch들은 학생이 스스로 쓴 수정에 그대로 도달한 것이다. 학생의 걸음 안에서 고치는 대가로, \textsc{ZPDPatch}는 버기 프로그램의 33.3\%를 수리한다. 수리하지 못한 버기 프로그램에서는 학생 자신도 accepted 프로그램까지 수리한 경우보다 평균 68.9\% 큰 걸음을 내디뎠다. 즉 \textsc{ZPDPatch}가 남긴 버그는 학생에게도 더 큰 수정이 필요했던 것들이며, RQ2에서는 이 범위를 기존 기법과 함께 써서 메우는 방법을 보인다. 이 결과들은 \textsc{ZPDPatch}의 patch가 학생이 스스로 내딛는 걸음과 같은 크기이며, 대부분 학생의 demonstrated reach 안에 머문다는 것을 보여 준다.
 % EN: Notably, 16.3\% of the fixed programs have the same AST as the accepted program that the student submitted later. That program is used neither in training nor in repair, so these patches arrive exactly at the fix the student wrote. The price of repairing within a student's step is coverage: \textsc{ZPDPatch} repairs 33.3\% of the buggy programs. On the buggy programs it leaves unrepaired, the students' own steps to their accepted programs were 68.9\% larger on average than on those it repairs. The bugs \textsc{ZPDPatch} leaves are thus the ones that took the students a larger fix as well, and RQ2 shows how combining it with an existing technique covers them. These results show that the patches of \textsc{ZPDPatch} have the size of the steps students take by themselves and mostly stay within their demonstrated reach.
 
+\subsection{RQ2: Comparison with Existing Techniques}
+\label{sec:rq-comparison}
+
+\begin{table}[h]
+\caption{Repairs of \textsc{ZPDPatch} and existing techniques on the RQ1 benchmark}
+\label{tab:comparison}
+\centering\footnotesize
+\begin{tabular}{l||rrrrr}
+\toprule
+Technique & RR & Within reach & TED & Tokens & Lines \\
+ & (\%) & (\% of fixed) & & (\%) & (\%) \\
+\midrule
+% rows:comparison
+\textsc{ZPDPatch} & 33.3 & 76.7 & 27.3 & 87.9 & 71.3 \\
+\textsc{Mentored} & 40.2 & 70.9 & 39.5 & 80.0 & 42.3 \\
+\textsc{LSGen} (Qwen) & 79.4 & 42.2 & 99.6 & 62.2 & 31.4 \\
+\textsc{LSGen} (GPT-4o) & 92.1 & 46.3 & 89.9 & 64.4 & 31.9 \\
+% end rows
+\bottomrule
+\end{tabular}
+\end{table}
+
+RQ2는 \textsc{ZPDPatch}가 기존 수리 기법과 비교해 어떠한지 묻는다. 이를 위해 RQ1과 같은 버기 프로그램 1,753개를 세 baseline 설정, 즉 \textsc{Mentored}, Qwen2.5-Coder-7B-Instruct를 쓴 \textsc{LSGen}, GPT-4o를 쓴 \textsc{LSGen}으로 수리하고, 모든 patch를 같은 실행 환경에서 판정했다.
+% EN: RQ2 asks how \textsc{ZPDPatch} compares with existing repair techniques. To this end, we repaired the same 1,753 buggy programs as in RQ1 with three baseline configurations, \textsc{Mentored}, \textsc{LSGen} with Qwen2.5-Coder-7B-Instruct, and \textsc{LSGen} with GPT-4o, and judged every patch in the same execution environment.
+
+Table~\ref{tab:comparison}은 기법마다 RR, 수리한 프로그램 가운데 within reach인 것의 비율, 그리고 수리한 프로그램의 평균 TED와 retention을 보인다. \textsc{ZPDPatch}가 수리한 프로그램은 76.7\%가 within reach로, 그 비율이 기존 기법보다 8.1--81.5\% 높다. Retention은 token에서 9.9--41.3\%, 줄에서 68.6--127.2\% 높다. 두 기법이 모두 수리한 버기 프로그램에서 \textsc{ZPDPatch}의 patch는 TED가 13.4--60.9\% 작다. 특히, 같은 base model을 쓰는 \textsc{LSGen}과 비교하면 함께 수리한 버기 프로그램의 68.9\%에서 \textsc{ZPDPatch}의 patch가 더 작다. 두 기법은 모델이 같고 \textsc{ZPDPatch}만 학생 trajectory로 학습했으므로, 이 차이는 학습이 patch를 학생의 걸음 크기로 만든다는 것을 보여 준다.
+% EN: Table~\ref{tab:comparison} lists, for each technique, the RR, the share of its fixed programs that are within reach, and the mean TED and retention of its fixed programs. Of the fixed programs of \textsc{ZPDPatch}, 76.7\% are within reach, a share 8.1--81.5\% higher than those of the existing techniques. Their retention is 9.9--41.3\% higher in tokens and 68.6--127.2\% higher in lines. On the buggy programs that both techniques repair, the patches of \textsc{ZPDPatch} have a 13.4--60.9\% smaller TED. Notably, against \textsc{LSGen} on the same base model, the patch of \textsc{ZPDPatch} is the smaller one on 68.9\% of the jointly repaired buggy programs. The two techniques share the model and only \textsc{ZPDPatch} learns from student trajectories, so this difference shows that the training makes a patch the size of a student's step.
+
+Edit budget이 작을 때는 이 차이가 수리 수로 이어진다. Budget 5 안에서 \textsc{ZPDPatch}는 버기 프로그램의 7.0\%를 수리해 기존 기법보다 26.8--105.0\% 많이 수리하고, budget 20에서도 두 \textsc{LSGen} 설정보다 2.5--9.9\% 많이 수리한다.
+% EN: Under a small edit budget, this difference turns into more repairs. Within a budget of 5, \textsc{ZPDPatch} repairs 7.0\% of the buggy programs, 26.8--105.0\% more than the existing techniques, and at a budget of 20 it still repairs 2.5--9.9\% more than both \textsc{LSGen} configurations.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[ybar, disabledatascaling, width=\columnwidth, height=4.6cm, bar width=12pt, enlarge x limits=0.22,
+ symbolic x coords={mentored,lsgen_qwen,lsgen}, xtick=data, xticklabels={\textsc{Mentored}, \textsc{LSGen} (Qwen), \textsc{LSGen} (GPT-4o)},
+ ymin=0, ymax=75, ytick={0,20,40,60}, ylabel={Within-reach RR (\%)}, ymajorgrids, grid style={gray!25},
+ nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=1]{\pgfplotspointmeta}}, visualization depends on={\thisrow{p} \as \ep}, every node near coord/.append style={font=\tiny, yshift=\ep*\pgfplotsunitylength, rotate=90, anchor=west},
+ legend columns=2, area legend, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
+% rows:combined
+\addplot[variant, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 28.5 mentored 12.3 12.2\\ 33.5 lsgen_qwen 9.4 9.2\\ 42.6 lsgen 7.1 7.3\\};
+\addplot[proposed, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 42.0 mentored 10.1 10.8\\ 44.0 lsgen_qwen 8.0 8.4\\ 50.4 lsgen 6.8 7.3\\};
+% end rows
+\legend{Alone, After \textsc{ZPDPatch}}
+\end{axis}
+\end{tikzpicture}
+\caption{Within-reach repair rate of each existing technique alone and after \textsc{ZPDPatch}}
+\label{fig:combined}
+\end{figure}
+
+Figure~\ref{fig:combined}는 각 기존 기법의 within-reach repair rate를 단독으로 쓸 때와 \textsc{ZPDPatch} 다음에 둘 때로 나누어 보인다. Budget이 없으면 \textsc{ZPDPatch} 혼자서는 기존 기법보다 17.3--63.9\% 적게 수리한다(Table~\ref{tab:comparison}). 이 차이는 목표에서 온다. \textsc{ZPDPatch}는 학생 자신의 이후 제출을 target으로 배워 학생의 걸음 크기 안에서 고치는 반면, 기존 기법은 test suite를 통과하는 어떤 프로그램이든 향하고, \textsc{LSGen}은 실패할 때마다 다른 학생의 수정을 다시 검색해 수리를 반복한다. 정답 프로그램이 꼭 필요하다면, Algorithm~\ref{alg:generic}은 순서가 정해진 어떤 generator든 받으므로 기존 기법을 \textsc{ZPDPatch} 다음 generator로 둘 수 있다. 그러면 RR은 줄지 않고 오히려 1.1--42.3\% 늘며, within-reach repair rate는 18.3--47.4\% 늘고, 수리한 프로그램의 평균 TED는 8.3--16.9\% 작아진다. \textsc{Mentored} 다음에 \textsc{LSGen}을 두는 순서 앞에 \textsc{ZPDPatch}를 넣어도 within-reach repair rate가 9.0--17.0\% 더 늘어나므로, \textsc{ZPDPatch}가 reach 안에서 고치는 버기 프로그램은 다른 기법이 대신하지 못한다. 이 결과들은 \textsc{ZPDPatch}가 기존 기법보다 학생의 reach 안에 머무는 patch를 내며, 기존 기법과 함께 쓰면 그 RR을 지키면서 reach 안의 수리를 늘린다는 것을 보여 준다.
+% EN: Figure~\ref{fig:combined} plots the within-reach repair rate of each existing technique alone and placed after \textsc{ZPDPatch}. Without a budget, \textsc{ZPDPatch} alone repairs 17.3--63.9\% fewer buggy programs than the existing techniques (Table~\ref{tab:comparison}). This gap comes from the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets and repairs within a student's step, whereas the existing techniques head for any program that passes the test suite, and \textsc{LSGen} retrieves other students' fixes again after each failure and repeats the repair. When a correct program is required, Algorithm~\ref{alg:generic} accepts any ordered set of generators, so an existing technique can follow \textsc{ZPDPatch} as the next generator. The RR then does not drop but rises by 1.1--42.3\%, the within-reach repair rate rises by 18.3--47.4\%, and the mean TED of the fixed programs shrinks by 8.3--16.9\%. Placing \textsc{ZPDPatch} ahead of \textsc{Mentored} followed by \textsc{LSGen} still raises the within-reach repair rate by 9.0--17.0\%, so no other technique replaces the buggy programs that \textsc{ZPDPatch} repairs within reach. These results show that \textsc{ZPDPatch} returns patches that stay within the student's reach more often than existing techniques do, and that combined with an existing technique it keeps that technique's RR while adding repairs within reach.
+
+\subsection{RQ3: Ablation Study}
+\label{sec:rq-ablation}
+
+RQ3는 \textsc{ZPDPatch}의 각 설계 선택이 수리와, patch가 남기는 학생의 프로그램에 얼마나 기여하는지 묻는다. 이를 위해 보고 구성에서 한 번에 하나씩 바꾼 네 변형을 만들었다. \textsc{ZPDPatch}-Train은 Algorithm~\ref{alg:construct}의 10--12번째 줄을 빼고 base model로 생성한다. \textsc{ZPDPatch}-Portfolio는 portfolio를 checkpoint 하나로 줄여, Algorithm~\ref{alg:generic}의 3번째 줄이 그 하나만 돈다. \textsc{ZPDPatch}-Distinct는 서로 다른 세 checkpoint 대신 한 checkpoint에서 후보 셋을 뽑는다. \textsc{ZPDPatch}+History는 prompt에 학생의 이전 제출을 덧붙인다. 각 변형은 비교 대상과 같은 추론 조건에서 측정했다. Train과 Distinct 비교는 후보를 sampling으로 뽑으므로, 그 \textsc{ZPDPatch} 값은 결정적으로 디코딩하는 보고 구성의 값과 다르다.
+% EN: RQ3 asks how much each design choice of \textsc{ZPDPatch} contributes to repair and to how much of the student's program a patch keeps. To this end, we built four variants of the reported configuration that each change one choice. \textsc{ZPDPatch}-Train removes lines~10--12 of Algorithm~\ref{alg:construct} and generates with the base model. \textsc{ZPDPatch}-Portfolio reduces the portfolio to one checkpoint, so line~3 of Algorithm~\ref{alg:generic} iterates over that checkpoint alone. \textsc{ZPDPatch}-Distinct draws the three candidates from one checkpoint instead of from three distinct checkpoints. \textsc{ZPDPatch}+History adds the student's earlier submissions to the prompt. Each variant is measured under the same inference conditions as its comparison. The Train and Distinct comparisons draw candidates by sampling, so their \textsc{ZPDPatch} values differ from those of the reported configuration, which decodes deterministically.
+
+\begin{table}[h]
+\caption{Repair rate (\%) of each variant and of \textsc{ZPDPatch}}
+\label{tab:ablation}
+\centering\scriptsize
+\begin{tabular}{l||rr|rr}
+\toprule
+ & \multicolumn{2}{c|}{Seen} & \multicolumn{2}{c}{Unseen} \\
+Variant & Variant & \textsc{ZPDPatch} & Variant & \textsc{ZPDPatch} \\
+\midrule
+% rows:ablation
+\textsc{ZPDPatch}-Train & 30.4 & 57.6 & 65.6 & 72.0 \\
+\textsc{ZPDPatch}-Portfolio & 58.1 & 72.0 & 69.6 & 81.2 \\
+\textsc{ZPDPatch}-Distinct & 66.8 & 68.9 & 79.6 & 80.8 \\
+\textsc{ZPDPatch}+History & 61.7 & 72.0 & 73.2 & 81.2 \\
+% end rows
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:ablation}은 변형과 \textsc{ZPDPatch}의 수리율을 보인다. 학습을 빼면 수리하는 버기 프로그램이 Seen에서 47.2\%, Unseen에서 8.9\% 줄어든다. portfolio를 checkpoint 하나로 줄이면 Seen에서 19.4\%, Unseen에서 14.3\% 줄어든다. 서로 다른 checkpoint 대신 한 checkpoint에서 후보 셋을 뽑으면 Seen에서 3.1\%, Unseen에서 1.5\% 줄어든다. 이전 제출을 prompt에 덧붙이면 Seen에서 14.3\%, Unseen에서 9.9\% 줄어든다.
+% EN: Table~\ref{tab:ablation} lists the repair rates of each variant and of \textsc{ZPDPatch}. Removing training repairs 47.2\% fewer buggy programs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.4\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the prompt repairs 14.3\% and 9.9\% fewer.
+
+학습과 portfolio가 가장 크게 기여한다. 학습은 target rule이 고른 걸음을 모델에 옮겨 base model이 수리하지 못하는 버기 프로그램을 수리하게 하고, portfolio는 한 checkpoint가 실패한 버기 프로그램에 다른 후보를 주어 실행 gate가 통과하는 후보를 고를 기회를 늘린다. 서로 다른 checkpoint의 기여가 작은 것은 확률적 디코딩이 한 checkpoint 안에서도 후보를 다양하게 만들기 때문이다. 결정적으로 디코딩해 새 제출을 수리하는 \textsc{ZPDPatch}에서는 그 다양성을 서로 다른 checkpoint가 제공한다. 이전 제출을 덧붙이면 오히려 줄어드는데, Answer 학습 prompt는 현재 제출 하나뿐이라 history가 학습 때와 다른 prompt를 만들기 때문이다. 따라서 \textsc{ZPDPatch}는 현재 제출만으로 수리한다.
+% EN: Training and the portfolio contribute the most. Training transfers the steps that a target rule selects to the model, so it repairs buggy programs that the base model cannot, and the portfolio gives a buggy program on which one checkpoint fails another candidate, which raises the chance that the execution gate finds one that passes. Distinct checkpoints contribute little here because stochastic decoding already diversifies the candidates of one checkpoint; \textsc{ZPDPatch} decodes deterministically when it repairs a new submission, and there distinct checkpoints supply that diversity. Earlier submissions lower the repair rate because an Answer training prompt holds only the current submission, so a history makes a prompt unlike those seen in training; \textsc{ZPDPatch} therefore repairs from the current submission alone.
+
 \begin{table}[h]
 \caption{Repair rate and kept tokens and lines by target rule; kept shares on jointly repaired buggy programs}
 \label{tab:targets}
@@ -534,7 +596,7 @@ Metric & Rule & Seen & Unseen & Java \\
 \multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
  & Progress & 34.0 & 65.6 & 50.8 \\
 \midrule
-\multirow{2}{*}{Within reach (\%)} & Answer & 34.5 & 44.8 & -- \\
+\multirow{2}{*}{Within-reach RR (\%)} & Answer & 34.5 & 44.8 & -- \\
  & Progress & 27.9 & 48.8 & -- \\
 \midrule
 \multirow{2}{*}{Tokens (\%)} & Answer & 87.9 & 81.5 & 91.0 \\
@@ -547,14 +609,8 @@ Metric & Rule & Seen & Unseen & Java \\
 \end{tabular}
 \end{table}
 
-\subsection{RQ2: Target Construction and Locality}
-\label{sec:rq-locality}
-
-RQ2는 target rule이 patch에 학생의 프로그램을 얼마나 남기는지를 어떻게 바꾸는지 묻는다. 이를 위해 같은 prompt와 같은 학습 예제 수에서 target만 Answer와 Progress로 바꾸어 학습하고, student-held-out Java에서 같은 비교를 반복했다.
-% EN: RQ2 asks how the target rule changes how much of the student's program a patch keeps. To this end, we trained the Answer and Progress rules on the same prompts with the same number of training examples, changing only the target, and repeated the comparison on student-held-out Java.
-
-Table~\ref{tab:targets}는 두 rule의 repair rate와 보존율을 보인다. 두 rule이 모두 수리한 버기 프로그램에서 Progress의 patch는 Answer의 patch보다 학생의 token을 Seen에서 6.3\%, Unseen에서 7.9\% 더 남기고, 줄을 각각 12.3\%와 17.9\% 더 남긴다. 같은 버기 프로그램에서 Progress patch의 TED는 Answer보다 Seen에서 47.3\%, Unseen에서 45.5\% 작다. 이 차이는 target에서 온다. Progress target은 실행 증거가 개선으로 확인한 학생의 다음 제출이라 한 걸음이 작고, Answer target은 학생이 끝내 통과시킨 프로그램이라 다른 접근을 택할 수 있다(Figure~\ref{fig:example}에서 1 대 33 AST edit operations).
-% EN: Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the buggy programs both rules repair, the patches of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same buggy programs, the TED of a Progress patch is 47.3\% smaller than that of an Answer patch on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (1 against 33 AST edit operations in Figure~\ref{fig:example}).
+\noindent\textbf{Target source.} target의 출처도 바꾸었다. 같은 prompt와 같은 학습 예제 수에서 target만 Answer에서 Progress로 바꾸어 학습하고, student-held-out Java에서 같은 비교를 반복했다. Table~\ref{tab:targets}는 두 rule의 repair rate와 보존율을 보인다. 두 rule이 모두 수리한 버기 프로그램에서 Progress의 patch는 Answer의 patch보다 학생의 token을 Seen에서 6.3\%, Unseen에서 7.9\% 더 남기고, 줄을 각각 12.3\%와 17.9\% 더 남긴다. 같은 버기 프로그램에서 Progress patch의 TED는 Answer보다 Seen에서 47.3\%, Unseen에서 45.5\% 작다. 이 차이는 target에서 온다. Progress target은 실행 증거가 개선으로 확인한 학생의 다음 제출이라 한 걸음이 작고, Answer target은 학생이 끝내 통과시킨 프로그램이라 다른 접근을 택할 수 있다(Figure~\ref{fig:example}에서 1 대 33 AST edit operations).
+% EN: \noindent\textbf{Target source.} We also replaced the source of the target, training on the same prompts with the same number of training examples but with Progress instead of Answer targets, and repeated the comparison on student-held-out Java. Table~\ref{tab:targets} shows the repair rate and retention of the two rules. On the buggy programs both rules repair, the patches of Progress keep 6.3\% more of the student's tokens than those of Answer on Seen and 7.9\% more on Unseen, and 12.3\% and 17.9\% more of the lines. On the same buggy programs, the TED of a Progress patch is 47.3\% smaller than that of an Answer patch on Seen and 45.5\% smaller on Unseen. The difference comes from the target. A Progress target is the student's next submission that execution evidence confirms as an improvement, so its step is small, whereas an Answer target is the program the student finally got accepted and can take a different approach (1 against 33 AST edit operations in Figure~\ref{fig:example}).
 
 그 대가로 Progress는 Answer보다 Seen에서 36.0\%, Unseen에서 14.6\% 적은 버기 프로그램을 수리한다. Answer target은 모두 accepted 제출인 반면, Progress target에는 아직 통과하지 못한 개선 제출도 포함되기 때문이다. 학생 자신의 demonstrated reach 안에서 재면 이 차이는 줄어든다. Progress는 Seen에서 19.2\% 적게 수리하는 데 그치고 Unseen에서는 8.9\% 더 많이 수리하는데, Progress 수리의 82.0\%와 74.4\%가 학생의 reach 안에 있는 반면 Answer 수리는 64.9\%와 58.3\%만 그 안에 있기 때문이다.
 % EN: In exchange, Progress repairs 36.0\% fewer buggy programs than Answer on Seen and 14.6\% fewer on Unseen, because every Answer target is an accepted submission, whereas Progress targets also include improvements that do not yet pass. Measured within each student's own demonstrated reach, the gap narrows: Progress repairs only 19.2\% fewer buggy programs on Seen and 8.9\% more on Unseen, because 82.0\% and 74.4\% of its repairs lie within the student's reach, against 64.9\% and 58.3\% of Answer's.
@@ -615,39 +671,8 @@ Student-held-out Java에서도 같은 tradeoff가 나타난다. 두 rule을 targ
 평균은 학생 한 명이 받는 것을 말해 주지 않으므로, Table~\ref{tab:uneven}은 Java의 대비를 문제별, trajectory별로 나눈다. Answer는 17개 문제 중 15개에서 더 많이 수리하고, 그 가운데 한 문제가 더 수리한 63개 중 12개를 차지한다. 두 rule이 모두 수리한 trajectory 가운데 31.1\%에서는 학생이 Progress에서 자신의 token을 더 돌려받고, 63.3\%에서는 같은 양을, 5.6\%에서는 덜 돌려받는다. Figure~\ref{fig:case}는 Python에서 이 차이가 어떻게 보이는지 보여 준다. 학생은 바로 앞 제출에서 \texttt{i<j}를 \texttt{i<=j}로 고쳐 test case의 93.3\%를 통과했다. Progress target으로 학습한 patch (a)는 한 줄을 더 고쳐(\texttt{j>0}을 \texttt{j>=0}으로) 21줄 중 20줄을 남기고, Answer target으로 학습한 patch (b)는 21줄 중 3줄만 남는 다섯 줄짜리 프로그램이다. 두 patch 모두 같은 gate와 budget 아래에서 모든 test case를 통과한다.
 % EN: Because a mean does not tell what one student receives, Table~\ref{tab:uneven} breaks the Java contrast down by problem and by trajectory. Answer repairs more on 15 of the 17 problems, and one problem accounts for 12 of its 63 additional repairs. On 31.1\% of the trajectories both rules repair, the student gets more of their own tokens back from Progress, on 63.3\% the same amount, and on 5.6\% less. Figure~\ref{fig:case} shows what this difference looks like on Python. The student's preceding submission changed \texttt{i<j} to \texttt{i<=j} and passed 93.3\% of the test cases. The patch trained on Progress targets (a) changes one more line, \texttt{j>0} to \texttt{j>=0}, and keeps 20 of the 21 lines, whereas the patch trained on Answer targets (b) is a five-line program that keeps 3 of the 21 lines. Both pass every test case under the same gate and budget.
 
-이 효과가 그 학생 자신의 제출에서 오는지 확인하기 위해, Progress target을 같은 문제의 다른 학생 제출로 바꾸어 다시 학습했다. 바꾼 target은 원래 target과 실행 결과가 같고 거리가 가깝다. 이 peer target은 Seen에서 8.6\%, Unseen에서 7.7\% 더 많은 버기 프로그램을 수리하지만, 두 쪽이 모두 수리한 버기 프로그램에서 patch의 TED가 33.8\%와 48.0\% 크다. 다른 학생의 걸음은 지금 학생의 프로그램에서 출발하지 않으므로, 실행 결과가 같아도 그 프로그램을 더 많이 바꾼다. 이 결과들은 target rule이 coverage와 locality를 맞바꾸며, 학생 자신의 궤적에서 실행 증거로 고른 target이 학생의 프로그램을 더 많이 남기는 patch를 낳는다는 것을 보인다.
-% EN: To check whether the effect comes from the student's own submissions, we retrained Progress with each target replaced by another student's submission to the same problem whose execution outcomes are identical and whose distance is close. These peer targets repair 8.6\% more buggy programs on Seen and 7.7\% more on Unseen, but on the buggy programs both repair, their patches have a 33.8\% and 48.0\% larger TED. Another student's step does not start from the current student's program, so even with the same execution outcomes it changes more of that program. These results indicate that the target rule trades coverage for locality, and that targets selected by execution evidence from the student's own trajectory yield patches that keep more of the student's program.
-
-\subsection{RQ3: Ablation Study}
-\label{sec:rq-ablation}
-
-RQ3는 \textsc{ZPDPatch}의 각 설계 선택이 수리에 얼마나 기여하는지 묻는다. 이를 위해 보고 구성에서 한 번에 하나씩 바꾼 네 변형을 만들었다. \textsc{ZPDPatch}-Train은 Algorithm~\ref{alg:construct}의 10--12번째 줄을 빼고 base model로 생성한다. \textsc{ZPDPatch}-Portfolio는 portfolio를 checkpoint 하나로 줄여, Algorithm~\ref{alg:generic}의 3번째 줄이 그 하나만 돈다. \textsc{ZPDPatch}-Distinct는 서로 다른 세 checkpoint 대신 한 checkpoint에서 후보 셋을 뽑는다. \textsc{ZPDPatch}+History는 prompt에 학생의 이전 제출을 덧붙인다. 각 변형은 비교 대상과 같은 추론 조건에서 측정했다. Train과 Distinct 비교는 후보를 sampling으로 뽑으므로, 그 \textsc{ZPDPatch} 값은 결정적으로 디코딩하는 보고 구성의 값과 다르다.
-% EN: RQ3 asks how much each design choice of \textsc{ZPDPatch} contributes to repair. To this end, we built four variants of the reported configuration that each change one choice. \textsc{ZPDPatch}-Train removes lines~10--12 of Algorithm~\ref{alg:construct} and generates with the base model. \textsc{ZPDPatch}-Portfolio reduces the portfolio to one checkpoint, so line~3 of Algorithm~\ref{alg:generic} iterates over that checkpoint alone. \textsc{ZPDPatch}-Distinct draws the three candidates from one checkpoint instead of from three distinct checkpoints. \textsc{ZPDPatch}+History adds the student's earlier submissions to the prompt. Each variant is measured under the same inference conditions as its comparison. The Train and Distinct comparisons draw candidates by sampling, so their \textsc{ZPDPatch} values differ from those of the reported configuration, which decodes deterministically.
-
-\begin{table}[h]
-\caption{Repair rate (\%) of each variant and of \textsc{ZPDPatch}}
-\label{tab:ablation}
-\centering\scriptsize
-\begin{tabular}{l||rr|rr}
-\toprule
- & \multicolumn{2}{c|}{Seen} & \multicolumn{2}{c}{Unseen} \\
-Variant & Variant & \textsc{ZPDPatch} & Variant & \textsc{ZPDPatch} \\
-\midrule
-% rows:ablation
-\textsc{ZPDPatch}-Train & 30.4 & 57.6 & 65.6 & 72.0 \\
-\textsc{ZPDPatch}-Portfolio & 58.1 & 72.0 & 69.6 & 81.2 \\
-\textsc{ZPDPatch}-Distinct & 66.8 & 68.9 & 79.6 & 80.8 \\
-\textsc{ZPDPatch}+History & 61.7 & 72.0 & 73.2 & 81.2 \\
-% end rows
-\bottomrule
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:ablation}은 변형과 \textsc{ZPDPatch}의 수리율을 보인다. 학습을 빼면 수리하는 버기 프로그램이 Seen에서 47.2\%, Unseen에서 8.9\% 줄어든다. portfolio를 checkpoint 하나로 줄이면 Seen에서 19.4\%, Unseen에서 14.3\% 줄어든다. 서로 다른 checkpoint 대신 한 checkpoint에서 후보 셋을 뽑으면 Seen에서 3.1\%, Unseen에서 1.5\% 줄어든다. 이전 제출을 prompt에 덧붙이면 Seen에서 14.3\%, Unseen에서 9.9\% 줄어든다.
-% EN: Table~\ref{tab:ablation} lists the repair rates of each variant and of \textsc{ZPDPatch}. Removing training repairs 47.2\% fewer buggy programs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.4\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the prompt repairs 14.3\% and 9.9\% fewer.
-
-학습과 portfolio가 가장 크게 기여한다. 학습은 target rule이 고른 걸음을 모델에 옮겨 base model이 수리하지 못하는 버기 프로그램을 수리하게 하고, portfolio는 한 checkpoint가 실패한 버기 프로그램에 다른 후보를 주어 실행 gate가 통과하는 후보를 고를 기회를 늘린다. 서로 다른 checkpoint의 기여가 작은 것은 확률적 디코딩이 한 checkpoint 안에서도 후보를 다양하게 만들기 때문이다. 결정적으로 디코딩해 새 제출을 수리하는 \textsc{ZPDPatch}에서는 그 다양성을 서로 다른 checkpoint가 제공한다. 이전 제출을 덧붙이면 오히려 줄어드는데, Answer 학습 prompt는 현재 제출 하나뿐이라 history가 학습 때와 다른 prompt를 만들기 때문이다. 따라서 \textsc{ZPDPatch}는 현재 제출만으로 수리한다. 이 결과들은 학습과 실행으로 고른 portfolio가 \textsc{ZPDPatch}의 수리를 만들고, 수리에는 현재 제출만 있으면 된다는 것을 보인다.
-% EN: Training and the portfolio contribute the most. Training transfers the steps that a target rule selects to the model, so it repairs buggy programs that the base model cannot, and the portfolio gives a buggy program on which one checkpoint fails another candidate, which raises the chance that the execution gate finds one that passes. Distinct checkpoints contribute little here because stochastic decoding already diversifies the candidates of one checkpoint; \textsc{ZPDPatch} decodes deterministically when it repairs a new submission, and there distinct checkpoints supply that diversity. Earlier submissions lower the repair rate because an Answer training prompt holds only the current submission, so a history makes a prompt unlike those seen in training; \textsc{ZPDPatch} therefore repairs from the current submission alone. These results indicate that training and a portfolio selected by execution produce the repairs of \textsc{ZPDPatch}, and that a repair needs only the current submission.
+이 효과가 그 학생 자신의 제출에서 오는지 확인하기 위해, Progress target을 같은 문제의 다른 학생 제출로 바꾸어 다시 학습했다. 바꾼 target은 원래 target과 실행 결과가 같고 거리가 가깝다. 이 peer target은 Seen에서 8.6\%, Unseen에서 7.7\% 더 많은 버기 프로그램을 수리하지만, 두 쪽이 모두 수리한 버기 프로그램에서 patch의 TED가 33.8\%와 48.0\% 크다. 다른 학생의 걸음은 지금 학생의 프로그램에서 출발하지 않으므로, 실행 결과가 같아도 그 프로그램을 더 많이 바꾼다. 이 결과들은 학습과 실행으로 고른 portfolio가 \textsc{ZPDPatch}의 수리를 만들고, target rule은 coverage와 locality를 맞바꾸며, 학생 자신의 궤적에서 실행 증거로 고른 target이 학생의 프로그램을 더 많이 남기는 patch를 낳는다는 것을 보인다.
+% EN: To check whether the effect comes from the student's own submissions, we retrained Progress with each target replaced by another student's submission to the same problem whose execution outcomes are identical and whose distance is close. These peer targets repair 8.6\% more buggy programs on Seen and 7.7\% more on Unseen, but on the buggy programs both repair, their patches have a 33.8\% and 48.0\% larger TED. Another student's step does not start from the current student's program, so even with the same execution outcomes it changes more of that program. These results indicate that training and a portfolio selected by execution produce the repairs of \textsc{ZPDPatch}, that the target rule trades coverage for locality, and that targets selected by execution evidence from the student's own trajectory yield patches that keep more of the student's program.
 
 \subsection{RQ4: Generality}
 
@@ -703,8 +728,8 @@ Figure~\ref{fig:position}은 성공한 trajectory의 이전 prefix 전체에서 
 
 \subsection{Discussion}
 
-\noindent\textbf{Implications for instructors.} 우리 결과는 과목이 이 수리를 어떻게 쓸 수 있는지에 대해 세 가지를 시사한다. 첫째, 편집량을 선언하면 그 안에서도 수리가 남는다. AST 연산 20개 안에서 우리 구성은 Seen 버기 프로그램의 44.0\%를 수리하는 반면 \textsc{LSGen}은 13.9\%에 그친다(Section~\ref{sec:rq-effectiveness}). 둘째, 어느 규칙을 쓸지는 coverage와 locality 중 무엇이 제약인지로 갈린다. Progress 규칙은 두 규칙이 모두 수리한 버기 프로그램에서 학생의 token을 더 남기지만 더 적게 수리한다(Section~\ref{sec:rq-locality}). 셋째, 그 선택은 과목 전체가 아니라 문제 단위로 하는 편이 낫다. 비용과 이득이 문제와 학생에 걸쳐 고르지 않기 때문이다(Section~\ref{sec:rq-locality}).
-% EN: \noindent\textbf{Implications for instructors.} Our results suggest three ways a course can use these repairs. First, declaring an edit budget still leaves repairs to show: within 20 AST edit operations our configuration repairs 44.0\% of the Seen buggy programs where \textsc{LSGen} repairs 13.9\% (Section~\ref{sec:rq-effectiveness}). Second, which rule a course uses follows from whether coverage or locality binds, since the Progress rule keeps more of the student's tokens on the buggy programs both rules repair and repairs fewer of them (Section~\ref{sec:rq-locality}). Third, that choice is better made per problem than for a whole course, because cost and gain are uneven across problems and students (Section~\ref{sec:rq-locality}).
+\noindent\textbf{Implications for instructors.} 우리 결과는 과목이 이 수리를 어떻게 쓸 수 있는지에 대해 세 가지를 시사한다. 첫째, 편집량을 선언하면 그 안에서도 수리가 남는다. AST 연산 20개 안에서 우리 구성은 Seen 버기 프로그램의 44.0\%를 수리하는 반면 \textsc{LSGen}은 13.9\%에 그친다(Section~\ref{sec:rq-effectiveness}). 둘째, 어느 규칙을 쓸지는 coverage와 locality 중 무엇이 제약인지로 갈린다. Progress 규칙은 두 규칙이 모두 수리한 버기 프로그램에서 학생의 token을 더 남기지만 더 적게 수리한다(Section~\ref{sec:rq-ablation}). 셋째, 그 선택은 과목 전체가 아니라 문제 단위로 하는 편이 낫다. 비용과 이득이 문제와 학생에 걸쳐 고르지 않기 때문이다(Section~\ref{sec:rq-ablation}).
+% EN: \noindent\textbf{Implications for instructors.} Our results suggest three ways a course can use these repairs. First, declaring an edit budget still leaves repairs to show: within 20 AST edit operations our configuration repairs 44.0\% of the Seen buggy programs where \textsc{LSGen} repairs 13.9\% (Section~\ref{sec:rq-effectiveness}). Second, which rule a course uses follows from whether coverage or locality binds, since the Progress rule keeps more of the student's tokens on the buggy programs both rules repair and repairs fewer of them (Section~\ref{sec:rq-ablation}). Third, that choice is better made per problem than for a whole course, because cost and gain are uneven across problems and students (Section~\ref{sec:rq-ablation}).
 
 \noindent\textbf{Delivering repairs.} patch는 그대로 보일 수도, 바뀐 줄만 추려 보일 수도, 힌트 생성기의 입력으로 넘길 수도 있다~\cite{phung2023generating,roest2024next}. 해답을 그대로 주면 생성된 힌트도 그 해답을 향하므로, 학생 자신의 접근을 더 많이 남긴 patch는 힌트의 입력으로도 더 나을 수 있다.
 % EN: \noindent\textbf{Delivering repairs.} A patch can be shown as it is, reduced to the lines it changed, or passed to a hint generator as input~\cite{phung2023generating,roest2024next}. Since handing a model a solution steers its hints toward that solution, a patch that keeps more of the student's own approach may be the better input for such hints as well.
