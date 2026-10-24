@@ -3,6 +3,7 @@ Writes output/tables.tex ('% rows:<name>' sections for fill_tables.py) and outpu
 Usage: python3 paper/src/summarize.py"""
 import json
 import os
+import random
 import statistics
 from collections import defaultdict
 
@@ -38,6 +39,32 @@ def rr(items):
 def more(a, b):
     """Relative difference of a over b, as the paper's 'X% more/fewer'."""
     return f"{100 * abs(a / b - 1):.1f}"
+
+
+def interval(items, hit, samples=2000, seed=2027):
+    """95% percentile interval, in percent, of the share of items that hit, resampling problems with replacement."""
+    counts = defaultdict(lambda: [0, 0])
+    for r in items:
+        counts[r["problem_id"]][0] += bool(hit(r))
+        counts[r["problem_id"]][1] += 1
+    problems, rng, draws = sorted(counts), random.Random(seed), []
+    for _ in range(samples):
+        pick = [counts[rng.choice(problems)] for _ in problems]
+        draws.append(100 * sum(h for h, _ in pick) / sum(n for _, n in pick))
+    draws.sort()
+    return draws[int(0.025 * samples)], draws[int(0.975 * samples) - 1]
+
+
+def bars(style, axis, points):
+    """One pgfplots bar series with asymmetric error bars; points are (position, items, hit)."""
+    other = "y" if axis == "x" else "x"
+    lines = []
+    for position, items, hit in points:
+        value = 100 * sum(bool(hit(r)) for r in items) / len(items)
+        low, high = interval(items, hit)
+        lines.append(f"{value:.1f} {position} {high - value:.1f} {value - low:.1f}")
+    return (f"\\addplot[{style}, error bars/.cd, {axis} dir=both, {axis} explicit] table[row sep=\\\\, {axis}=v, {other}=at, "
+            f"{axis} error plus=p, {axis} error minus=m] {{v at p m\\\\ {'\\\\ '.join(lines)}\\\\}};")
 
 
 def reach_by_trajectory(steps):
@@ -173,9 +200,11 @@ def main():
         f"{statistics.mean(r['loc'] for r in inputs):.1f} & {num(statistics.median(all_steps))} & {num(statistics.median(all_reach))} \\\\"]
     share = lambda b: sum(x <= b for x in all_reach) / len(all_reach)
     mentored, lsgen = rows("approaches/mentored.jsonl"), rows("approaches/lsgen.jsonl")
+    trajectories = [{"problem_id": p, "reach": x} for p in reach_by_problem for x in reach_by_problem[p]]
+    within = lambda b: (lambda r: r["repaired"] and r["ted_buggy_fixed"] is not None and r["ted_buggy_fixed"] <= b)
     tables["reach"] = [
-        f"\\addplot[reference] coordinates {{(20,{pct(share(20))}) (160,{pct(share(160))})}};",
-        *(f"\\addplot[{style}] coordinates {{(20,{pct(within_budget(m, 20))}) (160,{pct(within_budget(m, 160))}) (none,{pct(rr(m))})}};"
+        bars("reference", "y", [(b, trajectories, lambda r, b=b: r["reach"] <= b) for b in (20, 160)]),
+        *(bars(style, "y", [(20, m, within(20)), (160, m, within(160)), ("none", m, lambda r: r["repaired"])])
           for style, m in (("baseline2", mentored), ("baseline3", lsgen)))]
     numbers.update({"rq1.steps": len(all_steps), "rq1.step.median": num(statistics.median(all_steps)),
                     "rq1.step.mean": f"{statistics.mean(all_steps):.1f}", "rq1.reach.median": num(statistics.median(all_reach)),
@@ -245,16 +274,11 @@ def main():
             numbers[f"rq4.{path}.more"] = more(port, one)
         tables["generality"].append(f"{label} & {' & '.join(cells)} \\\\")
     codes = {"seen": ("SF", "SM", "SL"), "unseen": ("UF", "UM", "UL")}
-    series = {}
-    for name in ("zpdpatch", "one-checkpoint"):
-        coords = []
-        for s in ("seen", "unseen"):
-            items = rows(f"generality/prefix/{s}/{name}.jsonl")
-            for phase, code in zip(("early", "middle", "last"), codes[s]):
-                coords.append(f"({pct(rr([r for r in items if r['trajectory_phase'] == phase]))},{code})")
-        series[name] = " ".join(coords)
-    tables["position"] = [f"\\addplot[proposed] coordinates {{{series['zpdpatch']}}};",
-                          f"\\addplot[variant] coordinates {{{series['one-checkpoint']}}};"]
+    tables["position"] = [
+        bars(style, "x", [(code, [r for r in rows(f"generality/prefix/{s}/{name}.jsonl") if r["trajectory_phase"] == phase],
+                           lambda r: r["repaired"])
+                          for s in ("seen", "unseen") for phase, code in zip(("early", "middle", "last"), codes[s])])
+        for style, name in (("proposed", "zpdpatch"), ("variant", "one-checkpoint"))]
 
     in_text(numbers, mentored, lsgen, steps, t, reach)
     with open(os.path.join(PAPER, "output", "tables.tex"), "w") as f:

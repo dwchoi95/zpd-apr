@@ -16,9 +16,9 @@ p03838 & Sign cases & 141 & 14 & 19.8 & 22 & 76 \\
 % rows:datatotal
 Total & & 1,753 & 287 & 18.6 & 19 & 49 \\
 % rows:reach
-\addplot[reference] coordinates {(20,16.8) (160,86.8)};
-\addplot[baseline2] coordinates {(20,20.3) (160,38.6) (none,40.2)};
-\addplot[baseline3] coordinates {(20,18.5) (160,74.4) (none,92.1)};
+\addplot[reference, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 16.8 20 9.3 7.3\\ 86.8 160 7.4 8.2\\};
+\addplot[baseline2, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 20.3 20 11.9 10.6\\ 38.6 160 15.8 16.5\\ 40.2 none 15.7 16.4\\};
+\addplot[baseline3, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 18.5 20 9.0 7.3\\ 74.4 160 13.9 16.3\\ 92.1 none 5.1 5.8\\};
 % rows:targets
 \multirow{2}{*}{RR (\%)} & Answer & 53.2 & 76.8 & 85.6 \\
  & Progress & 34.0 & 65.6 & 50.8 \\
@@ -44,5 +44,5 @@ Progress better & 0 & 31.1\% \\
 1.5B model & 37.8 & 51.3 & 48.4 & 66.4 \\
 Java & 75.1 & 84.5 & 45.4 & 52.3 \\
 % rows:position
-\addplot[proposed] coordinates {(70.0,SF) (67.6,SM) (71.4,SL) (82.9,UF) (77.3,UM) (81.8,UL)};
-\addplot[variant] coordinates {(52.5,SF) (51.9,SM) (56.7,SL) (71.4,UF) (69.0,UM) (70.2,UL)};
+\addplot[proposed, error bars/.cd, x dir=both, x explicit] table[row sep=\\, x=v, y=at, x error plus=p, x error minus=m] {v at p m\\ 70.0 SF 5.4 5.8\\ 67.6 SM 4.7 4.5\\ 71.4 SL 4.3 4.2\\ 82.9 UF 8.4 10.3\\ 77.3 UM 8.2 8.3\\ 81.8 UL 6.7 7.0\\};
+\addplot[variant, error bars/.cd, x dir=both, x explicit] table[row sep=\\, x=v, y=at, x error plus=p, x error minus=m] {v at p m\\ 52.5 SF 6.3 6.0\\ 51.9 SM 5.0 4.7\\ 56.7 SL 4.7 4.3\\ 71.4 UF 9.8 10.8\\ 69.0 UM 8.6 8.6\\ 70.2 UL 8.5 8.9\\};
