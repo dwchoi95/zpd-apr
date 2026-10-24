@@ -242,8 +242,8 @@ def main():
     numbers["rq1.zpdpatch.unrepaired.own_step.larger"] = more(own(False), own(True))
 
     # Table II and the RQ2 figure: ZPDPatch and the existing techniques on the same buggy programs.
-    others = (("mentored", "\\textsc{Mentored}", mentored), ("lsgen", "\\textsc{LSGen} (GPT-4o)", lsgen),
-              ("lsgen_qwen", "\\textsc{LSGen} (Qwen)", qwen))
+    others = (("mentored", "\\textsc{Mentored}", mentored), ("lsgen_qwen", "\\textsc{LSGen} (Qwen)", qwen),
+              ("lsgen", "\\textsc{LSGen} (GPT-4o)", lsgen))
     mean = lambda m, key: statistics.mean(r[key] for r in fixes(m))
     tables["comparison"] = [
         f"{label} & {pct(rr(m))} & {pct(share_in_reach(m))} & {mean(m, 'ted_buggy_fixed'):.1f} & "
@@ -273,8 +273,16 @@ def main():
             f"rq2.{key}.combined.within_reach.more": more(within_reach(both, rq1_reach), within_reach(m, rq1_reach)),
             f"rq2.{key}.combined.ted.mean": f"{mean(both, 'ted_buggy_fixed'):.1f}"})
     numbers.update({f"rq2.zpdpatch.within{b}": pct(within_budget(zpd, b)) for b in (5, 10, 20)})
-    fewer = [float(more(rr(zpd), rr(m))) for _, _, m in others]
-    numbers["rq2.zpdpatch.rr.fewer.range"] = f"{min(fewer):.1f}--{max(fewer):.1f}"
+    span = lambda values: f"{min(values):.1f}--{max(values):.1f}"
+    numbers["rq2.zpdpatch.rr.fewer.range"] = span([float(more(rr(zpd), rr(m))) for _, _, m in others])
+    numbers["rq2.within_reach.share.more.range"] = span([float(more(share_in_reach(zpd), share_in_reach(m))) for _, _, m in others])
+    for key in ("token_retention", "line_retention"):
+        numbers[f"rq2.{key}.more.range"] = span([float(more(mean(zpd, key), mean(m, key))) for _, _, m in others])
+    numbers["rq2.within5.more.range"] = span([float(more(within_budget(zpd, 5), within_budget(m, 5))) for _, _, m in others])
+    numbers["rq2.lsgen.within20.more.range"] = span([float(more(within_budget(zpd, 20), within_budget(m, 20))) for _, _, m in others[1:]])
+    numbers["rq2.combined.rr.more.range"] = span([float(more(rr(ordered(zpd, m)), rr(m))) for _, _, m in others])
+    numbers["rq2.combined.within_reach.more.range"] = span([float(more(within_reach(ordered(zpd, m), rq1_reach), within_reach(m, rq1_reach))) for _, _, m in others])
+    numbers["rq2.combined.ted.smaller.range"] = span([float(more(mean(ordered(zpd, m), "ted_buggy_fixed"), mean(m, "ted_buggy_fixed"))) for _, _, m in others])
     for key, m in (("lsgen", lsgen), ("lsgen_qwen", qwen)):  # ZPDPatch adds within-reach fixes Mentored does not make
         numbers[f"rq2.mentored_{key}.zpdpatch_first.within_reach.more"] = more(
             within_reach(ordered(zpd, mentored, m), rq1_reach), within_reach(ordered(mentored, m), rq1_reach))
