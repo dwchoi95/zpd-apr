@@ -204,7 +204,9 @@ def main():
     split_of = {r["example_id"]: r["split"] for r in canonical}
     tables["datasplits"] = [bench_row(name.title(), [r for r in canonical if r["split"] == name],
                                       [r for r in canonical_steps if split_of[r["example_id"]] == name]) for name in ("seen", "unseen")]
-    tables["datasplits"].append(bench_row("Java", rows("benchmark/java-inputs.jsonl"), []))
+    java = rows("benchmark/java-inputs.jsonl")
+    tables["datasplits"].append(bench_row("Java", java, []))
+    tables["datasplitstotal"] = [bench_row("Total", canonical + java, [])]  # steps exist for Python only, so none here
     medians = [statistics.median(v) for v in step_by_problem.values()]
     numbers["rq1.step.median.by_problem.range"] = f"{num(min(medians))}--{num(max(medians))}"
     share = lambda b: sum(x <= b for x in all_reach) / len(all_reach)
