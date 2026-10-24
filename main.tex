@@ -420,52 +420,41 @@ Terminal pairing은 trajectory 길이에 선형이고, \(n\)개 제출을 \(m\)�
 \label{sec:settings}
 
 
-\noindent\textbf{Baselines.} Section~\ref{sec:formulation}의 두 기법 그룹에서 최근 기법을 하나씩 골랐다. Reference-driven 기법인 \textsc{Mentored}~\cite{choi2025automated}와 Model-driven 기법인 \textsc{LSGen}~\cite{dai2026learner}이다. \textsc{Mentored}는 같은 문제의 reference program들을 조합해 새 구조를 만들고, 그중 버기 프로그램에 맞는 수정을 test suite로 검증해 반환한다. \textsc{LSGen}은 버기 프로그램과 편집이 가장 비슷한 다른 학생의 오답--정답 쌍을 검색해 LLM에 주고, 실패할 때마다 다시 검색해 수리를 반복한다. LLM으로는 \textsc{LSGen}의 평가에 쓰인 모델 가운데 우리 base model과 같은 Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}를 써서, 두 기법을 같은 모델 위에서 비교한다. 그 평가에서 지금도 쓸 수 있는 모델 가운데 가장 좋았던 GPT-4o~\cite{hurst2024gpt}로도 실행해 함께 보고한다.
-% EN: \noindent\textbf{Baselines.} We selected a recent technique from each of the two repair groups of Section~\ref{sec:formulation}: the Reference-driven \textsc{Mentored}~\cite{choi2025automated} and the Model-driven \textsc{LSGen}~\cite{dai2026learner}. \textsc{Mentored} combines the reference programs of the same problem into new structures and returns a modification fitted to the buggy program once the test suite validates it. \textsc{LSGen} retrieves other students' wrong-to-correct pairs whose edits best match the buggy program, gives them to a Large Language Model (LLM), and repeats the repair, retrieving again after each failure. As the LLM, we used Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, one of the models in the evaluation of \textsc{LSGen} and the base model of \textsc{ZPDPatch}, so that the two techniques are compared on the same model. We also report \textsc{LSGen} with GPT-4o~\cite{hurst2024gpt}, the best-performing model of that evaluation that is still available.
+\noindent\textbf{Baselines.} Section~\ref{sec:formulation}의 두 기법 그룹에서 최근 기법을 하나씩 골랐다. Reference-driven 기법인 \textsc{Mentored}~\cite{choi2025automated}와 Model-driven 기법인 \textsc{LSGen}~\cite{dai2026learner}이다. \textsc{Mentored}는 같은 문제의 reference program들을 조합해 새 구조를 만들고, 그중 버기 프로그램에 맞는 수정을 test suite로 검증해 반환한다. \textsc{LSGen}은 버기 프로그램과 편집이 가장 비슷한 다른 학생의 오답--정답 쌍을 검색해 LLM에 주고, 실패할 때마다 다시 검색해 수리를 반복한다. LLM으로는 \textsc{LSGen}의 평가에 쓰인 모델 가운데 우리 base model과 같은 Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}를 써서 두 기법을 같은 모델 위에서 비교하며, 이 설정을 \textsc{LSGen}\textsubscript{Qwen}이라 부른다. 그 평가에서 지금도 쓸 수 있는 모델 가운데 가장 좋았던 GPT-4o~\cite{hurst2024gpt}로 실행한 \textsc{LSGen}\textsubscript{GPT}도 함께 보고한다.
+% EN: \noindent\textbf{Baselines.} We selected a recent technique from each of the two repair groups of Section~\ref{sec:formulation}: the Reference-driven \textsc{Mentored}~\cite{choi2025automated} and the Model-driven \textsc{LSGen}~\cite{dai2026learner}. \textsc{Mentored} combines the reference programs of the same problem into new structures and returns a modification fitted to the buggy program once the test suite validates it. \textsc{LSGen} retrieves other students' wrong-to-correct pairs whose edits best match the buggy program, gives them to a Large Language Model (LLM), and repeats the repair, retrieving again after each failure. As the LLM, we used Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, one of the models in the evaluation of \textsc{LSGen} and the base model of \textsc{ZPDPatch}, so that the two techniques are compared on the same model; we call this configuration \textsc{LSGen}\textsubscript{Qwen}. We also report \textsc{LSGen}\textsubscript{GPT}, which uses GPT-4o~\cite{hurst2024gpt}, the best-performing model of that evaluation that is still available.
 
 \begin{table}[h]
 \caption{Benchmarks and their students' steps}
 \label{tab:data}
-\centering\scriptsize
-\begin{tabular}{@{}ll||rrrrr@{}}
+\centering\footnotesize
+\begin{tabular}{@{}l||rrrrrr@{}}
 \toprule
-Problem & Concept & Buggy & Test & LOC & Step & Reach \\
+Benchmark & Problems & Buggy & Test & LOC & Step & Reach \\
  & & programs & cases & & & \\
 \midrule
-\multicolumn{7}{@{}l}{\emph{RQ1 and RQ2: 14 AtCoder problems in Python}} \\
+\multicolumn{7}{@{}l}{\emph{RQ1 and RQ2: AtCoder problems in Python, by score}} \\
 % rows:data
-p02623 & Two-stack prefix sums & 102 & 20 & 26.8 & 30.5 & 153.5 \\
-p02659 & Exact decimals & 170 & 22 & 5.7 & 12 & 30 \\
-p02686 & Bracket ordering & 109 & 32 & 44.2 & 23 & 143 \\
-p02694 & Interest loop & 101 & 18 & 8.8 & 6 & 13 \\
-p02742 & Board parity & 120 & 10 & 8.4 & 17 & 23 \\
-p02743 & Square-root bounds & 155 & 27 & 8.2 & 19 & 36 \\
-p02761 & Digit constraints & 143 & 18 & 23.9 & 22 & 50 \\
-p02823 & Distance parity & 106 & 20 & 11.1 & 23 & 50 \\
-p02891 & Repeated-string runs & 170 & 15 & 32.3 & 32 & 135.5 \\
-p02975 & XOR circle & 110 & 24 & 23.2 & 33 & 114 \\
-p03240 & Center search & 116 & 23 & 23.8 & 23 & 85 \\
-p03324 & Divisibility count & 109 & 16 & 7.5 & 15 & 32 \\
-p03438 & Array operations & 101 & 28 & 19.2 & 19 & 58 \\
-p03838 & Sign cases & 141 & 14 & 19.8 & 22 & 76 \\
+200 points & 3 & 330 & 44 & 8.2 & 10 & 22 \\
+300 points & 10 & 1,314 & 211 & 19.1 & 21 & 58 \\
+600 points & 1 & 109 & 32 & 44.2 & 23 & 143 \\
 % end rows
 \midrule
 % rows:datatotal
-Total & & 1,753 & 287 & 18.6 & 19 & 49 \\
+Total & 14 & 1,753 & 287 & 18.6 & 19 & 49 \\
 % end rows
 \midrule
 \multicolumn{7}{@{}l}{\emph{RQ3 and RQ4: Python800 and CodeWorkout}} \\
 % rows:datasplits
-Seen & 328 problems & 997 & 5,523 & 15.7 & 15 & 39 \\
-Unseen & 54 problems & 250 & 642 & 8.3 & 7 & 14.5 \\
-Java & 17 problems & 181 & 305 & 18.0 & -- & -- \\
+Seen & 328 & 997 & 5,523 & 15.7 & 15 & 39 \\
+Unseen & 54 & 250 & 642 & 8.3 & 7 & 14.5 \\
+Java & 17 & 181 & 305 & 18.0 & -- & -- \\
 % end rows
 \bottomrule
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Benchmarks.} RQ1과 RQ2에는 Project CodeNet~\cite{puri2021codenet}의 Python 제출 가운데 FixEval~\cite{haque2023fixeval}의 test suite가 딸린 AtCoder 문제 14개를 쓴다. 학생이 첫 accepted 제출 전에 서로 같지 않은 wrong-answer 제출을 둘 이상 냈고, 모든 제출이 파싱되며, test suite가 모든 verdict를 재현하고, 우리 실행 환경에서도 버기 프로그램이 통과하지 못하는 trajectory만 남겼다. 이런 trajectory가 100개 이상인 문제만 골라 1,753개 trajectory에서 버기 프로그램을 하나씩 쓴다. Table~\ref{tab:data}의 위쪽은 문제마다 주로 다루는 개념, 버기 프로그램 수, test case 수, 버기 프로그램의 평균 줄 수(LOC), 그리고 그 문제 학생들의 걸음(Step)과 demonstrated reach(Reach)의 중앙값을 AST edit operation 단위로 보인다. 문제는 정수 계산을 쓰는 반복문부터 탐색과 정렬까지 걸쳐 있고, 학생 걸음의 중앙값은 문제에 따라 6에서 33까지 다르다.
-% EN: \noindent\textbf{Benchmarks.} For RQ1 and RQ2, we use 14 AtCoder problems whose Python submissions come from Project CodeNet~\cite{puri2021codenet} and whose test suites come from FixEval~\cite{haque2023fixeval}. We kept a trajectory only if the student made at least two wrong-answer submissions, not all identical, before their first accepted one, every submission parses, the test suite reproduces every verdict, and the buggy program still fails in our execution environment. Choosing the problems with at least 100 such trajectories yields 1,753 trajectories, each contributing one buggy program. The upper part of Table~\ref{tab:data} lists, for each problem, the concept it mainly exercises, its numbers of buggy programs and test cases, the average number of lines of its buggy programs (LOC), and the medians of its students' steps (Step) and demonstrated reach (Reach) in AST edit operations. The problems range from loops with integer arithmetic to search and ordering, and the median student step ranges from 6 to 33 operations across them.
+\noindent\textbf{Benchmarks.} RQ1과 RQ2에는 Project CodeNet~\cite{puri2021codenet}의 Python 제출 가운데 FixEval~\cite{haque2023fixeval}의 test suite가 딸린 AtCoder 문제 14개를 쓴다. 학생이 첫 accepted 제출 전에 서로 같지 않은 wrong-answer 제출을 둘 이상 냈고, 모든 제출이 파싱되며, test suite가 모든 verdict를 재현하고, 우리 실행 환경에서도 버기 프로그램이 통과하지 못하는 trajectory만 남겼다. 이런 trajectory가 100개 이상인 문제만 골라 1,753개 trajectory에서 버기 프로그램을 하나씩 쓴다. Table~\ref{tab:data}의 위쪽은 AtCoder가 매긴 배점별로 문제 수, 버기 프로그램 수, test case 수, 버기 프로그램의 평균 줄 수(LOC), 그리고 학생들의 걸음(Step)과 demonstrated reach(Reach)의 중앙값을 AST edit operation 단위로 보인다. 문제는 정수 계산을 쓰는 반복문부터 탐색과 정렬까지 걸쳐 있고, 학생 걸음의 중앙값은 문제에 따라 6에서 33까지 다르다.
+% EN: \noindent\textbf{Benchmarks.} For RQ1 and RQ2, we use 14 AtCoder problems whose Python submissions come from Project CodeNet~\cite{puri2021codenet} and whose test suites come from FixEval~\cite{haque2023fixeval}. We kept a trajectory only if the student made at least two wrong-answer submissions, not all identical, before their first accepted one, every submission parses, the test suite reproduces every verdict, and the buggy program still fails in our execution environment. Choosing the problems with at least 100 such trajectories yields 1,753 trajectories, each contributing one buggy program. The upper part of Table~\ref{tab:data} lists, for each AtCoder score, the numbers of problems, buggy programs, and test cases, the average number of lines of the buggy programs (LOC), and the medians of the students' steps (Step) and demonstrated reach (Reach) in AST edit operations. The problems range from loops with integer arithmetic to search and ordering, and the median student step ranges from 6 to 33 operations across them.
 
 RQ3과 RQ4에는 같은 Python800의 더 큰 코퍼스를 쓴다. 문제를 trajectory 수 순으로 정렬해 상위 90\%인 492개를 Seen, 나머지 54개를 Unseen으로 두고, Seen trajectory는 문제마다 80:10:10으로 학습·검증·테스트에 나눈다. test trajectory의 버기 프로그램은 그 trajectory의 마지막 non-AC 제출이며, Seen 997개(328문제, 평균 15.7줄)와 Unseen 250개(54문제, 평균 8.3줄)다. Seen 버기 프로그램의 70.4\%는 wrong answer이고, 나머지는 runtime error, time limit, compile error다. Java에는 TIKTOC~\cite{duan2025test}가 공개한 입문 프로그래밍(CS1) 과목의 CodeWorkout 제출과 강사가 만든 test suite를 쓴다. 학생 224명과 문제 17개의 trajectory 1,125개이며, 학습에서 뺀 학생 33명의 trajectory 181개가 테스트다. Table~\ref{tab:data}의 아래쪽은 이 세 테스트 집합의 같은 통계를 보인다.
 % EN: For RQ3 and RQ4, we use a larger corpus from the same Python800 benchmark. Ranking the problems by trajectory count, we assign the top 90\%, 492 problems, to Seen and the remaining 54 to Unseen, and split the Seen trajectories of every problem 80:10:10 into training, validation, and test. The buggy program of a test trajectory is its last non-AC submission: 997 on Seen (328 problems, 15.7 lines on average) and 250 on Unseen (54 problems, 8.3 lines). On Seen, 70.4\% of the buggy programs fail with a wrong answer and the rest with a runtime error, a time limit, or a compile error. For Java, we use the CodeWorkout submissions and instructor-written test suites of an Introductory Programming (CS1) course released by TIKTOC~\cite{duan2025test}: 1,125 trajectories of 224 students on 17 problems, of which the 181 trajectories of the 33 students held out of training form the test set. The lower part of Table~\ref{tab:data} gives the same statistics for these three test sets.
@@ -523,27 +512,27 @@ Technique & RR & Within reach & TED & Tokens & Lines \\
 % rows:comparison
 \textsc{ZPDPatch} & 33.3 & 76.7 & 27.3 & 87.9 & 71.3 \\
 \textsc{Mentored} & 40.2 & 70.9 & 39.5 & 80.0 & 42.3 \\
-\textsc{LSGen} (Qwen) & 79.4 & 42.2 & 99.6 & 62.2 & 31.4 \\
-\textsc{LSGen} (GPT-4o) & 92.1 & 46.3 & 89.9 & 64.4 & 31.9 \\
+\textsc{LSGen}\textsubscript{Qwen} & 79.4 & 42.2 & 99.6 & 62.2 & 31.4 \\
+\textsc{LSGen}\textsubscript{GPT} & 92.1 & 46.3 & 89.9 & 64.4 & 31.9 \\
 % end rows
 \bottomrule
 \end{tabular}
 \end{table}
 
-RQ2는 \textsc{ZPDPatch}가 기존 수리 기법과 비교해 어떠한지 묻는다. 이를 위해 RQ1과 같은 버기 프로그램 1,753개를 세 baseline 설정, 즉 \textsc{Mentored}, Qwen2.5-Coder-7B-Instruct를 쓴 \textsc{LSGen}, GPT-4o를 쓴 \textsc{LSGen}으로 수리하고, 모든 patch를 같은 실행 환경에서 판정했다.
-% EN: RQ2 asks how \textsc{ZPDPatch} compares with existing repair techniques. To this end, we repaired the same 1,753 buggy programs as in RQ1 with three baseline configurations, \textsc{Mentored}, \textsc{LSGen} with Qwen2.5-Coder-7B-Instruct, and \textsc{LSGen} with GPT-4o, and judged every patch in the same execution environment.
+RQ2는 \textsc{ZPDPatch}가 기존 수리 기법과 비교해 어떠한지 묻는다. 이를 위해 RQ1과 같은 버기 프로그램 1,753개를 \textsc{Mentored}, \textsc{LSGen}\textsubscript{Qwen}, \textsc{LSGen}\textsubscript{GPT}로 수리하고, 모든 patch를 같은 실행 환경에서 판정했다.
+% EN: RQ2 asks how \textsc{ZPDPatch} compares with existing repair techniques. To this end, we repaired the same 1,753 buggy programs as in RQ1 with \textsc{Mentored}, \textsc{LSGen}\textsubscript{Qwen}, and \textsc{LSGen}\textsubscript{GPT}, and judged every patch in the same execution environment.
 
-Table~\ref{tab:comparison}은 기법마다 RR, 수리한 프로그램 가운데 within reach인 것의 비율, 그리고 수리한 프로그램의 평균 TED와 retention을 보인다. \textsc{ZPDPatch}가 수리한 프로그램은 76.7\%가 within reach로, 그 비율이 기존 기법보다 8.1--81.5\% 높다. Retention은 token에서 9.9--41.3\%, 줄에서 68.6--127.2\% 높다. 두 기법이 모두 수리한 버기 프로그램에서 \textsc{ZPDPatch}의 patch는 TED가 13.4--60.9\% 작다. 특히, 같은 base model을 쓰는 \textsc{LSGen}과 비교하면 함께 수리한 버기 프로그램의 68.9\%에서 \textsc{ZPDPatch}의 patch가 더 작다. 두 기법은 모델이 같고 \textsc{ZPDPatch}만 학생 trajectory로 학습했으므로, 이 차이는 학습이 patch를 학생의 걸음 크기로 만든다는 것을 보여 준다.
-% EN: Table~\ref{tab:comparison} lists, for each technique, the RR, the share of its fixed programs that are within reach, and the mean TED and retention of its fixed programs. Of the fixed programs of \textsc{ZPDPatch}, 76.7\% are within reach, a share 8.1--81.5\% higher than those of the existing techniques. Their retention is 9.9--41.3\% higher in tokens and 68.6--127.2\% higher in lines. On the buggy programs that both techniques repair, the patches of \textsc{ZPDPatch} have a 13.4--60.9\% smaller TED. Notably, against \textsc{LSGen} on the same base model, the patch of \textsc{ZPDPatch} is the smaller one on 68.9\% of the jointly repaired buggy programs. The two techniques share the model and only \textsc{ZPDPatch} learns from student trajectories, so this difference shows that the training makes a patch the size of a student's step.
+Table~\ref{tab:comparison}은 기법마다 RR, 수리한 프로그램 가운데 within reach인 것의 비율, 그리고 수리한 프로그램의 평균 TED와 retention을 보인다. \textsc{ZPDPatch}가 수리한 프로그램은 76.7\%가 within reach로, 그 비율이 기존 기법보다 8.1--81.5\% 높다. Retention은 token에서 9.9--41.3\%, 줄에서 68.6--127.2\% 높다. 두 기법이 모두 수리한 버기 프로그램에서 \textsc{ZPDPatch}의 patch는 TED가 13.4--60.9\% 작다. 특히, 같은 base model을 쓰는 \textsc{LSGen}\textsubscript{Qwen}과 비교하면 함께 수리한 버기 프로그램의 68.9\%에서 \textsc{ZPDPatch}의 patch가 더 작다. 두 기법은 모델이 같고 \textsc{ZPDPatch}만 학생 trajectory로 학습했으므로, 이 차이는 학습이 patch를 학생의 걸음 크기로 만든다는 것을 보여 준다.
+% EN: Table~\ref{tab:comparison} lists, for each technique, the RR, the share of its fixed programs that are within reach, and the mean TED and retention of its fixed programs. Of the fixed programs of \textsc{ZPDPatch}, 76.7\% are within reach, a share 8.1--81.5\% higher than those of the existing techniques. Their retention is 9.9--41.3\% higher in tokens and 68.6--127.2\% higher in lines. On the buggy programs that both techniques repair, the patches of \textsc{ZPDPatch} have a 13.4--60.9\% smaller TED. Notably, against \textsc{LSGen}\textsubscript{Qwen}, which shares the base model, the patch of \textsc{ZPDPatch} is the smaller one on 68.9\% of the jointly repaired buggy programs. The two techniques share the model and only \textsc{ZPDPatch} learns from student trajectories, so this difference shows that the training makes a patch the size of a student's step.
 
-Edit budget이 작을 때는 이 차이가 수리 수로 이어진다. Budget 5 안에서 \textsc{ZPDPatch}는 버기 프로그램의 7.0\%를 수리해 기존 기법보다 26.8--105.0\% 많이 수리하고, budget 20에서도 두 \textsc{LSGen} 설정보다 2.5--9.9\% 많이 수리한다.
-% EN: Under a small edit budget, this difference turns into more repairs. Within a budget of 5, \textsc{ZPDPatch} repairs 7.0\% of the buggy programs, 26.8--105.0\% more than the existing techniques, and at a budget of 20 it still repairs 2.5--9.9\% more than both \textsc{LSGen} configurations.
+Edit budget이 작을 때는 이 차이가 수리 수로 이어진다. Budget 5 안에서 \textsc{ZPDPatch}는 버기 프로그램의 7.0\%를 수리해 기존 기법보다 26.8--105.0\% 많이 수리하고, budget 20에서도 \textsc{LSGen}\textsubscript{Qwen}과 \textsc{LSGen}\textsubscript{GPT}보다 2.5--9.9\% 많이 수리한다.
+% EN: Under a small edit budget, this difference turns into more repairs. Within a budget of 5, \textsc{ZPDPatch} repairs 7.0\% of the buggy programs, 26.8--105.0\% more than the existing techniques, and at a budget of 20 it still repairs 2.5--9.9\% more than \textsc{LSGen}\textsubscript{Qwen} and \textsc{LSGen}\textsubscript{GPT}.
 
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}
 \begin{axis}[ybar, disabledatascaling, width=\columnwidth, height=4.6cm, bar width=12pt, enlarge x limits=0.22,
- symbolic x coords={mentored,lsgen_qwen,lsgen}, xtick=data, xticklabels={\textsc{Mentored}, \textsc{LSGen} (Qwen), \textsc{LSGen} (GPT-4o)},
+ symbolic x coords={mentored,lsgen_qwen,lsgen}, xtick=data, xticklabels={\textsc{Mentored}, \textsc{LSGen}\textsubscript{Qwen}, \textsc{LSGen}\textsubscript{GPT}},
  ymin=0, ymax=75, ytick={0,20,40,60}, ylabel={Within-reach RR (\%)}, ymajorgrids, grid style={gray!25},
  nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=1]{\pgfplotspointmeta}}, visualization depends on={\thisrow{p} \as \ep}, every node near coord/.append style={font=\tiny, yshift=\ep*\pgfplotsunitylength, rotate=90, anchor=west},
  legend columns=2, area legend, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
@@ -558,8 +547,8 @@ Edit budget이 작을 때는 이 차이가 수리 수로 이어진다. Budget 5 
 \label{fig:combined}
 \end{figure}
 
-Figure~\ref{fig:combined}는 각 기존 기법의 within-reach repair rate를 단독으로 쓸 때와 \textsc{ZPDPatch} 다음에 둘 때로 나누어 보인다. Budget이 없으면 \textsc{ZPDPatch} 혼자서는 기존 기법보다 17.3--63.9\% 적게 수리한다(Table~\ref{tab:comparison}). 이 차이는 목표에서 온다. \textsc{ZPDPatch}는 학생 자신의 이후 제출을 target으로 배워 학생의 걸음 크기 안에서 고치는 반면, 기존 기법은 test suite를 통과하는 어떤 프로그램이든 향하고, \textsc{LSGen}은 실패할 때마다 다른 학생의 수정을 다시 검색해 수리를 반복한다. 정답 프로그램이 꼭 필요하다면, Algorithm~\ref{alg:generic}은 순서가 정해진 어떤 generator든 받으므로 기존 기법을 \textsc{ZPDPatch} 다음 generator로 둘 수 있다. 그러면 RR은 줄지 않고 오히려 1.1--42.3\% 늘며, within-reach repair rate는 18.3--47.4\% 늘고, 수리한 프로그램의 평균 TED는 8.3--16.9\% 작아진다. \textsc{Mentored} 다음에 \textsc{LSGen}을 두는 순서 앞에 \textsc{ZPDPatch}를 넣어도 within-reach repair rate가 9.0--17.0\% 더 늘어나므로, \textsc{ZPDPatch}가 reach 안에서 고치는 버기 프로그램은 다른 기법이 대신하지 못한다. 이 결과들은 \textsc{ZPDPatch}가 기존 기법보다 학생의 reach 안에 머무는 patch를 내며, 기존 기법과 함께 쓰면 그 RR을 지키면서 reach 안의 수리를 늘린다는 것을 보여 준다.
-% EN: Figure~\ref{fig:combined} plots the within-reach repair rate of each existing technique alone and placed after \textsc{ZPDPatch}. Without a budget, \textsc{ZPDPatch} alone repairs 17.3--63.9\% fewer buggy programs than the existing techniques (Table~\ref{tab:comparison}). This gap comes from the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets and repairs within a student's step, whereas the existing techniques head for any program that passes the test suite, and \textsc{LSGen} retrieves other students' fixes again after each failure and repeats the repair. When a correct program is required, Algorithm~\ref{alg:generic} accepts any ordered set of generators, so an existing technique can follow \textsc{ZPDPatch} as the next generator. The RR then does not drop but rises by 1.1--42.3\%, the within-reach repair rate rises by 18.3--47.4\%, and the mean TED of the fixed programs shrinks by 8.3--16.9\%. Placing \textsc{ZPDPatch} ahead of \textsc{Mentored} followed by \textsc{LSGen} still raises the within-reach repair rate by 9.0--17.0\%, so no other technique replaces the buggy programs that \textsc{ZPDPatch} repairs within reach. These results show that \textsc{ZPDPatch} returns patches that stay within the student's reach more often than existing techniques do, and that combined with an existing technique it keeps that technique's RR while adding repairs within reach.
+Figure~\ref{fig:combined}는 각 기존 기법의 within-reach repair rate를 단독으로 쓸 때와 \textsc{ZPDPatch} 다음에 둘 때로 나누어 보인다. Budget이 없으면 \textsc{ZPDPatch} 혼자서는 기존 기법보다 17.3--63.9\% 적게 수리한다(Table~\ref{tab:comparison}). 이 차이는 목표에서 온다. \textsc{ZPDPatch}는 학생 자신의 이후 제출을 target으로 배워 학생의 걸음 크기 안에서 고치는 반면, 기존 기법은 test suite를 통과하는 어떤 프로그램이든 향하고, \textsc{LSGen}은 실패할 때마다 다른 학생의 수정을 다시 검색해 수리를 반복한다. 정답 프로그램이 꼭 필요하다면, Algorithm~\ref{alg:generic}은 순서가 정해진 어떤 generator든 받으므로 기존 기법을 \textsc{ZPDPatch} 다음 generator로 둘 수 있다. 그러면 RR은 줄지 않고 오히려 1.1--42.3\% 늘며, within-reach repair rate는 18.3--47.4\% 늘고, 수리한 프로그램의 평균 TED는 8.3--16.9\% 작아진다. \textsc{Mentored} 다음에 \textsc{LSGen}\textsubscript{Qwen}이나 \textsc{LSGen}\textsubscript{GPT}를 두는 순서 앞에 \textsc{ZPDPatch}를 넣어도 within-reach repair rate가 9.0--17.0\% 더 늘어나므로, \textsc{ZPDPatch}가 reach 안에서 고치는 버기 프로그램은 다른 기법이 대신하지 못한다. 이 결과들은 \textsc{ZPDPatch}가 기존 기법보다 학생의 reach 안에 머무는 patch를 내며, 기존 기법과 함께 쓰면 그 RR을 지키면서 reach 안의 수리를 늘린다는 것을 보여 준다.
+% EN: Figure~\ref{fig:combined} plots the within-reach repair rate of each existing technique alone and placed after \textsc{ZPDPatch}. Without a budget, \textsc{ZPDPatch} alone repairs 17.3--63.9\% fewer buggy programs than the existing techniques (Table~\ref{tab:comparison}). This gap comes from the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets and repairs within a student's step, whereas the existing techniques head for any program that passes the test suite, and \textsc{LSGen} retrieves other students' fixes again after each failure and repeats the repair. When a correct program is required, Algorithm~\ref{alg:generic} accepts any ordered set of generators, so an existing technique can follow \textsc{ZPDPatch} as the next generator. The RR then does not drop but rises by 1.1--42.3\%, the within-reach repair rate rises by 18.3--47.4\%, and the mean TED of the fixed programs shrinks by 8.3--16.9\%. Placing \textsc{ZPDPatch} ahead of \textsc{Mentored} followed by \textsc{LSGen}\textsubscript{Qwen} or \textsc{LSGen}\textsubscript{GPT} still raises the within-reach repair rate by 9.0--17.0\%, so no other technique replaces the buggy programs that \textsc{ZPDPatch} repairs within reach. These results show that \textsc{ZPDPatch} returns patches that stay within the student's reach more often than existing techniques do, and that combined with an existing technique it keeps that technique's RR while adding repairs within reach.
 
 \subsection{RQ3: Ablation Study}
 \label{sec:rq-ablation}

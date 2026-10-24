@@ -10,15 +10,6 @@ from collections import defaultdict
 PAPER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # <repo>/paper/
 OUT = os.path.join(os.path.dirname(PAPER), "output")                   # <repo>/output/
 
-CONCEPTS = {
-    "p02623": "Two-stack prefix sums", "p02659": "Exact decimals", "p02686": "Bracket ordering",
-    "p02694": "Interest loop", "p02742": "Board parity", "p02743": "Square-root bounds",
-    "p02761": "Digit constraints", "p02823": "Distance parity", "p02891": "Repeated-string runs",
-    "p02975": "XOR circle", "p03240": "Center search", "p03324": "Divisibility count",
-    "p03438": "Array operations", "p03838": "Sign cases",
-}
-
-
 def rows(path):
     with open(os.path.join(OUT, path), encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
@@ -185,38 +176,36 @@ def main():
 
     # Table I and Figure 1: the RQ1 benchmark and its students' steps.
     inputs, steps = rows("benchmark/rq1-inputs.jsonl"), rows("benchmark/rq1-student-steps.jsonl")
-    by_problem = defaultdict(list)
-    for r in inputs:
-        by_problem[r["problem_id"]].append(r)
     step_by_problem, reach_by_problem = defaultdict(list), defaultdict(list)
     for r in steps:
         defined = [s for s in r["step_ted"] if s is not None]
         p = r["example_id"].split(":")[0]
         step_by_problem[p] += defined
         reach_by_problem[p].append(max(defined))
-    tables["data"] = [
-        f"{p} & {CONCEPTS[p]} & {len(rs)} & {rs[0]['tests']} & {statistics.mean(r['loc'] for r in rs):.1f} & "
-        f"{num(statistics.median(step_by_problem[p]))} & {num(statistics.median(reach_by_problem[p]))} \\\\"
-        for p, rs in sorted(by_problem.items())]
     all_steps = [s for p in step_by_problem for s in step_by_problem[p]]
     all_reach = [x for p in reach_by_problem for x in reach_by_problem[p]]
-    tables["datatotal"] = [
-        f"Total & & {len(inputs):,} & {sum(rs[0]['tests'] for rs in by_problem.values())} & "
-        f"{statistics.mean(r['loc'] for r in inputs):.1f} & {num(statistics.median(all_steps))} & {num(statistics.median(all_reach))} \\\\"]
-    # Table I, lower part: the test sets of RQ3 and RQ4 (no student steps for Java).
-    canonical, canonical_steps = rows("benchmark/canonical-inputs.jsonl"), rows("benchmark/canonical-student-steps.jsonl")
-    split_of = {r["example_id"]: r["split"] for r in canonical}
 
-    def split_row(label, items, split_steps):
+    def bench_row(label, items, step_rows):
+        """One row of Table I: problems, buggy programs, test cases, mean LOC, and median step and reach."""
         tests = {r["problem_id"]: r["tests"] for r in items}
-        defined = [d for d in ([s for s in r["step_ted"] if s is not None] for r in split_steps) if d]
+        defined = [d for d in ([s for s in r["step_ted"] if s is not None] for r in step_rows) if d]
         step = num(statistics.median(s for d in defined for s in d)) if defined else "--"
         reach = num(statistics.median(max(d) for d in defined)) if defined else "--"
-        return (f"{label} & {len(tests)} problems & {len(items):,} & {sum(tests.values()):,} & "
+        return (f"{label} & {len(tests)} & {len(items):,} & {sum(tests.values()):,} & "
                 f"{statistics.mean(r['loc'] for r in items):.1f} & {step} & {reach} \\\\")
-    tables["datasplits"] = [split_row(name.title(), [r for r in canonical if r["split"] == name],
+    # Upper part: the RQ1 benchmark by AtCoder score; lower part: the test sets of RQ3 and RQ4 (no student steps for Java).
+    score = {r["problem_id"]: r["score"] for r in inputs}
+    tables["data"] = [bench_row(f"{points} points", [r for r in inputs if r["score"] == points],
+                                [r for r in steps if score[r["example_id"].split(":")[0]] == points])
+                      for points in sorted(set(score.values()))]
+    tables["datatotal"] = [bench_row("Total", inputs, steps)]
+    canonical, canonical_steps = rows("benchmark/canonical-inputs.jsonl"), rows("benchmark/canonical-student-steps.jsonl")
+    split_of = {r["example_id"]: r["split"] for r in canonical}
+    tables["datasplits"] = [bench_row(name.title(), [r for r in canonical if r["split"] == name],
                                       [r for r in canonical_steps if split_of[r["example_id"]] == name]) for name in ("seen", "unseen")]
-    tables["datasplits"].append(split_row("Java", rows("benchmark/java-inputs.jsonl"), []))
+    tables["datasplits"].append(bench_row("Java", rows("benchmark/java-inputs.jsonl"), []))
+    medians = [statistics.median(v) for v in step_by_problem.values()]
+    numbers["rq1.step.median.by_problem.range"] = f"{num(min(medians))}--{num(max(medians))}"
     share = lambda b: sum(x <= b for x in all_reach) / len(all_reach)
     mentored, lsgen = rows("approaches/mentored.jsonl"), rows("approaches/lsgen.jsonl")
     trajectories = [{"problem_id": p, "reach": x} for p in reach_by_problem for x in reach_by_problem[p]]
@@ -256,8 +245,8 @@ def main():
     numbers["rq1.zpdpatch.unrepaired.own_step.larger"] = more(own(False), own(True))
 
     # Table II and the RQ2 figure: ZPDPatch and the existing techniques on the same buggy programs.
-    others = (("mentored", "\\textsc{Mentored}", mentored), ("lsgen_qwen", "\\textsc{LSGen} (Qwen)", qwen),
-              ("lsgen", "\\textsc{LSGen} (GPT-4o)", lsgen))
+    others = (("mentored", "\\textsc{Mentored}", mentored), ("lsgen_qwen", "\\textsc{LSGen}\\textsubscript{Qwen}", qwen),
+              ("lsgen", "\\textsc{LSGen}\\textsubscript{GPT}", lsgen))
     mean = lambda m, key: statistics.mean(r[key] for r in fixes(m))
     tables["comparison"] = [
         f"{label} & {pct(rr(m))} & {pct(share_in_reach(m))} & {mean(m, 'ted_buggy_fixed'):.1f} & "
