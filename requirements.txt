@@ -10,3 +10,5 @@ apted==1.0.3
 accelerate>=1.0
 bitsandbytes>=0.44; platform_system == "Linux"
 vllm>=0.18.0; platform_system == "Linux"
+# loaded by pickle when reading the TIKTOC release (build-data --benchmark codeworkout)
+javalang==0.13.0

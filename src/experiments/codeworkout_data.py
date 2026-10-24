@@ -3,7 +3,8 @@
 Steps: export the official pickle in an isolated process (bubblewrap), compile every submission in the Java judge image
 (docker/java/Dockerfile), build first-accepted trajectories split by student, drop trajectories over 4,096 tokens, and
 write the student- and exercise-held-out datasets and the matched Answer/Progress datasets of RQ2.
-Needs Linux with bubblewrap for the export and Docker for the compile step."""
+Needs Linux with bubblewrap for the export (the pickle stores javalang objects, so javalang must be importable) and
+Docker for the compile step."""
 
 from __future__ import annotations
 
@@ -22,7 +23,8 @@ ROOT = HERE.parent.parent
 
 
 def _run(*args: object) -> None:
-    subprocess.run([str(arg) for arg in args], check=True, env={**os.environ, "PYTHONPATH": str(ROOT)})
+    path = os.pathsep.join(filter(None, (str(ROOT), os.environ.get("PYTHONPATH"))))
+    subprocess.run([str(arg) for arg in args], check=True, env={**os.environ, "PYTHONPATH": path})
 
 
 def _script(name: str, *args: object) -> None:
@@ -52,12 +54,10 @@ def build_codeworkout_benchmark(
     work = output_root / "work"
     work.mkdir(parents=True)
     pickle = _pickle(source_root.resolve(), work)
-    # The pickle stores javalang objects, so the isolated export needs javalang on its path.
-    _run(sys.executable, "-m", "pip", "install", "--quiet", "--target", work / "deps", "javalang==0.13.0")
     submissions = output_root / "submissions.jsonl"
     _run("bwrap", "--ro-bind", "/", "/", "--dev", "/dev", "--proc", "/proc", "--tmpfs", "/tmp",
          "--bind", output_root.resolve(), output_root.resolve(), "--unshare-all", "--die-with-parent", "--new-session",
-         "--setenv", "PYTHONPATH", (work / "deps").resolve(), sys.executable, HERE / "export_tiktoc_codeworkout.py",
+         sys.executable, HERE / "export_tiktoc_codeworkout.py",
          pickle.resolve(), submissions.resolve(), "--acknowledge-trusted-pickle")
     _script("prepare_codeworkout_java_sources", submissions, work / "java-sources")
     _script("compile_codeworkout_in_container", work / "java-sources", work / "compile-status", "--image", image)
