@@ -16,7 +16,9 @@
  baseline2/.style={fill=gray!60, draw=black},
  baseline3/.style={fill=gray!85, draw=black},
  proposed/.style={fill=blue!12, postaction={pattern=north east lines, pattern color=blue!50}, draw=black},
- variant/.style={fill=gray!25, draw=black}}
+ variant/.style={fill=gray!25, draw=black},
+ referenceline/.style={gray!70!black, thick},
+ proposedline/.style={blue!70!black, thick}}
 \usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds,patterns}
 \hypersetup{pdftitle={ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence},pdfauthor={}}
 \title{ZPDPatch: Supervising Program Repair for Programming Assignments with Students' Own Execution Evidence}
@@ -402,24 +404,22 @@ Terminal pairing은 trajectory 길이에 선형이고, \(n\)개 제출을 \(m\)�
 이 절에서 우리는 다음 연구 질문에 답하기 위해 \textsc{ZPDPatch}를 평가한다:
 % EN: In this section, we evaluate \textsc{ZPDPatch} to answer the following research questions:
 \begin{itemize}
-\item RQ1: \textsc{ZPDPatch}는 버기 프로그램을 얼마나 효과적으로 수리하는가?
-% EN: \item RQ1: How effectively does \textsc{ZPDPatch} repair buggy programs?
-\item RQ2: target rule은 patch가 학생의 프로그램을 얼마나 남기는지를 어떻게 바꾸는가?
-% EN: \item RQ2: How does the target rule change how much of the student's program a patch keeps?
+\item RQ1: \textsc{ZPDPatch}의 patch는 학생의 demonstrated reach 안에 얼마나 머무는가?
+% EN: \item RQ1: How often do the patches of \textsc{ZPDPatch} stay within the student's demonstrated reach?
+\item RQ2: \textsc{ZPDPatch}는 기존 수리 기법과 비교해 어떠한가?
+% EN: \item RQ2: How does \textsc{ZPDPatch} compare with existing repair techniques?
 \item RQ3: \textsc{ZPDPatch}의 각 설계 선택은 수리에 얼마나 기여하는가?
 % EN: \item RQ3: How much does each design choice of \textsc{ZPDPatch} contribute to repair?
 \item RQ4: portfolio의 이득은 모델 규모, 언어, 학생 집단, trajectory 위치에 걸쳐 유지되는가?
 % EN: \item RQ4: Does the gain of the portfolio hold across model scale, language, student population, and trajectory position?
 \end{itemize}
-\textsc{ZPDPatch}의 학습과 생성, 그리고 모든 patch의 판정은 NVIDIA RTX 5090 한 장을 단 Ubuntu 26.04 LTS 머신에서 수행했다.
-% EN: We trained and ran \textsc{ZPDPatch}, and judged every patch, on a machine with one NVIDIA RTX 5090 running Ubuntu 26.04 LTS.
 
 \subsection{Experimental Settings}
 \label{sec:settings}
 
 
-\noindent\textbf{Baselines.} Section~\ref{sec:formulation}의 두 기법 그룹에서 최근 기법을 하나씩 골랐다. Reference-driven 기법인 \textsc{Mentored}~\cite{choi2025automated}와 Model-driven 기법인 \textsc{LSGen}~\cite{dai2026learner}이다. \textsc{Mentored}는 같은 문제의 reference program들을 조합해 새 구조를 만들고, 그중 버기 프로그램에 맞는 수정을 test suite로 검증해 반환한다. \textsc{LSGen}은 버기 프로그램과 편집이 가장 비슷한 다른 학생의 오답--정답 쌍을 검색해 LLM에 주고, 실패할 때마다 다시 검색해 수리를 반복한다. LLM으로는 \textsc{LSGen}의 평가에서 지금도 쓸 수 있는 모델 가운데 가장 좋았던 GPT-4o~\cite{hurst2024gpt}를 썼다.
-% EN: \noindent\textbf{Baselines.} We selected a recent technique from each of the two repair groups of Section~\ref{sec:formulation}: the Reference-driven \textsc{Mentored}~\cite{choi2025automated} and the Model-driven \textsc{LSGen}~\cite{dai2026learner}. \textsc{Mentored} combines the reference programs of the same problem into new structures and returns a modification fitted to the buggy program once the test suite validates it. \textsc{LSGen} retrieves other students' wrong-to-correct pairs whose edits best match the buggy program, gives them to a Large Language Model (LLM), and repeats the repair, retrieving again after each failure. As the LLM, we used GPT-4o~\cite{hurst2024gpt}, the best-performing model in the evaluation of \textsc{LSGen} that is still available.
+\noindent\textbf{Baselines.} Section~\ref{sec:formulation}의 두 기법 그룹에서 최근 기법을 하나씩 골랐다. Reference-driven 기법인 \textsc{Mentored}~\cite{choi2025automated}와 Model-driven 기법인 \textsc{LSGen}~\cite{dai2026learner}이다. \textsc{Mentored}는 같은 문제의 reference program들을 조합해 새 구조를 만들고, 그중 버기 프로그램에 맞는 수정을 test suite로 검증해 반환한다. \textsc{LSGen}은 버기 프로그램과 편집이 가장 비슷한 다른 학생의 오답--정답 쌍을 검색해 LLM에 주고, 실패할 때마다 다시 검색해 수리를 반복한다. LLM으로는 \textsc{LSGen}의 평가에 쓰인 모델 가운데 우리 base model과 같은 Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}를 써서, 두 기법을 같은 모델 위에서 비교한다. 그 평가에서 지금도 쓸 수 있는 모델 가운데 가장 좋았던 GPT-4o~\cite{hurst2024gpt}로도 실행해 함께 보고한다.
+% EN: \noindent\textbf{Baselines.} We selected a recent technique from each of the two repair groups of Section~\ref{sec:formulation}: the Reference-driven \textsc{Mentored}~\cite{choi2025automated} and the Model-driven \textsc{LSGen}~\cite{dai2026learner}. \textsc{Mentored} combines the reference programs of the same problem into new structures and returns a modification fitted to the buggy program once the test suite validates it. \textsc{LSGen} retrieves other students' wrong-to-correct pairs whose edits best match the buggy program, gives them to a Large Language Model (LLM), and repeats the repair, retrieving again after each failure. As the LLM, we used Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, one of the models in the evaluation of \textsc{LSGen} and the base model of \textsc{ZPDPatch}, so that the two techniques are compared on the same model. We also report \textsc{LSGen} with GPT-4o~\cite{hurst2024gpt}, the best-performing model of that evaluation that is still available.
 
 \begin{table}[h]
 \caption{RQ1 benchmark problems and their students' steps}
@@ -482,19 +482,43 @@ Answer-9Choose3 & C & 69.5 & 35.41 & 82.0 & 20.06 \\
 \end{tabular}
 \end{table}
 
-\noindent\textbf{Evaluation Metrics.} 효과는 네 지표로 잰다. \emph{Repair Rate}(RR)는 patch가 모든 test case를 통과하는 버기 프로그램의 비율이다. Tree Edit Distance(TED)는 버기 프로그램과 patch의 Abstract Syntax Tree(AST) 사이 편집 연산 수로 patch의 크기를 잰다~\cite{zhang1989simple,pawlik2016tree}. edit budget \(B\)에서의 RR은 TED가 \(B\) 이하인 patch만 센다. \emph{Retention}은 버기 프로그램의 token(또는 공백이 아닌 줄) 가운데 patch에 남은 비율이다. \emph{Within-reach repair rate}는 patch가 모든 test case를 통과하고 그 TED가 그 학생의 demonstrated reach(Section~\ref{sec:limitation}) 이하인 버기 프로그램의 비율이며, 학생의 Zone of Proximal Development(ZPD) 안 patch를 근사한다. 그림의 오차 막대는 문제 단위 bootstrap 95\% 구간이다~\cite{efron1992bootstrap}.
-% EN: \noindent\textbf{Evaluation Metrics.} We measure effectiveness with four metrics. The \emph{Repair Rate} (RR) is the fraction of buggy programs whose patch passes every test case. The Tree Edit Distance (TED) between the Abstract Syntax Trees (ASTs) of the buggy program and the patch measures the size of the patch in edit operations~\cite{zhang1989simple,pawlik2016tree}, and the RR within an edit budget \(B\) counts only the patches whose TED is at most \(B\). \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the patch. The \emph{within-reach repair rate} is the fraction of buggy programs whose patch passes every test case with a TED no larger than the student's demonstrated reach (Section~\ref{sec:limitation}); it approximates a patch within the student's Zone of Proximal Development (ZPD). Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1992bootstrap}.
+\noindent\textbf{Evaluation Metrics.} patch의 크기는 버기 프로그램과 patch의 Abstract Syntax Tree(AST) 사이 Tree Edit Distance(TED), 즉 편집 연산 수로 잰다~\cite{zhang1989simple,pawlik2016tree}. \emph{Retention}은 버기 프로그램의 token(또는 공백이 아닌 줄) 가운데 patch에 남은 비율이다. 모든 test case를 통과하는 patch의 TED가 그 학생의 demonstrated reach(Section~\ref{sec:limitation}) 이하이면 그 patch는 \emph{within reach}이며, 이는 학생의 Zone of Proximal Development(ZPD) 안 patch를 근사한다. \emph{Repair Rate}(RR)는 patch가 모든 test case를 통과하는 버기 프로그램의 비율이고, edit budget \(B\)에서의 RR은 TED가 \(B\) 이하인 patch만 센다. \emph{Within-reach repair rate}는 within reach인 patch로 수리된 버기 프로그램의 비율이다. 그림의 오차 막대는 문제 단위 bootstrap 95\% 구간이다~\cite{efron1992bootstrap}.
+% EN: \noindent\textbf{Evaluation Metrics.} The Tree Edit Distance (TED) between the Abstract Syntax Trees (ASTs) of the buggy program and the patch measures the size of the patch in edit operations~\cite{zhang1989simple,pawlik2016tree}. \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the patch. A patch that passes every test case is \emph{within reach} if its TED is no larger than the student's demonstrated reach (Section~\ref{sec:limitation}), which approximates a patch within the student's Zone of Proximal Development (ZPD). The \emph{Repair Rate} (RR) is the fraction of buggy programs whose patch passes every test case, and the RR within an edit budget \(B\) counts only the patches whose TED is at most \(B\). The \emph{within-reach repair rate} is the fraction of buggy programs repaired by a patch within reach. Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1992bootstrap}.
+
+\noindent\textbf{Implementation Details.} \textsc{ZPDPatch}의 base model로 Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}를 골랐다. 이 모델은 \textsc{LSGen}의 평가에 쓰인 공개 모델이라 두 기법을 같은 모델 위에서 비교할 수 있다. 반면 같은 평가의 GPT-4o 같은 상용 모델은 가중치를 학습할 수 없어 \textsc{ZPDPatch}의 base model이 될 수 없다. 각 adapter는 4-bit로 양자화한 base model의 attention과 feed-forward projection에 Low-Rank Adaptation(LoRA)을 붙여 QLoRA~\cite{dettmers2023qlora}로 학습한다. 설정은 rank 16, \(\alpha=32\), learning rate \(2\times10^{-4}\), batch 16, 1 epoch이고, validation loss로 조기 종료한다. patch는 greedy decoding으로 생성한다. RQ1 벤치마크에서는 그 학생들을 학습과 검증에서 빼고 같은 설정으로 다시 학습했다. RQ4의 1.5B 모델은 같은 계열의 Qwen2.5-Coder-1.5B-Instruct다. 모든 학습과 생성, patch 판정은 NVIDIA RTX 5090 한 장을 단 Ubuntu 26.04 LTS 머신에서 수행했다.
+% EN: \noindent\textbf{Implementation Details.} We chose Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2} as the base model of \textsc{ZPDPatch}. It is an open model from the evaluation of \textsc{LSGen}, so the two techniques can be compared on the same model, whereas commercial models of that evaluation such as GPT-4o cannot be fine-tuned and thus cannot serve as the base model of \textsc{ZPDPatch}. Each adapter attaches Low-Rank Adaptation (LoRA) to the attention and feed-forward projections of the base model quantized to 4 bits and is trained with QLoRA~\cite{dettmers2023qlora}, using rank 16, \(\alpha=32\), a learning rate of \(2\times10^{-4}\), a batch size of 16, and one epoch, with early stopping on validation loss. Patches are generated by greedy decoding. For the RQ1 benchmark, we retrained with the same settings after removing its students from training and validation. The 1.5B model of RQ4 is Qwen2.5-Coder-1.5B-Instruct from the same family. All training, generation, and judging ran on a machine with one NVIDIA RTX 5090 running Ubuntu 26.04 LTS.
 
 
-\subsection{RQ1: Repair Effectiveness}
+\subsection{RQ1: Repairs Within Reach}
 \label{sec:rq-effectiveness}
 
-\begin{figure}[t]
+\begin{figure}[h]
 \centering
-\includegraphics{output/fse2027-budget-frontier.pdf}
-\caption{Seen repair rate at each declared edit budget}
-\label{fig:budget}
+\begin{tikzpicture}
+\begin{axis}[width=\columnwidth, height=4.2cm, xmode=log, xmin=1, xmax=1000, ymin=0, ymax=100,
+ xtick={1,10,100,1000}, xticklabels={1,10,100,1000}, ytick={0,25,50,75,100},
+ xlabel={Size (AST edit operations)}, ylabel={Cumulative share (\%)}, ymajorgrids, grid style={gray!25},
+ legend pos=south east, legend cell align=left]
+% rows:patchsize
+\addplot[referenceline] coordinates {(1,7.4) (2,10.9) (3,15.0) (5,20.5) (7,27.3) (10,33.8) (15,43.7) (20,52.3) (30,64.7) (50,77.8) (70,83.6) (100,88.9) (150,94.6) (200,97.7) (300,99.2) (500,99.9) (1000,100.0)};
+\addplot[proposedline] coordinates {(1,6.3) (2,10.6) (3,13.7) (5,21.1) (7,26.1) (10,31.9) (15,42.9) (20,57.1) (30,70.5) (50,87.5) (70,92.3) (100,96.4) (150,98.3) (200,99.7) (300,99.8) (500,100.0) (1000,100.0)};
+% end rows
+\draw[densely dotted] (axis cs:49,0) -- (axis cs:49,100) node[pos=0.93, anchor=east, font=\tiny] {Median reach};
+\legend{Student steps, \textsc{ZPDPatch} patches}
+\end{axis}
+\end{tikzpicture}
+\caption{Sizes of the patches of \textsc{ZPDPatch} and of students' steps}
+\label{fig:patchsize}
 \end{figure}
+
+RQ1은 \textsc{ZPDPatch}의 patch가 학생의 demonstrated reach 안에 얼마나 머무는지 묻는다. 이를 위해 RQ1 벤치마크의 버기 프로그램 1,753개를 수리하고, 수리된 patch의 크기를 같은 학생들이 스스로 내딛은 걸음 6,820개의 크기와 AST edit operation 단위로 비교했다.
+% EN: RQ1 asks how often the patches of \textsc{ZPDPatch} stay within the student's demonstrated reach. To this end, we repaired the 1,753 buggy programs of the RQ1 benchmark and compared the size of each patch that repairs its buggy program, in AST edit operations, with the sizes of the 6,820 steps the same students took by themselves.
+
+Figure~\ref{fig:patchsize}는 patch와 학생 걸음 가운데 각 크기 이하인 것의 누적 비율을 보인다. \textsc{ZPDPatch} patch 크기의 중앙값은 18로, 학생 걸음의 중앙값 19와 거의 같다. 두 곡선은 15 이하에서 거의 겹친다. 중앙 학생의 demonstrated reach인 49보다 큰 patch는 13.2\%로, 그만큼 큰 학생 걸음(22.6\%)보다 41.5\% 적다. 그 결과 수리된 patch의 76.7\%가 그 학생의 demonstrated reach 안에 든다. patch는 버기 프로그램 token의 중앙값 96.2\%를 남겨, 학생의 한 걸음이 남기는 96.4\%와 비슷하다.
+% EN: Figure~\ref{fig:patchsize} plots the cumulative share of patches and of student steps up to each size. The median patch of \textsc{ZPDPatch} has 18 operations, nearly the median student step of 19. The two curves almost coincide up to 15 operations. Of the patches, 13.2\% exceed 49 operations, the demonstrated reach of the median student, which is 41.5\% fewer than the 22.6\% of student steps that do. As a result, 76.7\% of the fixed programs lie within the student's demonstrated reach. A patch keeps a median of 96.2\% of the buggy program's tokens, close to the 96.4\% that a student step keeps.
+
+특히, 수리된 patch의 16.3\%는 학생이 이후에 직접 제출한 accepted 프로그램과 AST가 같다. 그 프로그램은 학습에도 수리에도 쓰이지 않으므로, 이 patch들은 학생이 스스로 쓴 수정에 그대로 도달한 것이다. 학생의 걸음 안에서 고치는 대가로, \textsc{ZPDPatch}는 버기 프로그램의 33.3\%를 수리한다. 수리하지 못한 버기 프로그램에서는 학생 자신도 accepted 프로그램까지 수리한 경우보다 평균 68.9\% 큰 걸음을 내디뎠다. 즉 \textsc{ZPDPatch}가 남긴 버그는 학생에게도 더 큰 수정이 필요했던 것들이며, RQ2에서는 이 범위를 기존 기법과 함께 써서 메우는 방법을 보인다. 이 결과들은 \textsc{ZPDPatch}의 patch가 학생이 스스로 내딛는 걸음과 같은 크기이며, 대부분 학생의 demonstrated reach 안에 머문다는 것을 보여 준다.
+% EN: Notably, 16.3\% of the fixed programs have the same AST as the accepted program that the student submitted later. That program is used neither in training nor in repair, so these patches arrive exactly at the fix the student wrote. The price of repairing within a student's step is coverage: \textsc{ZPDPatch} repairs 33.3\% of the buggy programs. On the buggy programs it leaves unrepaired, the students' own steps to their accepted programs were 68.9\% larger on average than on those it repairs. The bugs \textsc{ZPDPatch} leaves are thus the ones that took the students a larger fix as well, and RQ2 shows how combining it with an existing technique covers them. These results show that the patches of \textsc{ZPDPatch} have the size of the steps students take by themselves and mostly stay within their demonstrated reach.
 
 \begin{table}[h]
 \caption{Repair rate and kept tokens and lines by target rule; kept shares on jointly repaired buggy programs}
@@ -520,17 +544,6 @@ Metric & Rule & Seen & Unseen & Java \\
 \bottomrule
 \end{tabular}
 \end{table}
-RQ1은 \textsc{ZPDPatch}가 버기 프로그램을 얼마나 효과적으로 수리하는지 묻는다. 이를 위해 우리는 모든 구성과 baseline을, 제한 없는 조건과 선언된 budget 아래에서 같은 버기 프로그램으로 비교했다. 제한 없는 수리율에서, Table~\ref{tab:main}은 우리 구현 안에서 current-only Answer-3Seed를 보존된 보고 구성으로 식별한다. Seen 72.0\%, Unseen 81.2\%다. current-only Answer-1에 대한 짝지은 이득은 13.9 포인트 [11.71, 16.29]와 11.6 포인트 [7.32, 16.23]이다. 이 대비는 checkpoint 정체성과 기회 수를 동시에 바꾸며, RQ3에서 둘을 분리한다. 이것이 모든 면에서 최선은 아니다: current-only Answer-9Choose3은 Unseen 2개를 더 얻는 대신 Seen 25개를 내주므로(205/250, 693/997), 우리는 고정된 3개 조합을 유지한다. mixed pool에서의 current-only 재선택도 정확히 그 3개 조합을 고른다.
-% EN: RQ1 asks how effectively \textsc{ZPDPatch} repairs buggy programs. To this end, we compared every configuration and baseline on the same buggy programs, both unrestricted and under a declared edit budget. In terms of unrestricted repair rate, Table~\ref{tab:main} identifies current-only Answer-3Seed as the retained reported configuration within our implementation, at 72.0\% Seen and 81.2\% Unseen. Relative to current-only Answer-1, its paired gain is 13.9 points [11.71, 16.29] and 11.6 points [7.32, 16.23]. RQ3 separates checkpoint identity from opportunity count. Current-only Answer-9Choose3 trades 25 Seen repairs for two Unseen ones (205/250 against 693/997), so we keep the fixed portfolio. Current-only mixed-pool reselection chooses exactly that triple.
-
-\noindent\textbf{Operational locality.} Figure~\ref{fig:budget}은 997개 Seen 버기 프로그램에서 선언된 budget마다의 수리율을 보인다. 20 AST edit operations의 budget에서 Mixed는 Seen 버기 프로그램의 44.0\%를 수리해 \textsc{LSGen}의 13.9\%보다 30.1 포인트 [26.45, 33.82] 높다. 사전에 지정한 여섯 budget 전체에서 \textsc{LSGen}에 대한 평균 우위는 14.7 포인트 [12.03, 17.43]이다. 이 우위는 budget에 따라 달라져, 160에서는 \textsc{LSGen}이 앞선다. Unseen에서도 같은 순서가 20까지 유지되고 40에서 뒤집힌다.
-% EN: \noindent\textbf{Operational locality.} Figure~\ref{fig:budget} gives the repair rate at each declared budget over the 997 Seen buggy programs. At a budget of 20 AST edit operations, Mixed repairs 44.0\% of Seen buggy programs versus \textsc{LSGen}'s 13.9\%, a 30.1-point difference [26.45, 33.82]. Across the six prespecified budgets its mean advantage over \textsc{LSGen} is 14.7 points [12.03, 17.43]. The advantage is budget-indexed: \textsc{LSGen} leads again at 160. On Unseen the same order holds through 20 and reverses at 40.
-
-history prompt mixed portfolio는 Seen 997개 중 613개, Unseen 250개 중 187개를 수리한다. Zero-shot에 대한 Seen 이득은 30.8 포인트 [26.43, 35.09]이고, 문제에 같은 가중을 주면 26.1 [21.24, 30.93]이다. Mixed만 성공한 경우와 Zero-shot만 성공한 경우는 342개와 35개다(McNemar \(p<10^{-63}\)). 이것은 history 특유의 효과가 아니다: Mixed는 Answer-3Seed와 거의 같고, 맞춘 9개 checkpoint 대비는 Seen에서 +1.7 포인트 [-0.79, 4.29], Unseen에서 0.0 [-3.70, 3.75]이다.
-% EN: The history-prompt mixed portfolio repairs 613/997 Seen and 187/250 Unseen buggy programs. Its Seen gain over Zero-shot is 30.8 points [26.43, 35.09], or 26.1 [21.24, 30.93] with equal problem weights. Mixed-only and Zero-shot-only successes are 342 against 35 (McNemar \(p<10^{-63}\)). This is not a history-specific effect: Mixed nearly ties Answer-3Seed, while its matched nine-checkpoint contrast is +1.7 points [-0.79, 4.29] on Seen and 0.0 [-3.70, 3.75] on Unseen.
-
-\textsc{LSGen}은 Seen 997개 중 800개를 수리해 Mixed의 613개와 -18.8 포인트 [-23.04, -14.46] 차이를 보이며, 배타적 성공 80개 대 267개로 \(p<10^{-23}\)이다. 공동 수리에서 Mixed의 TED는 \textsc{LSGen}보다 43.34 [38.47, 48.44], Zero-shot보다 8.46 [5.05, 12.55] 낮다. 이 조건부 분석은 한쪽만 성공한 경우를 제외하므로 더 작은 패치가 정확성 결손을 상쇄하지는 않는다. 그 결손의 원인은 탐색 공간이다. \textsc{LSGen}은 버기 프로그램마다 학생별 해답을 retrieval하고 실패할 때마다 다시 retrieval하는 반면, 우리 기법은 수리마다 고정된 checkpoint에서 많아야 세 번 호출한다. 그리고 그 결손은 제한이 없는 쪽 끝에 몰려 있고, 편집량을 선언하면 순서가 뒤집힌다. 종합하면 보고 구성은 선언된 budget 안에서 가장 많이 수리하고, 제한이 없을 때만 \textsc{LSGen}에 뒤진다. 그래서 우리는 current-only Answer-3Seed를 유지한다.
-% EN: \textsc{LSGen} repairs 800/997 Seen buggy programs versus Mixed's 613/997, a difference of -18.8 points [-23.04, -14.46]; 80 versus 267 exclusive successes give \(p<10^{-23}\). On joint repairs, Mixed's TED is lower by 43.34 [38.47, 48.44] relative to \textsc{LSGen} and 8.46 [5.05, 12.55] relative to Zero-shot. Conditioning excludes unilateral successes, so smaller patches do not cancel the deficit. The cause of that deficit is the search space: \textsc{LSGen} retrieves a student-specific solution for every buggy program and retrieves again after each failure, whereas our technique makes at most three calls per repair from the frozen portfolio. The deficit sits at the unrestricted end, and the order reverses once an edit budget is declared. Overall, the reported configuration repairs the most within a declared budget and trails \textsc{LSGen} only when nothing bounds the edit, so we retain current-only Answer-3Seed.
 
 \subsection{RQ2: Target Construction and Locality}
 \label{sec:rq-locality}

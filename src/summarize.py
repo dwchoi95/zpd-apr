@@ -216,6 +216,69 @@ def main():
                     "rq1.mentored.within20.fewer": more(within_budget(mentored, 20), rr(mentored)),
                     "rq1.lsgen.within20.fewer": more(within_budget(lsgen, 20), rr(lsgen))})
 
+    # RQ1 figure: the patches of ZPDPatch against the students' own steps.
+    zpd, qwen = rows("approaches/zpdpatch.jsonl"), rows("approaches/lsgen-qwen.jsonl")
+    rq1_reach = reach_by_trajectory(steps)
+    fixes = lambda m: [r for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None]
+    share_in_reach = lambda m: within_reach(m, rq1_reach) * len(m) / len(fixes(m))
+    patch = [r["ted_buggy_fixed"] for r in fixes(zpd)]
+    cdf = lambda xs: " ".join(f"({x},{100 * sum(v <= x for v in xs) / len(xs):.1f})"
+                              for x in (1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 300, 500, 1000))
+    tables["patchsize"] = [f"\\addplot[referenceline] coordinates {{{cdf(all_steps)}}};",
+                           f"\\addplot[proposedline] coordinates {{{cdf(patch)}}};"]
+    numbers.update({"rq1.zpdpatch.rr": pct(rr(zpd)), "rq1.zpdpatch.within_reach.share": pct(share_in_reach(zpd)),
+                    "rq1.zpdpatch.ted.median": num(statistics.median(patch)),
+                    "rq1.zpdpatch.token_retention.median": pct(statistics.median(r["token_retention"] for r in fixes(zpd))),
+                    "rq1.zpdpatch.own_accepted.share": pct(sum(r["ted_fixed_oracle"] == 0 for r in fixes(zpd)) / len(fixes(zpd))),
+                    # patches and steps larger than the median student's demonstrated reach
+                    "rq1.zpdpatch.above_reach_median.share": pct(sum(x > statistics.median(all_reach) for x in patch) / len(patch)),
+                    "rq1.step.above_reach_median.share": pct(sum(x > statistics.median(all_reach) for x in all_steps) / len(all_steps)),
+                    "rq1.zpdpatch.above_reach_median.fewer": more(sum(x > statistics.median(all_reach) for x in patch) / len(patch),
+                                                                  sum(x > statistics.median(all_reach) for x in all_steps) / len(all_steps))})
+
+    # The students' own last step (to their accepted program) on the buggy programs ZPDPatch leaves and repairs.
+    last = {r["example_id"]: r["step_ted"][-1] for r in steps}
+    own = lambda repaired: statistics.mean(last[r["example_id"]] for r in zpd if bool(r["repaired"]) == repaired and last[r["example_id"]] is not None)
+    numbers["rq1.zpdpatch.unrepaired.own_step.larger"] = more(own(False), own(True))
+
+    # Table II and the RQ2 figure: ZPDPatch and the existing techniques on the same buggy programs.
+    others = (("mentored", "\\textsc{Mentored}", mentored), ("lsgen", "\\textsc{LSGen} (GPT-4o)", lsgen),
+              ("lsgen_qwen", "\\textsc{LSGen} (Qwen)", qwen))
+    mean = lambda m, key: statistics.mean(r[key] for r in fixes(m))
+    tables["comparison"] = [
+        f"{label} & {pct(rr(m))} & {pct(share_in_reach(m))} & {mean(m, 'ted_buggy_fixed'):.1f} & "
+        f"{pct(mean(m, 'token_retention'))} & {pct(mean(m, 'line_retention'))} \\\\"
+        for _, label, m in (("zpdpatch", "\\textsc{ZPDPatch}", zpd), *others)]
+
+    def ordered(*techniques):
+        """Algorithm 1 with these techniques as its ordered generators: the first fix, else the last one's return."""
+        by_id = [{r["example_id"]: r for r in m} for m in techniques]
+        return [next((m[k] for m in by_id if m[k]["repaired"]), by_id[-1][k]) for k in sorted(by_id[0])]
+
+    in_reach = lambda r: within_reach([r], rq1_reach) == 1
+    tables["combined"] = [bars("variant", "y", [(key, m, in_reach) for key, _, m in others]),
+                          bars("proposed", "y", [(key, ordered(zpd, m), in_reach) for key, _, m in others])]
+    z = {r["example_id"]: r for r in fixes(zpd)}
+    for key, _, m in others:
+        o = {r["example_id"]: r for r in fixes(m)}
+        joint = [k for k in z if k in o]
+        both = ordered(zpd, m)
+        numbers.update({
+            f"rq2.{key}.joint": len(joint),
+            f"rq2.{key}.joint.ted.smaller": more(statistics.mean(z[k]["ted_buggy_fixed"] for k in joint),
+                                                 statistics.mean(o[k]["ted_buggy_fixed"] for k in joint)),
+            f"rq2.{key}.joint.smaller.share": pct(sum(z[k]["ted_buggy_fixed"] < o[k]["ted_buggy_fixed"] for k in joint) / len(joint)),
+            **{f"rq2.{key}.within{b}": pct(within_budget(m, b)) for b in (5, 10, 20)},
+            f"rq2.{key}.combined.rr": pct(rr(both)),
+            f"rq2.{key}.combined.within_reach.more": more(within_reach(both, rq1_reach), within_reach(m, rq1_reach)),
+            f"rq2.{key}.combined.ted.mean": f"{mean(both, 'ted_buggy_fixed'):.1f}"})
+    numbers.update({f"rq2.zpdpatch.within{b}": pct(within_budget(zpd, b)) for b in (5, 10, 20)})
+    fewer = [float(more(rr(zpd), rr(m))) for _, _, m in others]
+    numbers["rq2.zpdpatch.rr.fewer.range"] = f"{min(fewer):.1f}--{max(fewer):.1f}"
+    for key, m in (("lsgen", lsgen), ("lsgen_qwen", qwen)):  # ZPDPatch adds within-reach fixes Mentored does not make
+        numbers[f"rq2.mentored_{key}.zpdpatch_first.within_reach.more"] = more(
+            within_reach(ordered(zpd, mentored, m), rq1_reach), within_reach(ordered(mentored, m), rq1_reach))
+
     # Table III and IV: target rules (RQ2).
     reach = reach_by_trajectory(rows("benchmark/canonical-student-steps.jsonl"))
     t = {split: {rule: rows(f"targets/{split}/{rule}.jsonl") for rule in ("answer", "progress")} for split in ("seen", "unseen", "java")}
