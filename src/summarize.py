@@ -211,13 +211,11 @@ def main():
     numbers["rq1.step.median.by_problem.range"] = f"{num(min(medians))}--{num(max(medians))}"
     share = lambda b: sum(x <= b for x in all_reach) / len(all_reach)
     mentored, lsgen = rows("approaches/mentored.jsonl"), rows("approaches/lsgen.jsonl")
-    trajectories = [{"problem_id": p, "reach": x} for p in reach_by_problem for x in reach_by_problem[p]]
-    within = lambda b: (lambda r: r["repaired"] and r["ted_buggy_fixed"] is not None and r["ted_buggy_fixed"] <= b)
     qwen = rows("approaches/lsgen-qwen.jsonl")
-    tables["reach"] = [
-        bars("reference", "y", [(b, trajectories, lambda r, b=b: r["reach"] <= b) for b in (20, 160)]),
-        *(bars(style, "y", [(20, m, within(20)), (160, m, within(160)), ("none", m, lambda r: r["repaired"])])
-          for style, m in (("baseline1", mentored), ("baseline2", qwen), ("baseline3", lsgen)))]
+    grid = (1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 300, 500, 1000)
+    curve = lambda style, share: f"\\addplot[{style}] coordinates {{" + " ".join(f"({b},{100 * share(b):.1f})" for b in grid) + "};"
+    tables["reach"] = [curve("referenceline", share)] + [curve(style, lambda b, m=m: within_budget(m, b))
+                                                         for style, m in (("mentoredline", mentored), ("qwenline", qwen), ("gptline", lsgen))]
     fixed_ted = lambda m: statistics.mean(r["ted_buggy_fixed"] for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None)
     numbers.update({"lim.mentored.returns_submission.share": pct(1 - rr(mentored)), "lim.lsgen.returns_submission.share": pct(1 - rr(lsgen)),
                     "lim.lsgen_qwen.returns_submission.share": pct(1 - rr(qwen)), "rq1.lsgen_qwen.rr": pct(rr(qwen)),
@@ -229,23 +227,28 @@ def main():
                     "rq1.mentored.within20.fewer": more(within_budget(mentored, 20), rr(mentored)),
                     "rq1.lsgen.within20.fewer": more(within_budget(lsgen, 20), rr(lsgen))})
 
-    # Section II-B figure: (a) pass rate and wrong-answer share of the submissions before acceptance, over the trajectories
-    # with at least four failing submissions (a fixed cohort); (b) the students' steps by class.
+    # Section II-B figure: (a) pass rate and wrong-answer share at the first, middle, and last failing submissions and at
+    # acceptance, over every trajectory; (b) the students' steps by class.
     def states(r):  # the distinct submissions of a trajectory, from its steps: (verdict, pass rate)
         return [(r["step_verdicts"][0][0], r["step_pass_rates"][0][0])] + [(b, pb) for (_, b), (_, pb) in zip(r["step_verdicts"], r["step_pass_rates"])]
-    cohort = [states(r) for r in steps if len(states(r)) - 1 >= 4]
-    at = lambda k: [t[len(t) - 1 + k] for t in cohort]
-    positions = range(-4, 1)
+    trajectories_states = [states(r) for r in steps]
+    middles = [t[1:-2] for t in trajectories_states if len(t) > 3]
+    points = (("first", [t[0][1] for t in trajectories_states], [t[0][0] == "WA" for t in trajectories_states]),
+              ("middle", [statistics.mean(p for _, p in m) for m in middles], [statistics.mean(v == "WA" for v, _ in m) for m in middles]),
+              ("last", [t[-2][1] for t in trajectories_states], [t[-2][0] == "WA" for t in trajectories_states]),
+              ("accepted", [t[-1][1] for t in trajectories_states], [t[-1][0] == "WA" for t in trajectories_states]))
     tables["climb"] = [
-        "\\addplot[referenceline, mark=*, mark size=1.3pt] coordinates {" + " ".join(f"({k},{100 * statistics.mean(p for _, p in at(k)):.1f})" for k in positions) + "};",
-        "\\addplot[verdictline, dashed, mark=square*, mark size=1.2pt] coordinates {" + " ".join(f"({k},{100 * sum(v == 'WA' for v, _ in at(k)) / len(cohort):.1f})" for k in positions) + "};"]
+        "\\addplot[referenceline, mark=*, mark size=1.3pt] coordinates {" + " ".join(f"({i},{100 * statistics.mean(p):.1f})" for i, (_, p, _) in enumerate(points)) + "};",
+        "\\addplot[verdictline, dashed, mark=square*, mark size=1.2pt] coordinates {" + " ".join(f"({i},{100 * statistics.mean(w):.1f})" for i, (_, _, w) in enumerate(points)) + "};"]
+    numbers.update({"lim.trajectories": len(trajectories_states), "lim.trajectories.with_middle": len(middles),
+                    **{f"lim.{name}.pass_rate": f"{100 * statistics.mean(p):.1f}" for name, p, _ in points},
+                    **{f"lim.{name}.wa.share": f"{100 * statistics.mean(w):.1f}" for name, _, w in points},
+                    "lim.last_passes_more_than_first.share": pct(sum(t[-2][1] > t[0][1] for t in trajectories_states) / len(trajectories_states)),
+                    "lim.last_passes_as_many_as_first.share": pct(sum(t[-2][1] == t[0][1] for t in trajectories_states) / len(trajectories_states))})
     classes = [c for r in steps for c in r["step_class"]]
     tables["stepclasses"] = [f"\\addplot[{style}] coordinates {{({100 * classes.count(c) / len(classes):.1f},0)}};"
                              for c, style in (("AC", "toacceptance"), ("forward", "forwardstep"), ("sideways", "sidewaysstep"), ("regress", "regressstep"))]
-    numbers.update({"lim.cohort.trajectories": len(cohort), "lim.cohort.share": pct(len(cohort) / len(steps)),
-                    **{f"lim.cohort.pass_rate.{-k}": f"{100 * statistics.mean(p for _, p in at(k)):.1f}" for k in positions},
-                    "lim.cohort.wa.range": f"{min(100 * sum(v == 'WA' for v, _ in at(k)) / len(cohort) for k in positions if k < 0):.1f}--{max(100 * sum(v == 'WA' for v, _ in at(k)) / len(cohort) for k in positions if k < 0):.1f}",
-                    **{f"lim.steps.{c}.share": pct(classes.count(c) / len(classes)) for c in ("AC", "forward", "sideways", "regress")},
+    numbers.update({**{f"lim.steps.{c}.share": pct(classes.count(c) / len(classes)) for c in ("AC", "forward", "sideways", "regress")},
                     "lim.trajectories.with_forward.share": pct(sum("forward" in r["step_class"] for r in steps) / len(steps)),
                     "lim.forward.verdict_kept.share": pct(sum(a == b for r in steps for (a, b), c in zip(r["step_verdicts"], r["step_class"]) if c == "forward")
                                                           / classes.count("forward")),
