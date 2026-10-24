@@ -203,6 +203,20 @@ def main():
     tables["datatotal"] = [
         f"Total & & {len(inputs):,} & {sum(rs[0]['tests'] for rs in by_problem.values())} & "
         f"{statistics.mean(r['loc'] for r in inputs):.1f} & {num(statistics.median(all_steps))} & {num(statistics.median(all_reach))} \\\\"]
+    # Table I, lower part: the test sets of RQ3 and RQ4 (no student steps for Java).
+    canonical, canonical_steps = rows("benchmark/canonical-inputs.jsonl"), rows("benchmark/canonical-student-steps.jsonl")
+    split_of = {r["example_id"]: r["split"] for r in canonical}
+
+    def split_row(label, items, split_steps):
+        tests = {r["problem_id"]: r["tests"] for r in items}
+        defined = [d for d in ([s for s in r["step_ted"] if s is not None] for r in split_steps) if d]
+        step = num(statistics.median(s for d in defined for s in d)) if defined else "--"
+        reach = num(statistics.median(max(d) for d in defined)) if defined else "--"
+        return (f"{label} & {len(tests)} problems & {len(items):,} & {sum(tests.values()):,} & "
+                f"{statistics.mean(r['loc'] for r in items):.1f} & {step} & {reach} \\\\")
+    tables["datasplits"] = [split_row(name.title(), [r for r in canonical if r["split"] == name],
+                                      [r for r in canonical_steps if split_of[r["example_id"]] == name]) for name in ("seen", "unseen")]
+    tables["datasplits"].append(split_row("Java", rows("benchmark/java-inputs.jsonl"), []))
     share = lambda b: sum(x <= b for x in all_reach) / len(all_reach)
     mentored, lsgen = rows("approaches/mentored.jsonl"), rows("approaches/lsgen.jsonl")
     trajectories = [{"problem_id": p, "reach": x} for p in reach_by_problem for x in reach_by_problem[p]]
