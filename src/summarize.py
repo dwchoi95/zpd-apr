@@ -257,6 +257,28 @@ def main():
     numbers["rq1.zpdpatch.no_larger_than_own_fix.share"] = pct(sum(r["ted_buggy_fixed"] <= own_fix[r["example_id"]] for r in judged) / len(judged))
     numbers["rq1.zpdpatch.within10_of_own_accepted.share"] = pct(sum(r["ted_fixed_oracle"] is not None and r["ted_fixed_oracle"] <= 10 for r in fixes(zpd)) / len(fixes(zpd)))
 
+    # Table (RQ1): the patches of ZPDPatch against the students' own steps and fixes, by difficulty.
+    groups = [[r for r in zpd if score[r["problem_id"]] == points] for points in difficulty] + [zpd]
+    group_steps = [[r for r in steps if score[r["example_id"].split(":")[0]] == points] for points in difficulty] + [steps]
+    near = lambda r, k: r["ted_fixed_oracle"] is not None and r["ted_fixed_oracle"] <= k
+    against_fix = lambda test: [pct(sum(test(r) for r in fixes(g)) / len(fixes(g))) for g in groups]
+    problems = lambda g: {r["problem_id"] for r in g}
+    cells = lambda values: " & ".join(values) + " \\\\"
+    tables["rq1"] = [
+        "\\multirow{2}{*}{Within reach} & Fixed (\\%) & " + cells([pct(share_in_reach(g)) for g in groups]),
+        " & Problems ($\\geq$70\\%) & " + cells([f"{sum(share_in_reach(by_problem[p]) >= 0.7 for p in problems(g))}/{len(problems(g))}" for g in groups]),
+        "\\midrule",
+        "\\multirow{2}{*}{Tokens kept (\\%)} & Patch & " + cells([pct(statistics.median(r["token_retention"] for r in fixes(g))) for g in groups]),
+        " & Student step & " + cells([pct(statistics.median(x for r in g for x in r["step_token_retention"])) for g in group_steps]),
+        "\\midrule",
+        "\\multirow{2}{*}{Lines kept (\\%)} & Patch & " + cells([pct(statistics.median(r["line_retention"] for r in fixes(g))) for g in groups]),
+        " & Student step & " + cells([pct(statistics.median(x for r in g for x in r["step_line_retention"])) for g in group_steps]),
+        "\\midrule",
+        "\\multirow{3}{*}{Student's fix (\\%)} & No larger & " + cells(against_fix(lambda r: own_fix[r["example_id"]] is not None and r["ted_buggy_fixed"] <= own_fix[r["example_id"]])),
+        " & Within 10 & " + cells(against_fix(lambda r: near(r, 10))),
+        " & Same AST & " + cells(against_fix(lambda r: near(r, 0))),
+    ]
+
     # The students' own last step (to their accepted program) on the buggy programs ZPDPatch leaves and repairs.
     last = {r["example_id"]: r["step_ted"][-1] for r in steps}
     own = lambda repaired: statistics.mean(last[r["example_id"]] for r in zpd if bool(r["repaired"]) == repaired and last[r["example_id"]] is not None)

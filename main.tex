@@ -498,8 +498,34 @@ RQ1은 \textsc{ZPDPatch}의 patch가 학생의 demonstrated reach 안에 얼마�
 Figure~\ref{fig:patchsize}는 patch와 학생 걸음 가운데 각 크기 이하인 것의 누적 비율을 보인다. \textsc{ZPDPatch} patch 크기의 중앙값은 18로, 학생 걸음의 중앙값 19와 거의 같다. 두 곡선은 15 이하에서 거의 겹치고, 그보다 큰 쪽에서는 patch 곡선이 위에 있다. 중앙 학생의 demonstrated reach인 49보다 큰 patch는 13.2\%로, 그만큼 큰 학생 걸음(22.6\%)보다 41.5\% 적다.
 % EN: Figure~\ref{fig:patchsize} plots the cumulative share of patches and of student steps up to each size. The median patch of \textsc{ZPDPatch} has 18 operations, nearly the median student step of 19. The two curves almost coincide up to 15 operations, and above that the patch curve lies higher. Of the patches, 13.2\% exceed 49 operations, the demonstrated reach of the median student, which is 41.5\% fewer than the 22.6\% of student steps that do.
 
-그 결과 수리된 patch의 76.7\%가 그 학생의 demonstrated reach 안에 든다. 이 비율은 난이도에 걸쳐 고르다. Easy에서 75.9\%, Medium에서 76.3\%이며, Hard에서는 모든 patch가 reach 안에 든다. 문제별로도 14개 중 11개에서 70\% 이상이다. Hard 문제의 학생들은 더 큰 걸음을 내디뎌(Table~\ref{tab:data}의 Reach 143), 학생이 스스로 감당한 범위가 그만큼 넓기 때문이다.
-% EN: As a result, 76.7\% of the fixed programs lie within the student's demonstrated reach. The share is even across difficulties: 75.9\% on the Easy and 76.3\% on the Medium problems, and every patch lies within reach on the Hard problem. By problem, it is at least 70\% on 11 of the 14 problems. On the Hard problem the students themselves take larger steps (a median reach of 143 in Table~\ref{tab:data}), so the region they handle on their own is that much wider.
+\begin{table}[h]
+\caption{Patches of \textsc{ZPDPatch} against the students' own steps and fixes by difficulty}
+\label{tab:rq1}
+\centering\scriptsize
+\begin{tabular}{@{}ll||rrr|r@{}}
+\toprule
+Measure & & Easy & Medium & Hard & All \\
+\midrule
+% rows:rq1
+\multirow{2}{*}{Within reach} & Fixed (\%) & 75.9 & 76.3 & 100.0 & 76.7 \\
+ & Problems ($\geq$70\%) & 2/3 & 8/10 & 1/1 & 11/14 \\
+\midrule
+\multirow{2}{*}{Tokens kept (\%)} & Patch & 97.1 & 94.4 & 99.6 & 96.2 \\
+ & Student step & 96.4 & 96.3 & 97.9 & 96.4 \\
+\midrule
+\multirow{2}{*}{Lines kept (\%)} & Patch & 83.3 & 81.2 & 97.4 & 83.3 \\
+ & Student step & 85.0 & 85.7 & 93.8 & 85.7 \\
+\midrule
+\multirow{3}{*}{Student's fix (\%)} & No larger & 59.6 & 54.3 & 91.7 & 56.6 \\
+ & Within 10 & 46.4 & 26.9 & 50.0 & 32.9 \\
+ & Same AST & 23.5 & 12.8 & 33.3 & 16.3 \\
+% end rows
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:rq1}은 난이도별로 \textsc{ZPDPatch}의 patch를 학생 자신의 걸음과 수정에 견준다. patch가 학생 걸음만 하므로, 수리된 patch의 76.7\%가 그 학생의 demonstrated reach 안에 든다. 이 비율은 난이도에 걸쳐 고르다. Easy에서 75.9\%, Medium에서 76.3\%이며, Hard에서는 모든 patch가 reach 안에 든다. 문제별로도 14개 중 11개에서 70\% 이상이다. Hard 문제의 학생들은 더 큰 걸음을 내디뎌(Table~\ref{tab:data}의 Reach 143), 학생이 스스로 감당한 범위가 그만큼 넓기 때문이다.
+% EN: Table~\ref{tab:rq1} compares the patches of \textsc{ZPDPatch} with the students' own steps and fixes by difficulty. With patches the size of student steps, 76.7\% of the fixed programs lie within the student's demonstrated reach. The share is even across difficulties: 75.9\% on the Easy and 76.3\% on the Medium problems, and every patch lies within reach on the Hard problem. By problem, it is at least 70\% on 11 of the 14 problems. On the Hard problem the students themselves take larger steps (a median reach of 143 in Table~\ref{tab:data}), so the region they handle on their own is that much wider.
 
 patch는 학생의 한 걸음만큼 학생의 코드를 남긴다. patch는 버기 프로그램 token의 중앙값 96.2\%와 줄의 중앙값 83.3\%를 남기며, 학생의 한 걸음은 각각 96.4\%와 85.7\%를 남긴다.
 % EN: A patch also keeps as much of the student's code as a student step does: it keeps a median of 96.2\% of the buggy program's tokens and 83.3\% of its lines, against 96.4\% and 85.7\% for a student step.
@@ -521,8 +547,8 @@ patch는 학생의 한 걸음만큼 학생의 코드를 남긴다. patch는 버�
 \label{fig:rq1case}
 \end{figure}
 
-특히, 같은 버기 프로그램에서 학생이 실제로 accepted 프로그램까지 내디딘 걸음과 비교하면, patch의 56.6\%는 그 걸음보다 크지 않고, 32.9\%는 학생의 accepted 프로그램과 AST edit operation 10개 이내로 가까우며, 16.3\%는 그 프로그램과 AST가 같다. 그 프로그램은 학습에도 수리에도 쓰이지 않으므로, 이 patch들은 학생이 스스로 쓴 수정에 그대로 도달한 것이다. Figure~\ref{fig:rq1case}는 그런 예다. 학생은 판이 한 줄일 때를 처리하려고 \texttt{if h or w ==1:}을 덧붙여 test case의 30.0\%만 통과했고, \textsc{ZPDPatch}는 이 조건만 \texttt{if h==1 or w==1:}로 고쳐(TED 3) 학생이 다음에 직접 제출한 accepted 프로그램을 그대로 돌려준다. 이 결과들은 \textsc{ZPDPatch}의 patch가 학생이 스스로 내딛는 걸음과 같은 크기로 학생의 코드를 남기며, 난이도와 문제에 걸쳐 학생의 demonstrated reach 안에 머문다는 것을 보여 준다.
-% EN: Notably, against the step with which the student actually reached an accepted program from the same buggy program, 56.6\% of the patches are no larger than that step, 32.9\% lie within ten AST edit operations of the student's accepted program, and 16.3\% have the same AST as that program. That program is used neither in training nor in repair, so these patches arrive exactly at the fix the student wrote. Figure~\ref{fig:rq1case} shows one. To handle a board of one row, the student added \texttt{if h or w ==1:} and passed 30.0\% of the test cases; \textsc{ZPDPatch} corrects only that condition to \texttt{if h==1 or w==1:} (TED 3) and returns exactly the accepted program the student submitted next. These results show that the patches of \textsc{ZPDPatch} have the size of the steps students take by themselves, keep as much of the student's code, and stay within the student's demonstrated reach across difficulties and problems.
+특히, 같은 버기 프로그램에서 학생이 실제로 accepted 프로그램까지 내디딘 걸음과 비교하면(Table~\ref{tab:rq1}의 Student's fix), patch의 56.6\%는 그 걸음보다 크지 않고, 32.9\%는 학생의 accepted 프로그램과 AST edit operation 10개 이내로 가까우며, 16.3\%는 그 프로그램과 AST가 같다. 그 프로그램은 학습에도 수리에도 쓰이지 않으므로, 이 patch들은 학생이 스스로 쓴 수정에 그대로 도달한 것이다. Figure~\ref{fig:rq1case}는 그런 예다. 학생은 판이 한 줄일 때를 처리하려고 \texttt{if h or w ==1:}을 덧붙여 test case의 30.0\%만 통과했고, \textsc{ZPDPatch}는 이 조건만 \texttt{if h==1 or w==1:}로 고쳐(TED 3) 학생이 다음에 직접 제출한 accepted 프로그램을 그대로 돌려준다. 이 결과들은 \textsc{ZPDPatch}의 patch가 학생이 스스로 내딛는 걸음과 같은 크기로 학생의 코드를 남기며, 난이도와 문제에 걸쳐 학생의 demonstrated reach 안에 머문다는 것을 보여 준다.
+% EN: Notably, against the step with which the student actually reached an accepted program from the same buggy program (Student's fix in Table~\ref{tab:rq1}), 56.6\% of the patches are no larger than that step, 32.9\% lie within ten AST edit operations of the student's accepted program, and 16.3\% have the same AST as that program. That program is used neither in training nor in repair, so these patches arrive exactly at the fix the student wrote. Figure~\ref{fig:rq1case} shows one. To handle a board of one row, the student added \texttt{if h or w ==1:} and passed 30.0\% of the test cases; \textsc{ZPDPatch} corrects only that condition to \texttt{if h==1 or w==1:} (TED 3) and returns exactly the accepted program the student submitted next. These results show that the patches of \textsc{ZPDPatch} have the size of the steps students take by themselves, keep as much of the student's code, and stay within the student's demonstrated reach across difficulties and problems.
 
 \subsection{RQ2: Comparison with Existing Techniques}
 \label{sec:rq-comparison}
