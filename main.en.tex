@@ -489,7 +489,7 @@ In exchange, Progress repairs 36.0\% fewer inputs than Answer on Seen and 14.6\%
 \centering\footnotesize
 \begin{tabular}{l||rr}
 \toprule
- & Exercises & Students \\
+ & Exercises & Trajectories \\
  & (repairs) & (tokens kept) \\
 \midrule
 % rows:uneven
@@ -533,7 +533,7 @@ The same tradeoff appears on student-held-out Java. With the two rules trained o
 \label{fig:case}
 \end{figure}
 
-Because a mean does not tell what one student receives, Table~\ref{tab:uneven} breaks the Java contrast down by exercise and by student. Answer repairs more on 15 of the 17 exercises, and one exercise accounts for 12 of its 63 additional repairs. Among the students both rules repair, 31.1\% get more of their own tokens back from Progress, 63.3\% get the same amount, and 5.6\% get less. Figure~\ref{fig:case} shows what this difference looks like on Python. The student's preceding submission changed \texttt{i<j} to \texttt{i<=j} and passed 93.3\% of the tests. The return trained on Progress targets (a) changes one more line, \texttt{j>0} to \texttt{j>=0}, and keeps 20 of the 21 lines, whereas the return trained on Answer targets (b) is a five-line program that keeps 3 of the 21 lines. Both pass every test under the same gate and budget.
+Because a mean does not tell what one student receives, Table~\ref{tab:uneven} breaks the Java contrast down by exercise and by trajectory. Answer repairs more on 15 of the 17 exercises, and one exercise accounts for 12 of its 63 additional repairs. On 31.1\% of the trajectories both rules repair, the student gets more of their own tokens back from Progress, on 63.3\% the same amount, and on 5.6\% less. Figure~\ref{fig:case} shows what this difference looks like on Python. The student's preceding submission changed \texttt{i<j} to \texttt{i<=j} and passed 93.3\% of the tests. The return trained on Progress targets (a) changes one more line, \texttt{j>0} to \texttt{j>=0}, and keeps 20 of the 21 lines, whereas the return trained on Answer targets (b) is a five-line program that keeps 3 of the 21 lines. Both pass every test under the same gate and budget.
 
 To check whether the effect comes from the student's own submissions, we retrained Progress with each target replaced by another student's submission to the same problem whose execution outcomes are identical and whose distance is close. These peer targets repair 8.5\% more inputs on Seen and 7.7\% more on Unseen, so what produces the effect is the rule that selects the target by execution evidence, not whose submission the target is. These results indicate that the target rule trades coverage for locality, and that targets selected from trajectories by execution evidence yield returns that keep more of the student's program.
 
