@@ -109,13 +109,13 @@ Existing techniques differ in what they steer the generator at line~4 of Algorit
  ymin=0, ymax=122, ytick={0,25,50,75,100}, ylabel={Share of inputs (\%)},
  xlabel={Edit budget (AST edit operations)}, ymajorgrids, grid style={gray!25},
  nodes near coords, visualization depends on={\thisrow{p} \as \ep}, every node near coord/.append style={font=\tiny, yshift=\ep*\pgfplotsunitylength, rotate=90, anchor=west},
- legend columns=2, area legend, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
+ legend columns=3, area legend, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
 % rows:reach
 \addplot[reference, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 16.8 20 9.3 7.3\\ 86.8 160 7.4 8.2\\};
 \addplot[baseline2, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 20.3 20 11.9 10.6\\ 38.6 160 15.8 16.5\\ 40.2 none 15.7 16.4\\};
 \addplot[baseline3, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 18.5 20 9.0 7.3\\ 74.4 160 13.9 16.3\\ 92.1 none 5.1 5.8\\};
 % end rows
-\legend{Students' demonstrated reach, \textsc{Mentored}, \textsc{LSGen}}
+\legend{Students, \textsc{Mentored}, \textsc{LSGen}}
 \end{axis}
 \end{tikzpicture}
 \caption{Students' demonstrated reach and the repairs of two techniques within each budget}
