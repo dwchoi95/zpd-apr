@@ -27,14 +27,18 @@
  regressstep/.style={fill=red!25, draw=black},
  proposedline/.style={blue!70!black, thick}}
 \usetikzlibrary{arrows.meta,positioning,fit,calc,backgrounds,patterns}
-\hypersetup{pdftitle={Trajectory-Supervised Repair for Automated Feedback Generation},pdfauthor={}}
+
+
 \title{Trajectory-Supervised Repair for Automated Feedback Generation}
-\author{}
+
 \begin{document}
+
 \maketitle
+
 \begin{abstract}
 We present \textsc{ZPDPatch}, a trajectory-supervised repair technique that learns from students' own trajectories to return patches that move a student forward by a step they could take. Many Automated Feedback Generation (AFG) techniques for programming assignments repair a failing submission into a program that passes the test suite and return the personalized patch. However, they steer the repair toward a correct program regardless of what the student can reach, jumping to it with patches up to 152.2\% larger than an average student step or returning the submission itself when they fail. Students, in contrast, pass more test cases step by step under an unchanged wrong-answer verdict. Our insight is that these trajectories already hold such steps: the submission a student makes after the judge's verdict is a step reached with help, as in the student's Zone of Proximal Development (ZPD). Yet 95.2\% of the students' forward steps leave the verdict unchanged, so the verdict alone cannot find them. \textsc{ZPDPatch} mines forward steps from trajectories by test-case-wise execution outcomes, trains a language model per target rule, and selects models to combine by executing them on validation buggy programs. On 1,753 Python buggy programs from 14 AtCoder problems, 76.7\% of the programs \textsc{ZPDPatch} repairs lie within the largest step the student took on the problem, 8.1--81.5\% more often than for two state-of-the-art techniques, and the steps it returns without repairing raise the pass rate by a median of 12.5 points, like the students' own forward steps.
 \end{abstract}
+
 \begin{IEEEkeywords}
 Automated Feedback Generation, Zone of Proximal Development, Programming Assignments, Submission Trajectories
 \end{IEEEkeywords}
@@ -458,7 +462,7 @@ For RQ3 and RQ4, we use a larger corpus from the same Python800 benchmark. Ranki
 
 \noindent\textbf{Evaluation Metrics.} The size of a patch is the TED between the Abstract Syntax Trees (ASTs) of the buggy program and the patch~\cite{zhang1989simple,pawlik2016tree}. \emph{Retention} is the share of the buggy program's tokens, or of its nonblank lines, that remain in the patch. A patch that passes every test case is \emph{within reach} if its TED is no larger than the student's demonstrated reach. To compare a patch with the student's own fix, we measure its TED to the student's accepted program. A patch that does not pass every test case is judged by the improvement predicates of Mine (Section~\ref{sec:mine}): it is a \emph{forward step} if its verdict is less severe, or if under the same verdict it keeps every test case that was passing and passes more, and its gain is the change in the fraction \(T_{\mathit{pass}}\) of test cases passed. The \emph{Repair Rate} (RR) is the fraction of buggy programs whose patch passes every test case, and the RR within a step budget \(\beta\) counts only the patches whose TED is at most \(\beta\). The \emph{within-reach repair rate} is the fraction of buggy programs repaired by a patch within reach. Error bars in figures show 95\% bootstrap intervals over problems~\cite{efron1992bootstrap}.
 
-\noindent\textbf{Implementation Details.} We chose Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, an open code model small enough for a course to run on one GPU, as the base model of \textsc{ZPDPatch}. It is an open model from the evaluation of \textsc{LSGen}, so the two techniques can be compared on the same model, whereas the weights of commercial models of that evaluation such as GPT-4o are not released, so they cannot serve as the base model of \textsc{ZPDPatch}. Each adapter attaches Low-Rank Adaptation (LoRA) to the attention and feed-forward projections of the base model quantized to 4 bits and is trained with QLoRA~\cite{dettmers2023qlora}, using rank 16, \(\alpha=32\), a learning rate of \(2\times10^{-4}\), a batch size of 16, and one epoch, with early stopping on validation loss.
+\noindent\textbf{Implementation Details.} We chose Qwen2.5-Coder-7B-Instruct~\cite{hui2024qwen2}, an open code model small enough for a course to run on one GPU, as the base model of \textsc{ZPDPatch}. It is an open model from the evaluation of \textsc{LSGen}, so the two techniques can be compared on the same model. Each adapter attaches Low-Rank Adaptation (LoRA) to the attention and feed-forward projections of the base model quantized to 4 bits and is trained with QLoRA~\cite{dettmers2023qlora}, using rank 16, \(\alpha=32\), a learning rate of \(2\times10^{-4}\), a batch size of 16, and one epoch, with early stopping on validation loss.
 
 \subsection{RQ1: Steps Within Reach}
 \label{sec:rq-effectiveness}
