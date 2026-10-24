@@ -195,7 +195,8 @@ def main():
                 f"{statistics.mean(r['loc'] for r in items):.1f} & {step} & {reach} \\\\")
     # Upper part: the RQ1 benchmark by AtCoder score; lower part: the test sets of RQ3 and RQ4 (no student steps for Java).
     score = {r["problem_id"]: r["score"] for r in inputs}
-    tables["data"] = [bench_row(f"{points} points", [r for r in inputs if r["score"] == points],
+    difficulty = {200: "Easy", 300: "Medium", 600: "Hard"}
+    tables["data"] = [bench_row(difficulty[points], [r for r in inputs if r["score"] == points],
                                 [r for r in steps if score[r["example_id"].split(":")[0]] == points])
                       for points in sorted(set(score.values()))]
     tables["datatotal"] = [bench_row("Total", inputs, steps)]
