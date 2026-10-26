@@ -2,7 +2,7 @@
 
 Reads executions/ (patches), executions_own/ (students' targets) and outcomes/ (within reach); writes
 outcomes_vs_own/<technique>.jsonl and summary_vs_own.json. A seed is a failure under three readings:
-  any       - WA, RE or TLE on the first run (the registered rule)
+  any       - WA, RE or TLE on the first run
   wa_re     - WA or RE only (TLE counted as a pass)
   rechecked - WA or RE, or a TLE whose single 2-worker rerun is not AC
 """
