@@ -1,4 +1,4 @@
-"""Amendment 2026-10-27: plausible patches against the student's own accepted program (no execution here).
+"""Plausible patches against the student's own accepted program (no execution here).
 
 Reads executions/ (patches), executions_own/ (students' targets) and outcomes/ (within reach); writes
 outcomes_vs_own/<technique>.jsonl and summary_vs_own.json. A seed is a failure under three readings:
@@ -59,8 +59,7 @@ test = jsonl(Path(os.environ.get("ZPD_DIFF_TEST", "datasets/test.jsonl")))
 own_of = {r["example_id"]: own_ex[(r["problem_id"], sha(r["target_code"]))] for r in test}
 assert len(own_of) == len(test) == 1753
 
-summary = {"family": "differential-20261026-v1", "amendment": "2026-10-27 (zpd-differential-20261026.md)",
-           "failure_readings": {"any": "WA, RE or TLE on the first run (registered rule)", "wa_re": "WA or RE only",
+summary = {"failure_readings": {"any": "WA, RE or TLE on the first run", "wa_re": "WA or RE only",
                                 "rechecked": "WA or RE, or a TLE whose single 2-worker rerun is not AC"}, "students_own_accepted": {}, "techniques": {},
            "paired_with_zpdpatch": {}}
 

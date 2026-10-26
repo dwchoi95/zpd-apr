@@ -39,7 +39,7 @@ TEST = Path(os.environ.get("ZPD_DIFF_TEST", "datasets/test.jsonl"))
 APPROACHES = Path("output/approaches")
 STEPS = Path("output/benchmark/rq1-student-steps.jsonl")
 TECHNIQUES = ["zpdpatch", "refactory", "brafar", "mentored", "lsgen-qwen", "lsgen"]
-PROBLEMS = sorted(p.name for p in DATA.iterdir() if p.name.startswith("p"))
+PROBLEMS = sorted(p.name for p in DATA.iterdir() if p.name.startswith("p")) if DATA.is_dir() else []
 TIMEOUT_SEC = 2.5
 N_REF = 7
 SELECT_SEED = 20261026
@@ -191,7 +191,7 @@ def plausible(technique):
     return [r for r in jsonl(APPROACHES / f"{technique}.jsonl") if r.get("repaired") is True]
 
 
-EXEC_DIRS = {"patches": "executions", "targets": "executions_own"}  # amendment 2026-10-27: students' own targets
+EXEC_DIRS = {"patches": "executions", "targets": "executions_own"}  # targets: the students' own accepted programs
 
 
 def program_set(which):
@@ -298,7 +298,7 @@ def cmd_summarize(args):
         for row in jsonl(OUT / "executions" / f"{problem}.jsonl"):
             executions[(problem, row["sha256"])] = row
     kept = {p: len(jsonl(OUT / "references" / f"{p}.jsonl")) for p in PROBLEMS if p not in EXCLUDED}
-    summary = {"family": "differential-20261026-v1", "protocol": "zpd-differential-20261026.md",
+    summary = {
                "timeout_sec": TIMEOUT_SEC, "reference_programs_per_problem": N_REF, "seeds": [1, 100],
                "excluded_problems": EXCLUDED, "kept_inputs": kept,
                "dropped_inputs": jsonl(OUT / "references" / "dropped.jsonl"),
