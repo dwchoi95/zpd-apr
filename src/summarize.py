@@ -2,6 +2,7 @@
 Writes output/tables.tex ('% rows:<name>' sections for fill_tables.py) and output/numbers.txt.
 Usage: python3 paper/src/summarize.py"""
 import json
+import math
 import os
 import random
 import statistics
@@ -226,7 +227,8 @@ def main():
     curve = lambda style, share: f"\\addplot[{style}] coordinates {{" + " ".join(f"({b},{100 * share(b):.1f})" for b in grid) + "};"
     tables["reach"] = [curve("referenceline", share)] + [curve(style, lambda b, m=m: within_budget(m, b))
                                                          for style, m in (("refactoryline", refactory), ("brafarline", brafar), ("mentoredline", mentored),
-                                                                         ("qwenline", qwen), ("gptline", lsgen))]
+                                                                         ("qwenline", qwen), ("gptline", lsgen),
+                                                                         ("proposedline", rows("approaches/zpdpatch.jsonl")))]
     fixed_ted = lambda m: statistics.mean(r["ted_buggy_fixed"] for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None)
     numbers.update({"lim.mentored.returns_submission.share": pct(1 - rr(mentored)), "lim.lsgen.returns_submission.share": pct(1 - rr(lsgen)),
                     "lim.lsgen_qwen.returns_submission.share": pct(1 - rr(qwen)), "rq1.lsgen_qwen.rr": pct(rr(qwen)),
@@ -468,6 +470,24 @@ def main():
             joint_more["reach"].append(float(more(a, b)))
     for name, values in joint_more.items():
         numbers[f"rq2.joint.{name}.more.range"] = span(values)
+    # Paired tests: token retention on the jointly repaired programs (Wilcoxon signed-rank), and repair within reach
+    # alone against after ZPDPatch on every buggy program (exact McNemar); the largest p over the techniques.
+    from scipy.stats import binomtest, wilcoxon
+    exponent = lambda p: f"10^{{{int(math.floor(math.log10(p)))}}}" if p > 0 else "10^{-300}"
+    wilcoxon_p, mcnemar_p = [], []
+    for _, _, m in others:
+        of = {r["example_id"]: r for r in fixes(m)}
+        joint = [k for k in zf if k in of]
+        wilcoxon_p.append(wilcoxon([zf[k]["token_retention"] for k in joint], [of[k]["token_retention"] for k in joint]).pvalue)
+        before = {r["example_id"]: within_reach([r], rq1_reach) == 1 for r in m}
+        after = {r["example_id"]: within_reach([r], rq1_reach) == 1 for r in ordered(zpd, m)}
+        gained = sum(after[k] and not before[k] for k in before)
+        lost = sum(before[k] and not after[k] for k in before)
+        mcnemar_p.append(binomtest(min(gained, lost), gained + lost, 0.5).pvalue)
+    numbers["rq2.joint.token_retention.wilcoxon.p"] = f"{max(wilcoxon_p):.1e}"
+    numbers["rq2.joint.token_retention.wilcoxon.bound"] = exponent(max(wilcoxon_p) * 10)
+    numbers["rq2.combined.mcnemar.p"] = f"{max(mcnemar_p):.1e}"
+    numbers["rq2.combined.mcnemar.bound"] = exponent(max(mcnemar_p) * 10)
     # (b) By quartile of the student's own step to acceptance: the share of each technique's repairs within reach.
     own_step = {r["example_id"]: r["step_ted"][-1] for r in steps}
     cuts = statistics.quantiles([own_step[r["example_id"]] for r in zpd], n=4)
