@@ -56,8 +56,9 @@ edits here; code goes to `dev` in the parent folder. Branch, repository, and art
 
 ## This project (ZPDPatch)
 
-- Target: ICSE-SEET 2027 Research Paper (criteria: Relevance, Significance, Soundness, Verifiability, Presentation;
-  novelty is not one). No user study was run: claim no educational or confirmatory benefit.
+- Target (user decision of 2026-10-26, after the ICSE-SEET deadline passed): ICST 2027 Research Papers (IEEE, 10 pages
+  plus 2 of references, double-anonymous, deadline 2026-11-02); if rejected, ISSTA 2027 (ACM PACMSE format). The earlier
+  ICSE-SEET criteria were Relevance, Significance, Soundness, Verifiability, Presentation. No user study was run: claim no educational or confirmatory benefit.
 - The tool name is written as `\textsc{ZPDPatch}`; its stages are Mine, Train, Select, with the same words and order in
   the Abstract, Introduction, Overview, and Conclusion. Algorithms' Input/Output lines use `\item[\textbf{Input:}]`.
 - RQ1 runs on the 14-problem benchmark (CodeNet Python800 submissions, FixEval tests) shared with a concurrent
