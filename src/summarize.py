@@ -272,6 +272,38 @@ def main():
                     "lim.regress.verdict_kept.share": pct(sum(a == b for r in steps for (a, b), c in zip(r["step_verdicts"], r["step_class"]) if c == "regress")
                                                           / classes.count("regress"))})
 
+    # The same problems' trajectories that never reach acceptance: pass rate and wrong-answer share at the first, middle,
+    # and last submissions, and their steps by class, pooled and with each problem weighted equally.
+    never = rows("benchmark/never-accepted-steps.jsonl")
+    nstates = {r["example_id"]: list(zip(r["state_verdicts"], r["state_pass_rates"])) for r in never}
+    by_problem = lambda items: [[x for r, x in items if r["problem_id"] == p] for p in sorted({r["problem_id"] for r, _ in items})]
+    balanced = lambda items: statistics.mean(statistics.mean(g) for g in by_problem(items) if g)
+    npoints = (("first", lambda t: [t[0]]), ("middle", lambda t: t[1:-1]), ("last", lambda t: [t[-1]]))
+    for name, pick in npoints:
+        pass_items = [(r, statistics.mean(p for _, p in pick(nstates[r["example_id"]]))) for r in never if pick(nstates[r["example_id"]])]
+        wa_items = [(r, statistics.mean(v == "WA" for v, _ in pick(nstates[r["example_id"]]))) for r in never if pick(nstates[r["example_id"]])]
+        numbers[f"lim.never.{name}.pass_rate"] = f"{100 * statistics.mean(x for _, x in pass_items):.1f}"
+        numbers[f"lim.never.{name}.pass_rate.balanced"] = f"{100 * balanced(pass_items):.1f}"
+        numbers[f"lim.never.{name}.wa.share"] = f"{100 * statistics.mean(x for _, x in wa_items):.1f}"
+    nclasses = [c for r in never for c in r["step_class"]]
+    numbers.update({"lim.never.trajectories": len(never), "lim.never.steps": len(nclasses),
+                    **{f"lim.never.steps.{c}.share": pct(nclasses.count(c) / len(nclasses)) for c in ("forward", "sideways", "regress")},
+                    "lim.never.last_passes_more_than_first.share": pct(sum(nstates[r["example_id"]][-1][1] > nstates[r["example_id"]][0][1] for r in never) / len(never))})
+    numbers.update({f"lim.{name}.pass_rate.balanced": f"{100 * balanced([(r, p) for r, p in zip(steps, ps)]):.1f}"
+                    for name, ps, _ in points[:3] if len(ps) == len(steps)})
+    # Figure 2 shows both: dotted lines and the lower bar for the trajectories that never reach acceptance.
+    nmeans = [(statistics.mean(statistics.mean(p for _, p in pick(nstates[r["example_id"]])) for r in never if pick(nstates[r["example_id"]])),
+               statistics.mean(statistics.mean(v == "WA" for v, _ in pick(nstates[r["example_id"]])) for r in never if pick(nstates[r["example_id"]])))
+              for _, pick in npoints]
+    tables["climb"] += [
+        "\\addplot[referenceline, densely dotted, mark=o, mark size=1.3pt] coordinates {" + " ".join(f"({i},{100 * p:.1f})" for i, (p, _) in enumerate(nmeans)) + "};",
+        "\\addplot[verdictline, densely dotted, mark=square, mark size=1.2pt] coordinates {" + " ".join(f"({i},{100 * w:.1f})" for i, (_, w) in enumerate(nmeans)) + "};"]
+    tables["stepclasses"] = [f"\\addplot[{style}] coordinates {{({100 * classes.count(c) / len(classes):.1f},1)"
+                             + f" ({100 * nclasses.count(c) / len(nclasses):.1f},0)" + "};"
+                             for c, style in (("AC", "toacceptance"), ("forward", "forwardstep"), ("sideways", "sidewaysstep"), ("regress", "regressstep"))]
+    kept = lambda items: [a == b for r in items for (a, b), c in zip(zip(r["state_verdicts"], r["state_verdicts"][1:]), r["step_class"]) if c == "forward"]
+    numbers["lim.never.forward.verdict_kept.share"] = pct(statistics.mean(kept(never)))
+
     # RQ1 figure: the patches of ZPDPatch against the students' own steps.
     zpd, qwen = rows("approaches/zpdpatch.jsonl"), rows("approaches/lsgen-qwen.jsonl")
     rq1_reach = reach_by_trajectory(steps)
