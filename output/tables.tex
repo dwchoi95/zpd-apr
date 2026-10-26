@@ -30,20 +30,12 @@ Total & 399 & 1,428 & 6,470 & 14.7 & -- & -- \\
 \addplot[regressstep] coordinates {(29.7,1) (33.3,0)};
 % rows:patchsize
 \addplot[referenceline] coordinates {(1,7.4) (2,10.9) (3,15.0) (5,20.5) (7,27.3) (10,33.8) (15,43.7) (20,52.3) (30,64.7) (50,77.8) (70,83.6) (100,88.9) (150,94.6) (200,97.7) (300,99.2) (500,99.9) (1000,100.0)};
+\addplot[refactoryline] coordinates {(1,2.0) (2,2.7) (3,3.6) (5,6.0) (7,11.1) (10,15.5) (15,25.5) (20,33.4) (30,46.7) (50,61.3) (70,69.3) (100,77.3) (150,88.4) (200,96.7) (300,99.6) (500,100.0) (1000,100.0)};
+\addplot[brafarline] coordinates {(1,1.0) (2,1.6) (3,1.9) (5,4.8) (7,8.8) (10,14.1) (15,21.9) (20,30.5) (30,44.4) (50,61.3) (70,69.2) (100,77.3) (150,86.8) (200,92.4) (300,97.4) (500,99.8) (1000,100.0)};
+\addplot[mentoredline] coordinates {(1,4.5) (2,6.2) (3,7.9) (5,13.8) (7,23.8) (10,30.2) (15,42.3) (20,50.4) (30,63.7) (50,78.6) (70,84.8) (100,88.1) (150,94.9) (200,98.2) (300,99.4) (500,99.9) (1000,100.0)};
+\addplot[qwenline] coordinates {(1,1.3) (2,1.7) (3,2.4) (5,4.5) (7,7.6) (10,10.4) (15,16.8) (20,21.8) (30,31.4) (50,43.4) (70,52.7) (100,61.0) (150,73.1) (200,85.1) (300,96.3) (500,99.5) (1000,100.0)};
+\addplot[gptline] coordinates {(1,0.9) (2,1.3) (3,2.1) (5,3.7) (7,6.6) (10,9.7) (15,15.3) (20,20.1) (30,30.3) (50,48.0) (70,57.3) (100,67.1) (150,78.8) (200,88.4) (300,96.8) (500,99.6) (1000,100.0)};
 \addplot[proposedline] coordinates {(1,6.3) (2,10.6) (3,13.7) (5,21.1) (7,26.1) (10,31.9) (15,42.9) (20,57.1) (30,70.5) (50,87.5) (70,92.3) (100,96.4) (150,98.3) (200,99.7) (300,99.8) (500,100.0) (1000,100.0)};
-% rows:rq1
-\multirow{2}{*}{Within reach} & Fixed (\%) & 75.9 & 76.3 & 100.0 & 76.7 \\
- & Problems ($\geq$70\%) & 2/3 & 8/10 & 1/1 & 11/14 \\
-\midrule
-\multirow{2}{*}{Med.\ tokens kept (\%)} & Patch & 97.1 & 94.4 & 99.6 & 96.2 \\
- & Student step & 96.4 & 96.3 & 97.9 & 96.4 \\
-\midrule
-\multirow{2}{*}{Med.\ lines kept (\%)} & Patch & 83.3 & 81.2 & 97.4 & 83.3 \\
- & Student step & 85.0 & 85.7 & 93.8 & 85.7 \\
-\midrule
-\multirow{3}{*}{Student's fix (\%)} & No larger & 59.6 & 54.3 & 91.7 & 56.6 \\
- & Within 10 & 46.4 & 26.9 & 50.0 & 32.9 \\
- & Same AST & 23.5 & 12.8 & 33.3 & 16.3 \\
 % rows:rq1steps
 Forward steps & 1,397 & 109 \\
 \midrule
@@ -54,13 +46,20 @@ Other (\%) & 2.0 & 3.7 \\
 Pass rate gain (points) & 12.5 & 12.5 \\
 Pass rate gain (\%) & 17.6 & 20.0 \\
 TED & 17 & 14 \\
-% rows:comparison
-\textsc{ZPDPatch} & 33.3 & 76.7 & 25.5 & 27.3 & 87.9 & 71.3 \\
-\textsc{Refactory} & 54.3 & 56.5 & 30.7 & 60.2 & 68.8 & 26.9 \\
-\textsc{Brafar} & 54.9 & 58.3 & 32.0 & 69.5 & 63.8 & 26.7 \\
-\textsc{Mentored} & 40.2 & 70.9 & 28.5 & 39.5 & 80.0 & 42.3 \\
-\textsc{LSGen}\textsubscript{Qwen} & 79.4 & 42.2 & 33.5 & 99.6 & 62.2 & 31.4 \\
-\textsc{LSGen}\textsubscript{GPT} & 92.1 & 46.3 & 42.6 & 89.9 & 64.4 & 31.9 \\
+% rows:rq1
+\multirow{3}{*}{Repair (\%)} & RR & 33.3 & 54.3 & 54.9 & 40.2 & 79.4 & 92.1 & -- \\
+ & Within reach, of fixed & 76.7 & 56.5 & 58.3 & 70.9 & 42.2 & 46.3 & -- \\
+ & Within reach, of all & 25.5 & 30.7 & 32.0 & 28.5 & 33.5 & 42.6 & -- \\
+\midrule
+\multicolumn{2}{l||}{Problems with $\geq$70\% within reach} & 11/14 & 4/12 & 3/14 & 7/14 & 1/14 & 0/14 & -- \\
+\multicolumn{2}{l||}{Median TED} & 18 & 33 & 35 & 20 & 64 & 55 & 19 \\
+\midrule
+\multirow{2}{*}{Median kept (\%)} & Tokens & 96.2 & 71.3 & 65.7 & 84.2 & 62.3 & 65.2 & 96.4 \\
+ & Lines & 83.3 & 22.2 & 20.0 & 40.0 & 25.0 & 25.0 & 85.7 \\
+\midrule
+\multirow{3}{*}{Student's fix (\%)} & No larger & 56.6 & 34.0 & 31.6 & 46.5 & 23.0 & 26.3 & -- \\
+ & Within TED 10 & 32.9 & 13.0 & 10.8 & 23.1 & 10.1 & 10.4 & -- \\
+ & Same AST & 16.3 & 3.2 & 1.9 & 7.7 & 3.8 & 4.4 & -- \\
 % rows:combined
 \addplot[baseline2, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 30.7 refactory 14.5 13.7\\ 32.0 brafar 13.5 12.4\\ 28.5 mentored 12.3 12.2\\ 33.5 lsgen_qwen 9.4 9.2\\ 42.6 lsgen 7.1 7.3\\};
 \addplot[proposed, error bars/.cd, y dir=both, y explicit] table[row sep=\\, y=v, x=at, y error plus=p, y error minus=m] {v at p m\\ 42.4 refactory 9.7 9.5\\ 43.8 brafar 8.6 8.7\\ 42.0 mentored 10.1 10.8\\ 44.0 lsgen_qwen 8.0 8.4\\ 50.4 lsgen 6.8 7.3\\};

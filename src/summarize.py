@@ -314,8 +314,10 @@ def main():
     patch = [r["ted_buggy_fixed"] for r in fixes(zpd)]
     cdf = lambda xs: " ".join(f"({x},{100 * sum(v <= x for v in xs) / len(xs):.1f})"
                               for x in (1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 300, 500, 1000))
-    tables["patchsize"] = [f"\\addplot[referenceline] coordinates {{{cdf(all_steps)}}};",
-                           f"\\addplot[proposedline] coordinates {{{cdf(patch)}}};"]
+    tables["patchsize"] = [f"\\addplot[referenceline] coordinates {{{cdf(all_steps)}}};"] + [
+        f"\\addplot[{style}] coordinates {{{cdf([r['ted_buggy_fixed'] for r in fixes(m)])}}};"
+        for style, m in (("refactoryline", refactory), ("brafarline", brafar), ("mentoredline", mentored),
+                         ("qwenline", qwen), ("gptline", lsgen), ("proposedline", zpd))]
     numbers.update({"rq1.zpdpatch.rr": pct(rr(zpd)), "rq1.zpdpatch.within_reach.share": pct(share_in_reach(zpd)),
                     "rq1.zpdpatch.ted.median": num(statistics.median(patch)),
                     "rq1.zpdpatch.token_retention.median": pct(statistics.median(r["token_retention"] for r in fixes(zpd))),
@@ -348,20 +350,6 @@ def main():
     against_fix = lambda test: [pct(sum(test(r) for r in fixes(g)) / len(fixes(g))) for g in groups]
     problems = lambda g: {r["problem_id"] for r in g}
     cells = lambda values: " & ".join(values) + " \\\\"
-    tables["rq1"] = [
-        "\\multirow{2}{*}{Within reach} & Fixed (\\%) & " + cells([pct(share_in_reach(g)) for g in groups]),
-        " & Problems ($\\geq$70\\%) & " + cells([f"{sum(share_in_reach(by_problem[p]) >= 0.7 for p in problems(g))}/{len(problems(g))}" for g in groups]),
-        "\\midrule",
-        "\\multirow{2}{*}{Med.\\ tokens kept (\\%)} & Patch & " + cells([pct(statistics.median(r["token_retention"] for r in fixes(g))) for g in groups]),
-        " & Student step & " + cells([pct(statistics.median(x for r in g for x in r["step_token_retention"])) for g in group_steps]),
-        "\\midrule",
-        "\\multirow{2}{*}{Med.\\ lines kept (\\%)} & Patch & " + cells([pct(statistics.median(r["line_retention"] for r in fixes(g))) for g in groups]),
-        " & Student step & " + cells([pct(statistics.median(x for r in g for x in r["step_line_retention"])) for g in group_steps]),
-        "\\midrule",
-        "\\multirow{3}{*}{Student's fix (\\%)} & No larger & " + cells(against_fix(lambda r: own_fix[r["example_id"]] is not None and r["ted_buggy_fixed"] <= own_fix[r["example_id"]])),
-        " & Within 10 & " + cells(against_fix(lambda r: near(r, 10))),
-        " & Same AST & " + cells(against_fix(lambda r: near(r, 0))),
-    ]
 
     # Table (RQ1): the forward steps students took against those ZPDPatch returns without repairing.
     short = {"Wrong Answer": "WA", "Time Limit Exceeded": "TLE", "Runtime Error": "RE", "Memory Limit Exceeded": "MLE"}
@@ -398,10 +386,44 @@ def main():
               ("mentored", "\\textsc{Mentored}", mentored), ("lsgen_qwen", "\\textsc{LSGen}\\textsubscript{Qwen}", qwen),
               ("lsgen", "\\textsc{LSGen}\\textsubscript{GPT}", lsgen))
     mean = lambda m, key: statistics.mean(r[key] for r in fixes(m))
-    tables["comparison"] = [
-        f"{label} & {pct(rr(m))} & {pct(share_in_reach(m))} & {pct(within_reach(m, rq1_reach))} & {mean(m, 'ted_buggy_fixed'):.1f} & "
-        f"{pct(mean(m, 'token_retention'))} & {pct(mean(m, 'line_retention'))} \\\\"
-        for _, label, m in (("zpdpatch", "\\textsc{ZPDPatch}", zpd), *others)]
+    # Table II (RQ1 and RQ2): every technique's repairs against the students' own steps and fixes.
+    span = lambda values: f"{min(values):.1f}--{max(values):.1f}"
+    techniques = [zpd] + [m for _, _, m in others]
+    by_problem_of = lambda m: [[r for r in m if r["problem_id"] == p] for p in sorted({r["problem_id"] for r in fixes(m)})]
+    no_larger = lambda r: own_fix[r["example_id"]] is not None and r["ted_buggy_fixed"] <= own_fix[r["example_id"]]
+    share_of = lambda m, test: sum(map(test, fixes(m))) / len(fixes(m))
+    row = lambda label, values, student="--": f"{label} & " + " & ".join(values) + f" & {student} \\\\"
+    tables["rq1"] = [
+        row("\\multirow{3}{*}{Repair (\\%)} & RR", [pct(rr(m)) for m in techniques]),
+        row(" & Within reach, of fixed", [pct(share_in_reach(m)) for m in techniques]),
+        row(" & Within reach, of all", [pct(within_reach(m, rq1_reach)) for m in techniques]),
+        "\\midrule",
+        row("\\multicolumn{2}{l||}{Problems with $\\geq$70\\% within reach}",
+            [f"{sum(share_in_reach(g) >= 0.7 for g in by_problem_of(m))}/{len(by_problem_of(m))}" for m in techniques]),
+        row("\\multicolumn{2}{l||}{Median TED}", [num(statistics.median(r["ted_buggy_fixed"] for r in fixes(m))) for m in techniques],
+            num(statistics.median(all_steps))),
+        "\\midrule",
+        row("\\multirow{2}{*}{Median kept (\\%)} & Tokens", [pct(statistics.median(r["token_retention"] for r in fixes(m))) for m in techniques],
+            pct(statistics.median(x for r in steps for x in r["step_token_retention"]))),
+        row(" & Lines", [pct(statistics.median(r["line_retention"] for r in fixes(m))) for m in techniques],
+            pct(statistics.median(x for r in steps for x in r["step_line_retention"]))),
+        "\\midrule",
+        row("\\multirow{3}{*}{Student's fix (\\%)} & No larger", [pct(share_of(m, no_larger)) for m in techniques]),
+        row(" & Within TED 10", [pct(share_of(m, lambda r: near(r, 10))) for m in techniques]),
+        row(" & Same AST", [pct(share_of(m, lambda r: near(r, 0))) for m in techniques]),
+    ]
+    rest = [m for _, _, m in others]
+    above = lambda m: sum(r["ted_buggy_fixed"] > statistics.median(all_reach) for r in fixes(m)) / len(fixes(m))
+    numbers.update({
+        "rq1.others.within_reach.share.range": span([100 * share_in_reach(m) for m in rest]),
+        "rq1.others.ted.median.range": f"{num(min(statistics.median(r['ted_buggy_fixed'] for r in fixes(m)) for m in rest))}--{num(max(statistics.median(r['ted_buggy_fixed'] for r in fixes(m)) for m in rest))}",
+        "rq1.others.above_reach_median.share.range": span([100 * above(m) for m in rest]),
+        "rq1.others.token_retention.median.max": f"{max(100 * statistics.median(r['token_retention'] for r in fixes(m)) for m in rest):.1f}",
+        "rq1.others.line_retention.median.max": f"{max(100 * statistics.median(r['line_retention'] for r in fixes(m)) for m in rest):.1f}",
+        "rq1.others.no_larger.max": f"{max(100 * share_of(m, no_larger) for m in rest):.1f}",
+        "rq1.others.within10.max": f"{max(100 * share_of(m, lambda r: near(r, 10)) for m in rest):.1f}",
+        "rq1.others.same_ast.max": f"{max(100 * share_of(m, lambda r: near(r, 0)) for m in rest):.1f}",
+        "rq1.others.problems70.max": max(sum(share_in_reach(g) >= 0.7 for g in by_problem_of(m)) for m in rest)})
 
     numbers.update({f"rq2.{key}.within_reach.rr": pct(within_reach(m, rq1_reach))
                     for key, m in (("zpdpatch", zpd), *((k, m) for k, _, m in others))})

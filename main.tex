@@ -476,57 +476,63 @@ For RQ3 and RQ4, we use a larger corpus of Project CodeNet trajectories on the p
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}
-\begin{axis}[width=\columnwidth, height=5.4cm, xmode=log, xmin=1, xmax=1000, ymin=0, ymax=100,
+\begin{axis}[width=\columnwidth, height=4.6cm, xmode=log, xmin=1, xmax=1000, ymin=0, ymax=100,
  xtick={1,10,100,1000}, xticklabels={1,10,100,1000}, ytick={0,25,50,75,100},
  xlabel={Size (TED)}, ylabel={Steps or patches (\%)}, ymajorgrids, grid style={gray!25},
- legend pos=south east, legend cell align=left]
+ legend columns=3, legend cell align=left, legend style={at={(0.5,1.03)}, anchor=south}]
 % rows:patchsize
 \addplot[referenceline] coordinates {(1,7.4) (2,10.9) (3,15.0) (5,20.5) (7,27.3) (10,33.8) (15,43.7) (20,52.3) (30,64.7) (50,77.8) (70,83.6) (100,88.9) (150,94.6) (200,97.7) (300,99.2) (500,99.9) (1000,100.0)};
+\addplot[refactoryline] coordinates {(1,2.0) (2,2.7) (3,3.6) (5,6.0) (7,11.1) (10,15.5) (15,25.5) (20,33.4) (30,46.7) (50,61.3) (70,69.3) (100,77.3) (150,88.4) (200,96.7) (300,99.6) (500,100.0) (1000,100.0)};
+\addplot[brafarline] coordinates {(1,1.0) (2,1.6) (3,1.9) (5,4.8) (7,8.8) (10,14.1) (15,21.9) (20,30.5) (30,44.4) (50,61.3) (70,69.2) (100,77.3) (150,86.8) (200,92.4) (300,97.4) (500,99.8) (1000,100.0)};
+\addplot[mentoredline] coordinates {(1,4.5) (2,6.2) (3,7.9) (5,13.8) (7,23.8) (10,30.2) (15,42.3) (20,50.4) (30,63.7) (50,78.6) (70,84.8) (100,88.1) (150,94.9) (200,98.2) (300,99.4) (500,99.9) (1000,100.0)};
+\addplot[qwenline] coordinates {(1,1.3) (2,1.7) (3,2.4) (5,4.5) (7,7.6) (10,10.4) (15,16.8) (20,21.8) (30,31.4) (50,43.4) (70,52.7) (100,61.0) (150,73.1) (200,85.1) (300,96.3) (500,99.5) (1000,100.0)};
+\addplot[gptline] coordinates {(1,0.9) (2,1.3) (3,2.1) (5,3.7) (7,6.6) (10,9.7) (15,15.3) (20,20.1) (30,30.3) (50,48.0) (70,57.3) (100,67.1) (150,78.8) (200,88.4) (300,96.8) (500,99.6) (1000,100.0)};
 \addplot[proposedline] coordinates {(1,6.3) (2,10.6) (3,13.7) (5,21.1) (7,26.1) (10,31.9) (15,42.9) (20,57.1) (30,70.5) (50,87.5) (70,92.3) (100,96.4) (150,98.3) (200,99.7) (300,99.8) (500,100.0) (1000,100.0)};
 % end rows
 \draw[densely dotted] (axis cs:49,0) -- (axis cs:49,100) node[pos=0.93, anchor=east, font=\tiny] {Median reach};
-\legend{Student steps, \textsc{ZPDPatch} patches}
+\legend{Student steps, \textsc{Refactory}, \textsc{Brafar}, \textsc{Mentored}, \textsc{LSGen}\textsubscript{Qwen}, \textsc{LSGen}\textsubscript{GPT}, \textsc{ZPDPatch}}
 \end{axis}
 \end{tikzpicture}
-\caption{Size distributions of the patches of \textsc{ZPDPatch} and of students' steps}
+\caption{Size distributions of students' steps and of each technique's patches}
 \label{fig:patchsize}
 \end{figure}
 
-To answer RQ1, we repaired the 1,753 buggy programs of the RQ1 benchmark with the deployed portfolio (Section~\ref{sec:select}) and compared the programs it returned with the 6,820 steps the same students took, in size, retention, and change of execution outcomes.
+To answer RQ1, we repaired the 1,753 buggy programs of the RQ1 benchmark with the deployed portfolio (Section~\ref{sec:select}) and with the five existing configurations, and compared the programs they returned with the 6,820 steps the same students took, in size, retention, distance to the student's own fix, and change of execution outcomes.
 
-Figure~\ref{fig:patchsize} plots the cumulative share of patches and of student steps up to each size. The median patch of \textsc{ZPDPatch} has a TED of 18, nearly the median student step of 19. The two curves almost coincide up to a TED of 15. Of the patches, 13.2\% exceed a TED of 49, the demonstrated reach of the median student, which is 41.5\% fewer than the 22.6\% of student steps that do.
+Figure~\ref{fig:patchsize} plots the cumulative share of student steps and of each technique's patches up to each size. The median patch of \textsc{ZPDPatch} has a TED of 18, nearly the median student step of 19, and the two curves almost coincide up to a TED of 15, whereas the medians of the existing techniques range from 20 to 64. Of the patches of \textsc{ZPDPatch}, 13.2\% exceed a TED of 49, the demonstrated reach of the median student, against 22.6\% of the student steps and 22.1--56.8\% of the patches of the existing techniques.
 
-\begin{table}[h]
-\caption{Patches of \textsc{ZPDPatch} against the students' own steps and fixes by difficulty}
+\begin{table*}[t]
+\caption{Repairs of each technique against the students' own steps and fixes}
 \label{tab:rq1}
-\centering\scriptsize
-\begin{tabular}{@{}ll||rrr|r@{}}
+\centering\footnotesize
+\begin{tabular}{@{}ll||rrrrrr|r@{}}
 \toprule
-Measure & & Easy & Medium & Hard & All \\
+ & & \textsc{ZPDPatch} & \textsc{Refactory} & \textsc{Brafar} & \textsc{Mentored} & \textsc{LSGen}\textsubscript{Qwen} & \textsc{LSGen}\textsubscript{GPT} & Students \\
 \midrule
 % rows:rq1
-\multirow{2}{*}{Within reach} & Fixed (\%) & 75.9 & 76.3 & 100.0 & 76.7 \\
- & Problems ($\geq$70\%) & 2/3 & 8/10 & 1/1 & 11/14 \\
+\multirow{3}{*}{Repair (\%)} & RR & 33.3 & 54.3 & 54.9 & 40.2 & 79.4 & 92.1 & -- \\
+ & Within reach, of fixed & 76.7 & 56.5 & 58.3 & 70.9 & 42.2 & 46.3 & -- \\
+ & Within reach, of all & 25.5 & 30.7 & 32.0 & 28.5 & 33.5 & 42.6 & -- \\
 \midrule
-\multirow{2}{*}{Med.\ tokens kept (\%)} & Patch & 97.1 & 94.4 & 99.6 & 96.2 \\
- & Student step & 96.4 & 96.3 & 97.9 & 96.4 \\
+\multicolumn{2}{l||}{Problems with $\geq$70\% within reach} & 11/14 & 4/12 & 3/14 & 7/14 & 1/14 & 0/14 & -- \\
+\multicolumn{2}{l||}{Median TED} & 18 & 33 & 35 & 20 & 64 & 55 & 19 \\
 \midrule
-\multirow{2}{*}{Med.\ lines kept (\%)} & Patch & 83.3 & 81.2 & 97.4 & 83.3 \\
- & Student step & 85.0 & 85.7 & 93.8 & 85.7 \\
+\multirow{2}{*}{Median kept (\%)} & Tokens & 96.2 & 71.3 & 65.7 & 84.2 & 62.3 & 65.2 & 96.4 \\
+ & Lines & 83.3 & 22.2 & 20.0 & 40.0 & 25.0 & 25.0 & 85.7 \\
 \midrule
-\multirow{3}{*}{Student's fix (\%)} & No larger & 59.6 & 54.3 & 91.7 & 56.6 \\
- & Within 10 & 46.4 & 26.9 & 50.0 & 32.9 \\
- & Same AST & 23.5 & 12.8 & 33.3 & 16.3 \\
+\multirow{3}{*}{Student's fix (\%)} & No larger & 56.6 & 34.0 & 31.6 & 46.5 & 23.0 & 26.3 & -- \\
+ & Within TED 10 & 32.9 & 13.0 & 10.8 & 23.1 & 10.1 & 10.4 & -- \\
+ & Same AST & 16.3 & 3.2 & 1.9 & 7.7 & 3.8 & 4.4 & -- \\
 % end rows
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
-Table~\ref{tab:rq1} compares the patches of \textsc{ZPDPatch} with the students' own steps and fixes by difficulty. With patches the size of student steps, 76.7\% of the fixed programs lie within the student's demonstrated reach. The share is even across difficulties: 75.9\% on the Easy and 76.3\% on the Medium problems, and all 12 patches on the single Hard problem lie within reach. By problem, it is at least 70\% on 11 of the 14 problems. The Hard problem's students reach the farthest (a median of 143 in Table~\ref{tab:data}).
+Table~\ref{tab:rq1} compares the repairs of every technique with the students' own steps and fixes. Of the fixed programs of \textsc{ZPDPatch}, 76.7\% lie within the student's demonstrated reach, against 42.2--70.9\% for the existing techniques. The share is even across difficulties, 75.9\% on the Easy and 76.3\% on the Medium problems and all 12 patches on the Hard one, and it reaches 70\% on 11 of the 14 problems, against at most 7 for any existing technique. It does not come from repairing only the buggy programs that need small steps: in every quartile of the student's own step to acceptance, the share of \textsc{ZPDPatch} is the highest (70.5--87.7\%).
 
-A patch also keeps as much of the student's code as a student step does: it keeps a median of 96.2\% of the buggy program's tokens and 83.3\% of its lines, against 96.4\% and 85.7\% for a student step.
+A patch of \textsc{ZPDPatch} also keeps as much of the student's code as a student step does, a median of 96.2\% of the buggy program's tokens and 83.3\% of its lines, against 96.4\% and 85.7\% for a student step and at most 84.2\% and 40.0\% for the existing techniques. On the buggy programs that \textsc{ZPDPatch} and an existing technique both repair, its patches have a 13.4--60.9\% smaller TED and keep 7.0--27.6\% more of the student's tokens (Wilcoxon signed-rank test, \(p<10^{-5}\) against each) and 72.0--155.9\% more of the lines, and they lie within reach 12.9--44.1\% more often than those of four techniques and 2.9\% less often than those of \textsc{Mentored}, whose patches are as small.
 
-Moreover, 56.6\% of the patches are no larger than the student's own step to acceptance (Student's fix in Table~\ref{tab:rq1}), 32.9\% lie within a TED of ten of the accepted program, and 16.3\% have its exact AST, although neither training nor repair sees that program.
+Moreover, 56.6\% of the patches of \textsc{ZPDPatch} are no larger than the student's own step to acceptance (Student's fix in Table~\ref{tab:rq1}), 32.9\% lie within a TED of ten of the accepted program, and 16.3\% have its exact AST, although neither training nor repair sees that program, against at most 46.5\%, 23.1\%, and 7.7\% for the existing techniques.
 
 \begin{table}[h]
 \caption{Forward steps of students and of \textsc{ZPDPatch}}
@@ -551,42 +557,21 @@ TED & 17 & 14 \\
 \end{tabular}
 \end{table}
 
-Even on the buggy programs that \textsc{ZPDPatch} does not repair, the steps it returns resemble those of students. When no candidate passes, Algorithm~\ref{alg:generic} returns the candidate that passes the most test cases beyond the submission, never one that passes fewer; we compared its forward steps (Section~\ref{sec:mine}) with those students took. As Table~\ref{tab:rq1steps} shows, the two have the same mix of verdict changes: 93.5\% of the students' steps and 90.8\% of those of \textsc{ZPDPatch} keep the Wrong Answer (WA) verdict while passing more test cases, and 4.5\% and 5.5\% move from Time Limit Exceeded (TLE) to WA. The median gain in pass rate per step is 12.5 points for both, and the steps are of similar size, with TEDs of 17 and 14. These results show that the patches of \textsc{ZPDPatch} have the size and retention of the students' own steps and stay within reach, and that on 9.3\% of the buggy programs it does not repair, it still returns the kind of forward step students take.
+Even on the buggy programs that \textsc{ZPDPatch} does not repair, the steps it returns resemble those of students. When no candidate passes, Algorithm~\ref{alg:generic} returns the candidate that passes the most test cases beyond the submission, never one that passes fewer; we compared its forward steps (Section~\ref{sec:mine}) with those students took. As Table~\ref{tab:rq1steps} shows, the two have the same mix of verdict changes: 93.5\% of the students' steps and 90.8\% of those of \textsc{ZPDPatch} keep the Wrong Answer (WA) verdict while passing more test cases, and 4.5\% and 5.5\% move from Time Limit Exceeded (TLE) to WA. The median gain in pass rate per step is 12.5 points for both, and the steps are of similar size, with TEDs of 17 and 14. These results show that the patches of \textsc{ZPDPatch} resemble the students' own steps in size and retention and stay within reach more closely than those of five existing configurations, and that on 9.3\% of the buggy programs it does not repair, it still returns the kind of forward step students take.
 
 \subsection{RQ2: Comparison with Existing Techniques}
 \label{sec:rq-comparison}
 
-\begin{table}[h]
-\caption{Repairs of \textsc{ZPDPatch} and existing techniques on the RQ1 benchmark}
-\label{tab:comparison}
-\centering\footnotesize
-\begin{tabular}{@{}l||rrrrrr@{}}
-\toprule
-Technique & RR & \multicolumn{2}{c}{Within reach (\%)} & Mean & \multicolumn{2}{c@{}}{Mean kept (\%)} \\
- & (\%) & of fixed & of all & TED & Tokens & Lines \\
-\midrule
-% rows:comparison
-\textsc{ZPDPatch} & 33.3 & 76.7 & 25.5 & 27.3 & 87.9 & 71.3 \\
-\textsc{Refactory} & 54.3 & 56.5 & 30.7 & 60.2 & 68.8 & 26.9 \\
-\textsc{Brafar} & 54.9 & 58.3 & 32.0 & 69.5 & 63.8 & 26.7 \\
-\textsc{Mentored} & 40.2 & 70.9 & 28.5 & 39.5 & 80.0 & 42.3 \\
-\textsc{LSGen}\textsubscript{Qwen} & 79.4 & 42.2 & 33.5 & 99.6 & 62.2 & 31.4 \\
-\textsc{LSGen}\textsubscript{GPT} & 92.1 & 46.3 & 42.6 & 89.9 & 64.4 & 31.9 \\
-% end rows
-\bottomrule
-\end{tabular}
-\end{table}
 
-To answer RQ2, we repaired the same 1,753 buggy programs with the five existing configurations and judged every patch in the same environment.
+To answer RQ2, we compare the coverage of \textsc{ZPDPatch} with that of the five existing configurations on the same buggy programs (Table~\ref{tab:rq1}), and place \textsc{ZPDPatch} before each of them.
 
-Table~\ref{tab:comparison} lists, for each technique, the RR, the share of its fixed programs that are within reach, the within-reach repair rate over all buggy programs, and the mean TED and retention of its fixed programs. Of the fixed programs of \textsc{ZPDPatch}, 76.7\% are within reach, a share 8.1--81.5\% higher than those of the existing techniques. The share does not come from repairing only buggy programs that need small steps: in every quartile of the student's own step to acceptance, it is the highest (70.5--87.7\%). On the buggy programs that \textsc{ZPDPatch} and an existing technique both repair, its patches have a 13.4--60.9\% smaller TED and keep 7.0--27.6\% more of the student's tokens (Wilcoxon signed-rank test, \(p<10^{-5}\) against each) and 72.0--155.9\% more of the lines, and they lie within reach 12.9--44.1\% more often than those of four techniques and 2.9\% less often than those of \textsc{Mentored}, whose patches are as small.
 
-The patches stay small because of the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets, whereas the existing techniques head for any program that passes the test suite. In exchange, \textsc{ZPDPatch} repairs 17.3--63.9\% fewer buggy programs, so over all buggy programs its within-reach repair rate of 25.5\% is below their 28.5--42.6\% (Table~\ref{tab:comparison}), and within a TED of 20 it repairs 19.0\%, between \textsc{Mentored} (20.3\%) and the others (16.7--18.5\%; Figure~\ref{fig:reach}). Indeed, on the buggy programs that \textsc{ZPDPatch} leaves unrepaired, the students' own steps to their accepted programs were 68.9\% larger on average than on those it repairs. Yet even on the buggy programs left unrepaired, the two sides return different things. The existing techniques return the submission itself whenever they fail to repair it, as their implementations do, whereas on 9.3\% of such buggy programs \textsc{ZPDPatch} returns a forward step that resembles a student's step (RQ1), and 85.3\% of these steps lie within the student's reach; on another 6.2\% it returns a program that passes more test cases without being a forward step, and otherwise the submission itself. For Figure~\ref{fig:example}(b), the student's next step handled the case \(N=1\) (TED 19); \textsc{ZPDPatch} adds the same handling to one of its two places (TED 15), raising the pass rate from 88.9\% to 94.4\%, whereas the four other techniques return correct programs that change it by TEDs of 30 to 83, and \textsc{Mentored} does not repair it.
+The patches stay small because of the aim: \textsc{ZPDPatch} learns the student's own later submissions as targets, whereas the existing techniques head for any program that passes the test suite. In exchange, \textsc{ZPDPatch} repairs 17.3--63.9\% fewer buggy programs, so over all buggy programs its within-reach repair rate of 25.5\% is below their 28.5--42.6\% (Table~\ref{tab:rq1}), and within a TED of 20 it repairs 19.0\%, between \textsc{Mentored} (20.3\%) and the others (16.7--18.5\%; Figure~\ref{fig:reach}). Indeed, on the buggy programs that \textsc{ZPDPatch} leaves unrepaired, the students' own steps to their accepted programs were 68.9\% larger on average than on those it repairs. On such buggy programs, the existing techniques return the submission itself, as their implementations do, whereas on 9.3\% of them \textsc{ZPDPatch} returns a forward step that resembles a student's step (RQ1), and 85.3\% of these steps lie within the student's reach; on another 6.2\% it returns a program that passes more test cases without being a forward step, and otherwise the submission itself. For Figure~\ref{fig:example}(b), the student's next step handled the case \(N=1\) (TED 19); \textsc{ZPDPatch} adds the same handling to one of its two places (TED 15), raising the pass rate from 88.9\% to 94.4\%, whereas the four other techniques return correct programs that change it by TEDs of 30 to 83, and \textsc{Mentored} does not repair it.
 
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}
-\begin{axis}[ybar, disabledatascaling, width=\columnwidth, height=4.6cm, bar width=8pt, enlarge x limits=0.12,
+\begin{axis}[ybar, disabledatascaling, width=\columnwidth, height=4.1cm, bar width=8pt, enlarge x limits=0.12,
  symbolic x coords={refactory,brafar,mentored,lsgen_qwen,lsgen}, xtick=data, xticklabels={\textsc{Refactory}, \textsc{Brafar}, \textsc{Mentored}, \textsc{LSGen}\textsubscript{Qwen}, \textsc{LSGen}\textsubscript{GPT}}, x tick label style={font=\tiny},
  ymin=0, ymax=75, ytick={0,20,40,60}, ylabel={Within-reach RR (\%)}, ymajorgrids, grid style={gray!25},
  nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill, precision=1]{\pgfplotspointmeta}}, visualization depends on={\thisrow{p} \as \ep}, every node near coord/.append style={font=\tiny, yshift=\ep*\pgfplotsunitylength, rotate=90, anchor=west},
