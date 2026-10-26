@@ -479,6 +479,23 @@ def main():
         numbers[f"rq2.{key}.front.within_reach.range"] = span(
             [100 * within_reach(ordered(f, m), rq1_reach) for k, _, f in others if k != key])
 
+    # Review response: the same number of candidates from the untrained base model in front of each technique, and
+    # the rules trained with current-only prompts on the RQ1 benchmark (Select over all nine checkpoints).
+    base3 = rows("rules/rq1/base-three-samples.jsonl")
+    numbers["rq2.base3.rr"] = pct(rr(base3))
+    numbers["rq2.base3.front.within_reach.more.range"] = span(
+        [float(more(within_reach(ordered(base3, m), rq1_reach), within_reach(m, rq1_reach))) for _, _, m in others])
+    for name in ("strict", "progress", "progress-prefix", "selected"):
+        m = rows(f"rules/rq1/{name}.jsonl")
+        key = name.replace("-", "_")
+        numbers[f"rq3.rq1.{key}.rr"] = pct(rr(m))
+        numbers[f"rq3.rq1.{key}.share"] = pct(within_reach(m, rq1_reach) * len(m) / sum(bool(r["repaired"]) for r in m))
+    with open(os.path.join(OUT, "rules/rq1/selection.json")) as f:
+        selection = json.load(f)
+    numbers["select.rq1.validation.selected.rr"] = pct(selection["selected_repair_rate"])
+    numbers["select.rq1.validation.answer.rr"] = pct(selection["answer_repair_rate"])
+    numbers["select.rq1.selected"] = "+".join(selection["selected"])
+
     # Tables IV and V: target rules (RQ3).
     reach = reach_by_trajectory(rows("benchmark/canonical-student-steps.jsonl"))
     t = {split: {rule: rows(f"targets/{split}/{rule}.jsonl") for rule in ("answer", "progress")} for split in ("seen", "unseen", "java")}
