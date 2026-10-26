@@ -396,7 +396,7 @@ where \(c_j\) is the \(j\)-th token of \(c\) and the denominator is the number o
 
 For example, from the 14,027 Seen training trajectories of 492 problems, Mine yields 40,454 Answer pairs, 21,416 Progress pairs, and 16,973 Strict pairs, and Train produces nine checkpoints, three seeds for each rule. Were the trajectory of Figure~\ref{fig:example} in training, the Progress adapter would learn to turn (a) into (b) and the Answer adapter (a) into (c); as an RQ1 trajectory, it is held out of training. Targets come from later submissions only during training; an inference prompt holds only the current submission.
 
-We train a separate adapter for each rule. A source can be paired with the accepted endpoint in \(D_A\) and with the next improving submission in \(D_P\), so one model trained on the mixed rules would receive different targets for the same prompt. Naming the rule in the prompt avoids that conflict but requires deciding in advance which rule to follow when repairing a new submission. Separate adapters avoid both, and let Select choose checkpoints by executed validation repairs regardless of their rule. Every rule and seed uses the same base model and training settings (Section~\ref{sec:settings}), none tuned on our data. We train three seeds per rule because checkpoints trained on the same data with different seeds repair different buggy programs (Section~\ref{sec:select}). Empirically, generating with the base model instead of a trained adapter repairs 47.2\% fewer Seen buggy programs (Table~\ref{tab:ablation}).
+We train a separate adapter for each rule. A source can be paired with the accepted endpoint in \(D_A\) and with the next improving submission in \(D_P\), so one model trained on the mixed rules would receive different targets for the same prompt. Naming the rule in the prompt avoids that conflict but requires deciding in advance which rule to follow when repairing a new submission. Separate adapters avoid both, and let Select choose checkpoints by executed validation repairs regardless of their rule. Every rule and seed uses the same base model and training settings (Section~\ref{sec:settings}), none tuned on our data. We train three seeds per rule because checkpoints trained on the same data with different seeds repair different buggy programs (Section~\ref{sec:select}). Empirically, generating with the base model instead of a trained adapter repairs 44.4\% fewer Seen buggy programs (Table~\ref{tab:ablation}).
 
 \subsection{Select}
 \label{sec:select}
@@ -592,7 +592,7 @@ When a correct program is required, an existing technique can follow \textsc{ZPD
 \subsection{RQ3: Ablation Study}
 \label{sec:rq-ablation}
 
-To answer RQ3, we built four variants of the reported configuration that each change one choice. \textsc{ZPDPatch}-Train removes lines~10--12 of Algorithm~\ref{alg:construct} and generates with the base model. \textsc{ZPDPatch}-Portfolio reduces the portfolio to one checkpoint, so line~3 of Algorithm~\ref{alg:generic} iterates over that checkpoint alone. \textsc{ZPDPatch}-Distinct draws the three candidates from one checkpoint instead of from three distinct checkpoints. \textsc{ZPDPatch}+History adds the student's earlier submissions to the prompt. The comparisons marked \(\dagger\) in Table~\ref{tab:ablation} sample candidates, so their \textsc{ZPDPatch} values differ from those of the reported configuration, which decodes deterministically.
+To answer RQ3, we built four variants of the reported configuration that each change one choice. \textsc{ZPDPatch}-Train removes lines~10--12 of Algorithm~\ref{alg:construct} and generates with the base model. \textsc{ZPDPatch}-Portfolio reduces the portfolio to one checkpoint, so line~3 of Algorithm~\ref{alg:generic} iterates over that checkpoint alone. \textsc{ZPDPatch}-Distinct draws the three candidates from one checkpoint instead of from three distinct checkpoints. \textsc{ZPDPatch}+History adds the student's earlier submissions to the prompt. The comparisons marked \(\dagger\) in Table~\ref{tab:ablation} draw three samples at temperature 0.8 with current-only prompts, so their \textsc{ZPDPatch} values differ from those of the reported configuration, which decodes deterministically.
 
 \begin{table}[h]
 \caption{Repair rate (\%) of each variant and of \textsc{ZPDPatch}}
@@ -604,7 +604,7 @@ To answer RQ3, we built four variants of the reported configuration that each ch
 Variant & Variant & \textsc{ZPDPatch} & Variant & \textsc{ZPDPatch} \\
 \midrule
 % rows:ablation
-\textsc{ZPDPatch}-Train\(^\dagger\) & 30.4 & 57.6 & 65.6 & 72.0 \\
+\textsc{ZPDPatch}-Train\(^\dagger\) & 37.1 & 66.8 & 72.8 & 79.6 \\
 \textsc{ZPDPatch}-Portfolio & 58.1 & 72.0 & 69.6 & 81.2 \\
 \textsc{ZPDPatch}-Distinct\(^\dagger\) & 66.8 & 68.9 & 79.6 & 80.8 \\
 \textsc{ZPDPatch}+History & 61.7 & 72.0 & 73.2 & 81.2 \\
@@ -619,7 +619,7 @@ Java & 75.1 & 84.5 & 45.4 & 52.3 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:ablation} lists the repair rates of each variant and of \textsc{ZPDPatch}. Removing training repairs 47.2\% fewer buggy programs on Seen and 8.9\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.4\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the prompt repairs 14.3\% and 9.9\% fewer.
+Table~\ref{tab:ablation} lists the repair rates of each variant and of \textsc{ZPDPatch}. Removing training repairs 44.4\% fewer buggy programs on Seen and 8.5\% fewer on Unseen. Reducing the portfolio to one checkpoint repairs 19.4\% and 14.3\% fewer. Drawing the three candidates from one checkpoint instead of three distinct ones repairs 3.1\% and 1.5\% fewer. Adding earlier submissions to the prompt repairs 14.3\% and 9.9\% fewer.
 
 Training transfers the targets of a rule to the model, and the portfolio gives a buggy program on which one checkpoint fails another candidate. Distinct checkpoints add little over three samples of one checkpoint, and earlier submissions lower the repair rate, consistent with the Answer training prompts holding only the current submission; \textsc{ZPDPatch} therefore repairs from the current submission alone.
 
