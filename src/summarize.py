@@ -2,7 +2,6 @@
 Writes output/tables.tex ('% rows:<name>' sections for fill_tables.py) and output/numbers.txt.
 Usage: python3 paper/src/summarize.py"""
 import json
-import math
 import os
 import random
 import statistics
@@ -492,24 +491,37 @@ def main():
             joint_more["reach"].append(float(more(a, b)))
     for name, values in joint_more.items():
         numbers[f"rq2.joint.{name}.more.range"] = span(values)
-    # Paired tests: token retention on the jointly repaired programs (Wilcoxon signed-rank), and repair within reach
-    # alone against after ZPDPatch on every buggy program (exact McNemar); the largest p over the techniques.
-    from scipy.stats import binomtest, wilcoxon
-    exponent = lambda p: f"10^{{{int(math.floor(math.log10(p)))}}}" if p > 0 else "10^{-300}"
-    wilcoxon_p, mcnemar_p = [], []
+    # The programs cluster in 14 problems, so paired differences are judged by problem: the share of problems where
+    # ZPDPatch keeps more tokens on the jointly repaired programs, and a bootstrap over problems of the within-reach
+    # gain (points) of placing ZPDPatch first.
+    problems = sorted({r["problem_id"] for r in zpd})
+    rng = random.Random(2027)
+    draws = [[rng.choice(problems) for _ in problems] for _ in range(10000)]
+    kept_more, gains, lows, ups = [], [], [], []
     for _, _, m in others:
         of = {r["example_id"]: r for r in fixes(m)}
         joint = [k for k in zf if k in of]
-        wilcoxon_p.append(wilcoxon([zf[k]["token_retention"] for k in joint], [of[k]["token_retention"] for k in joint]).pvalue)
-        before = {r["example_id"]: within_reach([r], rq1_reach) == 1 for r in m}
-        after = {r["example_id"]: within_reach([r], rq1_reach) == 1 for r in ordered(zpd, m)}
-        gained = sum(after[k] and not before[k] for k in before)
-        lost = sum(before[k] and not after[k] for k in before)
-        mcnemar_p.append(binomtest(min(gained, lost), gained + lost, 0.5).pvalue)
-    numbers["rq2.joint.token_retention.wilcoxon.p"] = f"{max(wilcoxon_p):.1e}"
-    numbers["rq2.joint.token_retention.wilcoxon.bound"] = exponent(max(wilcoxon_p) * 10)
-    numbers["rq2.combined.mcnemar.p"] = f"{max(mcnemar_p):.1e}"
-    numbers["rq2.combined.mcnemar.bound"] = exponent(max(mcnemar_p) * 10)
+        diff = {p: [zf[k]["token_retention"] - of[k]["token_retention"] for k in joint if zf[k]["problem_id"] == p] for p in problems}
+        kept_more.append(100 * sum(statistics.mean(d) > 0 for d in diff.values() if d) / sum(bool(d) for d in diff.values()))
+        alone = {r["example_id"]: within_reach([r], rq1_reach) for r in m}
+        gain = {p: [0, 0] for p in problems}
+        for r in ordered(zpd, m):
+            gain[r["problem_id"]][0] += within_reach([r], rq1_reach) - alone[r["example_id"]]
+            gain[r["problem_id"]][1] += 1
+        gains.append(100 * sum(g for g, _ in gain.values()) / len(m))
+        boot = sorted(100 * sum(gain[p][0] for p in d) / sum(gain[p][1] for p in d) for d in draws)
+        lows.append(boot[249])
+        ups.append(sum(g > 0 for g, _ in gain.values()))
+    numbers["rq2.joint.token_retention.problems.share.range"] = span(kept_more)
+    numbers["rq2.combined.within_reach.points.range"] = span(gains)
+    numbers["rq2.combined.within_reach.ci.low.min"] = f"{min(lows):.1f}"
+    numbers["rq2.combined.within_reach.problems.up.range"] = f"{min(ups)}--{max(ups)}"
+    # The step budget inside Algorithm 1 (lines 5-6): the portfolio Select chooses at that budget, and the Answer one.
+    selection = json.load(open(os.path.join(OUT, "rules/rq1/selection.json")))
+    for b in (5, 10, 20):
+        numbers[f"select.budget{b}.progress"] = sum(m.startswith("Progress") for m in selection["selected_by_budget"][str(b)])
+        for name in ("selected", "answer"):
+            numbers[f"select.budget{b}.{name}.rr"] = pct(rr(rows(f"rules/rq1/budget-{b}/{name}.jsonl")))
     # (b) By quartile of the student's own step to acceptance: the share of each technique's repairs within reach.
     own_step = {r["example_id"]: r["step_ted"][-1] for r in steps}
     cuts = statistics.quantiles([own_step[r["example_id"]] for r in zpd], n=4)
