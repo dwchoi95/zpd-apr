@@ -570,6 +570,21 @@ def main():
     numbers["select.rq1.validation.answer.rr"] = pct(selection["answer_repair_rate"])
     numbers["select.rq1.selected"] = "+".join(selection["selected"])
 
+    # Plausible patches on generated inputs (Threats): any failure, and a failure where the student's own accepted
+    # program passes.
+    diff = {k: rows(f"differential/{k}.jsonl") for k in ("zpdpatch", "refactory", "brafar", "mentored", "lsgen-qwen", "lsgen")}
+    share = lambda items, key: 100 * sum(r[key] for r in items) / len(items)
+    others_diff = [v for k, v in diff.items() if k != "zpdpatch"]
+    with open(os.path.join(OUT, "differential/students.json")) as f:
+        students_diff = json.load(f)
+    numbers.update({
+        "threats.diff.zpdpatch.fails": f"{share(diff['zpdpatch'], 'patch_fails'):.1f}",
+        "threats.diff.others.fails.range": span([share(v, "patch_fails") for v in others_diff]),
+        "threats.diff.all.fails.range": span([share(v, "patch_fails") for v in diff.values()]),
+        "threats.diff.zpdpatch.beyond_own": f"{share(diff['zpdpatch'], 'beyond_own'):.1f}",
+        "threats.diff.others.beyond_own.range": span([share(v, "beyond_own") for v in others_diff]),
+        "threats.diff.students.fails": pct(students_diff["any"]["share"])})
+
     # Tables IV and V: target rules (RQ3).
     reach = reach_by_trajectory(rows("benchmark/canonical-student-steps.jsonl"))
     t = {split: {rule: rows(f"targets/{split}/{rule}.jsonl") for rule in ("answer", "progress")} for split in ("seen", "unseen", "java")}
