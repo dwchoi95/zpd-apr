@@ -9,6 +9,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
+from src.core.dataset import _display_execution_verdict, _is_strict_improvement, _is_testcase_verdict_improvement
+
 
 Row = dict[str, Any]
 
@@ -43,11 +45,21 @@ def baseline_pass_rate(row: Row) -> float:
     return values[0]
 
 
+def moves_forward(item: Row, candidate: Row) -> bool:
+    """Improves_P of Mine on re-executed outcomes: a less severe verdict, or the same verdict with no test case worse
+    and one better."""
+    before = _display_execution_verdict(item["current_execution_verdict"])
+    after = _display_execution_verdict(candidate["fixed_verdict"])
+    return _is_strict_improvement(before, after) or (before == after and _is_testcase_verdict_improvement(
+        {"tc_outcomes": item["current_tc_outcomes"]}, {"tc_outcomes": candidate["fixed_tc_outcomes"]}))
+
+
 def compose(
     dataset: list[Row],
     stages: list[tuple[str, list[Row]]],
     *,
     max_ted: float | None = None,
+    forward_fallback: bool = False,
 ) -> list[Row]:
     dataset_by_id = keyed(dataset)
     stage_maps = [(name, keyed(rows)) for name, rows in stages]
@@ -86,7 +98,13 @@ def compose(
                     selected = candidate
                     early_stop_stage = name
                     break
-        if selected is None:
+        if selected is None and forward_fallback:
+            # Only a forward step from the submission may replace it; the earlier stage wins a tie.
+            forward = [(name, row) for name, row in eligible if moves_forward(dataset_by_id[example_id], row)]
+            best = max(forward, key=lambda item: float(item[1]["fixed_pass_rate"]), default=None)
+            if best is not None and float(best[1]["fixed_pass_rate"]) > baseline:
+                selected_name, selected = best
+        elif selected is None:
             best_pass_rate = max(
                 [baseline] + [float(row["fixed_pass_rate"]) for _name, row in eligible]
             )
@@ -157,6 +175,11 @@ def main() -> None:
         type=float,
         help="Continue past over-budget candidates and select only candidates at or below this AST TED.",
     )
+    parser.add_argument(
+        "--forward-fallback",
+        action="store_true",
+        help="When no candidate passes, return only a forward step (Improves_P) from the submission, else the submission.",
+    )
     args = parser.parse_args()
 
     stages: list[tuple[str, list[Row]]] = []
@@ -168,7 +191,7 @@ def main() -> None:
     if len(stages) != 3:
         parser.error("exactly three stages are required")
 
-    results = compose(read_jsonl(args.dataset), stages, max_ted=args.max_ted)
+    results = compose(read_jsonl(args.dataset), stages, max_ted=args.max_ted, forward_fallback=args.forward_fallback)
     for row in results:
         row["method"] = args.method
     args.output.parent.mkdir(parents=True, exist_ok=True)
