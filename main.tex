@@ -61,7 +61,7 @@ Experimental results demonstrate that the steps \textsc{ZPDPatch} returns resemb
 \noindent\textbf{Contributions.} We summarize our contributions below:
 \begin{itemize}
 \item \textbf{Observation.} We show that a verdict-only oracle hides most of the students' forward steps before acceptance, and that existing AFG techniques either repair few buggy programs or jump to a correct program larger than a student step (Section~\ref{sec:limitation}).
-\item \textbf{New technique.} We present \textsc{ZPDPatch}, a trajectory-supervised repair technique. Our core technical contribution is an algorithm that mines training pairs from each student's own trajectory under target rules, trains adapters per rule, and selects the checkpoints to deploy by executed validation repairs, not by the rule.
+\item \textbf{New technique.} We present \textsc{ZPDPatch}, a trajectory-supervised repair technique. Our core technical contribution is an algorithm that mines training pairs from each student's own trajectory under target rules, trains one adapter per rule and seed, and selects the checkpoints to deploy by executed validation repairs, not by the rule.
 \item \textbf{Evaluation.} We show that \textsc{ZPDPatch} keeps more of the student's program than four state-of-the-art techniques on the buggy programs both repair, adds repairs within reach to each of them without lowering its repair rate, and returns forward steps like the students' own on some programs it does not repair.
 \end{itemize}
 
