@@ -331,6 +331,7 @@ def main():
     for points, name in difficulty.items():
         group = [r for r in zpd if score[r["problem_id"]] == points]
         numbers[f"rq1.zpdpatch.within_reach.share.{name.lower()}"] = pct(share_in_reach(group))
+        numbers[f"rq1.zpdpatch.repairs.{name.lower()}"] = sum(bool(r["repaired"]) for r in group)
     by_problem = defaultdict(list)
     for r in zpd:
         by_problem[r["problem_id"]].append(r)
