@@ -44,6 +44,8 @@ not committed; copy them by hand).
   `GIT_INDEX_FILE=<tmp> git read-tree dev`, `git rm -r --cached tests CLAUDE.md`, take main's versions of the files that
   differ (`git update-index --cacheinfo 100644,$(git rev-parse main:<f>),<f>`), `git write-tree`,
   `git commit-tree <tree>` without a parent, `git update-ref refs/heads/main <commit>`.
+- `main` also carries `adapters/` (the three deployed Answer adapters, weights split into parts below 50MB, with
+  `SHA256SUMS`) and its own README section for them; `dev` has neither, so keep main's versions when rebuilding.
 - Pushing is always confirmed with the user first; `main` is force-pushed. Delete a stale branch only after its commits are
   in `dev`. Keep `main`, `dev`, and `paper` only.
 
