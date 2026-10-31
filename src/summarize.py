@@ -582,6 +582,23 @@ def main():
     numbers["select.rq1.validation.answer.rr"] = pct(selection["answer_repair_rate"])
     numbers["select.rq1.selected"] = "+".join(selection["selected"])
 
+    # RQ3 (target source): the three Answer checkpoints trained on another student's accepted submission instead.
+    for name in ("closest", "random"):
+        m = rows(f"targets/rq1/answer-cross-user-{name}.jsonl")
+        of = {r["example_id"]: r for r in fixes(m)}
+        joint = [k for k in zf if k in of]
+        numbers.update({
+            f"rq3.rq1.cross_user_{name}.rr.more": more(rr(m), rr(zpd)),
+            f"rq3.rq1.cross_user_{name}.share": pct(within_reach(m, rq1_reach) * len(m) / len(fixes(m))),
+            f"rq3.rq1.cross_user_{name}.within_reach.fewer": more(within_reach(m, rq1_reach), within_reach(zpd, rq1_reach)),
+            f"rq3.rq1.cross_user_{name}.joint.ted.smaller": more(statistics.mean(zf[k]["ted_buggy_fixed"] for k in joint),
+                                                               statistics.mean(of[k]["ted_buggy_fixed"] for k in joint)),
+            f"rq3.rq1.cross_user_{name}.joint.token_retention.more": more(statistics.mean(zf[k]["token_retention"] for k in joint),
+                                                                        statistics.mean(of[k]["token_retention"] for k in joint))})
+    kept = rows("targets/rq1/answer-target-retention.jsonl")
+    for name in ("own", "closest", "random"):
+        numbers[f"rq3.rq1.target.{name}.token_retention.median"] = pct(statistics.median(r[name] for r in kept))
+
     # Plausible patches on generated inputs (Threats): any failure, and a failure where the student's own accepted
     # program passes.
     diff = {k: rows(f"differential/{k}.jsonl") for k in ("zpdpatch", "refactory", "brafar", "mentored", "lsgen-qwen", "lsgen")}
