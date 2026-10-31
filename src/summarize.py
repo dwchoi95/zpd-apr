@@ -103,6 +103,7 @@ def in_text(numbers, mentored, lsgen, steps, t, reach):
                     **{f"train.pairs.{k}": f"{v:,}" for k, v in seen["pairs"].items()},
                     "train.progress.same_verdict": f"{seen['progress_pairs_same_verdict']:,}",
                     "train.progress.same_verdict.share": pct(seen["progress_pairs_same_verdict"] / seen["pairs"]["progress"]),
+                    "train.pairs.progress.more_than_strict": more(seen["pairs"]["progress"], seen["pairs"]["strict"]),
                     "train.consecutive_pairs": f"{seen['consecutive_failing_pairs']:,}",
                     "train.consecutive_pairs.same_verdict.share": pct(seen["consecutive_failing_pairs_same_verdict"] / seen["consecutive_failing_pairs"]),
                     **{f"java.{k}": f"{v:,}" for k, v in corpus["codeworkout"].items()}})
@@ -565,6 +566,51 @@ def main():
     for key, _, m in others:
         numbers[f"rq2.{key}.front.within_reach.range"] = span(
             [100 * within_reach(ordered(f, m), rq1_reach) for k, _, f in others if k != key])
+    numbers["rq2.zpdpatch.leads.upto5"] = all(within_budget(zpd, b) > max(within_budget(m, b) for m in rest) for b in range(1, 6))
+    numbers["rq2.others.within20.range"] = span([100 * within_budget(m, 20) for m in rest])
+    # (g) Beyond reach: the share of each technique's repairs above the student's demonstrated reach (the four
+    # techniques of the Abstract and Introduction take LSGen with GPT-4o), and over all buggy programs, a plausible
+    # patch beyond reach or the student's own accepted AST.
+    four = [m for k, _, m in others if k != "lsgen_qwen"]
+    beyond = lambda m: rr(m) - within_reach(m, rq1_reach)
+    own_ast = lambda m: sum(near(r, 0) for r in fixes(m)) / len(m)
+    numbers.update({
+        "rq2.zpdpatch.exceed_reach.share": pct(1 - share_in_reach(zpd)),
+        "rq2.four.exceed_reach.share.range": span([100 * (1 - share_in_reach(m)) for m in four]),
+        "rq2.others.exceed_reach.share.range": span([100 * (1 - share_in_reach(m)) for m in rest]),
+        "rq2.four.within_reach.share.more.range": span([float(more(share_in_reach(zpd), share_in_reach(m))) for m in four]),
+        "rq2.zpdpatch.beyond_reach.all": pct(beyond(zpd)),
+        "rq2.others.beyond_reach.all.range": span([100 * beyond(m) for m in rest]),
+        "rq2.beyond_reach.all.fewer.range": span([float(more(beyond(zpd), beyond(m))) for m in rest]),
+        "rq1.zpdpatch.own_accepted.all": pct(own_ast(zpd)),
+        "rq1.others.own_accepted.all.range": span([100 * own_ast(m) for m in rest]),
+        "rq1.own_accepted.all.more": more(own_ast(zpd), max(own_ast(m) for m in rest))})
+    hard = lambda m: [r for r in m if score[r["problem_id"]] == 600]
+    numbers["rq1.others.within_reach.share.hard.max"] = f"{max(100 * share_in_reach(hard(m)) for m in rest if fixes(hard(m))):.1f}"
+    # Every program ZPDPatch returns other than the submission, a repair or a forward step, within reach.
+    forward_in_reach = sum(r["ted_buggy_returned"] is not None and r["ted_buggy_returned"] <= rq1_reach[(r["problem_id"], r["user_id"])] for r in forward)
+    numbers["rq2.zpdpatch.changed.within_reach.share"] = pct(
+        (within_reach(zpd, rq1_reach) * len(zpd) + forward_in_reach) / (sum(bool(r["repaired"]) for r in zpd) + len(forward)))
+    # Retention on the buggy programs both repair, within each quartile of the student's own step to acceptance.
+    def joint_kept_more(m):
+        of = {r["example_id"]: r for r in fixes(m)}
+        joint = [[k for k in zf if k in of and quartile(zf[k]) == q] for q in range(4)]
+        return [statistics.mean(zf[k]["token_retention"] for k in j) > statistics.mean(of[k]["token_retention"] for k in j) for j in joint]
+    numbers["rq2.joint.token_retention.every_quartile"] = all(all(joint_kept_more(m)) for m in rest)
+    # The running example (Figure 3(b)): the student's reach, the forward step of ZPDPatch, and the others' repairs.
+    example = {r["example_id"]: r for r in zpd}["p02761:u367701763:S3"]
+    numbers["rq2.example.reach"] = rq1_reach[(example["problem_id"], example["user_id"])]
+    numbers["rq2.example.zpdpatch.ted"] = example["ted_buggy_returned"]
+    example_teds = [r["ted_buggy_fixed"] for m in rest for r in m if r["example_id"] == example["example_id"] and r["repaired"]]
+    numbers["rq2.example.others.ted.range"] = f"{min(example_teds)}--{max(example_teds)}"
+    # The portfolio against its first checkpoint alone (the one checkpoint of RQ3 and RQ4); the first checkpoint's
+    # repairs are exactly the returns selected from it.
+    first = [dict(r, repaired=bool(r["repaired"]) and r["selected_source"] == "Answer2027") for r in zpd]
+    by_problem_pair = [([r for r in first if r["problem_id"] == p], [r for r in zpd if r["problem_id"] == p]) for p in problems]
+    numbers.update({
+        "rq3.rq1.one_checkpoint.fewer": more(rr(first), rr(zpd)),
+        "rq3.rq1.one_checkpoint.within_reach.fewer": more(within_reach(first, rq1_reach), within_reach(zpd, rq1_reach)),
+        "rq3.rq1.one_checkpoint.problems.fewer": sum(rr(a) < rr(b) and within_reach(a, rq1_reach) < within_reach(b, rq1_reach) for a, b in by_problem_pair)})
 
     # Review response: the same number of candidates from the untrained base model in front of each technique, and
     # the rules trained with current-only prompts on the RQ1 benchmark (Select over all nine checkpoints).
@@ -581,7 +627,9 @@ def main():
         selection = json.load(f)
     numbers["select.rq1.validation.selected.rr"] = pct(selection["selected_repair_rate"])
     numbers["select.rq1.validation.answer.rr"] = pct(selection["answer_repair_rate"])
+    numbers["select.rq1.validation.selected.more"] = more(selection["selected_repair_rate"], selection["answer_repair_rate"])
     numbers["select.rq1.selected"] = "+".join(selection["selected"])
+    numbers["select.budget20.selected.fewer"] = more(rr(rows("rules/rq1/budget-20/selected.jsonl")), rr(rows("rules/rq1/budget-20/answer.jsonl")))
 
     # RQ3 (target source): the three Answer checkpoints trained on another student's accepted submission instead.
     for name in ("closest", "random"):
@@ -595,7 +643,9 @@ def main():
             f"rq3.rq1.cross_user_{name}.joint.ted.smaller": more(statistics.mean(zf[k]["ted_buggy_fixed"] for k in joint),
                                                                statistics.mean(of[k]["ted_buggy_fixed"] for k in joint)),
             f"rq3.rq1.cross_user_{name}.joint.token_retention.more": more(statistics.mean(zf[k]["token_retention"] for k in joint),
-                                                                        statistics.mean(of[k]["token_retention"] for k in joint))})
+                                                                        statistics.mean(of[k]["token_retention"] for k in joint)),
+            **{f"rq3.rq1.cross_user_{name}.within{b}": pct(within_budget(m, b)) for b in (10, 20)},
+            f"rq3.rq1.cross_user_{name}.own_accepted": sum(near(r, 0) for r in fixes(m))})
     kept = rows("targets/rq1/answer-target-retention.jsonl")
     for name in ("own", "closest", "random"):
         numbers[f"rq3.rq1.target.{name}.token_retention.median"] = pct(statistics.median(r[name] for r in kept))
@@ -605,6 +655,7 @@ def main():
     diff = {k: rows(f"differential/{k}.jsonl") for k in ("zpdpatch", "refactory", "brafar", "mentored", "lsgen-qwen", "lsgen")}
     share = lambda items, key: 100 * sum(r[key] for r in items) / len(items)
     others_diff = [v for k, v in diff.items() if k != "zpdpatch"]
+    only_own = lambda items: 100 * sum(r["patch_fails"] and not r["beyond_own"] for r in items) / sum(r["patch_fails"] for r in items)
     with open(os.path.join(OUT, "differential/students.json")) as f:
         students_diff = json.load(f)
     numbers.update({
@@ -613,6 +664,9 @@ def main():
         "threats.diff.all.fails.range": span([share(v, "patch_fails") for v in diff.values()]),
         "threats.diff.zpdpatch.beyond_own": f"{share(diff['zpdpatch'], 'beyond_own'):.1f}",
         "threats.diff.others.beyond_own.range": span([share(v, "beyond_own") for v in others_diff]),
+        # failing patches that fail no input the student's own accepted program passes
+        "threats.diff.zpdpatch.only_own.share": f"{only_own(diff['zpdpatch']):.1f}",
+        "threats.diff.others.only_own.share.range": span([only_own(v) for v in others_diff]),
         "threats.diff.students.fails": pct(students_diff["any"]["share"])})
 
     # Tables IV and V: target rules (RQ3).
@@ -665,6 +719,15 @@ def main():
             cells += [pct(v), pct(z)]
             numbers[f"rq3.{variant}.{s}.fewer"] = more(v, z)
         tables["ablation"].append(f"{label} & {' & '.join(cells)} \\\\")
+    # Train-dagger within reach and the student's own accepted AST, with the TED of the sampled returns (sampled-ted).
+    for s in ("seen", "unseen"):
+        ted = {(r["variant"], r["example_id"]): r for r in rows(f"ablation/{s}/sampled-ted.jsonl")}
+        filled = lambda v: [dict(r, **{k: ted[(v, r["example_id"])][k] for k in ("ted_buggy_fixed", "ted_fixed_oracle")})
+                            if r["repaired"] else r for r in rows(f"ablation/{s}/{v}.jsonl")]
+        base, one = filled("no-training"), filled("sampled")
+        own_ast = lambda m: sum(bool(r["repaired"]) and r["ted_fixed_oracle"] == 0 for r in m)
+        numbers[f"rq3.no-training.{s}.within_reach.fewer"] = more(within_reach(base, reach), within_reach(one, reach))
+        numbers[f"rq3.no-training.{s}.own_accepted.fewer"] = more(own_ast(base), own_ast(one))
 
     # Table VI and Figure 6: generality (RQ4).
     settings = (("1.5B model", "scale-1.5b/seen", "scale-1.5b/unseen"), ("Java", "java-students", "java-exercises"))
@@ -676,6 +739,9 @@ def main():
             cells += [pct(one), pct(port)]
             numbers[f"rq4.{path}.more"] = more(port, one)
         tables["generality"].append(f"{label} & {' & '.join(cells)} \\\\")
+    for s in ("seen", "unseen"):
+        one, port = (rows(f"generality/scale-1.5b/{s}/{n}.jsonl") for n in ("one-checkpoint", "zpdpatch"))
+        numbers[f"rq4.scale-1.5b/{s}.within_reach.more"] = more(within_reach(port, reach), within_reach(one, reach))
 
     in_text(numbers, mentored, lsgen, steps, t, reach)
     with open(os.path.join(PAPER, "output", "tables.tex"), "w") as f:
