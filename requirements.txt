@@ -1,0 +1,15 @@
+# the versions the paper's runs used (torch built for CUDA 13.0 on Linux)
+--extra-index-url https://download.pytorch.org/whl/cu130
+torch==2.14.0
+transformers==4.57.6
+peft==0.20.0
+datasets==5.0.1
+pandas==3.0.5
+tqdm==4.70.0
+zss==1.2.0
+apted==1.0.3
+# loaded by transformers at run time: device_map and 4-bit QLoRA
+accelerate==1.14.0
+bitsandbytes==0.50.2; platform_system == "Linux"
+# loaded by pickle when reading the TIKTOC release (build-data --benchmark codeworkout)
+javalang==0.13.0
