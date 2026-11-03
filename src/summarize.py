@@ -4,6 +4,7 @@ Usage: python3 paper/src/summarize.py"""
 import json
 import os
 import random
+import math
 import statistics
 from collections import defaultdict
 
@@ -77,13 +78,59 @@ def within_budget(items, budget):
     return sum(bool(r["repaired"]) and r["ted_buggy_fixed"] is not None and r["ted_buggy_fixed"] <= budget for r in items) / len(items)
 
 
-def joint_retention(a, b):
-    a = {r["example_id"]: r for r in a}
-    joint = [k for k, r in a.items() for _ in [0] if r["repaired"]]
-    b = {r["example_id"]: r for r in b}
-    joint = [k for k in joint if b[k]["repaired"]]
-    mean = lambda m, key: statistics.mean(m[k][key] for k in joint)
-    return joint, {side: {key: mean(m, key) for key in ("token_retention", "line_retention")} for side, m in (("a", a), ("b", b))}
+
+def _mpl():
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    plt.rcParams.update({"text.usetex": True, "text.latex.preamble": r"\usepackage{mathptmx}", "font.family": "serif",
+                         "font.size": 8, "axes.linewidth": 0.6, "xtick.major.width": 0.6, "ytick.major.width": 0.6})
+    return plt
+
+
+def plot_attempts(d):
+    """Figure 1: (a) trajectories (student-problem pairs) of CodeNet's AtCoder submissions by the submission at which
+    they are first accepted, with those never accepted at 0 (every count above zero; log scales); (b) verdict changes between any two consecutive submissions,
+    also after acceptance; each with its sub-caption below. Written to output/fig-attempts.pdf."""
+    from matplotlib.colors import LogNorm
+    plt = _mpl()
+    fig, (ax, hx) = plt.subplots(1, 2, figsize=(3.45, 1.55), gridspec_kw={"width_ratios": [1, 1]})
+    pts = sorted((int(k), v) for k, v in d["attempts"].items() if v > 0)
+    top = pts[-1][0]
+    ax.scatter([k for k, _ in pts], [v for _, v in pts], s=3, color="black", linewidths=0)
+    ax.scatter([0], [d["pairs_never"]], s=6, facecolors="none", edgecolors="black", linewidths=0.6)   # never accepted, at 0
+    ax.set_xscale("symlog", linthresh=10, linscale=0.8); ax.set_yscale("log"); ax.set_xlim(-0.5, top * 1.1)
+    ticks = [0, 1, 2, 3, 5, 10, 20, 50, 100, top]
+    ax.set_xticks(ticks, [str(x) for x in ticks], fontsize=5.5)
+    ax.minorticks_off()
+    ax.set_xlabel("Submissions"); ax.set_ylabel("Trajectories")
+    ax.grid(color="0.9", linewidth=0.4); ax.set_axisbelow(True)
+    names = {"Wrong Answer": "WA", "Time Limit Exceeded": "TLE", "Runtime Error": "RE", "Memory Limit Exceeded": "MLE",
+             "Compile Error": "CE", "Accepted": "AC"}
+    rows_ = cols = list(names.values())   # pairs with another status (e.g., Output Limit Exceeded) are left out
+    m = [[0] * len(cols) for _ in rows_]
+    for key, v in d["transitions"].items():
+        a, b = (names.get(s) for s in key.split(" -> "))
+        if a in rows_ and b in cols:
+            m[rows_.index(a)][cols.index(b)] += v
+    norm = LogNorm(vmin=1, vmax=max(map(max, m)))
+    cmap = plt.get_cmap("Greys")
+    hx.imshow([[max(x, 1) for x in r] for r in m], cmap=cmap, norm=norm, aspect="auto")
+    for i, r in enumerate(m):
+        for j, x in enumerate(r):
+            label = f"{x / 1e6:.1f}M" if x >= 1e6 else f"{x / 1000:.0f}k" if x >= 1000 else str(x)
+            hx.text(j, i, label, ha="center", va="center", fontsize=4.5, color="white" if sum(cmap(norm(max(x, 1)))[:3]) / 3 < 0.55 else "black")
+    hx.set_xticks(range(len(cols)), cols, fontsize=6); hx.set_yticks(range(len(rows_)), rows_, fontsize=6)
+    hx.set_xlabel("Next verdict"); hx.set_ylabel("Previous verdict")
+    fig.tight_layout(pad=0.2, w_pad=0.8)
+    fig.canvas.draw()  # sub-captions under both panels, on one line below the lower x label
+    inv = fig.transFigure.inverted()
+    y = min(inv.transform(a.xaxis.label.get_window_extent())[0][1] for a in (ax, hx)) - 0.04
+    for a, s in ((ax, "(a) Submissions to Acceptance"), (hx, "(b) Verdict Changes")):
+        x0, x1 = a.get_position().x0, a.get_position().x1
+        fig.text((x0 + x1) / 2, y, s, ha="center", va="top", fontsize=8)
+    fig.savefig(os.path.join(PAPER, "output", "fig-attempts.pdf"), bbox_inches="tight", pad_inches=0.01)
+    plt.close(fig)
 
 
 def in_text(numbers, mentored, lsgen, steps, t, reach):
@@ -149,15 +196,6 @@ def in_text(numbers, mentored, lsgen, steps, t, reach):
                  and own[k]["ted_buggy_fixed"] is not None and peer[k]["ted_buggy_fixed"] is not None]
         numbers[f"rq3.{split}.peer_targets.ted.larger"] = more(statistics.mean(peer[k]["ted_buggy_fixed"] for k in joint),
                                                              statistics.mean(own[k]["ted_buggy_fixed"] for k in joint))
-
-    # RQ4: the portfolio at every position of a trajectory.
-    for split in ("seen", "unseen"):
-        port, one = (rows(f"generality/prefix/{split}/{n}.jsonl") for n in ("zpdpatch", "one-checkpoint"))
-        by = lambda items, ph: rr([r for r in items if r["trajectory_phase"] == ph])
-        gains = [float(more(by(port, ph), by(one, ph))) for ph in ("early", "middle", "last")]
-        rates = [100 * by(port, ph) for ph in ("early", "middle", "last")]
-        numbers[f"rq4.prefix.{split}.more.range"] = f"{min(gains):.1f}--{max(gains):.1f}"
-        numbers[f"rq4.prefix.{split}.rr.range"] = f"{min(rates):.1f}--{max(rates):.1f}"
 
     # Threats to Validity.
     port = rows("ablation/seen/zpdpatch.jsonl")
@@ -225,10 +263,48 @@ def main():
     baselines = (refactory, brafar, mentored, qwen, lsgen)
     grid = (1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 300, 500, 1000)
     curve = lambda style, share: f"\\addplot[{style}] coordinates {{" + " ".join(f"({b},{100 * share(b):.1f})" for b in grid) + "};"
-    tables["reach"] = [curve("referenceline", share)] + [curve(style, lambda b, m=m: within_budget(m, b))
-                                                         for style, m in (("refactoryline", refactory), ("brafarline", brafar), ("mentoredline", mentored),
-                                                                         ("qwenline", qwen), ("gptline", lsgen),
-                                                                         ("proposedline", rows("approaches/zpdpatch.jsonl")))]
+    # Section II-B: Figure 1, and the table of each baseline's patches against the student's own step from the same buggy
+    # program to acceptance.
+    step_share = lambda b: sum(x <= b for x in all_steps) / len(all_steps)
+    sizes = lambda m: [r["ted_buggy_fixed"] for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None]
+    codenet = json.load(open(os.path.join(OUT, "benchmark", "atcoder-attempts.json")))
+    plot_attempts(codenet)
+    failing = {"Wrong Answer", "Time Limit Exceeded", "Runtime Error", "Memory Limit Exceeded", "Compile Error"}
+    fail_fail = {k: v for k, v in codenet["transitions"].items() if set(k.split(" -> ")) <= failing}
+    first_fails = codenet["pairs_accepted"] + codenet["pairs_never"] - codenet["attempts"]["1"]
+    numbers.update({"lim.codenet.problems": f"{codenet['problems']:,}", "lim.codenet.submissions": f"{codenet['submissions']:,}",
+                    "lim.codenet.first_fails": f"{first_fails:,}", "lim.codenet.second.share": pct(codenet["attempts"]["2"] / first_fails),
+                    "lim.codenet.attempts.max": max(map(int, codenet["attempts"])),
+                    "lim.codenet.third_or_never.share": pct((sum(v for k, v in codenet["attempts"].items() if int(k) >= 3) + codenet["pairs_never"]) / first_fails),
+                    "lim.codenet.fail_fail": f"{sum(fail_fail.values()):,}",
+                    "lim.codenet.fail_fail.kept.share": pct(sum(v for k, v in fail_fail.items() if len(set(k.split(" -> "))) == 1) / sum(fail_fail.values()))})
+    own_step = {r["example_id"]: r["step_ted"][-1] for r in steps}   # the student's step from s_{n-1} to acceptance
+    configs = (("\\textsc{Refactory}", refactory), ("\\textsc{Brafar}", brafar), ("\\textsc{Mentored}", mentored),
+               ("\\textsc{LSGen}\\textsubscript{Qwen}", qwen), ("\\textsc{LSGen}\\textsubscript{GPT}", lsgen))
+    by_id, reach = {r["example_id"]: r for r in steps}, reach_by_trajectory(steps)
+    student = {"ted_buggy_fixed": lambda k: own_step[k], "token_retention": lambda k: by_id[k]["step_token_retention"][-1],
+               "line_retention": lambda k: by_id[k]["step_line_retention"][-1]}
+
+    def against_student(fixes, key):   # shares of the patches below, equal to, and above the student's own step
+        signs = [(r[key] > student[key](r["example_id"])) - (r[key] < student[key](r["example_id"])) for r in fixes]
+        return [signs.count(s) / len(signs) for s in (-1, 0, 1)]
+    split = [(name, [r for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None and own_step.get(r["example_id"]) is not None])
+             for name, m in configs]
+    tables["reach"] = [f"{name} & {len(f):,} & " + " & ".join(pct(x) for key in student for x in against_student(f, key)) + " \\\\"
+                       for name, f in split]
+    span = lambda values: f"{min(values):.1f}--{max(values):.1f}"
+    beyond = lambda f: statistics.mean(r["ted_buggy_fixed"] > reach[tuple(r["example_id"].split(":")[:2])] for r in f)
+    numbers.update({"lim.own.ted.larger.range": span([100 * against_student(f, "ted_buggy_fixed")[2] for _, f in split]),
+                    "lim.own.ted.smaller.range": span([100 * against_student(f, "ted_buggy_fixed")[0] for _, f in split]),
+                    "lim.own.token_retention.smaller.range": span([100 * against_student(f, "token_retention")[0] for _, f in split]),
+                    "lim.own.line_retention.smaller.range": span([100 * against_student(f, "line_retention")[0] for _, f in split]),
+                    "lim.own.beyond_reach.range": span([100 * beyond(f) for _, f in split])})
+    own_step = {r["example_id"]: r["step_ted"][-1] for r in steps}   # the student's own step from the buggy program to acceptance
+    larger = lambda m: [r["ted_buggy_fixed"] > own_step[r["example_id"]] for r in m
+                        if r["repaired"] and r["ted_buggy_fixed"] is not None and own_step.get(r["example_id"]) is not None]
+    four = (refactory, brafar, mentored, lsgen)
+    numbers.update({"lim.baselines.ted.median.range": f"{min(statistics.median(sizes(m)) for m in four):g}--{max(statistics.median(sizes(m)) for m in four):g}",
+                    "lim.baselines.larger_than_own_step.range": f"{min(100 * statistics.mean(larger(m)) for m in four):.1f}--{max(100 * statistics.mean(larger(m)) for m in four):.1f}"})
     fixed_ted = lambda m: statistics.mean(r["ted_buggy_fixed"] for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None)
     numbers.update({"lim.mentored.returns_submission.share": pct(1 - rr(mentored)), "lim.lsgen.returns_submission.share": pct(1 - rr(lsgen)),
                     "lim.lsgen_qwen.returns_submission.share": pct(1 - rr(qwen)), "rq1.lsgen_qwen.rr": pct(rr(qwen)),
@@ -239,6 +315,9 @@ def main():
                     "lim.rr.range": f"{min(100 * rr(m) for m in baselines):.1f}--{max(100 * rr(m) for m in baselines):.1f}",
                     "lim.returns_submission.range": f"{min(100 * (1 - rr(m)) for m in baselines):.1f}--{max(100 * (1 - rr(m)) for m in baselines):.1f}",
                     "lim.ted_vs_step.max": f"{max(float(more(fixed_ted(m), statistics.mean(all_steps))) for m in baselines):.1f}",
+                    "lim.baselines.ted_vs_step.range": f"{min(float(more(fixed_ted(m), statistics.mean(all_steps))) for m in (refactory, brafar, mentored, lsgen)):.1f}--{max(float(more(fixed_ted(m), statistics.mean(all_steps))) for m in (refactory, brafar, mentored, lsgen)):.1f}",
+                    "lim.baselines.rr.range": f"{min(100 * rr(m) for m in (refactory, brafar, mentored, lsgen)):.1f}--{max(100 * rr(m) for m in (refactory, brafar, mentored, lsgen)):.1f}",
+                    "lim.step.within20.share": pct(step_share(20)),
                     **{f"lim.{key}.rr": pct(rr(m)) for key, m in (("refactory", refactory), ("brafar", brafar))},
                     **{f"lim.{key}.ted_vs_step.more": more(fixed_ted(m), statistics.mean(all_steps)) for key, m in (("refactory", refactory), ("brafar", brafar), ("mentored", mentored))}})
     numbers.update({"rq1.steps": len(all_steps), "rq1.step.median": num(statistics.median(all_steps)),
@@ -246,8 +325,8 @@ def main():
                     "rq1.mentored.within20.fewer": more(within_budget(mentored, 20), rr(mentored)),
                     "rq1.lsgen.within20.fewer": more(within_budget(lsgen, 20), rr(lsgen))})
 
-    # Section II-B figure: (a) pass rate and wrong-answer share at the first, middle, and last failing submissions and at
-    # acceptance, over every trajectory; (b) the students' steps by class.
+    # Section II-B: pass rate and wrong-answer share at the first, middle, and last failing submissions and at acceptance,
+    # over every trajectory, and the students' steps by class.
     def states(r):  # the distinct submissions of a trajectory, from its steps: (verdict, pass rate)
         return [(r["step_verdicts"][0][0], r["step_pass_rates"][0][0])] + [(b, pb) for (_, b), (_, pb) in zip(r["step_verdicts"], r["step_pass_rates"])]
     trajectories_states = [states(r) for r in steps]
@@ -256,17 +335,16 @@ def main():
               ("middle", [statistics.mean(p for _, p in m) for m in middles], [statistics.mean(v == "WA" for v, _ in m) for m in middles]),
               ("last", [t[-2][1] for t in trajectories_states], [t[-2][0] == "WA" for t in trajectories_states]),
               ("accepted", [t[-1][1] for t in trajectories_states], [t[-1][0] == "WA" for t in trajectories_states]))
-    tables["climb"] = [
-        "\\addplot[referenceline, mark=*, mark size=1.3pt] coordinates {" + " ".join(f"({i},{100 * statistics.mean(p):.1f})" for i, (_, p, _) in enumerate(points)) + "};",
-        "\\addplot[verdictline, dashed, mark=square*, mark size=1.2pt] coordinates {" + " ".join(f"({i},{100 * statistics.mean(w):.1f})" for i, (_, _, w) in enumerate(points)) + "};"]
     numbers.update({"lim.trajectories": len(trajectories_states), "lim.trajectories.with_middle": len(middles),
                     **{f"lim.{name}.pass_rate": f"{100 * statistics.mean(p):.1f}" for name, p, _ in points},
                     **{f"lim.{name}.wa.share": f"{100 * statistics.mean(w):.1f}" for name, _, w in points},
                     "lim.last_passes_more_than_first.share": pct(sum(t[-2][1] > t[0][1] for t in trajectories_states) / len(trajectories_states)),
                     "lim.last_passes_as_many_as_first.share": pct(sum(t[-2][1] == t[0][1] for t in trajectories_states) / len(trajectories_states))})
     classes = [c for r in steps for c in r["step_class"]]
-    tables["stepclasses"] = [f"\\addplot[{style}] coordinates {{({100 * classes.count(c) / len(classes):.1f},0)}};"
-                             for c, style in (("AC", "toacceptance"), ("forward", "forwardstep"), ("sideways", "sidewaysstep"), ("regress", "regressstep"))]
+    failing_steps = [c for c in classes if c != "AC"]   # steps that end in a program failing some test case on re-execution
+    up_worse = [c == "regress" for r in steps for (pa, pb), c in zip(r["step_pass_rates"], r["step_class"]) if c != "AC" and pb > pa]
+    numbers.update({"lim.failing_steps": f"{len(failing_steps):,}", "lim.pass_rate_up.worse.share": pct(statistics.mean(up_worse)),
+                    **{f"lim.failing_steps.{c}.share": pct(failing_steps.count(c) / len(failing_steps)) for c in ("forward", "sideways", "regress")}})
     numbers.update({**{f"lim.steps.{c}.share": pct(classes.count(c) / len(classes)) for c in ("AC", "forward", "sideways", "regress")},
                     "lim.trajectories.with_forward.share": pct(sum("forward" in r["step_class"] for r in steps) / len(steps)),
                     "lim.forward.verdict_kept.share": pct(sum(a == b for r in steps for (a, b), c in zip(r["step_verdicts"], r["step_class"]) if c == "forward")
@@ -274,37 +352,10 @@ def main():
                     "lim.regress.verdict_kept.share": pct(sum(a == b for r in steps for (a, b), c in zip(r["step_verdicts"], r["step_class"]) if c == "regress")
                                                           / classes.count("regress"))})
 
-    # The same problems' trajectories that never reach acceptance: pass rate and wrong-answer share at the first, middle,
-    # and last submissions, and their steps by class, pooled and with each problem weighted equally.
-    never = rows("benchmark/never-accepted-steps.jsonl")
-    nstates = {r["example_id"]: list(zip(r["state_verdicts"], r["state_pass_rates"])) for r in never}
     by_problem = lambda items: [[x for r, x in items if r["problem_id"] == p] for p in sorted({r["problem_id"] for r, _ in items})]
     balanced = lambda items: statistics.mean(statistics.mean(g) for g in by_problem(items) if g)
-    npoints = (("first", lambda t: [t[0]]), ("middle", lambda t: t[1:-1]), ("last", lambda t: [t[-1]]))
-    for name, pick in npoints:
-        pass_items = [(r, statistics.mean(p for _, p in pick(nstates[r["example_id"]]))) for r in never if pick(nstates[r["example_id"]])]
-        wa_items = [(r, statistics.mean(v == "WA" for v, _ in pick(nstates[r["example_id"]]))) for r in never if pick(nstates[r["example_id"]])]
-        numbers[f"lim.never.{name}.pass_rate"] = f"{100 * statistics.mean(x for _, x in pass_items):.1f}"
-        numbers[f"lim.never.{name}.pass_rate.balanced"] = f"{100 * balanced(pass_items):.1f}"
-        numbers[f"lim.never.{name}.wa.share"] = f"{100 * statistics.mean(x for _, x in wa_items):.1f}"
-    nclasses = [c for r in never for c in r["step_class"]]
-    numbers.update({"lim.never.trajectories": len(never), "lim.never.steps": len(nclasses),
-                    **{f"lim.never.steps.{c}.share": pct(nclasses.count(c) / len(nclasses)) for c in ("forward", "sideways", "regress")},
-                    "lim.never.last_passes_more_than_first.share": pct(sum(nstates[r["example_id"]][-1][1] > nstates[r["example_id"]][0][1] for r in never) / len(never))})
     numbers.update({f"lim.{name}.pass_rate.balanced": f"{100 * balanced([(r, p) for r, p in zip(steps, ps)]):.1f}"
                     for name, ps, _ in points[:3] if len(ps) == len(steps)})
-    # Figure 2 shows both: dotted lines and the lower bar for the trajectories that never reach acceptance.
-    nmeans = [(statistics.mean(statistics.mean(p for _, p in pick(nstates[r["example_id"]])) for r in never if pick(nstates[r["example_id"]])),
-               statistics.mean(statistics.mean(v == "WA" for v, _ in pick(nstates[r["example_id"]])) for r in never if pick(nstates[r["example_id"]])))
-              for _, pick in npoints]
-    tables["climb"] += [
-        "\\addplot[referenceline, densely dotted, mark=o, mark size=1.3pt] coordinates {" + " ".join(f"({i},{100 * p:.1f})" for i, (p, _) in enumerate(nmeans)) + "};",
-        "\\addplot[verdictline, densely dotted, mark=square, mark size=1.2pt] coordinates {" + " ".join(f"({i},{100 * w:.1f})" for i, (_, w) in enumerate(nmeans)) + "};"]
-    tables["stepclasses"] = [f"\\addplot[{style}] coordinates {{({100 * classes.count(c) / len(classes):.1f},1)"
-                             + f" ({100 * nclasses.count(c) / len(nclasses):.1f},0)" + "};"
-                             for c, style in (("AC", "toacceptance"), ("forward", "forwardstep"), ("sideways", "sidewaysstep"), ("regress", "regressstep"))]
-    kept = lambda items: [a == b for r in items for (a, b), c in zip(zip(r["state_verdicts"], r["state_verdicts"][1:]), r["step_class"]) if c == "forward"]
-    numbers["lim.never.forward.verdict_kept.share"] = pct(statistics.mean(kept(never)))
 
     # RQ1 figure: the patches of ZPDPatch against the students' own steps.
     zpd, qwen = rows("approaches/zpdpatch.jsonl"), rows("approaches/lsgen-qwen.jsonl")
@@ -312,12 +363,17 @@ def main():
     fixes = lambda m: [r for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None]
     share_in_reach = lambda m: within_reach(m, rq1_reach) * len(m) / len(fixes(m))
     patch = [r["ted_buggy_fixed"] for r in fixes(zpd)]
-    cdf = lambda xs: " ".join(f"({x},{100 * sum(v <= x for v in xs) / len(xs):.1f})"
-                              for x in (1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 300, 500, 1000))
-    tables["patchsize"] = [f"\\addplot[referenceline] coordinates {{{cdf(all_steps)}}};"] + [
-        f"\\addplot[{style}] coordinates {{{cdf([r['ted_buggy_fixed'] for r in fixes(m)])}}};"
+    above = lambda xs, x: 100 * sum(v > x for v in xs) / len(xs)
+    curves = [("referenceline", all_steps)] + [
+        (style, [r["ted_buggy_fixed"] for r in fixes(m)])
         for style, m in (("refactoryline", refactory), ("brafarline", brafar), ("mentoredline", mentored),
                          ("qwenline", qwen), ("gptline", lsgen), ("proposedline", zpd))]
+    # each curve, then its points on the two reference lines (median reach 49, and 50% at its median)
+    tables["patchsize"] = [
+        f"\\addplot[{s}] coordinates {{{' '.join(f'({x},{above(xs, x):.1f})' for x in (*range(1, 101), 120, 150, 200, 300, 500, 700, 1000))}}};"
+        for s, xs in curves] + [
+        f"\\addplot[{s}, forget plot, only marks, mark=*, mark size=1.1pt] coordinates {{(49,{above(xs, 49):.1f}) ({statistics.median(xs):g},50)}};"
+        for s, xs in curves]
     numbers.update({"rq1.zpdpatch.rr": pct(rr(zpd)), "rq1.zpdpatch.within_reach.share": pct(share_in_reach(zpd)),
                     "rq1.zpdpatch.ted.median": num(statistics.median(patch)),
                     "rq1.zpdpatch.token_retention.median": pct(statistics.median(r["token_retention"] for r in fixes(zpd))),
@@ -387,32 +443,20 @@ def main():
               ("mentored", "\\textsc{Mentored}", mentored), ("lsgen_qwen", "\\textsc{LSGen}\\textsubscript{Qwen}", qwen),
               ("lsgen", "\\textsc{LSGen}\\textsubscript{GPT}", lsgen))
     mean = lambda m, key: statistics.mean(r[key] for r in fixes(m))
-    # Table II (RQ1 and RQ2): every technique's repairs against the students' own steps and fixes.
+    # Table III (RQ1): every technique's repairs against the students' own steps and fixes.
     span = lambda values: f"{min(values):.1f}--{max(values):.1f}"
     techniques = [zpd] + [m for _, _, m in others]
     by_problem_of = lambda m: [[r for r in m if r["problem_id"] == p] for p in sorted({r["problem_id"] for r in fixes(m)})]
     no_larger = lambda r: own_fix[r["example_id"]] is not None and r["ted_buggy_fixed"] <= own_fix[r["example_id"]]
     share_of = lambda m, test: sum(map(test, fixes(m))) / len(fixes(m))
-    row = lambda label, values, student="--": f"{label} & " + " & ".join(values) + f" & {student} \\\\"
-    tables["rq1"] = [
-        row("\\multirow{3}{*}{Repair (\\%)} & RR", [pct(rr(m)) for m in techniques]),
-        row(" & Within reach, of fixed", [pct(share_in_reach(m)) for m in techniques]),
-        row(" & Within reach, of all", [pct(within_reach(m, rq1_reach)) for m in techniques]),
-        "\\midrule",
-        row("\\multicolumn{2}{l||}{Problems with $\\geq$70\\% within reach}",
-            [f"{sum(share_in_reach(g) >= 0.7 for g in by_problem_of(m))}/{len(by_problem_of(m))}" for m in techniques]),
-        row("\\multicolumn{2}{l||}{Median TED}", [num(statistics.median(r["ted_buggy_fixed"] for r in fixes(m))) for m in techniques],
-            num(statistics.median(all_steps))),
-        "\\midrule",
-        row("\\multirow{2}{*}{Median kept (\\%)} & Tokens", [pct(statistics.median(r["token_retention"] for r in fixes(m))) for m in techniques],
-            pct(statistics.median(x for r in steps for x in r["step_token_retention"]))),
-        row(" & Lines", [pct(statistics.median(r["line_retention"] for r in fixes(m))) for m in techniques],
-            pct(statistics.median(x for r in steps for x in r["step_line_retention"]))),
-        "\\midrule",
-        row("\\multirow{3}{*}{Student's fix (\\%)} & No larger", [pct(share_of(m, no_larger)) for m in techniques]),
-        row(" & Within TED 10", [pct(share_of(m, lambda r: near(r, 10))) for m in techniques]),
-        row(" & Same AST", [pct(share_of(m, lambda r: near(r, 0))) for m in techniques]),
-    ]
+    columns = [[pct(share_in_reach(m)) for m in techniques],
+               [f"{sum(share_in_reach(g) >= 0.7 for g in by_problem_of(m))}/{len(by_problem_of(m))}" for m in techniques],
+               *([pct(statistics.median(r[key] for r in fixes(m))) for m in techniques] for key in ("token_retention", "line_retention")),
+               *([pct(share_of(m, test)) for m in techniques] for test in (no_larger, lambda r: near(r, 10), lambda r: near(r, 0)))]
+    rows_rq1 = [" & ".join(cells) + " \\\\" for cells in zip(["\\textsc{ZPDPatch}"] + [name for _, name, _ in others], *columns)]
+    tables["rq1"] = [f"Students & -- & -- & {pct(statistics.median(x for r in steps for x in r['step_token_retention']))}"
+                     f" & {pct(statistics.median(x for r in steps for x in r['step_line_retention']))} & -- & -- & -- \\\\",
+                     "\\midrule"] + rows_rq1[1:] + ["\\midrule"] + rows_rq1[:1]
     rest = [m for _, _, m in others]
     above = lambda m: sum(r["ted_buggy_fixed"] > statistics.median(all_reach) for r in fixes(m)) / len(fixes(m))
     numbers.update({
@@ -436,7 +480,9 @@ def main():
 
     in_reach = lambda r: within_reach([r], rq1_reach) == 1
     tables["combined"] = [bars("baseline2", "y", [(key, m, in_reach) for key, _, m in others]),
-                          bars("proposed", "y", [(key, ordered(zpd, m), in_reach) for key, _, m in others])]
+                          bars("proposed", "y", [(key, ordered(zpd, m), in_reach) for key, _, m in others]),
+                          f"\\draw[violet, densely dashed, thick] ({{rel axis cs:0,0}} |- {{axis cs:refactory,{pct(within_reach(zpd, rq1_reach))}}}) -- "
+                          f"({{rel axis cs:1,0}} |- {{axis cs:refactory,{pct(within_reach(zpd, rq1_reach))}}});"]
     z = {r["example_id"]: r for r in fixes(zpd)}
     for key, _, m in others:
         o = {r["example_id"]: r for r in fixes(m)}
@@ -493,6 +539,11 @@ def main():
             joint_more["reach"].append(float(more(a, b)))
     for name, values in joint_more.items():
         numbers[f"rq2.joint.{name}.more.range"] = span(values)
+    # Table V (RQ2): each technique on all buggy programs, and ZPDPatch against it on the buggy programs both repair.
+    tables["rq2"] = [
+        f"{name} & {pct(rr(m))} & {pct(rr(m) - within_reach(m, rq1_reach))} & {numbers[f'rq2.{key}.joint.ted.smaller']}"
+        f" & {numbers[f'rq2.{key}.joint.token_retention.more']} & {numbers[f'rq2.{key}.joint.line_retention.more']} \\\\" for key, name, m in others] + [
+        "\\midrule", f"\\textsc{{ZPDPatch}} & {pct(rr(zpd))} & {pct(rr(zpd) - within_reach(zpd, rq1_reach))} & -- & -- & -- \\\\"]
     # The programs cluster in 14 problems, so paired differences are judged by problem: the share of problems where
     # ZPDPatch keeps more tokens on the jointly repaired programs, and a bootstrap over problems of the within-reach
     # gain (points) of placing ZPDPatch first.
@@ -518,12 +569,6 @@ def main():
     numbers["rq2.combined.within_reach.points.range"] = span(gains)
     numbers["rq2.combined.within_reach.ci.low.min"] = f"{min(lows):.1f}"
     numbers["rq2.combined.within_reach.problems.up.range"] = f"{min(ups)}--{max(ups)}"
-    # The step budget inside Algorithm 1 (lines 5-6): the portfolio Select chooses at that budget, and the Answer one.
-    selection = json.load(open(os.path.join(OUT, "rules/rq1/selection.json")))
-    for b in (5, 10, 20):
-        numbers[f"select.budget{b}.progress"] = sum(m.startswith("Progress") for m in selection["selected_by_budget"][str(b)])
-        for name in ("selected", "answer"):
-            numbers[f"select.budget{b}.{name}.rr"] = pct(rr(rows(f"rules/rq1/budget-{b}/{name}.jsonl")))
     # (b) By quartile of the student's own step to acceptance: the share of each technique's repairs within reach.
     own_step = {r["example_id"]: r["step_ted"][-1] for r in steps}
     cuts = statistics.quantiles([own_step[r["example_id"]] for r in zpd], n=4)
@@ -603,7 +648,7 @@ def main():
     numbers["rq2.example.zpdpatch.ted"] = example["ted_buggy_returned"]
     example_teds = [r["ted_buggy_fixed"] for m in rest for r in m if r["example_id"] == example["example_id"] and r["repaired"]]
     numbers["rq2.example.others.ted.range"] = f"{min(example_teds)}--{max(example_teds)}"
-    # The portfolio against its first checkpoint alone (the one checkpoint of RQ3 and RQ4); the first checkpoint's
+    # The cascade against its first checkpoint alone (the one checkpoint of RQ3 and RQ4); the first checkpoint's
     # repairs are exactly the returns selected from it.
     first = [dict(r, repaired=bool(r["repaired"]) and r["selected_source"] == "Answer2027") for r in zpd]
     by_problem_pair = [([r for r in first if r["problem_id"] == p], [r for r in zpd if r["problem_id"] == p]) for p in problems]
@@ -612,43 +657,13 @@ def main():
         "rq3.rq1.one_checkpoint.within_reach.fewer": more(within_reach(first, rq1_reach), within_reach(zpd, rq1_reach)),
         "rq3.rq1.one_checkpoint.problems.fewer": sum(rr(a) < rr(b) and within_reach(a, rq1_reach) < within_reach(b, rq1_reach) for a, b in by_problem_pair)})
 
-    # Review response: the same number of candidates from the untrained base model in front of each technique, and
-    # the rules trained with current-only prompts on the RQ1 benchmark (Select over all nine checkpoints).
-    base3 = rows("rules/rq1/base-three-samples.jsonl")
+    # The same number of candidates from the untrained base model in front of each technique.
+    base3 = rows("approaches/base-three-samples.jsonl")
     numbers["rq2.base3.rr"] = pct(rr(base3))
     numbers["rq2.base3.front.within_reach.more.range"] = span(
         [float(more(within_reach(ordered(base3, m), rq1_reach), within_reach(m, rq1_reach))) for _, _, m in others])
-    for name in ("strict", "progress", "progress-prefix", "selected"):
-        m = rows(f"rules/rq1/{name}.jsonl")
-        key = name.replace("-", "_")
-        numbers[f"rq3.rq1.{key}.rr"] = pct(rr(m))
-        numbers[f"rq3.rq1.{key}.share"] = pct(within_reach(m, rq1_reach) * len(m) / sum(bool(r["repaired"]) for r in m))
-    with open(os.path.join(OUT, "rules/rq1/selection.json")) as f:
-        selection = json.load(f)
-    numbers["select.rq1.validation.selected.rr"] = pct(selection["selected_repair_rate"])
-    numbers["select.rq1.validation.answer.rr"] = pct(selection["answer_repair_rate"])
-    numbers["select.rq1.validation.selected.more"] = more(selection["selected_repair_rate"], selection["answer_repair_rate"])
-    numbers["select.rq1.selected"] = "+".join(selection["selected"])
-    numbers["select.budget20.selected.fewer"] = more(rr(rows("rules/rq1/budget-20/selected.jsonl")), rr(rows("rules/rq1/budget-20/answer.jsonl")))
+    tables["combined"].insert(1, bars("variant", "y", [(key, ordered(base3, m), in_reach) for key, _, m in others]))
 
-    # RQ3 (target source): the three Answer checkpoints trained on another student's accepted submission instead.
-    for name in ("closest", "random"):
-        m = rows(f"targets/rq1/answer-cross-user-{name}.jsonl")
-        of = {r["example_id"]: r for r in fixes(m)}
-        joint = [k for k in zf if k in of]
-        numbers.update({
-            f"rq3.rq1.cross_user_{name}.rr.more": more(rr(m), rr(zpd)),
-            f"rq3.rq1.cross_user_{name}.share": pct(within_reach(m, rq1_reach) * len(m) / len(fixes(m))),
-            f"rq3.rq1.cross_user_{name}.within_reach.fewer": more(within_reach(m, rq1_reach), within_reach(zpd, rq1_reach)),
-            f"rq3.rq1.cross_user_{name}.joint.ted.smaller": more(statistics.mean(zf[k]["ted_buggy_fixed"] for k in joint),
-                                                               statistics.mean(of[k]["ted_buggy_fixed"] for k in joint)),
-            f"rq3.rq1.cross_user_{name}.joint.token_retention.more": more(statistics.mean(zf[k]["token_retention"] for k in joint),
-                                                                        statistics.mean(of[k]["token_retention"] for k in joint)),
-            **{f"rq3.rq1.cross_user_{name}.within{b}": pct(within_budget(m, b)) for b in (10, 20)},
-            f"rq3.rq1.cross_user_{name}.own_accepted": sum(near(r, 0) for r in fixes(m))})
-    kept = rows("targets/rq1/answer-target-retention.jsonl")
-    for name in ("own", "closest", "random"):
-        numbers[f"rq3.rq1.target.{name}.token_retention.median"] = pct(statistics.median(r[name] for r in kept))
 
     # Plausible patches on generated inputs (Threats): any failure, and a failure where the student's own accepted
     # program passes.
@@ -672,28 +687,53 @@ def main():
     # Tables IV and V: target rules (RQ3).
     reach = reach_by_trajectory(rows("benchmark/canonical-student-steps.jsonl"))
     t = {split: {rule: rows(f"targets/{split}/{rule}.jsonl") for rule in ("answer", "progress")} for split in ("seen", "unseen", "java")}
-    ret = {split: joint_retention(t[split]["answer"], t[split]["progress"]) for split in t}
-    cell = lambda split, rule, f: f(split, rule)
+    # Table VII: each rule trained on the same examples (Strict: strict-target-20261103-v1). Retention is the mean over
+    # the buggy programs that every rule of the row repairs.
+    cols = {s: {r: rows(f"targets/{s}/{r}.jsonl") for r in ("answer", "strict", "progress")} for s in ("seen", "unseen", "java")}
+    reach_of = {"seen": reach, "unseen": reach}
+    common = {c: set.intersection(*({r["example_id"] for r in m if r["repaired"]} for m in cols[c].values())) for c in cols}
+
+    def retention(col, rule, key):
+        by_id = {r["example_id"]: r for r in cols[col][rule]}
+        return statistics.mean(by_id[k][key] for k in common[col])
+    kept = lambda col, rule, key: pct(retention(col, rule, key))
+    metrics = (lambda c, r: pct(rr(cols[c][r])),
+               lambda c, r: pct(within_reach(cols[c][r], reach_of[c])),
+               lambda c, r: kept(c, r, "token_retention"),
+               lambda c, r: kept(c, r, "line_retention"))
     lines = []
-    for label, f, java in (
-        ("RR (\\%)", lambda s, r: pct(rr(t[s][r])), True),
-        ("Within-reach RR (\\%)", lambda s, r: pct(within_reach(t[s][r], reach)), False),
-        ("Tokens (\\%)", lambda s, r: pct(ret[s][1]["a" if r == "answer" else "b"]["token_retention"]), True),
-        ("Lines (\\%)", lambda s, r: pct(ret[s][1]["a" if r == "answer" else "b"]["line_retention"]), True),
-    ):
-        if lines:
-            lines.append("\\midrule")
-        for i, rule in enumerate(("answer", "progress")):
-            head = f"\\multirow{{2}}{{*}}{{{label}}}" if i == 0 else ""
-            values = [cell(s, rule, f) for s in ("seen", "unseen")] + [cell("java", rule, f) if java else "--"]
-            lines.append(f"{head} & {rule.title()} & {' & '.join(values)} \\\\" if i == 0 else f" & {rule.title()} & {' & '.join(values)} \\\\")
+    for c, label in (("seen", "Seen"), ("unseen", "Unseen")):
+        values = [f(c, rule) if rule in cols[c] else "" for f in metrics for rule in ("answer", "strict", "progress")]
+        lines.append(f"{label} & {' & '.join(values)} \\\\")
     tables["targets"] = lines
-    for s in t:
-        a, b = ret[s][1]["a"], ret[s][1]["b"]
-        numbers[f"rq3.{s}.joint"] = len(ret[s][0])
-        numbers[f"rq3.{s}.tokens.more"] = more(b["token_retention"], a["token_retention"])
-        numbers[f"rq3.{s}.lines.more"] = more(b["line_retention"], a["line_retention"])
-        numbers[f"rq3.{s}.rr.fewer"] = more(rr(t[s]["progress"]), rr(t[s]["answer"]))
+    # Table IX (RQ4): the same target-rule comparison on Java with students held out.
+    tables["javatargets"] = [f"{label} & {' & '.join(f(r) if r in cols['java'] else '' for r in ('answer', 'strict', 'progress'))} \\\\"
+                             for label, f in (("RR", lambda r: pct(rr(cols["java"][r]))),
+                                              ("Tokens", lambda r: kept("java", r, "token_retention")),
+                                              ("Lines", lambda r: kept("java", r, "line_retention")))]
+    # Table VIII (RQ3): Progress trained on the student's own targets and on another student's with the same execution
+    # outcomes and token difference (cross-user target control, current-only prompts); TED on the programs both repair.
+    tables["targetsource"] = []
+    for s, label in (("seen", "Seen"), ("unseen", "Unseen")):
+        own, other = rows(f"targets/{s}/progress-same-user.jsonl"), rows(f"targets/{s}/progress-cross-user.jsonl")
+        fo, ft = ({r["example_id"]: r for r in m if r["repaired"] and r["ted_buggy_fixed"] is not None} for m in (own, other))
+        joint = [k for k in fo if k in ft]
+        ted = [statistics.mean(f[k]["ted_buggy_fixed"] for k in joint) for f in (fo, ft)]
+        tables["targetsource"].append(f"{label} & {pct(rr(own))} & {pct(rr(other))} & {pct(within_reach(own, reach))}"
+                                      f" & {pct(within_reach(other, reach))} & {ted[0]:.1f} & {ted[1]:.1f} \\\\")
+        numbers.update({f"rq3.source.{s}.rr.more": more(rr(other), rr(own)),
+                        f"rq3.source.{s}.within_reach.fewer": more(within_reach(other, reach), within_reach(own, reach)),
+                        f"rq3.source.{s}.ted.larger": more(ted[1], ted[0])})
+    for s in cols:
+        numbers[f"rq3.{s}.joint"] = len(common[s])
+        for rule in ("strict", "progress"):
+            key = "" if rule == "progress" else "strict."
+            numbers[f"rq3.{s}.{key}tokens.more"] = more(retention(s, rule, "token_retention"), retention(s, "answer", "token_retention"))
+            numbers[f"rq3.{s}.{key}lines.more"] = more(retention(s, rule, "line_retention"), retention(s, "answer", "line_retention"))
+            numbers[f"rq3.{s}.{key}rr.fewer"] = more(rr(cols[s][rule]), rr(cols[s]["answer"]))
+            if s in reach_of:
+                numbers[f"rq3.{s}.{key}within_reach.change"] = f"{100 * (within_reach(cols[s][rule], reach) / within_reach(cols[s]['answer'], reach) - 1):+.1f}"
+        numbers[f"rq3.{s}.strict.rr.more_than_progress"] = more(rr(cols[s]["strict"]), rr(cols[s]["progress"]))
     ja = {r["example_id"]: r for r in t["java"]["answer"]}
     per_exercise = defaultdict(lambda: [0, 0])
     for r in t["java"]["answer"]:
@@ -707,18 +747,17 @@ def main():
     numbers["rq3.java.max_extra_one_exercise"] = max(a - p for a, p in per_exercise.values())
 
     # Table III: ablation (RQ3); each variant against ZPDPatch under the same inference conditions.
-    pairs = (("\\textsc{ZPDPatch}-Train\\(^\\dagger\\)", "no-training", "sampled"),
-             ("\\textsc{ZPDPatch}-Portfolio", "one-checkpoint", "zpdpatch"),
-             ("\\textsc{ZPDPatch}-Distinct\\(^\\dagger\\)", "same-checkpoint", "distinct-checkpoints"),
-             ("\\textsc{ZPDPatch}+History", "history", "zpdpatch"))
-    tables["ablation"] = []
-    for label, variant, reference in pairs:
-        cells = []
+    pairs = (("Training\\(^\\dagger\\)", "no-training", "sampled"),        # rows: each choice without and with it
+             ("Cascade", "one-checkpoint", "zpdpatch"),
+             ("Distinct checkpoints\\(^\\dagger\\)", "same-checkpoint", "distinct-checkpoints"),
+             ("Current-only prompt", "history", "zpdpatch"))
+    # Figure (RQ3): one bar series per split and side, over the four choices.
+    rate = {}
+    for (label, variant, reference), x in zip(pairs, ("training", "cascade", "distinct", "current")):
         for s in ("seen", "unseen"):
             v, z = rr(rows(f"ablation/{s}/{variant}.jsonl")), rr(rows(f"ablation/{s}/{reference}.jsonl"))
-            cells += [pct(v), pct(z)]
+            rate[(s, 0, x)], rate[(s, 1, x)] = v, z
             numbers[f"rq3.{variant}.{s}.fewer"] = more(v, z)
-        tables["ablation"].append(f"{label} & {' & '.join(cells)} \\\\")
     # Train-dagger within reach and the student's own accepted AST, with the TED of the sampled returns (sampled-ted).
     for s in ("seen", "unseen"):
         ted = {(r["variant"], r["example_id"]): r for r in rows(f"ablation/{s}/sampled-ted.jsonl")}
@@ -728,20 +767,31 @@ def main():
         own_ast = lambda m: sum(bool(r["repaired"]) and r["ted_fixed_oracle"] == 0 for r in m)
         numbers[f"rq3.no-training.{s}.within_reach.fewer"] = more(within_reach(base, reach), within_reach(one, reach))
         numbers[f"rq3.no-training.{s}.own_accepted.fewer"] = more(own_ast(base), own_ast(one))
+    # Figure 6 (RQ3): how many fewer buggy programs each variant repairs; Unseen is plotted first so Seen sits on top.
+    drop = {"training": "no-training", "reach": "no-training", "cascade": "one-checkpoint", "distinct": "same-checkpoint", "current": "history"}
+    fewer = lambda y, s: numbers[f"rq3.{drop[y]}.{s}.{'within_reach.' if y == 'reach' else ''}fewer"]
+    tables["ablation"] = [f"\\addplot[{style}] coordinates {{{' '.join(f'({fewer(y, s)},{y})' for y in drop)}}};"
+                          for s, style in (("unseen", "fill=red!25, draw=red!60!black"), ("seen", "fill=red!70!black, draw=red!60!black"))]
 
     # Table VI and Figure 6: generality (RQ4).
     settings = (("1.5B model", "scale-1.5b/seen", "scale-1.5b/unseen"), ("Java", "java-students", "java-exercises"))
-    tables["generality"] = []
+    # Figure (RQ4): one checkpoint and the cascade by setting; within reach for the 1.5B model (Java has no student steps).
+    gen = {}
     for label, seen, unseen in settings:
-        cells = []
         for key, path in (("seen", seen), ("unseen", unseen)):
             one, port = rr(rows(f"generality/{path}/one-checkpoint.jsonl")), rr(rows(f"generality/{path}/zpdpatch.jsonl"))
-            cells += [pct(one), pct(port)]
+            gen[(label, key)] = (one, port)
             numbers[f"rq4.{path}.more"] = more(port, one)
-        tables["generality"].append(f"{label} & {' & '.join(cells)} \\\\")
     for s in ("seen", "unseen"):
         one, port = (rows(f"generality/scale-1.5b/{s}/{n}.jsonl") for n in ("one-checkpoint", "zpdpatch"))
-        numbers[f"rq4.scale-1.5b/{s}.within_reach.more"] = more(within_reach(port, reach), within_reach(one, reach))
+        gen[("reach", s)] = (within_reach(one, reach), within_reach(port, reach))
+        numbers[f"rq4.scale-1.5b/{s}.within_reach.more"] = more(gen[("reach", s)][1], gen[("reach", s)][0])
+    # Figure 7 (RQ4): (a) the 1.5B model, RR and within reach; (b) Java with students or problems held out.
+    one_cascade = (("fill=teal!20, draw=teal!60!black", 0), ("fill=teal!75!black, draw=teal!60!black", 1))
+    tables["generality15"] = [f"\\addplot[{style}] coordinates {{{' '.join(f'({x},{100 * gen[(g, s)][i]:.1f})' for g, s, x in (('1.5B model', 'seen', 'rrseen'), ('1.5B model', 'unseen', 'rrunseen'), ('reach', 'seen', 'reachseen'), ('reach', 'unseen', 'reachunseen')))}}};"
+                              for style, i in one_cascade]
+    tables["generalityjava"] = [f"\\addplot[{style}] coordinates {{{' '.join(f'({x},{100 * gen[('Java', s)][i]:.1f})' for s, x in (('seen', 'students'), ('unseen', 'problems')))}}};"
+                                for style, i in one_cascade]
 
     in_text(numbers, mentored, lsgen, steps, t, reach)
     with open(os.path.join(PAPER, "output", "tables.tex"), "w") as f:
