@@ -1,0 +1,21 @@
+{
+  "status": "source_only_implemented_not_released",
+  "motivation": "After C_exec fixes many generic selection errors, history still changes no H/HS or H/Jm choices. Existing banks were generated current-only. Test aligned transition information in generation itself without repeating the legacy full-history versus current-only prompt comparison.",
+  "implementation": "scripts/zpd_public_transition_prompt.py",
+  "tests": "tests/test_zpd_public_transition_prompt.py",
+  "design_agent": "/root/public_execution_design_20261012",
+  "generation_authorized_by_this_file": false,
+  "empirical_generation_performed": false,
+  "inputs": "Authenticated observed prefix only; exact reversible code changes aligned to per-public-case before/after categorical outcomes; identical unchanged current/specification/current public feedback in all arms.",
+  "arms": {"C": "current-only", "H": "authentic entire prefix", "HS": "frozen permutation of complete source-bound prefix records with cards recomputed", "U": "certified same-problem other-user prior, recipient current unchanged"},
+  "budget": {"draws_per_arm": 2, "total_attempts_per_recipient": 8, "seeds": [2027,2028], "retry_fill": false, "candidate_sharing_between_arms": false, "adaptive_attempt_feedback": false, "max_new_tokens": 4096, "max_model_len": 8192, "truncate_history": false, "overflow": "Retain both attempted slots as resource failures, never truncate or drop recipient.", "note": "Each arm has the same draw and context/output caps, not necessarily equal prompt lengths. Within-new-experiment comparisons are2-vs2 draws; the old8-draw bank is only a reference."},
+  "preconditions_before_empirical_release": [
+    "Freeze full recipient/observed-source/donor/HS assignments and authenticate all public feedback and sample identities; do not select recipients from newly favorable outcomes.",
+    "Materialize all-arm exact prompts and measure final chat-template token counts with the frozen local tokenizer; retain all overflow cases.",
+    "Implement an out-of-bank scoring bridge using each saved C_joint fold model and its exact saved scaler/feature extraction. Existing candidate-score maps do not contain new candidate IDs and cannot be reused as if they did. No refit or score imputation.",
+    "Freeze the matched generation/runtime/candidate execution resource release and independently verify the input and scoring bridge before GPU launch.",
+    "New candidates require separately sealed evaluator coverage; do not reuse private labels for different code. Complete and seal selections before full-suite assessment.",
+    "Keep existing correctness/regression/unknown gates and clearly distinguish adaptive development from a later untouched confirmation."
+  ],
+  "claim_boundary": "Aligned changes/outcomes are observed associations, not causal attribution, learner skill or an appropriate next learning step. Current implementation has synthetic coverage only; no empirical performance is attributed to it."
+}

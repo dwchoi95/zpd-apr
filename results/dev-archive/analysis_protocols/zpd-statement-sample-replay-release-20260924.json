@@ -1,0 +1,317 @@
+{
+  "kind": "statement_sample_replay_release_v1",
+  "project": "/home/cdw/VSCode/zpd-apr",
+  "output": "outputs/zpd-statement-sample-feedback-20260924/replay-v1",
+  "supervised": "outputs/zpd-statement-sample-feedback-20260924/replay-supervised-v1",
+  "unit": "zpd-statement-samples-replay-20260924-v1.service",
+  "configuration": {
+    "kind": "statement_sample_replay_launcher_v1",
+    "output": "outputs/zpd-statement-sample-feedback-20260924/replay-v1",
+    "supervised": "outputs/zpd-statement-sample-feedback-20260924/replay-supervised-v1",
+    "unit": "zpd-statement-samples-replay-20260924-v1.service",
+    "envelope": {
+      "MemoryAccounting": "yes",
+      "TasksAccounting": "yes",
+      "MemoryMax": "34359738368",
+      "TasksMax": "128",
+      "RuntimeMaxSec": "21600",
+      "LimitAS": "34359738368",
+      "KillMode": "control-group",
+      "KillSignal": "SIGKILL",
+      "SendSIGKILL": "yes",
+      "Restart": "no",
+      "RemainAfterExit": "yes",
+      "Delegate": "no",
+      "OOMPolicy": "stop"
+    },
+    "replay": {
+      "version": "statement_sample_replay_core_v1",
+      "block_workers": [
+        1,
+        8,
+        8,
+        1
+      ],
+      "timeout_sec": 2.5,
+      "memory_limit_mb": 2048,
+      "case_workers": 1,
+      "wall_seconds": 21600,
+      "execution_identity": [
+        "problem_id",
+        "source_sha256",
+        "language"
+      ],
+      "stable": "four_complete_identical_full_known_verdict_vectors",
+      "known_case_verdicts": [
+        "AC",
+        "CE",
+        "RE",
+        "TLE",
+        "WA"
+      ],
+      "runner": "scripts.zpd_repair_evaluate.SandboxRunner",
+      "run_source": "scripts.zpd_repair_evaluate.run_source",
+      "retries": 0,
+      "heartbeat_seconds": 30,
+      "candidate_execution": false,
+      "fitting_authorized": false,
+      "persisted_diagnostic": "first_1024_codepoints_full_canonical_JSON_string_SHA_count_v1",
+      "captured_output_memory_cap_added": false
+    },
+    "poll_seconds": 0.25,
+    "ready_seconds": 30,
+    "keeper_seconds": 5,
+    "metadata_byte_limit": 16777216,
+    "controller_environment": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "ready_and_keeper_processes_threads": "exactly_the_unit_main_PID",
+    "outside_empirical_body_decoding": false,
+    "outside_opaque_hashing": true,
+    "parent_limit_as": 34359738368,
+    "worker_protocol": "READY_GO_inner_COMPLETE_live_DONE_ACK_retained_exit_cleanup",
+    "fitting_authorized": false,
+    "retries": 0,
+    "overwrite": false
+  },
+  "prepared_complete_sha256": "161436b47e020e990071413c6e5645811323705ae5fa7c7f0eb684a9b6943caf",
+  "resource_probe_complete_sha256": "460119fc93c5652b5e756e8b61ce071f12c9539cdaea3f0bf087ff3ec79aadab",
+  "source_sha256": {
+    "analysis_protocols/zpd-feedback-to-repair-design-20260924.md": "d542b4a50da106a31049aa9b8d41ca7bb40a6f5b98ead8600cde0f86d7a02566",
+    "analysis_protocols/zpd-repair-directed-history-prospective-20260924.md": "ca87a111343324fd0b3a1a130b1d2293b63efdb338b08b8472a4b79c5ffb6d7e",
+    "analysis_protocols/zpd-repair-feedback-prospective-contract-20260924.md": "630b41a002bdca141921cb930eb2a1b6bb88e68a7b67912fca06485afab75b6e",
+    "analysis_protocols/zpd-repair-feedback-support-preflight-20260924.md": "7047f40f09903e3bd36e1a76c42599f6b104016e17750196fbedff9a9a16d0ff",
+    "analysis_protocols/zpd-statement-sample-preparation-20260924.md": "eb9a0e5c95ca3d3cbaa25f6b9fb5422a96d4ad3ce1106501498a6cc958e914bf",
+    "analysis_protocols/zpd-statement-sample-replay-prospective-20260924.md": "ed047f2adc5e53008c1dbf9bedf19f48ca3748d2f9a7673890e006c2438680c3",
+    "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "39acc54e52a9cdbdf9ac866641a4a32e45d73af546930fbbf4d4fd075eb7a2f9",
+    "scripts/audit_zpd_history_support.py": "1060df870f5096da6571ea76101f4c6f8e535ffd535ba264ebe30aac777714bf",
+    "scripts/audit_zpd_repair_directed_support.py": "14772a84b3813733d8676d61df3e8889ac2a264cfead1800f92465e065790dfe",
+    "scripts/audit_zpd_repair_feedback_support.py": "4eedeba80eaa135e2c7f716a36c84cba93d6e7c1daedfe3d57ad8c55782e2fd3",
+    "scripts/build_zpd_original_prefixes.py": "07651db42c0b452de1afe6e2b55054fbdce30c22a4d2d91611222611328fc9fb",
+    "scripts/generate_zpd_repair_banks.py": "3705c545e4c03aaabcfe9ee550df8068b58a7b63200b42c0e88a5e5726f4a691",
+    "scripts/prepare_zpd_repair_development.py": "60eb6d6e3ae9ff81fa315f300755c37c3036398086957b095a71ddcecad549e0",
+    "scripts/prepare_zpd_repair_training_20260923.py": "34025dc1eedb2615e9e42625300dd7ad2aba7e1b29f0966cfa51ecca5c325c26",
+    "scripts/prepare_zpd_statement_samples.py": "9266c6241d0a56f2e6cc47e4ba2a176a78db901b935fd2a2e907aa886f987d6b",
+    "scripts/prepare_zpd_train_successors.py": "41881d5884328d124e2dd294527293c3371135cd2b3b80dc884dbe92289af666",
+    "scripts/probe_zpd_statement_sample_resources.py": "671e42762797e96aab72b2c3e7519bcd9667db7f0bd056252693483b293e4945",
+    "scripts/run_zpd_history_action_cv.py": "c887d7f6603242be54e5b0f31ab9d7d8fc50179e17a186c5e8b7b63fc5ba34d8",
+    "scripts/run_zpd_statement_sample_replay.py": "870ef6a2243df46f346b483d6efff8ce7aafbdddb3959c4212ccb6661704f8f8",
+    "scripts/supervise_zpd_history_action.py": "435b5dbde25049d8d1f4311b78c891019366ceae83e2dfa323b2a8cc0d7d26e4",
+    "scripts/zpd_history_action_blocked.py": "127250de384b26dc11dff3481444552777c9ee474c4b224a9b79f34e02af9c13",
+    "scripts/zpd_history_action_encoder.py": "14323b45cb9ddeec41c8ed237d244a0353f846c90afd58e4c7c4a7f96fc300bd",
+    "scripts/zpd_history_feedback_coupling.py": "83d8f512520254da9eec73b4e5210b57b037beed83b83bcb4ca40b383e7e32b3",
+    "scripts/zpd_history_predictor.py": "573a0391423baf64ef460171f731a81c07d5a5d806b9d6081d524ceb2e07458b",
+    "scripts/zpd_observed_source_roster.py": "986d90b202abdfb1d188fa35300cb5f485da55f1712d45d214a718bbc557d52d",
+    "scripts/zpd_repair_directed_history.py": "39b616f4101c062b55bc3ed58fe7ba0d73196d271bda99ddfa6b856ed53b5c18",
+    "scripts/zpd_repair_evaluate.py": "f6ba1c6a207f075f58726d87267f4cbc612edf50fa9b0074825e40a1f1831e67",
+    "scripts/zpd_statement_sample_host.py": "be41c10f8b4ab6eb08b9541a0b9a5f2b761d057393cc44c86b4035152c0ae7af",
+    "scripts/zpd_statement_sample_replay.py": "cc25d655671e28402ed9e69400a5ccc3d49d1b2133ed5dbb653b15f1b5675e42",
+    "scripts/zpd_statement_samples.py": "e320ddee83b923c826a810fe53a3e41c2a96f5000bb79fef148ff38dde4b0b6e",
+    "src/repair/dataset.py": "4f88995489d439b69e672b922e2e0145abe6e75083c0285444fab6bb22012aaf",
+    "src/repair/inference.py": "6a7c6883dd590c5f739e7760ff2a097f07f8cce3e563712dae7518c4f9c03d4b",
+    "src/repair/pilot_contracts.py": "2bdc27e49e4d815cfdab67f87addeba809d5044370a83cfcba3adf4639faf664",
+    "src/repair/prompts.py": "09d16af33a986f9314cb468754f67241b0d1e2e53ebe9b27bbfb33381bbebdea",
+    "src/runner/compare.py": "f45c36abe3c438e5309d753896d7acb879de217283fa78c5c481e5be9bc462d3",
+    "src/runner/models.py": "80b844802f20f7a194b6ea454fc4a33c10a007862005896c0edad655dad8beea",
+    "src/runner/python_runner.py": "ec1d970c2e1674c77063a87fc2e1471614fe2e62bac7bc805e396fe6edbc7164",
+    "tests/test_zpd_observed_source_roster.py": "2cec70974bda1b052a1fdc88224b2edf116c61dfa19f35e341e94ab3cd6a4acb",
+    "tests/test_zpd_repair_directed_history.py": "7d2501f97ffd6e551e0f27118e7ac805d38bf5a9e331694d3ef20f4332323229",
+    "tests/test_zpd_repair_directed_support.py": "d18832902b192f5b91dfd855e1b0addd8830590c99c138da78daf1d8648eef6c",
+    "tests/test_zpd_statement_sample_host.py": "f12a0f1595729f03e8d088c39d57278bbd16494cc6443607354e967e889e94fa",
+    "tests/test_zpd_statement_sample_preparation.py": "ff89e87f2e181952a23129efab78c7dfc7e2f368aebcae5cbe293a30331700c4",
+    "tests/test_zpd_statement_sample_replay.py": "c854be81abaac08b9e49b0fd6244030aeb3f07ca8715d45f66ba7c5cdd5716d7",
+    "tests/test_zpd_statement_sample_replay_launcher.py": "34e09338f2b6764ffed0664dd1060094875e03bac3814d9ef13d1405752b4891",
+    "tests/test_zpd_statement_sample_resources.py": "2c68e8b7acd45b2da1402e8f795b0dd4517e8b1e8494eeda63153110ac714dfc",
+    "tests/test_zpd_statement_samples.py": "3bba0c7b36e71fde1c3a9227384d3dd388f0109067cf737be33a6e9bba0a9471"
+  },
+  "runtime": {
+    "architecture": "x86_64",
+    "binaries": {
+      "bwrap": {
+        "requested": "/usr/bin/bwrap",
+        "resolved": "/usr/bin/bwrap",
+        "sha256": "0abea81db798ebf6b4742ac0664802d97521547a353c2a0dbdc21d76cbbfd2c0"
+      },
+      "controller": {
+        "requested": "/home/cdw/VSCode/zpd-apr/.runtime/fse-env/bin/python",
+        "resolved": "/home/cdw/miniconda3/bin/python3.13",
+        "sha256": "51c19f7e0f4e8f7481e7bc4ba563a55bfded38489cfd28eaf6f081e5b0011d81"
+      },
+      "execution_python": {
+        "requested": "/usr/bin/python3",
+        "resolved": "/usr/bin/python3.14",
+        "sha256": "b8d8288faefdd300201f43fcf00f6f539a27218eeed3a3dff5ab10b9c4c99700"
+      },
+      "ldd": {
+        "requested": "/usr/bin/ldd",
+        "resolved": "/usr/bin/ldd",
+        "sha256": "b6c9a28572ea3920442c2f5b1ea11b0999adc407913ffdd7f92e530dfc051894"
+      },
+      "systemctl": {
+        "requested": "/usr/bin/systemctl",
+        "resolved": "/usr/bin/systemctl",
+        "sha256": "6394f5e8df92878184de9d4dfb7ac242471cb09daf89d23be4e81ae17e9c03b2"
+      },
+      "systemd_run": {
+        "requested": "/usr/bin/systemd-run",
+        "resolved": "/usr/bin/systemd-run",
+        "sha256": "03a68bafb0ebc0f5eff41cbdf3cbbdf126a3bb87e21140f9147bf78edce36d88"
+      }
+    },
+    "bwrap_version": "bubblewrap 0.11.1",
+    "dynamic_libraries": {
+      "bwrap": [
+        {
+          "requested": "/lib64/ld-linux-x86-64.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+          "sha256": "c5e80a563850d6ab5c2f2482e4202d9c1b71fbf44854b8c399e63527202c64e1"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "a3947513a02831ec692ebf13053c07614882ab54a2101fb91a1b15724062ed0c"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libcap.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libcap.so.2.75",
+          "sha256": "c5b463a8136dabb152bad8b04e89bf67bd2049ef49777ed0b96bdbc6cb5b9565"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0",
+          "sha256": "4a6b6b2078685b074869d75cb068664d7da6b3036df7bca0442b1bbbd4ac7e65"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+          "sha256": "7538ee77765a27966563c0d22437a3080dcdb346ff76cc16d71a3ce3379a716a"
+        }
+      ],
+      "controller": [
+        {
+          "requested": "/lib64/ld-linux-x86-64.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+          "sha256": "c5e80a563850d6ab5c2f2482e4202d9c1b71fbf44854b8c399e63527202c64e1"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "a3947513a02831ec692ebf13053c07614882ab54a2101fb91a1b15724062ed0c"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+          "sha256": "7d293f8361fcead4f9691561adc0413f724f3607b959abe0d4fb243072956079"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+          "sha256": "beea4eeacfcfa2cd96011b959a826c97cf4a774017e214f6a34d7eea3d49cd88"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+          "sha256": "f93acb6e78dcf0213c8a85f922d21916249148e24de426079c40b6304c42085d"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+          "sha256": "ad58c7fed81a532338c68548b5e4df9762b83bef541390761e1220f17e4bd47a"
+        }
+      ],
+      "execution_python": [
+        {
+          "requested": "/lib64/ld-linux-x86-64.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+          "sha256": "c5e80a563850d6ab5c2f2482e4202d9c1b71fbf44854b8c399e63527202c64e1"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "a3947513a02831ec692ebf13053c07614882ab54a2101fb91a1b15724062ed0c"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libexpat.so.1",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libexpat.so.1.11.2",
+          "sha256": "093e973baf0b0c786d32fd89d1f6904b794af28e489d20198b9fe0729fd39765"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+          "sha256": "beea4eeacfcfa2cd96011b959a826c97cf4a774017e214f6a34d7eea3d49cd88"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libz.so.1",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1",
+          "sha256": "47b61967895b30e8c0c6818dd633ffeb87711cf637c688f981896f0dd84ce23b"
+        }
+      ]
+    },
+    "execution_python_version": "Python 3.14.4",
+    "kernel_release": "7.0.0-30-generic",
+    "kernel_version": "#30-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 18:22:54 UTC 2026",
+    "libc": [
+      "glibc",
+      "2.43"
+    ],
+    "python": "3.13.11 | packaged by Anaconda, Inc. | (main, Dec 10 2025, 21:28:48) [GCC 14.3.0]",
+    "sandbox_command": [
+      "/usr/bin/bwrap",
+      "--unshare-net",
+      "--unshare-pid",
+      "--die-with-parent",
+      "--new-session",
+      "--cap-drop",
+      "ALL",
+      "--clearenv",
+      "--setenv",
+      "LANG",
+      "C.UTF-8",
+      "--setenv",
+      "PATH",
+      "/usr/bin:/bin",
+      "--ro-bind",
+      "/usr",
+      "/usr",
+      "--ro-bind",
+      "/lib",
+      "/lib",
+      "--ro-bind",
+      "/lib64",
+      "/lib64",
+      "--tmpfs",
+      "/tmp",
+      "--proc",
+      "/proc",
+      "--dev",
+      "/dev",
+      "--chdir",
+      "/tmp",
+      "/usr/bin/python3",
+      "-I",
+      "-c"
+    ],
+    "subprocess_runner_sha256": "322bdb67a41a708e3d4fd2462119b16f8aadd53476f2ea7b0437437ad1634307",
+    "system": "Linux",
+    "systemd_version": "systemd 259 (259.5-0ubuntu3.4)\n+PAM +AUDIT +SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK +BTF -XKBCOMMON -UTMP +SYSVINIT +LIBARCHIVE"
+  },
+  "runtime_sha256": "e099309749438d36e5d938290cdfa16e0ee0a9267f4368b3ea7af199a4dde11a",
+  "controller_runtime": {
+    "python": "3.13.11",
+    "numpy": "2.5.2",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.0",
+    "tqdm": "4.70.0"
+  },
+  "protocol_sha256": {
+    "analysis_protocols/zpd-statement-sample-replay-prospective-20260924.md": "ed047f2adc5e53008c1dbf9bedf19f48ca3748d2f9a7673890e006c2438680c3",
+    "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "39acc54e52a9cdbdf9ac866641a4a32e45d73af546930fbbf4d4fd075eb7a2f9"
+  },
+  "execution_authorized": true,
+  "fitting_authorized": false,
+  "decision_reason": "One fresh observed-source statement-sample replay after independent acceptance of trusted resource-probe-v3 and exact clean-source local/server tests. Preserve all 320 recipients, 23 problems and full observed/current/prior/certified-donor memberships. Execute only the sealed 1514 eligible Python identities for four fixed 1/8/8/1 blocks, 16776 case attempts; retain 30 unsupported identities as unavailable. Fixed original runner/comparator, 2.5-second cases, 2048-MiB child cap, 32-GiB aggregate/parent, 128 tasks and six-hour deadline. No candidate, future, held-scoring-suite, cache or new-label inputs; no retries, partial-vector recovery, fitting, new generation or scientific promotion. Preserve any failure; an independent reconstruction of the sealed final replay is required before a separate observation-only readiness release."
+}

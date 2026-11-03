@@ -1,0 +1,75 @@
+{
+  "version": "zpd_completion_continuation_v1",
+  "enabled": true,
+  "thread_id": "019fa3df-f13d-7cf2-8e2d-5a2a9a84d3d5",
+  "project": "/Users/cdw/VSCode/zpd-apr",
+  "codex": "/Users/cdw/.local/bin/codex",
+  "permission_overrides": false,
+  "retry_ambiguous_delivery": false,
+  "targets": [
+    {
+      "family": "zpd-paired-history-run-20261015",
+      "release_sha256": "2323a878e1dad79ac8bbfde048581670ca8de8c3280f6903433c8edf09b3036b"
+    },
+    {
+      "family": "zpd-paired-inference-20261016",
+      "release_sha256": "97ab9488da3291995cd49a4a166d1dc364b2db41f08f19e5f82a59456ddfd1a1"
+    },
+    {
+      "family": "zpd-crossed-inference-20261016",
+      "release_sha256": "e0c46e37550cc9bffaedf15c6732751281fa902a62edd7507e03155b514eed3c"
+    },
+    {
+      "family": "zpd-anchored-routing-20261016",
+      "release_sha256": "f938bda53a6b21d63f87e44327d443eb44c8bc6344ada14c8d8e8f849472a512"
+    },
+    {
+      "family": "zpd-anchored-diagnosis-20261016",
+      "release_sha256": "c83ead25339b6eec4af7026fd1bd48473c2b80e28d31942c2680eae3dc8b0317"
+    },
+    {
+      "family": "zpd-anchor-tie-20261016",
+      "release_sha256": "f2ca99301cee4ae630c0f801025d1457b71807a8ce622dfa9dea55a637fd0683"
+    },
+    {
+      "family": "zpd-edit-balanced-20261016",
+      "release_sha256": "eb63d2ba4983554651c00a2ad4889c7e94c72d8dbbccc6071b1d72e5661add72"
+    },
+    {
+      "family": "zpd-edit-balanced-diagnosis-20261017",
+      "release_sha256": "822ef91a490204af2c37492975871b08e10572f420f73614daee2f854de21de9"
+    },
+    {
+      "family": "zpd-splice-pilot-20261017",
+      "release_sha256": "0e73285574e1e30f4ddb8294b91b3a0faef6fa51a472acb578b90a501fb8298d"
+    },
+    {
+      "family": "zpd-splice-training-20261018",
+      "release_sha256": "ecdebd932bd361b65f74611ae22956c45326af2bd42aeb0fd63f0c381d0971ed"
+    },
+    {
+      "family": "zpd-splice-diagnosis-20261019",
+      "release_sha256": "2e6a1572cd538af84756fe04bc1f498bbe732066ec76728736fbb4785e3a2984"
+    },
+    {
+      "family": "zpd-anchor-pilot-20261019",
+      "release_sha256": "0a1d990d1f82953299e3d514d5d6a8a97eb8020de54c5f451b5cf44bdb854566"
+    },
+    {
+      "family": "zpd-anchor-training-20261019",
+      "release_sha256": "9be858d732c64bbb0a21c0a1ce06bf9dc0d6e6393b2fb4f16214e6046700d61f"
+    },
+    {
+      "family": "zpd-anchor-diagnosis-20261019",
+      "release_sha256": "02cd0b6dbe9a30c9e7eb0bda20035267c223e14ff43e30a1305b50ea788b7a49"
+    },
+    {
+      "family": "zpd-public-revision-20261019",
+      "release_sha256": "1f7b1161bcc7a21f4eded2ef67d3063e139deebdd1e3dbd890d79feef0579e56"
+    },
+    {
+      "family": "zpd-revision-diagnosis-20261019",
+      "release_sha256": "750a11aa40fb7f3420d9a886abf4164faa78f171248c9c48dcb0094f3740c236"
+    }
+  ]
+}

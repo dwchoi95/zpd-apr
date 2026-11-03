@@ -1,0 +1,255 @@
+{
+  "version": "splice_training_started_v2",
+  "recorded_at": "2026-10-18T18:28:23.111843+09:00",
+  "family": "zpd-splice-training-20261018",
+  "release_sha256": "ecdebd932bd361b65f74611ae22956c45326af2bd42aeb0fd63f0c381d0971ed",
+  "source_commit": "6ef87c42",
+  "source_archive_sha256": "cf0c21bbc546fcc9b1a827873461f95c9893bb22693cbc8c680ed0d9e5e4856c",
+  "remote_snapshot": "/home/cdw/VSCode/zpd-apr/.runtime/splice-training-20261018-v2",
+  "remote_revision": "aa8cb9ccbe3a929ed114f09f60c27fc8d192181e",
+  "source_pins": 608,
+  "coordinator_started_at": "2026-10-18T18:26:02+09:00",
+  "coordinator_limit_seconds": 259200,
+  "local_tests": {
+    "run": 178,
+    "passed": 174,
+    "skipped": 4
+  },
+  "remote_tests": {
+    "run": 178,
+    "passed": 175,
+    "skipped": 3
+  },
+  "full_preflight": "passed",
+  "no_other_running_zpd_or_gpu_job_before_launch": true,
+  "training_examples_per_adapter": 19199,
+  "validation_examples_per_adapter": 4365,
+  "evaluation_recipients": 320,
+  "generation_attempt_slots": 2560,
+  "scientific_fields_unchanged_from_v1": true,
+  "prelaunch_v1_failure": {
+    "release_sha256": "93fc5dd07889622fe1ee0363345575ebf02963ecfc167b651a38b8baf47d2a89",
+    "read_only_preflight_error": "pilot not normally released",
+    "cause": "Stopped, certified child units were garbage-collected; live ExecMainCode=0 loses historical exit. No empirical fit or inference was started.",
+    "old_snapshot_preserved": true,
+    "new_version_not_blind_retry": true
+  },
+  "live_at_record": {
+    "checked_at": "2026-10-18T18:28:23.111843+09:00",
+    "family": "zpd-splice-training-20261018",
+    "COORDINATOR.json": {
+      "phase_seconds": {
+        "capacity": 3600,
+        "generation": 21600,
+        "materialize": 7200,
+        "private": 21600,
+        "public": 21600,
+        "train-C": 86400,
+        "train-H": 86400
+      },
+      "phases": [
+        "materialize",
+        "capacity",
+        "train-C",
+        "train-H",
+        "generation",
+        "public",
+        "private"
+      ],
+      "release_sha256": "ecdebd932bd361b65f74611ae22956c45326af2bd42aeb0fd63f0c381d0971ed",
+      "retries": 0,
+      "revision": "aa8cb9ccbe3a929ed114f09f60c27fc8d192181e",
+      "started": 1792315574.9974785
+    },
+    "STATUS.json": {
+      "checked": 1792315687.4402678,
+      "completed_phases": [
+        "materialize",
+        "capacity"
+      ],
+      "phase": "train-C",
+      "unit": {
+        "ActiveState": "active",
+        "Id": "zpd-splice-training-20261018-v2-train-C.service",
+        "MainPID": "1664486",
+        "Result": "success",
+        "SubState": "running"
+      }
+    },
+    "errors": [],
+    "certificates": {
+      "capacity-VERIFIED_COMPLETE.json": {
+        "status": "complete",
+        "phase": "capacity",
+        "complete_sha256": "0bea7b45844fb125c35b6c4e0cb51a3ffd57bb4f676f3efedd21fa318d521371",
+        "exit": {
+          "ExecMainCode": "1",
+          "ExecMainStatus": "0",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "exited"
+        },
+        "cleanup_verified": true
+      },
+      "materialize-VERIFIED_COMPLETE.json": {
+        "status": "complete",
+        "phase": "materialize",
+        "complete_sha256": "9e2dad294f5a2383efd322fed258c318b35744fbd8ab2b3d37dc09a098764922",
+        "exit": {
+          "ExecMainCode": "1",
+          "ExecMainStatus": "0",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "exited"
+        },
+        "cleanup_verified": true
+      }
+    },
+    "units": {
+      "coordinator": {
+        "ActiveState": "active",
+        "SubState": "running",
+        "MainPID": "1664217",
+        "Result": "success",
+        "ExecMainStartTimestamp": "Sun 2026-10-18 18:26:02 KST",
+        "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/zpd-splice-training-20261018-v2-coordinator.service",
+        "MemoryCurrent": "107036672",
+        "MemoryPeak": "240103424",
+        "process_cwd": "/home/cdw/VSCode/zpd-apr/.runtime/splice-training-20261018-v2",
+        "cmdline": "/home/cdw/VSCode/zpd-apr/.runtime/fse-env/bin/python -B -m scripts.run_zpd_splice_training supervise --release /home/cdw/VSCode/zpd-apr/.runtime/splice-training-20261018-v2/analysis_protocols/zpd-splice-training-release-20261018.json --release-sha ecdebd932bd361b65f74611ae22956c45326af2bd42aeb0fd63f0c381d0971ed ",
+        "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+      },
+      "train-C": {
+        "ActiveState": "active",
+        "SubState": "running",
+        "MainPID": "1664486",
+        "Result": "success",
+        "ExecMainStartTimestamp": "Sun 2026-10-18 18:27:27 KST",
+        "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/zpd-splice-training-20261018-v2-train-C.service",
+        "MemoryCurrent": "4503400448",
+        "MemoryPeak": "4503400448",
+        "process_cwd": "/home/cdw/VSCode/zpd-apr/.runtime/splice-training-20261018-v2",
+        "cmdline": "/home/cdw/VSCode/zpd-apr/.runtime/fse-vllm/bin/python -m scripts.run_zpd_splice_training worker --phase train-C --release /home/cdw/VSCode/zpd-apr/.runtime/splice-training-20261018-v2/analysis_protocols/zpd-splice-training-release-20261018.json --release-sha ecdebd932bd361b65f74611ae22956c45326af2bd42aeb0fd63f0c381d0971ed ",
+        "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+      }
+    },
+    "gpu": "NVIDIA GeForce RTX 5090, 0 %, 187 MiB, 32607 MiB",
+    "source_clean": true,
+    "training_log_tail": ""
+  },
+  "monitoring": {
+    "registered_family": "zpd-splice-training-20261018",
+    "registered_release_sha256": "ecdebd932bd361b65f74611ae22956c45326af2bd42aeb0fd63f0c381d0971ed",
+    "observer_sha256": "2c724a852f45070c799b8d89af0be0689842ee9dd8f675465aa847fcbd0358d4",
+    "config_sha256": "2d10edc96d72c68ee395b45d8000bed0545697bd6e3e9f3f857528be0009d645",
+    "continuation_latch_unchanged_sha256": "1e0760725167b2c61fc41987d12864e7339c4a4d108768a96781b71d8419cb01",
+    "bridge_unchanged_sha256": "d18650e8fa94133973b566478901fcf8affa8dbcee15c1547e600ecdf01d8522",
+    "launchd_label": "org.zpd-apr.observer.20261013",
+    "poll_seconds": 300,
+    "unchanged_status_notification_seconds": 3600,
+    "periodic_report_channel": "Korean macOS notification and LATEST_REPORT.json",
+    "terminal_report_channel": "Existing conversation via codex queue",
+    "queue_status": "idle",
+    "unconfirmed": [],
+    "permission_overrides": false,
+    "official_queue_documentation": "https://learn.chatgpt.com/docs/cli/reference"
+  },
+  "timing": {
+    "historical_C_seconds": 13890,
+    "historical_H_seconds": 20193,
+    "historical_evaluation_seconds_approx": 7200,
+    "initial_total_estimate_kst": "2026-10-19T06:00:00+09:00",
+    "estimate_basis": "Previous representation fits and evaluation; current throughput not yet available at record time",
+    "guaranteed": false
+  },
+  "final_start_readback": {
+    "checked_at": "2026-10-18T18:29:46.114749+09:00",
+    "observation": {
+      "family": "zpd-splice-training-20261018",
+      "state": "running",
+      "completed_examples": 76,
+      "total_examples": 19199,
+      "release_sha256": "ecdebd932bd361b65f74611ae22956c45326af2bd42aeb0fd63f0c381d0971ed",
+      "phase": "train-C",
+      "pipeline_phase": "train-C",
+      "progress_unit": "예제",
+      "completed_phases": [
+        "materialize",
+        "capacity"
+      ],
+      "unit": {
+        "ActiveState": "active",
+        "Id": "zpd-splice-training-20261018-v2-train-C.service",
+        "MainPID": "1664486",
+        "Result": "success",
+        "SubState": "running"
+      },
+      "unit_prefix": "zpd-splice-training-20261018-v2",
+      "worker_phase": "training",
+      "elapsed_seconds": 48.50847234623507,
+      "attempt_statuses": null,
+      "completed_case_attempts": null,
+      "total_case_attempts": null,
+      "training_population": {
+        "train": {
+          "all_roundtrips_exact": true,
+          "examples": 19199,
+          "max_new_prompt_tokens": {
+            "C": 3613,
+            "H": 4023
+          },
+          "max_new_target_tokens": 1353,
+          "new_target_tokens": 1793827,
+          "old_target_tokens": 2738138,
+          "original_order_sha256": "c422974efda9f3af7f8f45fd9269dea4f6a745c6520603df7b7f96c07aeb0591"
+        },
+        "valid": {
+          "all_roundtrips_exact": true,
+          "examples": 4365,
+          "max_new_prompt_tokens": {
+            "C": 3586,
+            "H": 4018
+          },
+          "max_new_target_tokens": 809,
+          "new_target_tokens": 411969,
+          "old_target_tokens": 628890,
+          "original_order_sha256": "ecfb80013efcdec636443e12ecc5c1d51c6941f14a3d456da9f5e319b2f9fb87"
+        }
+      }
+    },
+    "agent_continuation": {
+      "status": "idle",
+      "queued": [],
+      "unconfirmed": [],
+      "previously_queued": [
+        "zpd-paired-history-run-20261015",
+        "zpd-paired-inference-20261016",
+        "zpd-crossed-inference-20261016",
+        "zpd-anchored-routing-20261016",
+        "zpd-anchored-diagnosis-20261016",
+        "zpd-anchor-tie-20261016",
+        "zpd-edit-balanced-20261016",
+        "zpd-edit-balanced-diagnosis-20261017",
+        "zpd-splice-pilot-20261017"
+      ],
+      "experiments_executed_by_bridge": false,
+      "permission_overrides": false
+    },
+    "notification_error": null,
+    "continuation_error": null,
+    "gpu": {
+      "name": "NVIDIA GeForce RTX 5090",
+      "utilization_percent": 100,
+      "memory_used_mib": 19813,
+      "memory_total_mib": 32607
+    },
+    "oom_events": 0,
+    "source_snapshot_clean": true,
+    "old_v1_family_absent": true
+  },
+  "performance_improvement_established": false,
+  "gate_changed": false,
+  "model_promotion": false,
+  "paper_changed": false,
+  "canonical_remote_checkout_changed": false
+}

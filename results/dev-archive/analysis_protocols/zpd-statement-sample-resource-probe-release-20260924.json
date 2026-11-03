@@ -1,0 +1,285 @@
+{
+  "kind": "trusted_statement_sample_resource_probe_release_v1",
+  "project": "/home/cdw/VSCode/zpd-apr",
+  "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v3",
+  "configuration": {
+    "barrier_seconds": 5.0,
+    "empirical_inputs": false,
+    "envelopes": {
+      "P1": {
+        "address_bytes": 34359738368,
+        "memory_bytes": 34359738368,
+        "oom_policy": "stop",
+        "seconds": 21600,
+        "swap_bytes": null,
+        "synthetic": true,
+        "tasks": 128
+      },
+      "P2": {
+        "address_bytes": 34359738368,
+        "memory_bytes": 268435456,
+        "oom_policy": "stop",
+        "seconds": 20,
+        "swap_bytes": null,
+        "synthetic": true,
+        "tasks": 16
+      },
+      "P3": {
+        "address_bytes": 34359738368,
+        "memory_bytes": 134217728,
+        "oom_policy": "continue",
+        "seconds": 20,
+        "swap_bytes": 0,
+        "synthetic": true,
+        "tasks": 16
+      },
+      "P4": {
+        "address_bytes": 34359738368,
+        "memory_bytes": 34359738368,
+        "oom_policy": "stop",
+        "seconds": 15,
+        "swap_bytes": null,
+        "synthetic": true,
+        "tasks": 128
+      },
+      "P5": {
+        "address_bytes": 34359738368,
+        "memory_bytes": 34359738368,
+        "oom_policy": "stop",
+        "seconds": 3,
+        "swap_bytes": null,
+        "synthetic": true,
+        "tasks": 128
+      },
+      "P6": {
+        "address_bytes": 34359738368,
+        "memory_bytes": 34359738368,
+        "oom_policy": "stop",
+        "seconds": 21600,
+        "swap_bytes": null,
+        "synthetic": true,
+        "tasks": 128
+      }
+    },
+    "execution_scope": "fixed_trusted_fixtures_only",
+    "fitting_authorized": false,
+    "fixture_sha256": {
+      "bounded_output": "c3b1e9a416b46468258e1f87a880d9c1abb7614e210237c44a5fbe567bc4e0b3",
+      "isolation": "5a9e790e1cbe7df9864d2e2f3cfdd792d211641dee83598f37050a19089d51f9",
+      "normal": "59780141cfaf3bf22e770cea6eaf1c85d3e1c699d70e1d17480e23a1a7b428e2",
+      "timeout": "529c0155f127bff471c854cf421940242f36a5c10ac9a4fc52b37e71c8ab9630"
+    },
+    "fixtures": [
+      "P0",
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6"
+    ],
+    "kind": "trusted_statement_sample_resource_probe_v1",
+    "output": "outputs/zpd-statement-sample-feedback-20260924/resource-probe-v3",
+    "output_record": "first1024_codepoints_count_and_canonical_JSON_string_SHA",
+    "overwrite": false,
+    "p2_max_forks": 20,
+    "p3_block_bytes": 1048576,
+    "p3_max_blocks": 160,
+    "poll_seconds": 0.05,
+    "pressure_child_seconds": 10,
+    "replay_authorized": false,
+    "retries": 0,
+    "sandbox_case_workers": 1,
+    "sandbox_memory_mib": 2048,
+    "sandbox_timeout_seconds": 2.5,
+    "sandbox_workers": 8,
+    "suite_seconds": 600.0,
+    "unit_watchdog_seconds": 30.0
+  },
+  "source_sha256": {
+    "analysis_protocols/zpd-statement-sample-resource-probe-20260924.md": "39acc54e52a9cdbdf9ac866641a4a32e45d73af546930fbbf4d4fd075eb7a2f9",
+    "scripts/probe_zpd_statement_sample_resources.py": "671e42762797e96aab72b2c3e7519bcd9667db7f0bd056252693483b293e4945",
+    "scripts/zpd_repair_evaluate.py": "f6ba1c6a207f075f58726d87267f4cbc612edf50fa9b0074825e40a1f1831e67",
+    "scripts/zpd_statement_sample_host.py": "be41c10f8b4ab6eb08b9541a0b9a5f2b761d057393cc44c86b4035152c0ae7af",
+    "src/repair/pilot_contracts.py": "2bdc27e49e4d815cfdab67f87addeba809d5044370a83cfcba3adf4639faf664",
+    "src/runner/compare.py": "f45c36abe3c438e5309d753896d7acb879de217283fa78c5c481e5be9bc462d3",
+    "src/runner/models.py": "80b844802f20f7a194b6ea454fc4a33c10a007862005896c0edad655dad8beea",
+    "src/runner/python_runner.py": "ec1d970c2e1674c77063a87fc2e1471614fe2e62bac7bc805e396fe6edbc7164",
+    "tests/test_zpd_statement_sample_host.py": "f12a0f1595729f03e8d088c39d57278bbd16494cc6443607354e967e889e94fa",
+    "tests/test_zpd_statement_sample_resources.py": "2c68e8b7acd45b2da1402e8f795b0dd4517e8b1e8494eeda63153110ac714dfc"
+  },
+  "runtime": {
+    "architecture": "x86_64",
+    "binaries": {
+      "bwrap": {
+        "requested": "/usr/bin/bwrap",
+        "resolved": "/usr/bin/bwrap",
+        "sha256": "0abea81db798ebf6b4742ac0664802d97521547a353c2a0dbdc21d76cbbfd2c0"
+      },
+      "controller": {
+        "requested": "/home/cdw/VSCode/zpd-apr/.runtime/fse-env/bin/python",
+        "resolved": "/home/cdw/miniconda3/bin/python3.13",
+        "sha256": "51c19f7e0f4e8f7481e7bc4ba563a55bfded38489cfd28eaf6f081e5b0011d81"
+      },
+      "execution_python": {
+        "requested": "/usr/bin/python3",
+        "resolved": "/usr/bin/python3.14",
+        "sha256": "b8d8288faefdd300201f43fcf00f6f539a27218eeed3a3dff5ab10b9c4c99700"
+      },
+      "ldd": {
+        "requested": "/usr/bin/ldd",
+        "resolved": "/usr/bin/ldd",
+        "sha256": "b6c9a28572ea3920442c2f5b1ea11b0999adc407913ffdd7f92e530dfc051894"
+      },
+      "systemctl": {
+        "requested": "/usr/bin/systemctl",
+        "resolved": "/usr/bin/systemctl",
+        "sha256": "6394f5e8df92878184de9d4dfb7ac242471cb09daf89d23be4e81ae17e9c03b2"
+      },
+      "systemd_run": {
+        "requested": "/usr/bin/systemd-run",
+        "resolved": "/usr/bin/systemd-run",
+        "sha256": "03a68bafb0ebc0f5eff41cbdf3cbbdf126a3bb87e21140f9147bf78edce36d88"
+      }
+    },
+    "bwrap_version": "bubblewrap 0.11.1",
+    "dynamic_libraries": {
+      "bwrap": [
+        {
+          "requested": "/lib64/ld-linux-x86-64.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+          "sha256": "c5e80a563850d6ab5c2f2482e4202d9c1b71fbf44854b8c399e63527202c64e1"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "a3947513a02831ec692ebf13053c07614882ab54a2101fb91a1b15724062ed0c"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libcap.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libcap.so.2.75",
+          "sha256": "c5b463a8136dabb152bad8b04e89bf67bd2049ef49777ed0b96bdbc6cb5b9565"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libpcre2-8.so.0.14.0",
+          "sha256": "4a6b6b2078685b074869d75cb068664d7da6b3036df7bca0442b1bbbd4ac7e65"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
+          "sha256": "7538ee77765a27966563c0d22437a3080dcdb346ff76cc16d71a3ce3379a716a"
+        }
+      ],
+      "controller": [
+        {
+          "requested": "/lib64/ld-linux-x86-64.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+          "sha256": "c5e80a563850d6ab5c2f2482e4202d9c1b71fbf44854b8c399e63527202c64e1"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "a3947513a02831ec692ebf13053c07614882ab54a2101fb91a1b15724062ed0c"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libdl.so.2",
+          "sha256": "7d293f8361fcead4f9691561adc0413f724f3607b959abe0d4fb243072956079"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+          "sha256": "beea4eeacfcfa2cd96011b959a826c97cf4a774017e214f6a34d7eea3d49cd88"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libpthread.so.0",
+          "sha256": "f93acb6e78dcf0213c8a85f922d21916249148e24de426079c40b6304c42085d"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libutil.so.1",
+          "sha256": "ad58c7fed81a532338c68548b5e4df9762b83bef541390761e1220f17e4bd47a"
+        }
+      ],
+      "execution_python": [
+        {
+          "requested": "/lib64/ld-linux-x86-64.so.2",
+          "resolved": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+          "sha256": "c5e80a563850d6ab5c2f2482e4202d9c1b71fbf44854b8c399e63527202c64e1"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "a3947513a02831ec692ebf13053c07614882ab54a2101fb91a1b15724062ed0c"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libexpat.so.1",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libexpat.so.1.11.2",
+          "sha256": "093e973baf0b0c786d32fd89d1f6904b794af28e489d20198b9fe0729fd39765"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+          "sha256": "beea4eeacfcfa2cd96011b959a826c97cf4a774017e214f6a34d7eea3d49cd88"
+        },
+        {
+          "requested": "/usr/lib/x86_64-linux-gnu/libz.so.1",
+          "resolved": "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1",
+          "sha256": "47b61967895b30e8c0c6818dd633ffeb87711cf637c688f981896f0dd84ce23b"
+        }
+      ]
+    },
+    "execution_python_version": "Python 3.14.4",
+    "kernel_release": "7.0.0-30-generic",
+    "kernel_version": "#30-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 18:22:54 UTC 2026",
+    "libc": [
+      "glibc",
+      "2.43"
+    ],
+    "python": "3.13.11 | packaged by Anaconda, Inc. | (main, Dec 10 2025, 21:28:48) [GCC 14.3.0]",
+    "sandbox_command": [
+      "/usr/bin/bwrap",
+      "--unshare-net",
+      "--unshare-pid",
+      "--die-with-parent",
+      "--new-session",
+      "--cap-drop",
+      "ALL",
+      "--clearenv",
+      "--setenv",
+      "LANG",
+      "C.UTF-8",
+      "--setenv",
+      "PATH",
+      "/usr/bin:/bin",
+      "--ro-bind",
+      "/usr",
+      "/usr",
+      "--ro-bind",
+      "/lib",
+      "/lib",
+      "--ro-bind",
+      "/lib64",
+      "/lib64",
+      "--tmpfs",
+      "/tmp",
+      "--proc",
+      "/proc",
+      "--dev",
+      "/dev",
+      "--chdir",
+      "/tmp",
+      "/usr/bin/python3",
+      "-I",
+      "-c"
+    ],
+    "subprocess_runner_sha256": "322bdb67a41a708e3d4fd2462119b16f8aadd53476f2ea7b0437437ad1634307",
+    "system": "Linux",
+    "systemd_version": "systemd 259 (259.5-0ubuntu3.4)\n+PAM +AUDIT +SELINUX +APPARMOR +IMA +IPE +SMACK +SECCOMP +GCRYPT -GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 -IDN +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK +BTF -XKBCOMMON -UTMP +SYSVINIT +LIBARCHIVE"
+  },
+  "trusted_probe_authorized": true,
+  "replay_authorized": false,
+  "decision_reason": "Authorize one separately reviewed corrected P0-P6 trusted-only resource-probe-v3 after exact clean-source local/server closure tests. Preserve v1 READY/P0 defects and v2 terminal-cleanup failure as FAILED, not successful probes. V3 retains corrected READY/P0 checks and proves exact original unit/start plus dead main and absent-or-empty recorded cgroup when systemd clears the retained ControlGroup, recording that proof before exact-owned stop. Cleanup is not success. Fresh fixed v3 outputs/units only; all fixtures, resource caps, five-second barriers, deadlines, runtime and verdict predicates unchanged. No prepared submissions, empirical samples, scorer caches, fitting, installation, system-wide configuration, unchanged retries or outside-unit workload fallback. P3-only OOMPolicy continue retains accounting under its smaller fixed cap; production remains stop. Preserve every failure."
+}

@@ -22,3 +22,6 @@ unchanged; register any new family with its own protocol and the deadline policy
   snapshot under `.runtime/<family>/source`, and never share the machine with another CPU-heavy job while tests run.
 - Copy finished results back to the local results folder and check them against their manifest before using them.
 - Tests: `PYTHONPATH=. TMPDIR=/private/tmp env/bin/python -m unittest discover -s tests -q` (unittest, not pytest).
+- `run.py` holds only what builds `output/` (core commands, and `src/experiments` modules by short name); earlier
+  experiments' commands are `python -m src.legacy_cli`, and their shell pipelines are kept locally in
+  `results/dev-archive/pipelines/` (no `scripts/`). `main` takes only the modules `run.py` reaches.

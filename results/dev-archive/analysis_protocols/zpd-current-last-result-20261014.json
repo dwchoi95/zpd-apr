@@ -1,0 +1,51 @@
+{
+  "version": "current_last_development_result_v1",
+  "completed_at": "2026-10-13T23:23:29.254097+09:00",
+  "verified_at": "2026-10-14T12:28:37+09:00",
+  "archive": "archive/zpd-current-last-20261013/completed-v1",
+  "release_sha256": "399c9841fdf1a2085ca35d7cc90828c3bcbbac39e53f7a4eab502a946c7dea29",
+  "verified_complete_sha256": "9787b7750ad458c5503be3bdc9f500d85fa79e56d76cc8d5a4761a15695ee3a1",
+  "report_sha256": "8f9356040c6fc204bfb766dc07a92e67c110d7905577f2e51e8bf4757aa08908",
+  "all_phase_hashes_and_normal_exit_verified": true,
+  "completed_examples": 320,
+  "total_examples": 320,
+  "generation_attempts": 2560,
+  "generation_success": 2551,
+  "generation_resource_failure": 9,
+  "case_attempts": 91300,
+  "results": {
+    "C": {"stable_ac": 208, "regressions": 10, "unknown": 16},
+    "H": {"stable_ac": 144, "regressions": 16, "unknown": 16},
+    "HS": {"stable_ac": 145, "regressions": 17, "unknown": 16},
+    "U": {"stable_ac": 148, "regressions": 19, "unknown": 17}
+  },
+  "development_gate": "hold",
+  "diagnosis": "H improved 130 to144 but C,HS,U also improved. H remains below all controls and below C in all five folds. No history-specific improvement or promotion established.",
+  "current_bank_coverage": {
+    "unique_sources": 1963,
+    "new_executed_vectors": 1123,
+    "missing_only_exact_context_old_vectors": 160,
+    "still_unexecuted": 680,
+    "overlapping_vector_conflicts": 11,
+    "stable_vs_stable_conflicts": 0,
+    "new_labels_overwritten": false,
+    "H_pair_oracle_partial_bounds": [153, 270],
+    "selector_only_impossibility_established_for_this_bank": false
+  },
+  "training_provenance": {
+    "train_examples": 40454,
+    "valid_examples": 4965,
+    "all_history_lengths": 1,
+    "prompt_style": "D",
+    "output_contract": "full Python program; edit_token_weight=1.0",
+    "train_sha256": "b13aef5d4358cd98832fa82885b1b148e47f43faf9e8f67586eda8f8fb017ea6",
+    "valid_sha256": "5048bae0b0e6cb493a9452ac7ecddbc5e83bc854061576566a9ac3740869f78f"
+  },
+  "next_action": "All-four-arm lossless full-source/public-feedback representation package diagnostic. No retraining, cohort pruning, history truncation, private-feedback prompting, seed changes or gate changes.",
+  "confirmatory": false,
+  "model_promotion": false,
+  "educational_benefit_established": false,
+  "mac_notification_requested_at": "2026-10-13T23:25:33.922978+09:00",
+  "actual_visible_notification_confirmed": false,
+  "chat_auto_resume": false
+}

@@ -1,0 +1,131 @@
+{
+  "version": "public_revision_started_v1",
+  "trigger_event_id": "3bcb96a98b6b2af0e735c616929a8a0f6ae80c57b187712b19244f3537358db9",
+  "family": "zpd-public-revision-20261019",
+  "release_sha256": "1f7b1161bcc7a21f4eded2ef67d3063e139deebdd1e3dbd890d79feef0579e56",
+  "source_commit": "ce7088db",
+  "release_commit": "02c0a6a7",
+  "source_archive_sha256": "f091b70261a3fd2c91bedd39c622c485540452f2f807c7ec99e3f60ac56a0092",
+  "remote_snapshot": "/home/cdw/VSCode/zpd-apr/.runtime/public-revision-20261019-v1",
+  "source_revision": "e623864dcbb727bcefb874d2f7816b7c70474f78",
+  "source_pins": 626,
+  "preflight": "passed",
+  "tests": {
+    "local": {
+      "run": 273,
+      "passed": 269,
+      "skipped": 4
+    },
+    "server": {
+      "run": 273,
+      "passed": 270,
+      "skipped": 3
+    },
+    "final_local_targeted": {
+      "run": 37,
+      "passed": 37
+    },
+    "skip_reason": "Three old archive-dependent checks; local additionally lacks optional torch integration. All new public-revision tests passed."
+  },
+  "live": {
+    "checked_at": "2026-10-19T21:15:45.806195+09:00",
+    "started_at": "2026-10-19T21:14:39+09:00",
+    "coordinator_pid": 3046145,
+    "generation_pid": 3046225,
+    "phase": "generation",
+    "completed_examples": 14,
+    "total_examples": 320,
+    "completed_new_second_slots": 56,
+    "planned_new_second_slots": 1280,
+    "reused_first_slots_processed": 56,
+    "available_reused_first_slots": 1280,
+    "terminal_slots_completed": 112,
+    "terminal_slots_total": 2560,
+    "elapsed_generation_seconds": 35.77877366403118,
+    "failure_markers": [],
+    "gpu": "NVIDIA GeForce RTX 5090",
+    "gpu_utilization_percent": 100,
+    "gpu_memory_mib": 28823
+  },
+  "tokenization": {
+    "prompts": 2560,
+    "overflow_terminal_slots": 18,
+    "no_additional_overflow_vs_origin": true,
+    "truncation": false,
+    "excluded_recipients": 0,
+    "revision_inputs_sha256": "965357b886a32067729445d55e342c3e593b57d1ad350b6cd902252747cdc5f0",
+    "revision_audit_sha256": "4f9e1a7928edec8aa3151e22f7bc851c551d3ed78f7edd2eb35e7797e50e7ef6",
+    "tokenization_sha256": "a72719d6c41fb4fdd6979945df520c23077bbb240c2cdb79feae6c66eb6077f4"
+  },
+  "eta": {
+    "estimated_generation_complete_kst": "2026-10-19T21:29:00+09:00",
+    "estimated_all_phase_window_kst": [
+      "2026-10-19T23:15:00+09:00",
+      "2026-10-20T00:00:00+09:00"
+    ],
+    "basis": {
+      "generation": "initial 14/320 examples in 35.78 seconds; linear, unstable early estimate",
+      "previous_uniform_public_seconds": 430.11534383613616,
+      "previous_uniform_private_seconds": 6306.598665654194,
+      "previous_anchor_public_seconds": 522.5432249037549,
+      "previous_anchor_private_seconds": 6965.367060167249
+    },
+    "guaranteed": false,
+    "warning": "Candidate runtimes and source count may change substantially; private evaluation not yet started."
+  },
+  "registration": {
+    "config_sha256": "06b5586d94468b81c2a807d125abe8faa96ded2de399f182f2ac44b73ed30b3d",
+    "observer_sha256": "081235624eacf108290b6902cc912dc7eeacd43e1de771d05b3462e723c765a3",
+    "bridge_sha256": "d18650e8fa94133973b566478901fcf8affa8dbcee15c1547e600ecdf01d8522",
+    "latch_preserved_sha256": "709c1b2ade1ae98ce26e91c5445074146ffe755ffc4afe016993966f969f5f6e",
+    "actual_observer_read_at": "2026-10-19T21:15:04.056829+09:00",
+    "observed_state": "running",
+    "continuation_status": "idle",
+    "queued": [],
+    "unconfirmed": [],
+    "prior_parent_callback_confirmed": true,
+    "check_interval_seconds": 300,
+    "notification_interval_seconds": 3600,
+    "hourly_channel": "macOS Korean notification and durable LATEST_REPORT.json",
+    "completion_channel": "existing conversation via codex queue",
+    "official_docs": "https://learn.chatgpt.com/docs/cli/reference",
+    "permission_overrides": false
+  },
+  "parent_result_record": "analysis_protocols/zpd-anchor-diagnosis-result-20261019.json",
+  "intervention": {
+    "version": "public_execution_conditioned_second_draw_v1",
+    "predecessor_release_sha256": "02cd0b6dbe9a30c9e7eb0bda20035267c223e14ff43e30a1305b50ea788b7a49",
+    "predecessor_complete_sha256": "45f9fe3e4fbb059a19d836273c423bdade208956c5060f0e60c00e710b3a3ceb",
+    "origin_release_sha256": "97ab9488da3291995cd49a4a166d1dc364b2db41f08f19e5f82a59456ddfd1a1",
+    "origin_complete_sha256": "a6dfd06e44e094840511f8f44645e35733bfcd66108d91d41fbe9a7cc406cf4b",
+    "origin_files_sha256": {
+      "generation-v1/attempts.json": "294eca31854a53d72ac30f11a0cac8f738fc78d39d1d094855bd1fcd0c7d04c7",
+      "public-v1/public-vectors.json": "e6d68001bd9b340ef1ed8a5d6c0e66cb9d8d95e3dc251a0a7b03350e17b700c2",
+      "public-v1/completions.jsonl": "c129df439fc4678ec8375303ac68b436464e39d64e047267fd61b636a9e7607e"
+    },
+    "first_slot_reused_exactly": true,
+    "revised_slot": 1,
+    "candidate_budget_per_arm": 2,
+    "planned_new_slots": 1280,
+    "existing_slots": 1280,
+    "all_public_pass_still_revised": true,
+    "failed_first_slot_preserved": true,
+    "unavailable_feedback_not_failure": true,
+    "full_original_history_preserved": true,
+    "private_feedback_used": false,
+    "fitting": false,
+    "selector_changed": false,
+    "gate_changed": false,
+    "model_promotion": false,
+    "adaptive_development": true,
+    "rpc_base_path": "/home/cdw/VSCode/zpd-apr/tmp/pr-1019-v1"
+  },
+  "no_other_running_zpd_or_gpu_job_before_launch": true,
+  "training_repeated": false,
+  "original_failed_methods_preserved": true,
+  "gate_changed": false,
+  "method_improvement_established": false,
+  "model_promotion": false,
+  "canonical_dirty_checkout_untouched": true,
+  "paper_changed": false
+}

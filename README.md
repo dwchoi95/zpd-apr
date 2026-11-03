@@ -1,251 +1,194 @@
 # ZPDPatch
 
-ZPDPatch는 실제 학생 submission trajectory에서 실행으로 관측된 개선 관계를
-자동 채굴하고, Progress--Strict--Answer adapter portfolio로 다음 repair를 생성하는
-trajectory-derived program repair 프로젝트이다.
+ZPDPatch is a trajectory-supervised repair technique for automated feedback generation on programming assignments: it
+learns from students' own submission trajectories and returns patches the size of the steps students take.
 
-## Current Paper and Project Status
+## Dataset
 
-현재 제출 대상은 **ICSE-SEET 2027 Research Paper**다. 최신 파일은 다음과 같다.
-
-- 원고: [`paper/main.pdf`](paper/main.pdf), [`paper/main.tex`](paper/main.tex)
-- 최종 수정·검증 기록: [`paper/submission/revision-response-20261021.ko.txt`](paper/submission/revision-response-20261021.ko.txt)
-- 로컬 익명 재분석 자료: [`paper/submission/icse-seet-analysis-20261021.zip`](paper/submission/icse-seet-analysis-20261021.zip)
-- 근거·재현 범위와 한계: [`ARTIFACT.md`](ARTIFACT.md)
-- 실험 마감 및 방법론 선정: [`analysis_protocols/zpd-final-methodology-report-20261021.ko.md`](analysis_protocols/zpd-final-methodology-report-20261021.ko.md)
-
-실험은 **2026-10-21 13:00 KST에 종료**했다. 아래의 학습·추론·평가·최종화
-명령은 과거 재현 절차를 보존한 것이며, 사용자가 마감을 명시적으로 연장하기
-전에는 실행하거나 재개하지 않는다. 저장 결과의 읽기 전용 검산은 가능하다.
-원고·리뷰·제출 보조자료는 dev에서만 관리하며 main에 공개하지 않는다.
-
-## Latest Canonical Version
-
-최신 방법론은 **canonical-v5**이다.
-
-- 모든 policy는 동일한 authentic trajectory에 조건부 독립으로 후보를 생성한다.
-- Progress는 동일 verdict 안의 testcase-wise Pareto 개선을 학습한다.
-- Strict는 coarse verdict가 엄격히 개선되는 전이만 학습한다.
-- Answer는 각 non-AC submission을 마지막 Accepted submission에 1:1로 대응한다.
-- inference는 Progress--Strict--Answer 순서로 실행하며 AC에서 조기 종료한다.
-- 모두 실패하면 current program을 포함해 pass rate 최대, AST edit distance 최소 후보를
-  선택하므로 관측 testcase에서 regression을 강제하지 않는다.
-- 각 relation의 세 독립 seed checkpoint를 문제 균형 validation에서 실행하고, test를
-  보지 않은 채 one-per-relation 포트폴리오를 정확히 선택한다. Unrestricted coverage와
-  사전 선언 TED 예산 `{5,10,20,40,80,160}`의 평균 coverage를 각각 선택한다.
-- TED 예산 모드에서는 초과 후보를 반환 후 폐기하지 않고 다음 policy까지 계속 실행해,
-  예산 이내 AC가 있으면 첫 후보를 반환한다. 없으면 예산 이내 후보와 current program
-  사이에서 non-regressive selection을 수행한다.
-- 모든 새 후보 생성은 최대 4,096 new tokens에서 종료해, EOS를 내지 않는 실패 출력이
-  32K context 전체를 소비하지 않도록 한다.
-
-아래 표는 validation 선택 이전의 고정 seed 포트폴리오 민감도이다. 최종 시스템 수치는
-`fse2027-portfolio-validation-selection.json`과
-`fse2027-selected-portfolios.json`에서 읽는다.
-
-| Split | Seed 2027 RR | Seed 2028 RR | Seed 2029 RR | Mean +/- SD |
-|---|---:|---:|---:|---:|
-| Seen | 59.5% | 57.6% | 59.0% | 58.7 +/- 1.0%p |
-| Unseen | 73.2% | 74.0% | 70.4% | 72.5 +/- 1.9%p |
-
-논문용 canonical artifact는 다음 위치에 생성한다.
+output.tar.xz : the results the paper reports; unpacks into `output/` (README.md inside describes every file and field)
 
 ```text
-outputs/split-90-10/canonical-v5/
-checkpoints/split-90-10/canonical-v5/
-checkpoints/split-90-10/canonical-v5-rq2/
-checkpoints/split-90-10/canonical-v5-seeds/
-checkpoints/split-90-10/codeworkout/
-data-canonical-v5/
-archive/external/tiktoc/
+|-output
+    |-benchmark      # inputs, the students' own steps, corpus counts (no source code)
+    |-approaches     # ZPDPatch, the existing techniques, and the base model on the 1,753 RQ1 inputs
+    |-differential   # every plausible RQ1 patch on generated inputs
+    |-selection      # the nine checkpoints on the validation inputs
+    |-targets        # Answer, Strict, and Progress targets (Seen, Unseen, Java)
+    |-ablation       # each variant and the configuration it is compared with
+    |-generality     # the 1.5B model and Java
+    |-models         # the trained adapters (in the repository, not in the archive)
 ```
 
-UbuntuServer에서도 작업공간은 `/home/cdw/VSCode/zpd-apr/` 하나만 사용한다.
-별도의 sibling checkout이나 `/home/cdw/zpd-apr` 경로를 만들지 않는다.
-
-## Repository Structure
+output/models : the adapters of base model `Qwen/Qwen2.5-Coder-7B-Instruct` (revision
+`c03e6d358207e414f1eca0bb1891e29f1db0e242`)
 
 ```text
-run.py          단일 CLI entrypoint
-src/            데이터, 학습, 생성, 실행, 분석 구현
-scripts/        canonical-v5 및 FSE 2027 재현 스크립트
-tests/          unit/property/artifact tests
-analysis_protocols/ 고정 명세, 실험 마감, 결과와 판정 기록
-paper/          ICSE-SEET 2027 원고 및 과거 FSE 리뷰 기록(dev branch only)
-paper/submission/ 최신 제출용 로컬 자료와 검증 기록
-archive/        과거 산출물과 복구 가능한 로컬 정리본(Git 제외)
+|-output/models
+    |-{answer,strict,progress}-{2027,2028,2029}   # the nine checkpoints of Train, on the Seen training trajectories
+    |-rq1/answer-{2027,2028,2029}                 # the cascade run on the RQ1 benchmark, trained without its students
+    |-SHA256SUMS
 ```
 
-`data/`, `outputs/`, `checkpoints/`, model cache는 Git에 포함하지 않는다.
+> The nine checkpoints are those Select ran on `output/selection` and the Seen and Unseen results use. `rq1/` holds the
+> Answer checkpoints trained without the RQ1 students, run in this order by Algorithm 1 for RQ1 and RQ2. Each adapter's
+> weights are split into parts below GitHub's file size limit; join and check them before use (Setup).
+>
+> Student programs are not redistributed. `run.py build-data` rebuilds the data from Project CodeNet (Python, with the
+> test cases AtCoder released) and the TIKTOC release of CodeWorkout (Java).
 
-2026-10-21 로컬 정리에서는 논문 미리보기·빌드 중간 파일, Python/test 캐시,
-구형 루트 임시 스크립트만 `archive/repo-cleanup-20261021/files/`로 옮겼다.
-원래 경로와 SHA-256은 같은 폴더의 `manifest.json`에 기록되어 있다.
-실험 데이터·결과·체크포인트·동결 소스, 리뷰 원문, 최종 PDF/ZIP과 Git 이력은
-정리 대상이 아니다. 과거 `fse2027` 파일명도 근거 추적을 위해 유지한다.
+## Setup
 
-## Environment
+1. Python >= 3.11 (tested with 3.13) on Linux with a CUDA GPU for training and generation; judging runs on CPU, and Java
+   judging in Docker.
+2. Install the packages at the versions of the paper's runs; `generate-greedy` and `generate-samples` run vLLM, which
+   pins its own torch, so they need a second environment:
+   ```bash
+   pip install -r requirements.txt
+   pip install -r requirements-vllm.txt   # in a separate environment, for the two vLLM commands
+   ```
+3. Unpack the results and join the adapters:
+   ```bash
+   tar -xJf output.tar.xz
+   cd output/models
+   for d in $(awk '{print $2}' SHA256SUMS | xargs -n1 dirname); do cat $d/adapter_model.safetensors.part-* > $d/adapter_model.safetensors; done
+   sha256sum -c SHA256SUMS && cd ../..
+   ```
+4. For Java only, build the judge image (building the Java data also needs `bwrap`):
+   ```bash
+   docker build -t zpdpatch-java:21 docker/java
+   ```
 
-```bash
-python3 -m venv env
-source env/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+## How to Run
+
++ Build the data (Project CodeNet for Python, the TIKTOC release for Java):
+  ```bash
+  python run.py build-data --benchmark rq1 --source-root <Project_CodeNet> --output-root data-rq1
+  python run.py build-data --benchmark seen-unseen --source-root <Project_CodeNet> --output-root data
+  python run.py build-data --benchmark codeworkout --source-root <TIKTOC> --output-root data-java --base-model Qwen/Qwen2.5-Coder-7B-Instruct
+  ```
+  `data-java/` then holds the Java datasets (`datasets/`, `problem-holdout/datasets/`, `paired-java-control/`) and test cases.
++ Execute every submission once, then mine the training pairs of each target rule (Mine); repeat with `seen_valid` for
+  the validation datasets:
+  ```bash
+  python run.py build-outcome-cache --data-root data --split seen_train --output outcomes/seen_train.jsonl
+  python run.py build-repair-data --data-root data --split seen_train --target-mode answer --output datasets/train-answer.jsonl
+  python run.py build-repair-data --data-root data --split seen_train --target-mode strict --output datasets/train-strict.jsonl
+  python run.py build-repair-data --data-root data --split seen_train --target-mode progress --outcome-cache outcomes/seen_train.jsonl --output datasets/train-progress.jsonl
+  python run.py make-current-code-only datasets/train-answer.jsonl datasets/train-answer.current-only.jsonl
+  ```
+  For RQ1, drop the benchmark's students from training first:
+  ```bash
+  python run.py hold-out-students data-rq1/splits/test.jsonl datasets/train-answer.jsonl datasets/train-answer.rq1.jsonl
+  ```
++ Build the test inputs: each trajectory's last wrong submission that still fails locally, with the student's accepted
+  program (`--data-root data-rq1 --split test` for RQ1, `seen_test` and `unseen_test` for Seen and Unseen, `seen_valid`
+  for the validation inputs):
+  ```bash
+  python run.py build-outcome-cache --data-root data-rq1 --split test --output outcomes/rq1-test.jsonl
+  python run.py build-repair-data --data-root data-rq1 --split test --target-mode final-accepted --outcome-cache outcomes/rq1-test.jsonl --output datasets/rq1-test.raw.jsonl
+  python run.py filter-rq1-data datasets/rq1-test.raw.jsonl outcomes/rq1-test.jsonl datasets/rq1-test.jsonl
+  python run.py make-current-code-only datasets/rq1-test.jsonl datasets/rq1-test.current-only.jsonl
+  ```
++ Train one adapter per rule and seed (Train):
+  ```bash
+  python run.py train-qlora datasets/train-answer.current-only.jsonl checkpoints/answer-2027 --prompt D \
+    --validation-dataset datasets/valid-answer.current-only.jsonl --seed 2027
+  ```
++ Run every checkpoint on one validation input per problem and choose the cascade (Select):
+  ```bash
+  python run.py sample-validation datasets/seen-valid.jsonl datasets/validation.jsonl --seed 2027
+  python run.py make-current-code-only datasets/validation.jsonl datasets/validation.current-only.jsonl
+  python run.py generate datasets/validation.current-only.jsonl val/Answer2027.generations.jsonl --method Answer2027 --prompt D \
+    --adapter checkpoints/answer-2027 --max-new-tokens 4096
+  python run.py evaluate datasets/validation.current-only.jsonl val/Answer2027.generations.jsonl val/Answer2027.evaluation.jsonl --data-root data
+  python run.py select --evaluation Answer2027:Answer=val/Answer2027.evaluation.jsonl ... --output selection.json
+  ```
++ Repair the test inputs with each member (`--adapter output/models/rq1/answer-2027` uses a released adapter) and run
+  them as a cascade (Algorithm 1):
+  ```bash
+  python run.py compose datasets/rq1-test.current-only.jsonl zpdpatch.evaluation.jsonl --forward-fallback \
+    --stage Answer2027=eval/Answer2027.evaluation.jsonl --stage Answer2028=eval/Answer2028.evaluation.jsonl \
+    --stage Answer2029=eval/Answer2029.evaluation.jsonl
+  ```
++ Judge an existing technique's returns with the same runner:
+  ```bash
+  python run.py evaluate datasets/rq1-test.current-only.jsonl <technique>.generations.jsonl <technique>.evaluation.jsonl --data-root data-rq1
+  ```
++ Draw candidates from the base model or from one adapter at temperature 0.8 (RQ2's base model, RQ3's training and
+  distinct-checkpoint variants), then evaluate each sample and compose them like the cascade:
+  ```bash
+  python run.py generate-samples datasets/rq1-test.current-only.jsonl base/ --base-model Qwen/Qwen2.5-Coder-7B-Instruct \
+    --method-prefix Base --sampling-seed 4101 --sampling-seed 4102 --sampling-seed 4103
+  python run.py generate-greedy datasets/seen-test.current-only.jsonl greedy/ --base-model Qwen/Qwen2.5-Coder-7B-Instruct \
+    --adapter Answer2027=output/models/answer-2027 --adapter Answer2028=output/models/answer-2028
+  ```
++ Isolate the target rule and the target source (RQ3, RQ4), then train, repair, and compose as above:
+  ```bash
+  python run.py paired-control datasets/train-progress.jsonl datasets/train-answer.jsonl paired/train-progress.jsonl paired/train-answer.jsonl --summary paired/train.json
+  python run.py paired-strict paired/train-answer.jsonl datasets/train-answer.jsonl datasets/train-strict.jsonl paired/train-strict.jsonl --summary paired/strict.json
+  python run.py cross-user-control datasets/train-progress.jsonl shards/same-0.jsonl shards/cross-0.jsonl --summary shards/summary-0.json --maximum-target-reuse 3
+  python run.py finalize-cross-user shards/ source/train-same-user.jsonl source/train-cross-user.jsonl --base-model Qwen/Qwen2.5-Coder-7B-Instruct \
+    --prompt D --maximum-tokens 4096 --summary source/train.json
+  ```
++ Judge Java returns in the judge image:
+  ```bash
+  python run.py java-prepare data-java/datasets/test-final.jsonl java.generations.jsonl data-java/tests/test_cases-1-26-24.csv data-java/tests/test_case_37.csv harness/sources
+  python run.py java-judge harness/sources harness/status
+  python run.py java-collect harness/manifest.jsonl harness/status java.evaluation.jsonl --summary java.summary.json
+  ```
++ Run every plausible patch on generated inputs, against the majority output of the students' accepted programs:
+  ```bash
+  export ZPD_DIFF_DATA=data-rq1 ZPD_DIFF_TEST=datasets/rq1-test.jsonl ZPD_DIFF_OUT=differential
+  python run.py differential-check
+  for step in validate inputs references patches summarize; do python run.py differential $step; done
+  python run.py differential patches --set targets && python run.py differential-own
+  ```
+
+## Command Line Arguments
+
+| Command | What it does |
+| --- | --- |
+| `build-data` | builds a data root (`--benchmark rq1`, `seen-unseen`, `codeworkout`) from `--source-root` |
+| `build-outcome-cache` | executes every submission of a split once and stores its per-test outcomes |
+| `build-repair-data` | pairs each buggy submission with its target (`--target-mode answer`, `strict`, `progress`, `final-accepted`) |
+| `make-current-code-only` | keeps only the current submission in each prompt |
+| `filter-rq1-data` | keeps the inputs whose buggy program fails and whose accepted program passes locally |
+| `train-qlora` | fine-tunes one QLoRA adapter (`--base-model`, `--seed`, `--epochs`, `--learning-rate`, ...) |
+| `generate` | generates one repair per input with a base model and an optional `--adapter` |
+| `evaluate` | judges returned programs on the test suite and computes TED and retention |
+| `hold-out-students` | drops the RQ1 benchmark's students from a training dataset |
+| `sample-validation` | draws one validation input per problem for Select |
+| `select` | chooses the cascade from the checkpoints' validation evaluations |
+| `compose` | runs evaluated checkpoints as a cascade (`--forward-fallback`: Algorithm 1's forward step; `--max-ted`: a step budget) |
+| `normalize-baseline` | takes the submission's verdict and pass rate from a reference evaluation |
+| `generate-greedy`, `generate-samples` | generate with vLLM: greedily for several adapters, or sampled from one model |
+| `paired-control`, `paired-strict` | build the target-rule control: the same examples with Answer, Progress, and Strict targets |
+| `cross-user-control`, `finalize-cross-user` | build the target-source control: another student's submission as the target |
+| `java-prepare`, `java-judge`, `java-collect` | judge Java returns in the judge image |
+| `differential`, `differential-check`, `differential-own` | run plausible patches on generated inputs and compare with the student's accepted program |
+| `sampled-ted` | TED of the repaired returns of the sampled ablation variants |
+| `codenet-attempts` | attempts to acceptance and verdict changes on every AtCoder problem of Project CodeNet |
+
+`python run.py <command> --help` lists each command's arguments.
+
+## Project Structure
+
+```text
+zpdpatch/
+├── output.tar.xz              # Results reported in the paper; unpacks into output/
+├── output/models/             # Trained adapters, weights split into parts
+├── docker/java/Dockerfile     # Java 21 judge image
+├── src/
+│   ├── cli.py                 # The run.py commands
+│   ├── core/                  # The technique: Mine (dataset, outcomes), Train (train), generation and judging
+│   │   ├── prompts/           # Prompt templates
+│   │   └── runner/            # Sandboxed execution of Python submissions
+│   └── experiments/           # Data builders, Select and the cascade, controls, Java judging
+│       ├── codenet/           # Project CodeNet data (RQ1 benchmark, Seen/Unseen corpus)
+│       └── differential/      # Input generators and differential testing
+├── run.py                     # Main entry point
+├── requirements.txt           # Packages at the versions of the paper's runs
+├── requirements-vllm.txt      # The environment of the two vLLM commands
+├── README.md
+└── LICENSE
 ```
-
-## Dataset Rules
-
-최종 split 전에 Answer, Strict, Progress, evaluation 중 하나라도 Prompt D 기준
-4,096 tokens를 넘는 trajectory 전체를 제외한다. 포함된 trajectory의 history, target,
-testcase를 부분적으로 자르지 않는다.
-
-Seen problem은 trajectory 수준으로 train/valid/test에 나누며 모든 Seen problem이 세
-split에 최소 한 trajectory를 갖는다. Unseen problem은 학습과 retrieval에서 완전히
-제외하고 test에만 사용한다.
-
-Adapter별 supervision은 다음과 같다.
-
-- **Answer:** `{S1, Sn}, ..., {S(n-1), Sn}`. 각 입력은 non-AC submission 하나이고
-  target은 마지막 Accepted submission이다.
-- **Strict:** 마지막 보존 submission보다 verdict가 엄격히 개선된 submission만 남긴
-  단조 trajectory의 prefix-target pair이다.
-- **Progress:** Strict 전이에 더해, verdict가 같을 때 모든 testcase가 비악화되고
-  하나 이상 엄격히 개선되는 submission을 남긴다.
-
-Strict와 Progress의 비교 기준은 직전 원본 submission이 아니라 마지막으로 보존된
-submission이다.
-
-## Canonical-v5 Reproduction (Historical; Do Not Launch)
-
-전체 canonical-v5 데이터와 testcase cache를 준비한다. 이 단계는 이전 canonical
-버전의 산출물에 의존하지 않는다.
-
-```bash
-bash scripts/run_canonical_v5_prepare_remote.sh
-```
-
-Primary seed의 세 adapter와 RQ1--RQ5 평가를 실행한다.
-
-```bash
-bash scripts/run_canonical_v5_gpu_remote.sh
-```
-
-최종 independent-policy system과 repeated Answer/generated-feedback 대조군을 실행한다.
-
-```bash
-bash scripts/run_fse2027_acceptance_ablations_remote.sh
-```
-
-추가 seed 2028/2029의 세 adapter를 모두 다시 학습하고 Seen/Unseen을 평가한다.
-
-```bash
-bash scripts/run_fse2027_multiseed_remote.sh
-```
-
-동일 타깃 Answer-3Seed 통제를 실행하고, 문제당 한 validation trajectory에서 9개
-checkpoint와 27개 relation-constrained 및 84개 size-three 포트폴리오를
-평가·선택한 뒤 독립 Seen/Unseen test로 넘긴다. v5 primary는 84개 전체에서
-고른 포트폴리오이며, one-per-relation 선택과 Answer-3Seed는 필수 통제다.
-
-```bash
-bash scripts/run_fse2027_answer_seed_control_remote.sh
-bash scripts/run_fse2027_portfolio_validation_remote.sh
-bash scripts/run_fse2027_selected_portfolios_remote.sh
-```
-
-선택 평가를 재개할 때는 코드가 동일한 기존 개별·순차 후보의 testcase outcome을
-재사용하고, 새 후보만 실행한다. TED는 동일한 ordered unit-cost 정의의 APTED로
-다시 계산하며 소규모 AST 쌍에서 기존 ZSS 결과와 교차 검증한다. 동일 split의
-모든 후보는 한 canonical current-program outcome을 공유해 timeout 경계의 baseline
-변동이 portfolio 비교에 들어오지 않게 한다.
-
-TIKTOC CodeWorkout에서는 동일한 전체-trajectory 4K 규칙과 학생-disjoint split을
-적용한다. 각 relation의 세 seed를 새로 학습하고 student-disjoint validation으로
-포트폴리오를 선택한 후 student-held-out Java test를 실행한다.
-
-```bash
-bash scripts/run_fse2027_codeworkout_remote.sh
-bash scripts/run_fse2027_lsgen_budget_remote.sh
-```
-
-마지막 스크립트는 LSGen도 성공 후 즉시 중단하지 않고 최대 3후보를 저장한 뒤,
-ZPDPatch와 동일한 TED 예산별 계속 탐색 규칙을 replay한다. 동일한 retrieval-pair
-설명 cache와 이미 세 후보가 모두 저장된 legacy 행은 token-cap 감사 후 재사용한다.
-후보 TED는 unit-cost APTED로 정확 계산하되 AST node-count 차이가 최대 사전 선언
-예산 160을 이미 넘으면 sound lower bound로 `>160`만 저장한다.
-
-논문 분석을 재생성한다.
-
-```bash
-python scripts/analyze_fse2027_robustness.py \
-  --eval-root outputs/split-90-10/canonical-v5/eval \
-  --output outputs/split-90-10/canonical-v5/analysis/fse2027-robustness.json
-
-python scripts/analyze_fse2027_multiseed.py \
-  --eval-root outputs/split-90-10/canonical-v5/eval \
-  --robustness outputs/split-90-10/canonical-v5/analysis/fse2027-robustness.json \
-  --output outputs/split-90-10/canonical-v5/analysis/fse2027-multiseed.json
-```
-
-## Evidence Manifest
-
-논문 수치는 dataset, evaluation, analysis, checkpoint metadata의 SHA-256 manifest로
-source revision에 결합한다.
-
-```bash
-REVISION=$(git rev-parse HEAD)
-python scripts/build_fse2027_evidence_manifest.py \
-  --run-root outputs/split-90-10/canonical-v5 \
-  --checkpoint-root checkpoints/split-90-10/canonical-v5 \
-  --checkpoint-root checkpoints/split-90-10/canonical-v5-rq2 \
-  --checkpoint-root checkpoints/split-90-10/canonical-v5-seeds \
-  --checkpoint-root checkpoints/split-90-10/codeworkout \
-  --external-root archive/external/tiktoc \
-  --source-revision "$REVISION" \
-  --output outputs/split-90-10/canonical-v5/analysis/evidence-manifest.json
-
-python scripts/verify_fse2027_evidence_manifest.py \
-  --manifest outputs/split-90-10/canonical-v5/analysis/evidence-manifest.json \
-  --run-root outputs/split-90-10/canonical-v5 \
-  --checkpoint-root checkpoints/split-90-10/canonical-v5 \
-  --checkpoint-root checkpoints/split-90-10/canonical-v5-rq2 \
-  --checkpoint-root checkpoints/split-90-10/canonical-v5-seeds \
-  --checkpoint-root checkpoints/split-90-10/codeworkout \
-  --external-root archive/external/tiktoc
-```
-
-UbuntuServer에서는 최종 dev commit 이후 같은 절차와 전체 테스트를 한 번에 실행한다.
-
-```bash
-bash scripts/finalize_fse2027_evidence_remote.sh "$(git rev-parse HEAD)"
-```
-
-성공 시 manifest 검증과 전체 테스트를 통과한 source revision이
-`analysis/FSE2027_COMPLETE`에 기록된다. 최종화는 실험에서 생성한 TeX
-result bridge와 `paper/fse2027-result-bridge.tex`의 바이트 동일성 및 논문의
-신규 결과군 참조도 함께 검사한다.
-
-## Verification
-
-```bash
-python -m unittest discover -s tests -v
-bash -n scripts/run_canonical_v5_prepare_remote.sh
-bash -n scripts/run_canonical_v5_gpu_remote.sh
-bash -n scripts/run_fse2027_acceptance_ablations_remote.sh
-bash -n scripts/run_fse2027_multiseed_remote.sh
-bash -n scripts/run_fse2027_portfolio_validation_remote.sh
-bash -n scripts/run_fse2027_selected_portfolios_remote.sh
-bash -n scripts/run_fse2027_codeworkout_remote.sh
-bash -n scripts/run_fse2027_lsgen_budget_remote.sh
-```
-
-현재 제출 대상은 **ICSE-SEET 2027 Research Paper**다. `paper/main.tex`와
-`paper/main.pdf`는 `\documentclass[10pt,conference]{IEEEtran}`을 사용하며,
-본문 10쪽과 참고문헌 전용 2쪽으로 빌드된다. 제목 24pt, 본문 10pt와 IEEE
-기본 여백·간격을 유지한다. `python3 scripts/verify_icse_seet_pdf.py`로 형식과
-페이지 경계, 폰트, 첫 언급 전 float 배치를 검사한다.
-
-최종 재작성 및 점검 기록은 `paper/icse-seet-rewrite-status-20261021.ko.md`에
-있다. 실험 파일의 `fse2027` 이름과 이전 모의 리뷰는 이력 보존을 위해 유지하며,
-현재 원고의 심사 결과로 취급하지 않는다. 구 한국어 번역 `main.ko.tex`는
-이번 영문 최종본과 동기화되지 않았다. 원고와 아티팩트는 공개 푸시하지 않는다.

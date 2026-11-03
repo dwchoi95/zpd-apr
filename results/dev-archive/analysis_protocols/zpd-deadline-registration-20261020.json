@@ -1,0 +1,93 @@
+{
+  "version": "zpd_deadline_registration_v1",
+  "deadline_kst": "2026-10-21T13:00:00+09:00",
+  "deadline_utc": "2026-10-21T04:00:00+00:00",
+  "policy_sha256": "4a3c03cd3718248890d425066df4bf4f69e8277eed31942fe65ea9c82a92e8c7",
+  "cutoff_script_sha256": "7be86879bf5f32e8d7c7eb1bbe27972956df77d7ddcfabd8aed31511bd008b5c",
+  "bridge_sha256": "449e5350b8840059ba7e275fa09e0a98c926d92d461fe8e371494c4ffdb99f11",
+  "source_commit": "d8a536821b9e785a8f528acfdae4ad89c106b1f3",
+  "tests": {
+    "deadline_bridge_observer": 45,
+    "combined_with_training_pilots": 70,
+    "combined_skipped_optional_torch": 6,
+    "failures": 0
+  },
+  "server": {
+    "host": "UbuntuServer",
+    "runtime": "/home/cdw/VSCode/zpd-apr/.runtime/zpd-deadline-20261021-v1",
+    "timer": "zpd-deadline-cutoff-20261021.timer",
+    "active_state": "active",
+    "sub_state": "waiting",
+    "verified_next_elapse": "Wed 2026-10-21 13:00:00 KST",
+    "accuracy_seconds": 1,
+    "randomized_delay_seconds": 0,
+    "service_executed": false,
+    "read_only_target_inspection": [
+      "zpd-preference-training-20261020-v1-coordinator.service",
+      "zpd-preference-training-20261020-v1-train-C.service"
+    ],
+    "inspection_mutations": false,
+    "stop_order": "coordinators then fresh scan of workers",
+    "audit_directory": "/home/cdw/VSCode/zpd-apr/outputs/zpd-deadline-20261021",
+    "preserve_normal_exit_units": true,
+    "delete_artifacts": false
+  },
+  "mac": {
+    "launch_agent": "org.zpd-apr.deadline-report.20261021",
+    "loaded": true,
+    "calendar": {
+      "month": 10,
+      "day": 21,
+      "hour": 13,
+      "minute": 0
+    },
+    "host_timezone_verified": "KST +0900",
+    "runs_at_registration": 0,
+    "observer_fallback_interval_seconds": 300,
+    "final_report_latch": "zpd-deadline-summary-20261021",
+    "per_family_latch_preserved_sha256": "0a4024912518f6758525de8cbfcd801eff37fe786d92e156b7ef6d8fd5a13a45",
+    "actual_policy_observer_read_at": "2026-10-20T17:10:33.712576+09:00",
+    "deadline_seen_by_dispatch": "2026-10-21T13:00:00+09:00",
+    "deadline_reached": false,
+    "continuation_error": null,
+    "ambiguous_old_delivery_preserved": [
+      {
+        "family": "zpd-deanchored-revision-20261020",
+        "status": "delivery_unconfirmed"
+      }
+    ],
+    "no_new_report_message_sent_before_deadline": true
+  },
+  "current_training": [
+    {
+      "family": "zpd-preference-training-20261020",
+      "state": "running",
+      "completed_examples": 13552,
+      "total_examples": 19199,
+      "release_sha256": "44e2e0389e5eb86b2dfd98373be59294f1552b6060e9abd30b8d797db2e12fa0",
+      "phase": "train-C",
+      "pipeline_phase": "train-C",
+      "progress_unit": "예제",
+      "actual_fit": true,
+      "coverage_semantics": "examples_in_completed_optimizer_windows",
+      "elapsed_seconds": 17382.378779051825,
+      "identity_examples": 7,
+      "mean_dpo_loss": 0.0554352664224967,
+      "training_completed_examples_total": 13552,
+      "training_total_examples": 38398
+    }
+  ],
+  "active_experiment_snapshot_unchanged": true,
+  "experiment_gate_changed": false,
+  "canonical_server_checkout_unchanged": true,
+  "permissions_overridden": false,
+  "final_report_plan": "analysis_protocols/zpd-deadline-report-plan-20261021.md",
+  "official_cli_docs": "https://learn.chatgpt.com/docs/cli/reference",
+  "timer_docs": "https://www.freedesktop.org/software/systemd/man/260/systemd.timer.html",
+  "limitations": [
+    "One-time schedules rely on active user sessions and machines remaining on; transient server timer does not survive a reboot.",
+    "Mac report task starts at cutoff; report delivery may follow evidence verification or delayed wake/observer lock.",
+    "Ambiguous queue delivery is latched and not blindly resent.",
+    "An interrupted experiment is incomplete, never promoted as a complete performance result."
+  ]
+}

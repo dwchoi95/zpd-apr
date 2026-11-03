@@ -1,0 +1,44 @@
+{
+  "status": "complete_independently_replayed",
+  "protocol": "analysis_protocols/zpd-public-candidate-selection-20261012.json",
+  "result": "archive/zpd-public-candidates-20261012/result/run-v1/report.json",
+  "report_sha256": "fe91a47fc7ab8164e2ef0bca9e78bc347ff80c62ff526ad502aeb400ff423f95",
+  "worker_complete_sha256": "4327c2632da247462bda08896d9ad8ef9ede1ccaaf792b9f0b156050c3661fae",
+  "outer_complete_sha256": "eae1771a08b892a910e3863250c0774633623a2b3fc5801e925cac5faec02c37",
+  "independent_audit": "archive/zpd-public-candidates-20261012/independent-audit-v1",
+  "independent_complete_sha256": "dd49cbeb810bf64ee85f79f5d65bfc5d28b15d33d38958d0088d52bee32d381a",
+  "population": {"examples": 320, "candidate_memberships": 2544, "excluded_examples": 0, "folds": 5, "problems": 23},
+  "full": {
+    "frozen_C_joint": {"known_ac": 211, "regressions": 51, "unknown": 13, "noop_selected": 0, "ac_percent": 65.9375},
+    "C_exec": {"known_ac": 252, "regressions": 9, "unknown": 13, "noop_selected": 2, "ac_percent": 78.75},
+    "matched_execution_H": {"known_ac": 251, "regressions": 9, "unknown": 13},
+    "matched_execution_structural_C": {"known_ac": 244, "regressions": 9, "unknown": 13},
+    "matched_execution_lexical_C": {"known_ac": 249, "regressions": 8, "unknown": 13},
+    "matched_execution_first_attempt": {"known_ac": 217, "regressions": 8, "unknown": 14}
+  },
+  "known_nonac": {
+    "examples": 288,
+    "frozen_C_joint": {"known_ac": 195, "regressions": 48},
+    "C_exec": {"known_ac": 233, "regressions": 9},
+    "matched_execution_H": {"known_ac": 232, "regressions": 9}
+  },
+  "known_ac_current": {"examples": 19, "frozen_C_joint_preserved": 16, "C_exec_preserved": 19},
+  "paired_C_exec_versus_frozen_C_joint": {"choice_changes": 71, "ac_gains": 41, "ac_losses": 0, "regressions_prevented": 43, "regressions_introduced": 1},
+  "fold_AC_old_new": {"0": [63,66], "1": [50,59], "2": [33,37], "3": [40,51], "4": [25,39]},
+  "equal_problem_AC_percent": {"frozen_C_joint": 64.09056986336089, "C_exec": 79.74244837288316},
+  "remaining_C_exec_categories": {"selected_AC": 252, "known_AC_available_but_missed": 20, "no_known_AC_candidate": 35, "selected_unknown": 13},
+  "component_gate": {"passed": true, "checks_passed": 22, "checks_total": 22, "nonworse_folds": 5},
+  "zpd_gate": {"passed": false, "H_HS_choice_changes": 0, "H_Jm_choice_changes": 0, "history_benefit_established": false},
+  "execution": {"case_attempts": 27996, "source_blocks": 10136, "seconds": 507.4120497042313, "unavailable_public_tasks": 0, "worker_exit_code": 0, "monitor_exit_code": 0, "errors": false},
+  "cleanup": "After copying and authenticating all results, the two exact completed experiment units were stopped. Both are inactive with MainPID0; no unrelated session was stopped.",
+  "decision": "C_exec passes the frozen generic execution-component comparison and is a useful development correction. It is not a canonical ZPD method promotion. Continue to a separately frozen trajectory-conditioned candidate-generation design, not another reweighting of the same history-blind bank.",
+  "limits": [
+    "Repeatedly exposed adaptive development, not fresh Seen/Unseen or confirmatory evaluation.",
+    "Public tests may overlap the assessment suite; no assertion of disjoint unseen-test generalization.",
+    "C_exec adds public execution work relative to frozen C_joint, so this is not equal-total-compute evidence.",
+    "It does not dominate every equally execution-filtered control: lexical_C has8 regressions versus9, while C_exec has3 more AC.",
+    "One new regression occurs despite43 prevented. Public preservation is not full-suite preservation.",
+    "Independent replay authenticates saved evidence and arithmetic, not physical execution or private-label generation.",
+    "No educational learning effect, paper update or LSGen superiority is established."
+  ]
+}

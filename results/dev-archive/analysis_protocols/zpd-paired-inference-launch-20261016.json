@@ -1,0 +1,89 @@
+{
+  "version": "paired_history_ipc_recovery_launch_v1",
+  "checked_at": "2026-10-16T05:43:03.248858+09:00",
+  "parent_error_event_id": "81df4527d3949d11eabea13c807bdcddf46aa2f9cc7d5b03842d6b6c93196622",
+  "error_to_current_chat_execution_verified": true,
+  "parent_queue_message_id": "01a14143-715b-7ec1-bab0-62ff67b6d589",
+  "family": "zpd-paired-inference-20261016",
+  "release_sha256": "97ab9488da3291995cd49a4a166d1dc364b2db41f08f19e5f82a59456ddfd1a1",
+  "local_source_commit": "62b3903c",
+  "remote_source_revision": "9c03aec3390eed0e5b0f4a42590a720b0ff0860b",
+  "remote_snapshot": "/home/cdw/VSCode/zpd-apr/.runtime/paired-inference-20261016-v1",
+  "remote_coordinator_log": "/home/cdw/VSCode/zpd-apr/outputs/zpd-paired-inference-preflight-20261016-v1/coordinator.log",
+  "coordinator_unit": "zpd-paired-inference-20261016-v1-coordinator.service",
+  "coordinator_pid": 3680526,
+  "generation_unit": "zpd-paired-inference-20261016-v1-generation.service",
+  "generation_pid": 3680571,
+  "rpc_base_path": "/home/cdw/VSCode/zpd-apr/tmp/pi-1016-v1",
+  "ipc_preflight": {
+    "actual_zmq_bind_succeeded": true,
+    "address_bytes": 76,
+    "limit": 107
+  },
+  "training_reused": {
+    "C": {
+      "completed_examples": 19199,
+      "total_examples": 19199,
+      "validation_examples": 4365,
+      "validation_loss": 0.2790108323097229,
+      "adapter_sha256": "4e295ba79ae3bba148b607de73b6dc338d5c3f7b07838343ab363fe92aaca9fb"
+    },
+    "H": {
+      "completed_examples": 19199,
+      "total_examples": 19199,
+      "validation_examples": 4365,
+      "validation_loss": 0.2766891419887543,
+      "adapter_sha256": "afd49f3df464b7bf91cc4d8fce9f642245c65d3264f3bdbfc506bab06abfb8b9"
+    }
+  },
+  "prior_five_stages_certified": true,
+  "source_pins_verified": 581,
+  "model_file_pins": 31,
+  "training_repeated": false,
+  "private_evaluation_started": false,
+  "remote_tests_passed": 91,
+  "local_tests_passed": 92,
+  "observer_source_sha256": "2c98d33b00db3e6a0cc5177c94d5b20b6925fd411f7012fc41403a22698aebd1",
+  "observer_only_post_freeze_change": "Initialization progress is 0/320 examples, not 0/8 training stages. The running experiment snapshot was not modified.",
+  "live_readback": {
+    "family": "zpd-paired-inference-20261016",
+    "state": "running",
+    "completed_examples": 37,
+    "total_examples": 320,
+    "release_sha256": "97ab9488da3291995cd49a4a166d1dc364b2db41f08f19e5f82a59456ddfd1a1",
+    "phase": "generation",
+    "pipeline_phase": "generation",
+    "progress_unit": "예제",
+    "completed_phases": [],
+    "unit": {
+      "ActiveState": "active",
+      "Id": "zpd-paired-inference-20261016-v1-generation.service",
+      "MainPID": "3680571",
+      "Result": "success",
+      "SubState": "running"
+    },
+    "unit_prefix": "zpd-paired-inference-20261016-v1",
+    "worker_phase": "generation",
+    "elapsed_seconds": 82.55298640439287,
+    "attempt_statuses": {
+      "success": 296
+    },
+    "completed_case_attempts": null,
+    "total_case_attempts": null
+  },
+  "continuation": {
+    "status": "idle",
+    "queued": [],
+    "unconfirmed": [],
+    "previously_queued": [
+      "zpd-paired-history-run-20261015"
+    ],
+    "experiments_executed_by_bridge": false,
+    "permission_overrides": false
+  },
+  "new_family_registered": true,
+  "old_dispatch_latch_preserved": true,
+  "permission_overrides": false,
+  "performance_improvement_established": false,
+  "verification_limit": "Error-to-agent continuation and new running-family readback verified; completed-run scientific performance remains pending."
+}

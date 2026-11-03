@@ -1,0 +1,41 @@
+{
+  "all_artifact_hashes_required": true,
+  "authorized_date": "2026-10-12",
+  "automatic_transition": [
+    "certify_existing_generation",
+    "public_selection",
+    "new_private_evaluation",
+    "certify_and_release_workers"
+  ],
+  "candidates_regenerated": false,
+  "coordinator_seconds": 44000,
+  "empty_controlgroup_accepted_only_with_explicit_property": true,
+  "generation_complete_sha256": "0e309b224bfce72995888b02853c7e1aaa785d09000caacf154bed25b343ca6e",
+  "generation_reexecution": false,
+  "no_overwrite": true,
+  "no_retry": true,
+  "normal_exit_required": true,
+  "old_failure_record_retained": true,
+  "original_release_sha256": "dba5aa43b104d0c20f056cf2a71b5bbaf96a5a6b8f939f3fcab55acafec43b59",
+  "original_revision": "c439dcd75728c692868c1e9c2031bcd484c07066",
+  "original_snapshot": "/home/cdw/VSCode/zpd-apr/.runtime/transition-generation-20261012-v1",
+  "phase_seconds": 21600,
+  "preserved_evidence_sha256": {
+    "COORDINATOR.json": "821efbdb0b6aec705d79f9c494257641548a7a3ba306ad6ee65808e6e0981239",
+    "COORDINATOR_FAILED.json": "8715e73f914c4ff6bab7d84a1648abcdd93f782892610fcede4d9021d022fb21"
+  },
+  "private_testcase_changes": false,
+  "protocol_changes": false,
+  "reason": "Explicitly requested continuation after coordinator mistook omitted empty ControlGroup for a changed resource group.",
+  "recovery_source_sha256": {
+    "scripts/recover_zpd_transition_evaluation.py": "712d3490efe2422161cff8879ec78a1c4d073f80513d507d2765f8535ea4c31b",
+    "tests/test_recover_zpd_transition_evaluation.py": "789a262a3c997350b7b60d420ca8c0414b5008f090cc19882b97ae15e7625ab5"
+  },
+  "remaining_phases": [
+    "public",
+    "private"
+  ],
+  "selection_or_scoring_changes": false,
+  "version": "transition_evaluation_recovery_v1",
+  "worker_source_changes": false
+}

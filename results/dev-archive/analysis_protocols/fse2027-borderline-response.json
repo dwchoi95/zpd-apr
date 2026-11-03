@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "frozen_before_outcome_inspection": true,
+  "scope": "Response to the September 2026 borderline FSE review; repository provenance, not external preregistration.",
+  "experiments": {
+    "answer_breadth_cost_curve": {
+      "checkpoint": "Answer2027",
+      "prompt": "current-only D",
+      "temperature": 0.8,
+      "top_p": 0.95,
+      "sampling_seeds_in_order": [4101, 4102, 4103, 4104, 4105, 4106, 4107, 4108, 4109, 4110, 4111, 4112, 4113, 4114, 4115, 4116, 4117, 4118, 4119, 4120],
+      "reported_k": [1, 3, 5, 10, 20],
+      "splits": ["seen", "unseen"],
+      "endpoints": [
+        "execution-selected union repair rate",
+        "problem-balanced union repair rate",
+        "marginal newly repaired instances",
+        "mean sequential candidates invoked under fixed seed order",
+        "problem-cluster bootstrap 95 percent intervals"
+      ],
+      "selection_rule": "Report every fixed k; do not select k using test outcomes. Union coverage is order invariant; cost uses the declared seed order and stops at the first accepted repair."
+    },
+    "temperature_extension": {
+      "checkpoint": "Answer2027",
+      "prompt": "current-only D",
+      "temperatures": [1.2, 1.5],
+      "top_p": 0.95,
+      "sampling_seeds": [4101, 4102, 4103],
+      "splits": ["seen", "unseen"],
+      "endpoint": "three-draw execution-selected union repair rate",
+      "selection_rule": "Report both cells; do not use either test split to tune temperature."
+    },
+    "mechanism_sensitivity": {
+      "method": "For each paired mechanism contrast, estimate the cluster-robust standard error from the frozen 95 percent interval and report the two-sided alpha 0.05, 80 percent-power normal-approximation MDE as (1.96 + 0.8416) times that standard error.",
+      "interpretation": "MDE is design sensitivity, not evidence that a null effect is exactly zero."
+    },
+    "paired_target_control": {
+      "design": "Match Progress and Answer training records by problem, user, exact current submission, and exact current code; exclude pairs whose target submission is identical; serialize current code only; and retain equal counts.",
+      "models": "Train Progress and Answer adapters with the identical 7B base, seeds 2027/2028/2029, hyperparameters, one epoch, and relation-specific targets on the matched sources.",
+      "inference": "Compare fixed three-seed Progress and Answer controllers on identical current-only Seen and Unseen inputs with the same greedy decoder, execution fallback, and TED budgets.",
+      "endpoints": [
+        "unrestricted paired repair-rate difference",
+        "mean paired repair-rate difference over TED budgets 5, 10, 20, 40, 80, 160",
+        "per-budget paired repair-rate differences",
+        "paired TED and source-preservation summaries on joint repairs"
+      ],
+      "interpretation": "This isolates target construction on a common source distribution and equal sample count; it does not isolate target semantics from the target-distance distribution that those semantics induce."
+    },
+    "typical_locality_case": {
+      "design": "Among jointly repaired examples for which the current, Progress, and Answer programs each contain at most 900 characters, select the example whose Answer-minus-Progress TED gap is closest to the median over that complete candidate set; break ties by example_id.",
+      "interpretation": "This post-hoc illustration is excluded from every estimate and replaces the prior maximum-gap illustration in the manuscript. A zero or adverse median is retained as selected."
+    }
+  },
+  "literature_audit": {
+    "scope": "Peer-reviewed or publicly archived educational program-repair studies from 2021 through 2026 that generate executable repairs for student or competition submissions with a neural or LLM component.",
+    "coding_fields": [
+      "number of generated or iterated candidates per input",
+      "whether repair coverage uses a union over multiple candidates",
+      "whether a one-candidate decoding-matched control is reported",
+      "whether inference calls or candidate budget is reported"
+    ],
+    "rule": "Code only statements verifiable in the paper or official artifact; mark unreported fields NR rather than infer them."
+  }
+}

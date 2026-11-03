@@ -311,12 +311,6 @@ class AdapterDatasetRulesTest(unittest.TestCase):
         self.assertGreaterEqual(first, 0)
         self.assertLess(first, 2**63 - 1)
 
-    def test_stochastic_runner_restarts_complete_batched_seed_pass(self) -> None:
-        runner = Path("scripts/run_fse2027_stochastic_candidate_control_remote.sh").read_text()
-        self.assertIn("generate_vllm_stochastic_candidates.py", runner)
-        self.assertIn("--sampling-seed 3101 --sampling-seed 3102", runner)
-        self.assertIn("--max-model-len 8192", runner)
-
     def test_dynamic_stage_feedback_omits_only_generated_code_on_overflow(self) -> None:
         class CharacterTokenizer:
             def apply_chat_template(

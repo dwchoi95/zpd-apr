@@ -1,0 +1,102 @@
+{
+  "configuration": {
+    "automatic_retries": 0,
+    "counts": {
+      "candidates": 2544,
+      "problems": 23,
+      "recipients": 320,
+      "users": 320
+    },
+    "data_root": "data",
+    "description_projection": "src.repair.dataset._DescriptionParser_full_text_exact",
+    "execution_authorized": false,
+    "extraction_version": "generator_visible_statement_samples_v1",
+    "features_computed": false,
+    "fitting_authorized": false,
+    "full_testcase_bodies_opened": false,
+    "html_decoding": "strict_UTF8",
+    "kind": "statement_sample_source_preparation_v1",
+    "original96_source_container_verified": true,
+    "original_valid32_materialized": false,
+    "outcomes_opened": false,
+    "output": "outputs/zpd-statement-sample-feedback-20260924/prepared-v1",
+    "overwrite": false,
+    "roster": {
+      "current_language": "Python_verified_by_upstream_join",
+      "donor_cutoff": "not_supplied; strictly_prior_certified_by_upstream_join",
+      "execution_authorized": false,
+      "execution_identity": [
+        "problem_id",
+        "source_sha256",
+        "language"
+      ],
+      "fitting_performed": false,
+      "non_python": "retained_unavailable_for_Python_replay",
+      "position": "zero_based_chronological; current_position_is_prior_count",
+      "recipient_cutoff_revalidated": true,
+      "source_identity": "problem_id:raw_submission_id",
+      "testcase_access": false,
+      "version": "certified_observed_source_roster_v1"
+    },
+    "sample_bytes": "one_HTML_entity_decode_no_whitespace_rewrite",
+    "sample_set_identity": "statement_sample_set_v1_canonical_ASCII_JSON_ordered_index_input_hex_output_hex",
+    "selected_group_counts": [
+      64,
+      256
+    ]
+  },
+  "data_root": "/home/cdw/VSCode/zpd-apr/data",
+  "decision_reason": "Independently reviewed pure parser, source roster and preparation boundary; permit one source-only all320/23 preparation after clean snapshot/runtime regression checks. No submitted execution, hidden scorer access, feedback fit or retries.",
+  "execution_authorized": false,
+  "fitting_authorized": false,
+  "input_complete_sha256": {
+    "outputs/zpd-repair-directed-history-20260924/support-v1/COMPLETE.json": "e04d475e3773e26ac37e277595450c7c272f0021f4f0fa2db939b96c26d62910",
+    "outputs/zpd-repair-structure-cv-20260923/run-v1/COMPLETE.json": "b306cee0a7142bcdd2d72600602a8c7f60421aa441d18440fd60c7be8af0271f"
+  },
+  "kind": "statement_sample_source_preparation_release_v1",
+  "output": "outputs/zpd-statement-sample-feedback-20260924/prepared-v1",
+  "project": "/home/cdw/VSCode/zpd-apr",
+  "protocol_sha256": "eb9a0e5c95ca3d3cbaa25f6b9fb5422a96d4ad3ce1106501498a6cc958e914bf",
+  "runtime": {
+    "numpy": "2.5.2",
+    "python": "3.13.11",
+    "scikit-learn": "1.9.0",
+    "scipy": "1.18.1",
+    "tqdm": "4.70.0"
+  },
+  "source_only_authorized": true,
+  "source_sha256": {
+    "analysis_protocols/zpd-feedback-to-repair-design-20260924.md": "d542b4a50da106a31049aa9b8d41ca7bb40a6f5b98ead8600cde0f86d7a02566",
+    "analysis_protocols/zpd-repair-directed-history-prospective-20260924.md": "ca87a111343324fd0b3a1a130b1d2293b63efdb338b08b8472a4b79c5ffb6d7e",
+    "analysis_protocols/zpd-repair-feedback-prospective-contract-20260924.md": "630b41a002bdca141921cb930eb2a1b6bb88e68a7b67912fca06485afab75b6e",
+    "analysis_protocols/zpd-repair-feedback-support-preflight-20260924.md": "7047f40f09903e3bd36e1a76c42599f6b104016e17750196fbedff9a9a16d0ff",
+    "analysis_protocols/zpd-statement-sample-preparation-20260924.md": "eb9a0e5c95ca3d3cbaa25f6b9fb5422a96d4ad3ce1106501498a6cc958e914bf",
+    "scripts/audit_zpd_history_support.py": "1060df870f5096da6571ea76101f4c6f8e535ffd535ba264ebe30aac777714bf",
+    "scripts/audit_zpd_repair_directed_support.py": "14772a84b3813733d8676d61df3e8889ac2a264cfead1800f92465e065790dfe",
+    "scripts/audit_zpd_repair_feedback_support.py": "4eedeba80eaa135e2c7f716a36c84cba93d6e7c1daedfe3d57ad8c55782e2fd3",
+    "scripts/build_zpd_original_prefixes.py": "07651db42c0b452de1afe6e2b55054fbdce30c22a4d2d91611222611328fc9fb",
+    "scripts/generate_zpd_repair_banks.py": "3705c545e4c03aaabcfe9ee550df8068b58a7b63200b42c0e88a5e5726f4a691",
+    "scripts/prepare_zpd_repair_development.py": "60eb6d6e3ae9ff81fa315f300755c37c3036398086957b095a71ddcecad549e0",
+    "scripts/prepare_zpd_repair_training_20260923.py": "34025dc1eedb2615e9e42625300dd7ad2aba7e1b29f0966cfa51ecca5c325c26",
+    "scripts/prepare_zpd_statement_samples.py": "9266c6241d0a56f2e6cc47e4ba2a176a78db901b935fd2a2e907aa886f987d6b",
+    "scripts/prepare_zpd_train_successors.py": "41881d5884328d124e2dd294527293c3371135cd2b3b80dc884dbe92289af666",
+    "scripts/run_zpd_history_action_cv.py": "c887d7f6603242be54e5b0f31ab9d7d8fc50179e17a186c5e8b7b63fc5ba34d8",
+    "scripts/supervise_zpd_history_action.py": "435b5dbde25049d8d1f4311b78c891019366ceae83e2dfa323b2a8cc0d7d26e4",
+    "scripts/zpd_history_action_blocked.py": "127250de384b26dc11dff3481444552777c9ee474c4b224a9b79f34e02af9c13",
+    "scripts/zpd_history_action_encoder.py": "14323b45cb9ddeec41c8ed237d244a0353f846c90afd58e4c7c4a7f96fc300bd",
+    "scripts/zpd_history_feedback_coupling.py": "83d8f512520254da9eec73b4e5210b57b037beed83b83bcb4ca40b383e7e32b3",
+    "scripts/zpd_history_predictor.py": "573a0391423baf64ef460171f731a81c07d5a5d806b9d6081d524ceb2e07458b",
+    "scripts/zpd_observed_source_roster.py": "986d90b202abdfb1d188fa35300cb5f485da55f1712d45d214a718bbc557d52d",
+    "scripts/zpd_repair_directed_history.py": "39b616f4101c062b55bc3ed58fe7ba0d73196d271bda99ddfa6b856ed53b5c18",
+    "scripts/zpd_statement_samples.py": "e320ddee83b923c826a810fe53a3e41c2a96f5000bb79fef148ff38dde4b0b6e",
+    "src/repair/dataset.py": "4f88995489d439b69e672b922e2e0145abe6e75083c0285444fab6bb22012aaf",
+    "src/repair/inference.py": "6a7c6883dd590c5f739e7760ff2a097f07f8cce3e563712dae7518c4f9c03d4b",
+    "src/repair/pilot_contracts.py": "2bdc27e49e4d815cfdab67f87addeba809d5044370a83cfcba3adf4639faf664",
+    "src/repair/prompts.py": "09d16af33a986f9314cb468754f67241b0d1e2e53ebe9b27bbfb33381bbebdea",
+    "tests/test_zpd_observed_source_roster.py": "2cec70974bda1b052a1fdc88224b2edf116c61dfa19f35e341e94ab3cd6a4acb",
+    "tests/test_zpd_repair_directed_history.py": "7d2501f97ffd6e551e0f27118e7ac805d38bf5a9e331694d3ef20f4332323229",
+    "tests/test_zpd_repair_directed_support.py": "d18832902b192f5b91dfd855e1b0addd8830590c99c138da78daf1d8648eef6c",
+    "tests/test_zpd_statement_sample_preparation.py": "ff89e87f2e181952a23129efab78c7dfc7e2f368aebcae5cbe293a30331700c4",
+    "tests/test_zpd_statement_samples.py": "3bba0c7b36e71fde1c3a9227384d3dd388f0109067cf737be33a6e9bba0a9471"
+  }
+}

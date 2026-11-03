@@ -1,0 +1,37 @@
+{
+  "counts": {
+    "train": {
+      "examples": 19456,
+      "max_prior_count": 153,
+      "problems": 491,
+      "source_snapshots": 46598,
+      "target_bytes_already_observed_in_prior_examples": 9,
+      "trajectories": 6798,
+      "users": 2816
+    },
+    "valid": {
+      "examples": 4443,
+      "max_prior_count": 51,
+      "problems": 487,
+      "source_snapshots": 10727,
+      "target_bytes_already_observed_in_prior_examples": 3,
+      "trajectories": 1570,
+      "users": 1134
+    }
+  },
+  "files_sha256": {
+    "manifest.json": "cca537cd12025f6904711a8d48eb7b1f64ed91217b347c5166c2cae0cee4635d",
+    "pairs-train.jsonl": "cdb7910a49ffa51aebeb3ac97e647bf0d17f9733bede72c74abfef3a664d3cd6",
+    "pairs-valid.jsonl": "85e72ce3c6bfa179a54a5e50959ed93dbf72cc64c47301d3f5e4af51a6842fcf",
+    "samples.json": "410afcbcdc69f0b57453900af9b2bdd9d6ee9a8928b0b0d1d921b69fc7a0c0db",
+    "tasks.json": "b08a92788c56057a708fc0564aef0649d4a1eb6260c6ce5cdc790271339ba389"
+  },
+  "prepared_complete_sha256": "827c547b54b95f9c6bf8360073f41cfafaca003353ae7579ecf9579a8b4df6f9",
+  "private_execution_performed": false,
+  "source_bytes_checked": true,
+  "strict_prior_current_target_chronology_passed": true,
+  "token_filter_applied": false,
+  "train_valid_same_problem_source_or_target_hash_overlap": 0,
+  "train_valid_user_overlap": 0,
+  "version": "paired_history_source_audit_v1"
+}

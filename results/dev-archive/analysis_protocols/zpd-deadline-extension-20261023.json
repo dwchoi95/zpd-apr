@@ -1,0 +1,35 @@
+{
+  "version": "zpd_user_deadline_extension_v1",
+  "extends": "zpd-deadline-20261021.json",
+  "authorized_at": "2026-10-23",
+  "user_instruction": "HISTRA 데이터셋과 비교해 다르면, 교체가 가능한지 보고 가능하면 zpd-apr만 새로운 데이터셋에 실험 돌리자. (교체 범위: RQ1만, 보고 구성: Answer-3Seed)",
+  "scope": [
+    "family histra-bench-20261023-v1 only: retrain current-only Answer seeds 2027-2029 without the HISTRA benchmark's students",
+    "generate and judge on the 1,764 HISTRA trajectories; re-judge HISTRA's Refactory, Brafar and LSGen patches with the same runner",
+    "2026-10-24 (user instruction: use MENTORED instead of Refactory and Brafar): re-judge HISTRA's stored MENTORED patches with the same runner; no MENTORED rerun",
+    "2026-10-24 (user instruction: run experiment A): retrain current-only Progress seeds 2027-2029 on canonical train-progress/valid-progress minus the HISTRA benchmark's students, generate and judge on the same 1,753 inputs, compose Progress-3Seed with the same budgets; starts after the Answer run completes",
+    "2026-10-24 (user instruction: re-judge LSGen-Qwen now; ask for further experiments when needed): re-judge HISTRA's stored LSGen patches generated with Qwen2.5-Coder-7B-Instruct (results/eval/lsgen_qwen.jsonl) with the same runner and settings as the other baselines; judging only, no generation or training",
+    "2026-10-24 (user instruction: \"새실험 해도 되 이제. 기간 많이 남았으니까\"): new experiments are authorized to address the 2026-10-24 independent reviews (notes/reviews/icse-seet-final-independent-20261024.ko.md, icst-final-independent-20261024.ko.md); each run is registered here with its family, source snapshot and settings before it starts, and keeps the canonical-v5 release, datasets, gate and denominator unchanged",
+    "2026-10-25 (registered under the 2026-10-24 authorization; user approved the plan with \"좋아\"): family review-select-20261025-v1, protocol zpd-review-select-20261025.md, pipeline scripts/run_review_select_remote.sh; retrain Strict and Progress seeds 2027-2029 with current-only prompts without the RQ1 students, rerun Select on validation, judge the selections and a three-sample base-model control on the RQ1 inputs; starts after experiment A completes",
+    "2026-10-26 (registered under the 2026-10-24 authorization; user asked to check Figure 2 against trajectories that never reach acceptance): family never-accepted-20261026-v1, protocol zpd-never-accepted-20261026.md, pipeline scripts/run_never_accepted_remote.sh; execute the 16,205 submissions of 3,732 never-accepted trajectories of the RQ1 problems on the benchmark's test suites; execution only",
+    "2026-10-26 (user approved experiment A of the third review): family review-peer-20261026-v1, protocol zpd-review-peer-20261026.md, pipeline scripts/run_review_peer_remote.sh; Answer adapters with peer targets (closest by token retention, random) on the RQ1 benchmark, and three base-model samples with current-only prompts on Seen and Unseen",
+    "2026-10-26 (user approved the overfitting check): family differential-20261026-v1, protocol zpd-differential-20261026.md; generated inputs for the 14 RQ1 problems, references from the students' accepted programs, every plausible patch of the six configurations executed locally; execution only",
+    "2026-10-29 (user instruction: \"서버가 비었으니, 이제 다시 실험해도 되\"): resume the interrupted review-peer-20261026-v1 by rerunning the same unit from the same snapshot (546b5531) and pipeline; completed stages are skipped, every peer adapter and its RQ1 evaluation run as registered; no other change",
+    "2026-10-29 (user instruction: \"그래.\", in reply to the report of the second interruption at 04:45:19 KST): restart review-peer-20261026-v1 again by rerunning the same unit from the same snapshot (546b5531) and pipeline; peer-closest seed 2027 trains from the start (no checkpoint was written); no other change",
+    "2026-10-31 (user instruction: \"main에 모델이 잘 올라갔고 학습 모델로 바로 zpdpatch 실행 가능한지 확인해줘\"): verify the public artifact on UbuntuServer: clone main (1e3a74b0) from GitHub under .runtime/artifact-check-20261031, join and hash-check its three adapters, regenerate the first 40 RQ1 inputs with each adapter by the README command, and compare with the stored generations and verdicts; no new result is reported",
+    "2026-11-02 (user instruction: \"MENTORED와 LSGen_GPT 빼고 일단 돌려봐. 모두 병렬로 최대한 빠르게.\"): family allpos-baselines-20261102-v1, protocol zpd-allpos-baselines-20261102.md; run Refactory and Brafar (HISTRA's pinned commits, patches and paper settings) and LSGen with Qwen2.5-Coder-7B-Instruct on every failing submission before the last of the HISTRA benchmark's trajectories, on UbuntuServer; the last failing submission keeps the stored patches; new results inform Section II-B only and leave RQ1-RQ4 unchanged",
+    "2026-11-03 (user instruction: \"연장 승인해줄께. 기존에 서버에서 돌리던 실험 중단하고 이것부터 가장 빠르게 돌려봐.\", in reply to the estimate for adding Strict to the paired target control of RQ3): family strict-target-20261103-v1, protocol zpd-strict-target-20261103.md, pipeline scripts/run_strict_target_remote.sh; train Strict seeds 2027-2029 on the paired target control's current submissions and prompts (Seen and Java) with the paired control's settings, and judge them on its Seen, Unseen and Java test inputs; the idle allpos-vllm server (allpos-baselines-20261102-v1, whose three runs had finished) was stopped first; no other change",
+    "2026-11-03 (user instruction: \"그래\", in reply to the repository cleanup plan, which ran the generation step of the reproducibility test \"서버 GPU에서 예제 몇 개로만\" and asked whether the server could be used; then \"data/도 코드 실행해서 만들어 낼 수 있는지 재현테스트 해봐\"): artifact check repro-main-20261103 (no experiment family; nothing reported in the paper), protocol zpd-artifact-check-20261103.md; on UbuntuServer under .runtime/repro-main-20261103 with a fresh venv from requirements.txt: build the Java judge image from docker/java, rebuild the Java data with run.py build-data --benchmark codeworkout from the TIKTOC release, and generate greedily with each of the twelve released adapters on 8 stored inputs to compare with the stored runs; no training"
+  ],
+  "not_authorized": [
+    "any other family, retry of an earlier family, or change to the canonical-v5 release, datasets, gate or denominator",
+    "(lifted 2026-10-24 by the user's authorization of new experiments) Progress, Strict or Mixed retraining; RQ2-RQ4 reruns"
+  ],
+  "protocol": "zpd-histra-benchmark-20261023.md",
+  "amended_at": [
+    "2026-10-24",
+    "2026-10-29",
+    "2026-11-02",
+    "2026-11-03"
+  ]
+}

@@ -9,12 +9,12 @@ from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = ROOT / "data-canonical-v5"
-DATASET_ROOT = ROOT / "outputs/split-90-10/canonical-v5/datasets"
+DATASET_ROOT = ROOT / "results/split-90-10/canonical-v5/datasets"
 OUTCOME_CACHE = (
-    ROOT / "outputs/split-90-10/canonical-v5/outcomes/all-original-submissions.jsonl"
+    ROOT / "results/split-90-10/canonical-v5/outcomes/all-original-submissions.jsonl"
 )
 CONTEXT_MANIFEST = (
-    ROOT / "outputs/split-90-10/canonical-v5/trajectory-context-4k.jsonl"
+    ROOT / "results/split-90-10/canonical-v5/trajectory-context-4k.jsonl"
 )
 ARTIFACTS = {
     "answer": DATASET_ROOT / "train-answer.jsonl",

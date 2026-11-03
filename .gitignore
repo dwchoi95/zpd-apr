@@ -7,25 +7,17 @@ env/
 .env
 .env.*
 !.env.example
-.hf-cache/
-.uv-cache/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.code-review-graph/
-.ipynb_checkpoints/
 
 data/
-outputs
-results/
+data-*/
+results/*
+!results/dev-archive/
+results/dev-archive/*
+!results/dev-archive/analysis_protocols/
+!results/dev-archive/pipelines/
 output/
 baselines/
 checkpoints/
-archive/
-.runtime/
-
-tmp/pdfs/
 
 .DS_Store
 *.swp
-tmp_*.sh

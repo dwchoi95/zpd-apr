@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run scripts/compile_codeworkout_in_container.sh in the Java judge image: one '<id>\t<compiles>\t<returncode>' status per unit."""
+"""Run compile_codeworkout_in_container.sh in the Java judge image: one '<id>\t<compiles>\t<returncode>' status per unit."""
 from __future__ import annotations
 
 import argparse
@@ -7,7 +7,7 @@ import os
 import subprocess
 from pathlib import Path
 
-SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "compile_codeworkout_in_container.sh"
+SCRIPT = Path(__file__).with_suffix(".sh")
 
 
 def main() -> None:

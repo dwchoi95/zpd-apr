@@ -1,0 +1,84 @@
+{
+  "version": "crossed_adapter_input_diagnostic_launch_v1",
+  "checked_at": "2026-10-16T07:59:08.016892+09:00",
+  "trigger_event_id": "c53adf28fde2829550bbfcc951cabf7834a15385e05c964bcba7b0eda4b81494",
+  "real_completion_to_current_chat_verified": true,
+  "family": "zpd-crossed-inference-20261016",
+  "release_sha256": "e0c46e37550cc9bffaedf15c6732751281fa902a62edd7507e03155b514eed3c",
+  "local_source_commit": "2e889039",
+  "remote_source_revision": "66a961f97b2b3fec4f7a57a110d908b6a0e6458b",
+  "source_archive_sha256": "d04ff1ac8e2a87105a8d40a50fa037f752156fbea76a39425c7066808e74521c",
+  "remote_snapshot": "/home/cdw/VSCode/zpd-apr/.runtime/crossed-inference-20261016-v1",
+  "coordinator_unit": "zpd-crossed-inference-20261016-v1-coordinator.service",
+  "coordinator_pid": 4038480,
+  "generation_pid": 4038536,
+  "started_epoch": 1792105066.8581953,
+  "local_tests_passed": 107,
+  "remote_tests_passed": 107,
+  "ipc_preflight": {
+    "actual_zmq_bind_succeeded": true,
+    "address_bytes": 76,
+    "limit": 107
+  },
+  "predecessor_all_artifacts_and_normal_exits_verified": true,
+  "no_other_experiment_or_GPU_job_before_launch": true,
+  "canonical_remote_dirty_checkout_untouched": true,
+  "training_repeated": false,
+  "original_cells_repeated": false,
+  "source_pins": 584,
+  "adapter_arm_map": {
+    "C": "H",
+    "H": "C",
+    "HS": "C",
+    "U": "C"
+  },
+  "examples": 320,
+  "new_slots": 2560,
+  "observer_source_sha256": "e34e3e56e658bccb142e8364bee700971bf8860b3d8a17b02dcc40c8dab3acaa",
+  "continuation_config_sha256": "a2b2e224c7237160931afbfe126cb6816b9e4835ac30ddff6ebc5b57a715dcf0",
+  "live_readback": {
+    "family": "zpd-crossed-inference-20261016",
+    "state": "running",
+    "completed_examples": 22,
+    "total_examples": 320,
+    "release_sha256": "e0c46e37550cc9bffaedf15c6732751281fa902a62edd7507e03155b514eed3c",
+    "phase": "generation",
+    "pipeline_phase": "generation",
+    "progress_unit": "예제",
+    "completed_phases": [],
+    "unit": {
+      "ActiveState": "active",
+      "Id": "zpd-crossed-inference-20261016-v1-generation.service",
+      "MainPID": "4038536",
+      "Result": "success",
+      "SubState": "running"
+    },
+    "unit_prefix": "zpd-crossed-inference-20261016-v1",
+    "worker_phase": "generation",
+    "elapsed_seconds": 57.76663839770481,
+    "attempt_statuses": {
+      "success": 176
+    },
+    "completed_case_attempts": null,
+    "total_case_attempts": null
+  },
+  "continuation": {
+    "status": "idle",
+    "queued": [],
+    "unconfirmed": [],
+    "previously_queued": [
+      "zpd-paired-history-run-20261015",
+      "zpd-paired-inference-20261016"
+    ],
+    "experiments_executed_by_bridge": false,
+    "permission_overrides": false
+  },
+  "old_dispatch_latches_preserved": true,
+  "permission_overrides": false,
+  "previous_same_size_seconds": 7391.405190229416,
+  "provisional_whole_run_eta_kst": "2026-10-16T10:01:00+09:00",
+  "eta_basis": "Previous matched 320-recipient run; new private task inventory and throughput may differ.",
+  "decision": "diagnostic_only_no_promotion",
+  "performance_improvement_established": false,
+  "verification_limit": "New run is active, not complete. Predecessor outcome HOLD; fixed gates and all negative results preserved."
+}

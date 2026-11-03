@@ -1,0 +1,164 @@
+{
+  "version": "anchored_routing_result_v1",
+  "trigger_event_id": "7534f9bece87b1e915b437e00e68f5f6e456df8bc4534b7e89a34342f126f66e",
+  "family": "zpd-anchored-routing-20261016",
+  "release_sha256": "f938bda53a6b21d63f87e44327d443eb44c8bc6344ada14c8d8e8f849472a512",
+  "verified_complete_sha256": "df62c38678618444b802d1e2a8b72b1953c9609c3c95f7f7fc28fba216c43272",
+  "report_sha256": "09e75aab768af27b8e5d0bffdbf503efac21948d637daf8d8db26a5e731465d8",
+  "remote_revision": "8fed047a455d3e58c865c8d3500bd414de3f72e9",
+  "all_artifact_hashes_and_normal_exits_verified": true,
+  "no_live_worker_or_GPU_job": true,
+  "canonical_dirty_checkout_preserved": true,
+  "counts": {
+    "C": {
+      "noop_selected": 39,
+      "stable_ac": 200,
+      "stable_regression": 15,
+      "unknown": 22
+    },
+    "H": {
+      "noop_selected": 31,
+      "stable_ac": 194,
+      "stable_regression": 19,
+      "unknown": 19
+    },
+    "HS": {
+      "noop_selected": 33,
+      "stable_ac": 198,
+      "stable_regression": 17,
+      "unknown": 19
+    },
+    "U": {
+      "noop_selected": 35,
+      "stable_ac": 199,
+      "stable_regression": 18,
+      "unknown": 20
+    },
+    "noop": {
+      "noop_selected": 320,
+      "stable_ac": 17,
+      "stable_regression": 0,
+      "unknown": 15
+    }
+  },
+  "development_gate": {
+    "checks": {
+      "all_five_folds_ac_nonworse_vs_C": false,
+      "complete_execution": true,
+      "pooled_regression_nonincrease_vs_C": false,
+      "pooled_regression_upper_nonincrease_vs_C": false,
+      "pooled_unknown_nonincrease_vs_C": true,
+      "strict_pooled_ac_H_over_C": false,
+      "strict_pooled_ac_H_over_HS": false,
+      "strict_pooled_ac_H_over_U": false
+    },
+    "decision": "hold",
+    "nonworse_ac_folds": {
+      "0": true,
+      "1": true,
+      "2": false,
+      "3": false,
+      "4": false
+    },
+    "passed": false,
+    "required_nonworse_ac_folds": 5,
+    "scope": "Predeclared pooled descriptive new-generation gate; equal-problem and current-status slices are reported separately."
+  },
+  "execution": {
+    "block_index": 3,
+    "completed_case_attempts": 72836,
+    "completed_examples": 320,
+    "completed_source_blocks": 3580,
+    "elapsed_seconds": 5586.227959002368,
+    "examples": 320,
+    "phase": "complete",
+    "total_case_attempts": 72836,
+    "total_examples": 320,
+    "total_source_blocks": 3580
+  },
+  "paired_H": {
+    "C": {
+      "ac_gained": 11,
+      "ac_lost": 18,
+      "edited_to_edited": 125,
+      "examples": 320,
+      "from_noop": 16,
+      "not_jointly_known": 22,
+      "regression_introduced": 8,
+      "regression_prevented": 4,
+      "selected_candidate_changed": 149,
+      "to_noop": 8
+    },
+    "HS": {
+      "ac_gained": 0,
+      "ac_lost": 4,
+      "edited_to_edited": 26,
+      "examples": 320,
+      "from_noop": 4,
+      "not_jointly_known": 19,
+      "regression_introduced": 2,
+      "regression_prevented": 0,
+      "selected_candidate_changed": 32,
+      "to_noop": 2
+    },
+    "U": {
+      "ac_gained": 17,
+      "ac_lost": 24,
+      "edited_to_edited": 142,
+      "examples": 320,
+      "from_noop": 17,
+      "not_jointly_known": 21,
+      "regression_introduced": 11,
+      "regression_prevented": 10,
+      "selected_candidate_changed": 172,
+      "to_noop": 13
+    }
+  },
+  "preliminary_diagnostic": {
+    "coverage": {
+      "candidate_references": 3676,
+      "generated_candidate_references": 2475,
+      "generated_unique_source_tasks": 1143,
+      "missing_unique_source_tasks": 544,
+      "observed_unique_source_tasks": 895,
+      "stable_observed_vectors": 871,
+      "unique_source_tasks": 1439,
+      "unstable_observed_vectors": 24
+    },
+    "per_arm": {
+      "C": {
+        "selected_stable_ac": 200,
+        "selected_unknown": 22,
+        "oracle_lower": 208,
+        "oracle_upper": 305,
+        "missed_known_ac": 6
+      },
+      "H": {
+        "selected_stable_ac": 194,
+        "selected_unknown": 19,
+        "oracle_lower": 205,
+        "oracle_upper": 301,
+        "missed_known_ac": 10
+      },
+      "HS": {
+        "selected_stable_ac": 198,
+        "selected_unknown": 19,
+        "oracle_lower": 208,
+        "oracle_upper": 305,
+        "missed_known_ac": 9
+      },
+      "U": {
+        "selected_stable_ac": 199,
+        "selected_unknown": 20,
+        "oracle_lower": 212,
+        "oracle_upper": 300,
+        "missed_known_ac": 11
+      }
+    }
+  },
+  "next_task": "zpd-anchored-diagnosis-20261016: missing-only 544 sources, 44420 test attempts; preserve old vectors and all selections",
+  "method_improvement_established": false,
+  "model_promotion": false,
+  "confirmatory": false,
+  "educational_benefit_established": false
+}
