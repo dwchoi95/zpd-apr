@@ -1,8 +1,5 @@
 # ZPDPatch
 
-ZPDPatch is a trajectory-supervised repair technique for automated feedback generation on programming assignments: it
-learns from students' own submission trajectories and returns patches the size of the steps students take.
-
 ## Dataset
 
 output.tar.xz : the results the paper reports; unpacks into `output/` (README.md inside describes every file and field)
